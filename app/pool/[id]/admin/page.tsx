@@ -21,6 +21,34 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData.user;
+
+if (!user) {
+  setMsg("Please log in first.");
+  setLoading(false);
+  return;
+}
+
+const { data: poolRow, error: poolErr } = await supabase
+  .from("pools")
+  .select("created_by")
+  .eq("id", poolId)
+  .single();
+
+if (poolErr) {
+  setMsg(poolErr.message);
+  setLoading(false);
+  return;
+}
+
+if (poolRow.created_by !== user.id) {
+  setMsg("Not authorized. Only the pool creator can access Admin.");
+  setLoading(false);
+  return;
+}
+
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -43,23 +71,24 @@ export default function AdminPage() {
     load();
   }, []);
 
-  async function updateRound(teamId: string, round: string) {
-    const { error } = await supabase
-      .from("team_status")
-      .update({ round_reached: round })
-      .eq("team_id", teamId);
+async function updateRound(teamId: string, round: string) {
+  const { error } = await supabase.rpc("update_team_round", {
+    p_pool_id: poolId,
+    p_team_id: teamId,
+    p_round_reached: round,
+  });
 
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
-
-    setRows((prev) =>
-      prev.map((r) =>
-        r.team_id === teamId ? { ...r, round_reached: round } : r
-      )
-    );
+  if (error) {
+    setMsg(error.message);
+    return;
   }
+
+  setRows((prev) =>
+    prev.map((r) =>
+      r.team_id === teamId ? { ...r, round_reached: round } : r
+    )
+  );
+}
 
   return (
     <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
