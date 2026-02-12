@@ -32,7 +32,6 @@ export default function DraftPage() {
 
   const [locked, setLocked] = useState(false);
 
-  // Derived
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
     return Array.from(selected)
@@ -47,8 +46,14 @@ export default function DraftPage() {
 
   const remaining = BUDGET - totalCost;
 
-  const count1 = selectedTeams.filter((t) => t.seed === 1).length;
-  const count2 = selectedTeams.filter((t) => t.seed === 2).length;
+  const count1 = useMemo(
+    () => selectedTeams.filter((t) => t.seed === 1).length,
+    [selectedTeams]
+  );
+  const count2 = useMemo(
+    () => selectedTeams.filter((t) => t.seed === 2).length,
+    [selectedTeams]
+  );
   const count12 = count1 + count2;
 
   const isValid =
@@ -57,10 +62,12 @@ export default function DraftPage() {
     count2 <= MAX_2 &&
     count12 <= MAX_12;
 
-  const sortedTeams = [...teams].sort((a, b) => {
-    if (a.seed !== b.seed) return a.seed - b.seed;
-    return a.name.localeCompare(b.name);
-  });
+  const sortedTeams = useMemo(() => {
+    return [...teams].sort((a, b) => {
+      if (a.seed !== b.seed) return a.seed - b.seed;
+      return a.name.localeCompare(b.name);
+    });
+  }, [teams]);
 
   useEffect(() => {
     const load = async () => {
@@ -76,31 +83,43 @@ export default function DraftPage() {
         return;
       }
 
-      // Check lock time
-      const { data: poolRow } = await supabase
+      // ✅ Lock check (paste-in safe)
+      const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
         .select("lock_time")
         .eq("id", poolId)
         .single();
 
-      if (poolRow?.lock_time) {
-        const lock = new Date(poolRow.lock_time);
-        if (new Date() > lock) {
-          setLocked(true);
-        }
+      if (poolErr) {
+        setMsg(poolErr.message);
+        setLoading(false);
+        return;
       }
 
-      // Check membership
-      const { data: mem } = await supabase
+      if (poolRow?.lock_time) {
+        const lock = new Date(poolRow.lock_time);
+        setLocked(new Date() > lock);
+      } else {
+        setLocked(false);
+      }
+
+      // Membership
+      const { data: mem, error: memErr } = await supabase
         .from("pool_members")
         .select("pool_id")
         .eq("pool_id", poolId)
         .eq("user_id", user.id)
         .maybeSingle();
 
+      if (memErr) {
+        setMsg(memErr.message);
+        setLoading(false);
+        return;
+      }
+
       setIsMember(!!mem);
 
-      // Load teams
+      // Teams
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
         .select("id,name,seed,cost");
@@ -113,7 +132,7 @@ export default function DraftPage() {
 
       setTeams((teamRows ?? []) as Team[]);
 
-      // Load entry
+      // Entry
       const { data: existingEntry, error: entrySelErr } = await supabase
         .from("entries")
         .select("id")
@@ -127,7 +146,7 @@ export default function DraftPage() {
         return;
       }
 
-      let eid = existingEntry?.id;
+      let eid = existingEntry?.id as string | undefined;
 
       if (!eid) {
         const { data: newEntry, error: entryInsErr } = await supabase
@@ -142,12 +161,12 @@ export default function DraftPage() {
           return;
         }
 
-        eid = newEntry.id;
+        eid = newEntry.id as string;
       }
 
       setEntryId(eid);
 
-      // Load existing picks
+      // Picks
       const { data: picks, error: picksErr } = await supabase
         .from("entry_picks")
         .select("team_id")
@@ -159,8 +178,7 @@ export default function DraftPage() {
         return;
       }
 
-      const pickedIds = new Set<string>((picks ?? []).map((p: any) => p.team_id));
-      setSelected(pickedIds);
+      setSelected(new Set((picks ?? []).map((p: any) => p.team_id)));
 
       setLoading(false);
     };
@@ -168,10 +186,37 @@ export default function DraftPage() {
     load();
   }, [poolId]);
 
+  async function joinPool() {
+    setMsg("");
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+
+    if (!user) {
+      setMsg("Please log in first.");
+      return;
+    }
+
+    const { error } = await supabase.from("pool_members").insert({
+      pool_id: poolId,
+      user_id: user.id,
+    });
+
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+
+    setIsMember(true);
+    setMsg("Joined pool. You can draft now.");
+  }
+
   function toggleTeam(teamId: string) {
     if (locked) return;
 
+    setMsg("");
+
     const next = new Set(selected);
+    const map = new Map(teams.map((t) => [t.id, t]));
 
     if (next.has(teamId)) {
       next.delete(teamId);
@@ -179,7 +224,6 @@ export default function DraftPage() {
       return;
     }
 
-    const map = new Map(teams.map((t) => [t.id, t]));
     next.add(teamId);
 
     const arr = Array.from(next)
@@ -190,13 +234,11 @@ export default function DraftPage() {
     const c1 = arr.filter((t) => t.seed === 1).length;
     const c2 = arr.filter((t) => t.seed === 2).length;
 
-    if (
-      cost > BUDGET ||
-      c1 > MAX_1 ||
-      c2 > MAX_2 ||
-      c1 + c2 > MAX_12
-    ) {
-      setMsg("That selection would violate budget or seed caps.");
+    if (cost > BUDGET || c1 > MAX_1 || c2 > MAX_2 || c1 + c2 > MAX_12) {
+      const t = map.get(teamId);
+      setMsg(
+        `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`
+      );
       return;
     }
 
@@ -204,22 +246,47 @@ export default function DraftPage() {
   }
 
   async function savePicks() {
-    if (!entryId || !isValid || locked) return;
+    setMsg("");
+
+    if (!entryId) {
+      setMsg("Entry not ready yet. Refresh and try again.");
+      return;
+    }
+    if (!isMember) {
+      setMsg("Join the pool before drafting.");
+      return;
+    }
+    if (locked) {
+      setMsg("Draft is locked.");
+      return;
+    }
+    if (!isValid) {
+      setMsg("Draft is not valid (budget/caps). Fix issues before saving.");
+      return;
+    }
 
     setSaving(true);
 
-    await supabase.from("entry_picks").delete().eq("entry_id", entryId);
+    const { error: delErr } = await supabase
+      .from("entry_picks")
+      .delete()
+      .eq("entry_id", entryId);
 
-    if (selected.size > 0) {
-      const rows = Array.from(selected).map((team_id) => ({
-        entry_id: entryId,
-        team_id,
-      }));
+    if (delErr) {
+      setMsg(delErr.message);
+      setSaving(false);
+      return;
+    }
 
-      const { error } = await supabase.from("entry_picks").insert(rows);
+    const rows = Array.from(selected).map((team_id) => ({
+      entry_id: entryId,
+      team_id,
+    }));
 
-      if (error) {
-        setMsg(error.message);
+    if (rows.length > 0) {
+      const { error: insErr } = await supabase.from("entry_picks").insert(rows);
+      if (insErr) {
+        setMsg(insErr.message);
         setSaving(false);
         return;
       }
@@ -230,79 +297,244 @@ export default function DraftPage() {
   }
 
   if (loading) {
-    return <main style={{ padding: 40 }}>Loading…</main>;
+    return (
+      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Draft</h1>
+        <p style={{ marginTop: 12 }}>Loading…</p>
+      </main>
+    );
   }
 
   return (
-    <main style={{ maxWidth: 1000, margin: "40px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Draft</h1>
-
-      {locked && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 10,
-            background: "#fff3cd",
-            border: "1px solid #ffeeba",
-            borderRadius: 8,
-            fontWeight: 900,
-          }}
-        >
-          Draft Locked 🔒
+    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 16,
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
+            Draft
+          </h1>
+          <div style={{ fontSize: 14, opacity: 0.85 }}>
+            Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2} two-seeds,
+            max {MAX_12} combined
+          </div>
         </div>
-      )}
 
-      <div style={{ marginTop: 20, display: "grid", gap: 8 }}>
-        {sortedTeams.map((t) => (
-          <label
-            key={t.id}
+        <div style={{ display: "flex", gap: 10 }}>
+          <a
+            href={`/pool/${poolId}`}
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: 8,
-              border: "1px solid #eee",
-              borderRadius: 8,
-              cursor: locked ? "not-allowed" : "pointer",
+              padding: "10px 12px",
+              border: "1px solid #ccc",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
             }}
           >
-            <div>
-              <input
-                type="checkbox"
-                checked={selected.has(t.id)}
-                disabled={locked}
-                onChange={() => toggleTeam(t.id)}
-              />
-              <span style={{ marginLeft: 8 }}>
-                {t.name} (Seed {t.seed})
-              </span>
-            </div>
-            <b>{t.cost}</b>
-          </label>
-        ))}
+            Back to Pool
+          </a>
+          <a
+            href={`/pool/${poolId}/leaderboard`}
+            style={{
+              padding: "10px 12px",
+              border: "1px solid #ccc",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            Leaderboard
+          </a>
+        </div>
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <div>Total: {totalCost}</div>
-        <div>Remaining: {remaining}</div>
-        <div>1 Seeds: {count1}/{MAX_1}</div>
-        <div>2 Seeds: {count2}/{MAX_2}</div>
-        <div>1+2 Combined: {count12}/{MAX_12}</div>
+      {!isMember ? (
+        <div style={{ marginTop: 18 }}>
+          <p style={{ opacity: 0.9 }}>
+            You’re not a member of this pool yet.
+          </p>
+          <button
+            onClick={joinPool}
+            style={{
+              marginTop: 10,
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 900,
+            }}
+          >
+            Join pool
+          </button>
+        </div>
+      ) : null}
 
-        <button
-          onClick={savePicks}
-          disabled={!isValid || saving || locked}
+      <div
+        style={{
+          marginTop: 18,
+          display: "grid",
+          gridTemplateColumns: "1fr 320px",
+          gap: 18,
+        }}
+      >
+        {/* Team list */}
+        <section
           style={{
-            marginTop: 12,
-            padding: "10px 14px",
-            borderRadius: 8,
-            fontWeight: 900,
+            border: "1px solid #ddd",
+            borderRadius: 12,
+            padding: 14,
           }}
         >
-          {saving ? "Saving…" : "Save Picks"}
-        </button>
-      </div>
+          <div style={{ fontWeight: 900, marginBottom: 10 }}>Teams</div>
 
-      {msg && <p style={{ marginTop: 12 }}>{msg}</p>}
+          <div style={{ display: "grid", gap: 8 }}>
+            {sortedTeams.map((t) => {
+              const checked = selected.has(t.id);
+              return (
+                <label
+                  key={t.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    padding: "10px 10px",
+                    border: "1px solid #eee",
+                    borderRadius: 10,
+                    cursor: locked ? "not-allowed" : "pointer",
+                    userSelect: "none",
+                    opacity: locked ? 0.85 : 1,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={locked}
+                      onChange={() => toggleTeam(t.id)}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 800 }}>{t.name}</div>
+                      <div style={{ fontSize: 12, opacity: 0.75 }}>
+                        Seed {t.seed}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ fontWeight: 900 }}>{t.cost}</div>
+                </label>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Sidebar */}
+        <aside
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 12,
+            padding: 14,
+            height: "fit-content",
+            position: "sticky",
+            top: 16,
+          }}
+        >
+          <div style={{ fontWeight: 900, marginBottom: 10 }}>Summary</div>
+
+          <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Total cost</span>
+              <b>{totalCost}</b>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Remaining</span>
+              <b>{remaining}</b>
+            </div>
+
+            <hr style={{ border: "none", borderTop: "1px solid #eee" }} />
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>1-seeds</span>
+              <b>
+                {count1}/{MAX_1}
+              </b>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>2-seeds</span>
+              <b>
+                {count2}/{MAX_2}
+              </b>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>1+2 combined</span>
+              <b>
+                {count12}/{MAX_12}
+              </b>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            <div
+              style={{
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid #eee",
+                background: isValid ? "#f6fff7" : "#fff6f6",
+                fontWeight: 900,
+              }}
+            >
+              {isValid ? "Draft is valid ✅" : "Draft invalid ❌"}
+            </div>
+
+            {locked ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: "#fff3cd",
+                  border: "1px solid #ffeeba",
+                  fontWeight: 900,
+                }}
+              >
+                Draft Locked 🔒
+              </div>
+            ) : null}
+          </div>
+
+          <button
+            onClick={savePicks}
+            disabled={saving || !isMember || !isValid || locked}
+            style={{
+              marginTop: 12,
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "none",
+              cursor: saving ? "not-allowed" : "pointer",
+              fontWeight: 900,
+              opacity: saving || !isMember || !isValid || locked ? 0.6 : 1,
+            }}
+          >
+            {saving ? "Saving…" : locked ? "Draft Locked" : "Save picks"}
+          </button>
+
+          {msg ? (
+            <p style={{ marginTop: 12, fontSize: 14, whiteSpace: "pre-wrap" }}>
+              {msg}
+            </p>
+          ) : null}
+        </aside>
+      </div>
     </main>
   );
 }
