@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
 type Row = {
+  entry_id: string;
   user_id: string;
   display_name: string | null;
   total_score: number;
@@ -33,7 +34,7 @@ export default function LeaderboardPage() {
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
-        .select("user_id,display_name,total_score,rank")
+        .select("entry_id,user_id,display_name,total_score,rank")
         .eq("pool_id", poolId)
         .order("rank", { ascending: true });
 
@@ -122,7 +123,14 @@ export default function LeaderboardPage() {
             >
               <div style={{ fontWeight: 900 }}>{r.rank}</div>
               <div style={{ fontWeight: 800 }}>
-                {r.display_name ?? r.user_id.slice(0, 8)}
+              <div>
+  <a
+    href={`/pool/${poolId}/picks/${r.entry_id}`}
+    style={{ fontWeight: 800, textDecoration: "none" }}
+  >
+    {r.display_name ?? r.user_id.slice(0, 8)}
+  </a>
+</div>
               </div>
               <div style={{ textAlign: "right", fontWeight: 900 }}>
                 {r.total_score}
