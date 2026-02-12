@@ -1,3 +1,4 @@
+const [locked, setLocked] = useState(false);
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -82,47 +83,35 @@ export default function DraftPage() {
       setLoading(true);
       setMsg("");
 
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
+const { data: authData } = await supabase.auth.getUser();
+const user = authData.user;
 
-      if (!user) {
-        setMsg("Please log in first.");
-        setLoading(false);
-        return;
-      }
+if (!user) {
+  setMsg("Please log in first.");
+  setLoading(false);
+  return;
+}
 
-      // Check membership (simple friends v1)
-      const { data: mem } = await supabase
-        .from("pool_members")
-        .select("pool_id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
+const { data: poolRow } = await supabase
+  .from("pools")
+  .select("lock_time")
+  .eq("id", poolId)
+  .single();
 
-      const member = !!mem;
-      setIsMember(member);
+if (poolRow?.lock_time) {
+  const lock = new Date(poolRow.lock_time);
+  if (new Date() > lock) {
+    setLocked(true);
+  }
+}
 
-      // Load teams
-      const { data: teamRows, error: teamErr } = await supabase
-        .from("teams")
-        .select("id,name,seed,cost");
-
-      if (teamErr) {
-        setMsg(teamErr.message);
-        setLoading(false);
-        return;
-      }
-
-      setTeams((teamRows ?? []) as Team[]);
-
-      // Ensure entry row exists
-      const { data: existingEntry, error: entrySelErr } = await supabase
-        .from("entries")
-        .select("id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
+const { data: mem } = await supabase
+  .from("pool_members")
+  .select("pool_id")
+  .eq("pool_id", poolId)
+  .eq("user_id", user.id)
+  .maybeSingle();
+      
       if (entrySelErr) {
         setMsg(entrySelErr.message);
         setLoading(false);
