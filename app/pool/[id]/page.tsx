@@ -168,6 +168,20 @@ export default function PoolPage() {
       >
         Leaderboard
       </a>
+
+      <a
+        href={`/pool/${poolId}/admin`}
+        style={{
+          display: "inline-block",
+          padding: "12px 14px",
+          borderRadius: 10,
+          border: "1px solid #ccc",
+          textDecoration: "none",
+          fontWeight: 900,
+        }}
+      >
+        Admin
+      </a>
     </div>
   ) : (
     <p style={{ opacity: 0.85 }}>Join the pool to draft your teams.</p>
