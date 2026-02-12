@@ -112,7 +112,7 @@ export default function LeaderboardPage() {
 
           {rows.map((r) => (
             <div
-              key={r.user_id}
+              key={r.entry_id}
               style={{
                 display: "grid",
                 gridTemplateColumns: "80px 1fr 140px",
