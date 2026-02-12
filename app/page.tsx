@@ -1,4 +1,5 @@
 import Image from "next/image";
+import AuthStatus from "./components/AuthStatus";
 
 export default function Home() {
   return (
