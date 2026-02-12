@@ -16,10 +16,6 @@ const MAX_1 = 2;
 const MAX_2 = 2;
 const MAX_12 = 4;
 
-function formatMoney(n: number) {
-  return n.toString();
-}
-
 export default function DraftPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -32,12 +28,11 @@ export default function DraftPage() {
 
   const [entryId, setEntryId] = useState<string | null>(null);
   const [isMember, setIsMember] = useState<boolean | null>(null);
-
   const [saving, setSaving] = useState(false);
 
   const [locked, setLocked] = useState(false);
 
-  // Derived stats
+  // Derived
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
     return Array.from(selected)
@@ -52,74 +47,87 @@ export default function DraftPage() {
 
   const remaining = BUDGET - totalCost;
 
-  const count1 = useMemo(
-    () => selectedTeams.filter((t) => t.seed === 1).length,
-    [selectedTeams]
-  );
-  const count2 = useMemo(
-    () => selectedTeams.filter((t) => t.seed === 2).length,
-    [selectedTeams]
-  );
+  const count1 = selectedTeams.filter((t) => t.seed === 1).length;
+  const count2 = selectedTeams.filter((t) => t.seed === 2).length;
   const count12 = count1 + count2;
 
-  const isValid = useMemo(() => {
-    return (
-      totalCost <= BUDGET &&
-      count1 <= MAX_1 &&
-      count2 <= MAX_2 &&
-      count12 <= MAX_12
-    );
-  }, [totalCost, count1, count2, count12]);
+  const isValid =
+    totalCost <= BUDGET &&
+    count1 <= MAX_1 &&
+    count2 <= MAX_2 &&
+    count12 <= MAX_12;
 
-  const sortedTeams = useMemo(() => {
-    return [...teams].sort((a, b) => {
-      if (a.seed !== b.seed) return a.seed - b.seed;
-      if (a.cost !== b.cost) return b.cost - a.cost;
-      return a.name.localeCompare(b.name);
-    });
-  }, [teams]);
+  const sortedTeams = [...teams].sort((a, b) => {
+    if (a.seed !== b.seed) return a.seed - b.seed;
+    return a.name.localeCompare(b.name);
+  });
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setMsg("");
 
-const { data: authData } = await supabase.auth.getUser();
-const user = authData.user;
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
 
-if (!user) {
-  setMsg("Please log in first.");
-  setLoading(false);
-  return;
-}
+      if (!user) {
+        setMsg("Please log in first.");
+        setLoading(false);
+        return;
+      }
 
-const { data: poolRow } = await supabase
-  .from("pools")
-  .select("lock_time")
-  .eq("id", poolId)
-  .single();
+      // Check lock time
+      const { data: poolRow } = await supabase
+        .from("pools")
+        .select("lock_time")
+        .eq("id", poolId)
+        .single();
 
-if (poolRow?.lock_time) {
-  const lock = new Date(poolRow.lock_time);
-  if (new Date() > lock) {
-    setLocked(true);
-  }
-}
+      if (poolRow?.lock_time) {
+        const lock = new Date(poolRow.lock_time);
+        if (new Date() > lock) {
+          setLocked(true);
+        }
+      }
 
-const { data: mem } = await supabase
-  .from("pool_members")
-  .select("pool_id")
-  .eq("pool_id", poolId)
-  .eq("user_id", user.id)
-  .maybeSingle();
-      
+      // Check membership
+      const { data: mem } = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      setIsMember(!!mem);
+
+      // Load teams
+      const { data: teamRows, error: teamErr } = await supabase
+        .from("teams")
+        .select("id,name,seed,cost");
+
+      if (teamErr) {
+        setMsg(teamErr.message);
+        setLoading(false);
+        return;
+      }
+
+      setTeams((teamRows ?? []) as Team[]);
+
+      // Load entry
+      const { data: existingEntry, error: entrySelErr } = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       if (entrySelErr) {
         setMsg(entrySelErr.message);
         setLoading(false);
         return;
       }
 
-      let eid = existingEntry?.id as string | undefined;
+      let eid = existingEntry?.id;
 
       if (!eid) {
         const { data: newEntry, error: entryInsErr } = await supabase
@@ -134,12 +142,12 @@ const { data: mem } = await supabase
           return;
         }
 
-        eid = newEntry.id as string;
+        eid = newEntry.id;
       }
 
       setEntryId(eid);
 
-      // Load existing picks (if any)
+      // Load existing picks
       const { data: picks, error: picksErr } = await supabase
         .from("entry_picks")
         .select("team_id")
@@ -160,33 +168,21 @@ const { data: mem } = await supabase
     load();
   }, [poolId]);
 
-  async function joinPool() {
-    setMsg("");
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
+  function toggleTeam(teamId: string) {
+    if (locked) return;
 
-    if (!user) {
-      setMsg("Please log in first.");
+    const next = new Set(selected);
+
+    if (next.has(teamId)) {
+      next.delete(teamId);
+      setSelected(next);
       return;
     }
 
-    const { error } = await supabase.from("pool_members").insert({
-      pool_id: poolId,
-      user_id: user.id,
-    });
-
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
-
-    setIsMember(true);
-    setMsg("Joined pool. You can draft now.");
-  }
-
-  function wouldBeValid(nextSelected: Set<string>) {
     const map = new Map(teams.map((t) => [t.id, t]));
-    const arr = Array.from(nextSelected)
+    next.add(teamId);
+
+    const arr = Array.from(next)
       .map((id) => map.get(id))
       .filter(Boolean) as Team[];
 
@@ -194,32 +190,13 @@ const { data: mem } = await supabase
     const c1 = arr.filter((t) => t.seed === 1).length;
     const c2 = arr.filter((t) => t.seed === 2).length;
 
-    return (
-      cost <= BUDGET &&
-      c1 <= MAX_1 &&
-      c2 <= MAX_2 &&
-      c1 + c2 <= MAX_12
-    );
-  }
-
-  function toggleTeam(teamId: string) {
-    setMsg("");
-
-    const next = new Set(selected);
-    if (next.has(teamId)) {
-      next.delete(teamId);
-      setSelected(next);
-      return;
-    }
-
-    next.add(teamId);
-
-    if (!wouldBeValid(next)) {
-      // Don’t allow the selection
-      const t = teams.find((x) => x.id === teamId);
-      setMsg(
-        `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`
-      );
+    if (
+      cost > BUDGET ||
+      c1 > MAX_1 ||
+      c2 > MAX_2 ||
+      c1 + c2 > MAX_12
+    ) {
+      setMsg("That selection would violate budget or seed caps.");
       return;
     }
 
@@ -227,44 +204,22 @@ const { data: mem } = await supabase
   }
 
   async function savePicks() {
-    setMsg("");
-
-    if (!entryId) {
-      setMsg("Entry not ready yet. Refresh and try again.");
-      return;
-    }
-    if (!isMember) {
-      setMsg("Join the pool before drafting.");
-      return;
-    }
-    if (!isValid) {
-      setMsg("Draft is not valid (budget/caps). Fix issues before saving.");
-      return;
-    }
+    if (!entryId || !isValid || locked) return;
 
     setSaving(true);
 
-    // Replace picks: delete then insert
-    const { error: delErr } = await supabase
-      .from("entry_picks")
-      .delete()
-      .eq("entry_id", entryId);
+    await supabase.from("entry_picks").delete().eq("entry_id", entryId);
 
-    if (delErr) {
-      setMsg(delErr.message);
-      setSaving(false);
-      return;
-    }
+    if (selected.size > 0) {
+      const rows = Array.from(selected).map((team_id) => ({
+        entry_id: entryId,
+        team_id,
+      }));
 
-    const rows = Array.from(selected).map((team_id) => ({
-      entry_id: entryId,
-      team_id,
-    }));
+      const { error } = await supabase.from("entry_picks").insert(rows);
 
-    if (rows.length > 0) {
-      const { error: insErr } = await supabase.from("entry_picks").insert(rows);
-      if (insErr) {
-        setMsg(insErr.message);
+      if (error) {
+        setMsg(error.message);
         setSaving(false);
         return;
       }
@@ -275,230 +230,79 @@ const { data: mem } = await supabase
   }
 
   if (loading) {
-    return (
-      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Draft</h1>
-        <p style={{ marginTop: 12 }}>Loading…</p>
-      </main>
-    );
+    return <main style={{ padding: 40 }}>Loading…</main>;
   }
 
   return (
-    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
-            Draft
-          </h1>
-          <div style={{ fontSize: 14, opacity: 0.85 }}>
-            Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2} two-seeds,
-            max {MAX_12} combined
-          </div>
-        </div>
+    <main style={{ maxWidth: 1000, margin: "40px auto", padding: 16 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Draft</h1>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Back to Pool
-          </a>
-
-          <a
-            href="/profile"
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Profile
-          </a>
-        </div>
-      </div>
-
-      {!isMember ? (
-        <div style={{ marginTop: 18 }}>
-          <p style={{ opacity: 0.9 }}>
-            You’re not a member of this pool yet.
-          </p>
-          <button
-            onClick={joinPool}
-            style={{
-              marginTop: 10,
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 900,
-            }}
-          >
-            Join pool
-          </button>
-        </div>
-      ) : null}
-
-      <div
-        style={{
-          marginTop: 18,
-          display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          gap: 18,
-        }}
-      >
-        {/* Team list */}
-        <section
+      {locked && (
+        <div
           style={{
-            border: "1px solid #ddd",
-            borderRadius: 12,
-            padding: 14,
+            marginTop: 12,
+            padding: 10,
+            background: "#fff3cd",
+            border: "1px solid #ffeeba",
+            borderRadius: 8,
+            fontWeight: 900,
           }}
         >
-          <div style={{ fontWeight: 900, marginBottom: 10 }}>Teams</div>
+          Draft Locked 🔒
+        </div>
+      )}
 
-          <div style={{ display: "grid", gap: 8 }}>
-            {sortedTeams.map((t) => {
-              const checked = selected.has(t.id);
-              return (
-                <label
-                  key={t.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    padding: "10px 10px",
-                    border: "1px solid #eee",
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    userSelect: "none",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleTeam(t.id)}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 800 }}>{t.name}</div>
-                      <div style={{ fontSize: 12, opacity: 0.75 }}>
-                        Seed {t.seed}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ fontWeight: 900 }}>
-                    {formatMoney(t.cost)}
-                  </div>
-                </label>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Sidebar */}
-        <aside
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 12,
-            padding: 14,
-            height: "fit-content",
-            position: "sticky",
-            top: 16,
-          }}
-        >
-          <div style={{ fontWeight: 900, marginBottom: 10 }}>Summary</div>
-
-          <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Total cost</span>
-              <b>{totalCost}</b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Remaining</span>
-              <b>{remaining}</b>
-            </div>
-
-            <hr style={{ border: "none", borderTop: "1px solid #eee" }} />
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1-seeds</span>
-              <b>
-                {count1}/{MAX_1}
-              </b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>2-seeds</span>
-              <b>
-                {count2}/{MAX_2}
-              </b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1+2 combined</span>
-              <b>
-                {count12}/{MAX_12}
-              </b>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 14 }}>
-            <div
-              style={{
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid #eee",
-                background: isValid ? "#f6fff7" : "#fff6f6",
-                fontWeight: 900,
-              }}
-            >
-              {isValid ? "Draft is valid ✅" : "Draft invalid ❌"}
-            </div>
-          </div>
-
-          <button
-            onClick={savePicks}
-            disabled={saving || !isMember || !isValid}
+      <div style={{ marginTop: 20, display: "grid", gap: 8 }}>
+        {sortedTeams.map((t) => (
+          <label
+            key={t.id}
             style={{
-              marginTop: 12,
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "none",
-              cursor: saving ? "not-allowed" : "pointer",
-              fontWeight: 900,
-              opacity: saving || !isMember || !isValid ? 0.6 : 1,
+              display: "flex",
+              justifyContent: "space-between",
+              padding: 8,
+              border: "1px solid #eee",
+              borderRadius: 8,
+              cursor: locked ? "not-allowed" : "pointer",
             }}
           >
-            {saving ? "Saving…" : "Save picks"}
-          </button>
-
-          {msg ? (
-            <p style={{ marginTop: 12, fontSize: 14, whiteSpace: "pre-wrap" }}>
-              {msg}
-            </p>
-          ) : null}
-        </aside>
+            <div>
+              <input
+                type="checkbox"
+                checked={selected.has(t.id)}
+                disabled={locked}
+                onChange={() => toggleTeam(t.id)}
+              />
+              <span style={{ marginLeft: 8 }}>
+                {t.name} (Seed {t.seed})
+              </span>
+            </div>
+            <b>{t.cost}</b>
+          </label>
+        ))}
       </div>
+
+      <div style={{ marginTop: 20 }}>
+        <div>Total: {totalCost}</div>
+        <div>Remaining: {remaining}</div>
+        <div>1 Seeds: {count1}/{MAX_1}</div>
+        <div>2 Seeds: {count2}/{MAX_2}</div>
+        <div>1+2 Combined: {count12}/{MAX_12}</div>
+
+        <button
+          onClick={savePicks}
+          disabled={!isValid || saving || locked}
+          style={{
+            marginTop: 12,
+            padding: "10px 14px",
+            borderRadius: 8,
+            fontWeight: 900,
+          }}
+        >
+          {saving ? "Saving…" : "Save Picks"}
+        </button>
+      </div>
+
+      {msg && <p style={{ marginTop: 12 }}>{msg}</p>}
     </main>
   );
 }
