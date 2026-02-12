@@ -7,16 +7,19 @@ export default function AuthStatus() {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? null);
-    });
+  const load = async () => {
+    const { data } = await supabase.auth.getSession();
+    setEmail(data.session?.user?.email ?? null);
+  };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email ?? null);
-    });
+  load();
 
-    return () => sub.subscription.unsubscribe();
-  }, []);
+  const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    setEmail(session?.user?.email ?? null);
+  });
+
+  return () => sub.subscription.unsubscribe();
+}, []);
 
   async function signOut() {
     await supabase.auth.signOut();
