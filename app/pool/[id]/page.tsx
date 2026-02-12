@@ -138,41 +138,41 @@ export default function PoolPage() {
         ) : null}
       </div>
 
-      <div style={{ marginTop: 24 }}>
-        {isMember ? (
-          <a
-            href={`/pool/${poolId}/draft`}
-            style={{
-              display: "inline-block",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid #ccc",
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Go to Draft
-          <a
-  href={`/pool/${poolId}/leaderboard`}
-  style={{
-    display: "inline-block",
-    padding: "12px 14px",
-    borderRadius: 10,
-    border: "1px solid #ccc",
-    textDecoration: "none",
-    fontWeight: 900,
-    marginLeft: 10,
-  }}
->
-  Leaderboard
-</a>
+<div style={{ marginTop: 24 }}>
+  {isMember ? (
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      <a
+        href={`/pool/${poolId}/draft`}
+        style={{
+          display: "inline-block",
+          padding: "12px 14px",
+          borderRadius: 10,
+          border: "1px solid #ccc",
+          textDecoration: "none",
+          fontWeight: 900,
+        }}
+      >
+        Go to Draft
+      </a>
 
-        ) : (
-          <p style={{ opacity: 0.85 }}>
-            Join the pool to draft your teams.
-          </p>
-        )}
-      </div>
+      <a
+        href={`/pool/${poolId}/leaderboard`}
+        style={{
+          display: "inline-block",
+          padding: "12px 14px",
+          borderRadius: 10,
+          border: "1px solid #ccc",
+          textDecoration: "none",
+          fontWeight: 900,
+        }}
+      >
+        Leaderboard
+      </a>
+    </div>
+  ) : (
+    <p style={{ opacity: 0.85 }}>Join the pool to draft your teams.</p>
+  )}
+</div>
 
       {msg ? <p style={{ marginTop: 14 }}>{msg}</p> : null}
     </main>
