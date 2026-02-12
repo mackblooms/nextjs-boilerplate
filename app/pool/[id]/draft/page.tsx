@@ -1,4 +1,3 @@
-const [locked, setLocked] = useState(false);
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -35,6 +34,8 @@ export default function DraftPage() {
   const [isMember, setIsMember] = useState<boolean | null>(null);
 
   const [saving, setSaving] = useState(false);
+
+  const [locked, setLocked] = useState(false);
 
   // Derived stats
   const selectedTeams = useMemo(() => {
