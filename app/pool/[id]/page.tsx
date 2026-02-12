@@ -152,7 +152,21 @@ export default function PoolPage() {
             }}
           >
             Go to Draft
-          </a>
+          <a
+  href={`/pool/${poolId}/leaderboard`}
+  style={{
+    display: "inline-block",
+    padding: "12px 14px",
+    borderRadius: 10,
+    border: "1px solid #ccc",
+    textDecoration: "none",
+    fontWeight: 900,
+    marginLeft: 10,
+  }}
+>
+  Leaderboard
+</a>
+
         ) : (
           <p style={{ opacity: 0.85 }}>
             Join the pool to draft your teams.
