@@ -16,9 +16,10 @@ export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
 
-  const [loading, setLoading] = useState(true);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [msg, setMsg] = useState("");
+const [loading, setLoading] = useState(true);
+const [rows, setRows] = useState<Row[]>([]);
+const [msg, setMsg] = useState("");
+const [myUserId, setMyUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -31,6 +32,7 @@ export default function LeaderboardPage() {
         setLoading(false);
         return;
       }
+      setMyUserId(authData.user.id);
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
@@ -112,24 +114,26 @@ export default function LeaderboardPage() {
 
           {rows.map((r) => (
             <div
-              key={r.entry_id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "80px 1fr 140px",
-                padding: "10px 12px",
-                borderBottom: "1px solid #f1f1f1",
-                alignItems: "center",
-              }}
-            >
+  key={r.entry_id}
+  style={{
+    display: "grid",
+    gridTemplateColumns: "80px 1fr 140px",
+    padding: "10px 12px",
+    borderBottom: "1px solid #f1f1f1",
+    alignItems: "center",
+    background: r.user_id === myUserId ? "#f0f8ff" : "transparent",
+  }}
+>
               <div style={{ fontWeight: 900 }}>{r.rank}</div>
               <div style={{ fontWeight: 800 }}>
               <div>
-  <a
-    href={`/pool/${poolId}/picks/${r.entry_id}`}
-    style={{ fontWeight: 800, textDecoration: "none" }}
-  >
-    {r.display_name ?? r.user_id.slice(0, 8)}
-  </a>
+<a
+  href={`/pool/${poolId}/picks/${r.entry_id}`}
+  style={{ fontWeight: 800, textDecoration: "none" }}
+>
+  {r.display_name ?? r.user_id.slice(0, 8)}
+  {r.user_id === myUserId ? " (You)" : ""}
+</a>
 </div>
               </div>
               <div style={{ textAlign: "right", fontWeight: 900 }}>
