@@ -140,49 +140,62 @@ export default function PoolPage() {
 
 <div style={{ marginTop: 24 }}>
   {isMember ? (
-    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-      <a
-        href={`/pool/${poolId}/draft`}
-        style={{
-          display: "inline-block",
-          padding: "12px 14px",
-          borderRadius: 10,
-          border: "1px solid #ccc",
-          textDecoration: "none",
-          fontWeight: 900,
-        }}
-      >
-        Go to Draft
-      </a>
+<div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+  <a
+    href={`/pool/${poolId}/draft`}
+    style={{
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      textDecoration: "none",
+      fontWeight: 900,
+    }}
+  >
+    Go to Draft
+  </a>
 
-      <a
-        href={`/pool/${poolId}/leaderboard`}
-        style={{
-          display: "inline-block",
-          padding: "12px 14px",
-          borderRadius: 10,
-          border: "1px solid #ccc",
-          textDecoration: "none",
-          fontWeight: 900,
-        }}
-      >
-        Leaderboard
-      </a>
+  {/* ✅ ADD THIS BLOCK RIGHT HERE */}
+  <a
+    href={`/pool/${poolId}/bracket`}
+    style={{
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      textDecoration: "none",
+      fontWeight: 900,
+    }}
+  >
+    Bracket
+  </a>
 
-      <a
-        href={`/pool/${poolId}/admin`}
-        style={{
-          display: "inline-block",
-          padding: "12px 14px",
-          borderRadius: 10,
-          border: "1px solid #ccc",
-          textDecoration: "none",
-          fontWeight: 900,
-        }}
-      >
-        Admin
-      </a>
-    </div>
+  <a
+    href={`/pool/${poolId}/leaderboard`}
+    style={{
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      textDecoration: "none",
+      fontWeight: 900,
+    }}
+  >
+    Leaderboard
+  </a>
+
+  {isCreator ? (
+    <a
+      href={`/pool/${poolId}/admin`}
+      style={{
+        padding: "12px 14px",
+        borderRadius: 10,
+        border: "1px solid #ccc",
+        textDecoration: "none",
+        fontWeight: 900,
+      }}
+    >
+      Admin
+    </a>
+  ) : null}
+</div>
   ) : (
     <p style={{ opacity: 0.85 }}>Join the pool to draft your teams.</p>
   )}
