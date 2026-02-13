@@ -112,7 +112,7 @@ export default function AdminPage() {
     load();
   }, [poolId]);
 
-  async function setWinner(gameId: string, winnerTeamId: string) {
+  async function setWinner(gameId: string, winnerTeamId: string | null) {
     setMsg("");
 
     const { error } = await supabase.rpc("set_game_winner", {
@@ -231,7 +231,7 @@ export default function AdminPage() {
 
                   <select
                     value={g.winner_team_id ?? ""}
-                    onChange={(e) => setWinner(g.id, e.target.value)}
+                    onChange={(e) => setWinner(g.id, e.target.value || null)}
                     style={{ marginTop: 10, padding: "6px 8px", borderRadius: 8, width: "100%" }}
                   >
                     <option value="">-- Select Winner --</option>
