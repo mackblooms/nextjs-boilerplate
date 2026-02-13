@@ -61,19 +61,53 @@ export default function BracketPage() {
     return m;
   }, [teams]);
 
-  const gamesByRegion = useMemo(() => {
-    const out: Record<string, Game[]> = {};
-    for (const r of REGIONS) out[r] = [];
-    for (const g of games) {
-      if (g.round !== "R64") continue;
-      if (!g.region) continue;
-      if (out[g.region]) out[g.region].push(g);
+const r64ByRegion = useMemo(() => {
+  const out: Record<string, Game[]> = {};
+  for (const r of REGIONS) out[r] = [];
+  for (const g of games) {
+    if (g.round === "R64" && g.region && out[g.region]) {
+      out[g.region].push(g);
     }
-    for (const r of REGIONS) {
-      out[r].sort((a, b) => a.slot - b.slot);
+  }
+  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
+  return out;
+}, [games]);
+
+const r32ByRegion = useMemo(() => {
+  const out: Record<string, Game[]> = {};
+  for (const r of REGIONS) out[r] = [];
+  for (const g of games) {
+    if (g.round === "R32" && g.region && out[g.region]) {
+      out[g.region].push(g);
     }
-    return out;
-  }, [games]);
+  }
+  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
+  return out;
+}, [games]);
+
+const s16ByRegion = useMemo(() => {
+  const out: Record<string, Game[]> = {};
+  for (const r of REGIONS) out[r] = [];
+  for (const g of games) {
+    if (g.round === "S16" && g.region && out[g.region]) {
+      out[g.region].push(g);
+    }
+  }
+  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
+  return out;
+}, [games]);
+
+const e8ByRegion = useMemo(() => {
+  const out: Record<string, Game[]> = {};
+  for (const r of REGIONS) out[r] = [];
+  for (const g of games) {
+    if (g.round === "E8" && g.region && out[g.region]) {
+      out[g.region].push(g);
+    }
+  }
+  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
+  return out;
+}, [games]);
 
   useEffect(() => {
     const load = async () => {
@@ -291,30 +325,53 @@ export default function BracketPage() {
           >
             <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
 
-            <div style={{ display: "grid", gap: 10 }}>
-              {(gamesByRegion[region] ?? []).map((g) => {
-                const pair = SLOT_SEED_PAIR[g.slot];
-                return (
-                  <div
-                    key={g.id}
-                    style={{
-                      border: "1px solid #eee",
-                      borderRadius: 12,
-                      padding: 10,
-                    }}
-                  >
-                    <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-                      Game {g.slot} • Seeds {pair?.[0]} vs {pair?.[1]}
-                    </div>
+<div style={{ display: "grid", gap: 14 }}>
 
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {renderTeam(g.team1_id, g.winner_team_id)}
-                      {renderTeam(g.team2_id, g.winner_team_id)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+  {/* R64 */}
+  <div>
+    <div style={{ fontWeight: 900, marginBottom: 6 }}>Round of 64</div>
+    {(r64ByRegion[region] ?? []).map((g) => (
+      <div key={g.id} style={{ marginBottom: 6 }}>
+        {renderTeam(g.team1_id, g.winner_team_id)}
+        {renderTeam(g.team2_id, g.winner_team_id)}
+      </div>
+    ))}
+  </div>
+
+  {/* R32 */}
+  <div>
+    <div style={{ fontWeight: 900, marginBottom: 6 }}>Round of 32</div>
+    {(r32ByRegion[region] ?? []).map((g) => (
+      <div key={g.id} style={{ marginBottom: 6 }}>
+        {renderTeam(g.team1_id, g.winner_team_id)}
+        {renderTeam(g.team2_id, g.winner_team_id)}
+      </div>
+    ))}
+  </div>
+
+  {/* Sweet 16 */}
+  <div>
+    <div style={{ fontWeight: 900, marginBottom: 6 }}>Sweet 16</div>
+    {(s16ByRegion[region] ?? []).map((g) => (
+      <div key={g.id} style={{ marginBottom: 6 }}>
+        {renderTeam(g.team1_id, g.winner_team_id)}
+        {renderTeam(g.team2_id, g.winner_team_id)}
+      </div>
+    ))}
+  </div>
+
+  {/* Elite 8 */}
+  <div>
+    <div style={{ fontWeight: 900, marginBottom: 6 }}>Elite 8</div>
+    {(e8ByRegion[region] ?? []).map((g) => (
+      <div key={g.id} style={{ marginBottom: 6 }}>
+        {renderTeam(g.team1_id, g.winner_team_id)}
+        {renderTeam(g.team2_id, g.winner_team_id)}
+      </div>
+    ))}
+  </div>
+
+</div>
           </section>
         ))}
       </div>
