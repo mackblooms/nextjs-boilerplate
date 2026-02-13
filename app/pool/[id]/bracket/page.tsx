@@ -109,6 +109,16 @@ const e8ByRegion = useMemo(() => {
   return out;
 }, [games]);
 
+const finalFour = useMemo(() => {
+  return games
+    .filter((g) => g.round === "F4")
+    .sort((a, b) => a.slot - b.slot);
+}, [games]);
+
+const championship = useMemo(() => {
+  return games.find((g) => g.round === "CHIP");
+}, [games]);
+  
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -375,6 +385,44 @@ const e8ByRegion = useMemo(() => {
           </section>
         ))}
       </div>
+      {/* Final Four */}
+<div style={{ marginTop: 30 }}>
+  <h2 style={{ fontSize: 22, fontWeight: 900 }}>Final Four</h2>
+
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+    {finalFour.map((g) => (
+      <div
+        key={g.id}
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        {renderTeam(g.team1_id, g.winner_team_id)}
+        {renderTeam(g.team2_id, g.winner_team_id)}
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* Championship */}
+<div style={{ marginTop: 30 }}>
+  <h2 style={{ fontSize: 22, fontWeight: 900 }}>National Championship</h2>
+
+  {championship ? (
+    <div
+      style={{
+        border: "2px solid gold",
+        borderRadius: 12,
+        padding: 12,
+      }}
+    >
+      {renderTeam(championship.team1_id, championship.winner_team_id)}
+      {renderTeam(championship.team2_id, championship.winner_team_id)}
+    </div>
+  ) : null}
+</div>
     </main>
   );
 }
