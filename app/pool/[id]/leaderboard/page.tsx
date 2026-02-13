@@ -131,6 +131,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
   href={`/pool/${poolId}/picks/${r.entry_id}`}
   style={{ fontWeight: 800, textDecoration: "none" }}
 >
+  {r.rank === 1 ? "🏆 " : ""}
   {r.display_name ?? r.user_id.slice(0, 8)}
   {r.user_id === myUserId ? " (You)" : ""}
 </a>
