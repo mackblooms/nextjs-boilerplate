@@ -74,27 +74,21 @@ export default function AdminPage() {
     load();
   }, [poolId]);
 
-  async function updateRound(teamId: string, round: string) {
-    setMsg("");
+async function updateWinner(gameId: string, teamId: string) {
+  const { error } = await supabase.rpc("set_game_winner", {
+    p_pool_id: poolId,
+    p_game_id: gameId,
+    p_winner_team_id: teamId,
+  });
 
-    const { error } = await supabase.rpc("update_team_round", {
-      p_pool_id: poolId,
-      p_team_id: teamId,
-      p_round_reached: round,
-    });
-
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
-
-    setRows((prev) =>
-      prev.map((r) =>
-        r.team_id === teamId ? { ...r, round_reached: round } : r
-      )
-    );
+  if (error) {
+    setMsg(error.message);
+    return;
   }
 
+  setMsg("Winner updated.");
+}
+  
   return (
     <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
       <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
