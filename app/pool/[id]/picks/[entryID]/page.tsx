@@ -14,9 +14,30 @@ type PickRow = {
 };
 
 export default function PicksPage() {
-  const params = useParams<{ id: string; entryId: string }>();
-  const poolId = params.id;
-  const entryId = params.entryId;
+  const params = useParams() as any;
+
+const poolId = params.id as string | undefined;
+
+// supports [entryId] OR [entryid] OR [entryID]
+const entryId =
+  (params.entryId as string | undefined) ??
+  (params.entryid as string | undefined) ??
+  (params.entryID as string | undefined);
+
+  if (!poolId || !entryId) {
+  return (
+    <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Player Picks</h1>
+      <p style={{ marginTop: 12 }}>
+        Missing poolId or entryId in the URL. This usually means the folder name
+        for the route doesn’t match the param name (e.g., [entryId] vs [entryid]).
+      </p>
+      <p style={{ marginTop: 12, opacity: 0.85 }}>
+        Current URL should look like: /pool/&lt;poolId&gt;/picks/&lt;entryId&gt;
+      </p>
+    </main>
+  );
+}
 
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
