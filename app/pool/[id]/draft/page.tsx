@@ -31,6 +31,7 @@ export default function DraftPage() {
   const [saving, setSaving] = useState(false);
 
   const [locked, setLocked] = useState(false);
+  const [lockTime, setLockTime] = useState<string | null>(null);
 
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
@@ -96,12 +97,13 @@ export default function DraftPage() {
         return;
       }
 
-      if (poolRow?.lock_time) {
-        const lock = new Date(poolRow.lock_time);
-        setLocked(new Date() > lock);
-      } else {
-        setLocked(false);
-      }
+if (poolRow?.lock_time) {
+  setLockTime(poolRow.lock_time);
+  const lock = new Date(poolRow.lock_time);
+  setLocked(new Date() > lock);
+} else {
+  setLocked(false);
+}
 
       // Membership
       const { data: mem, error: memErr } = await supabase
@@ -509,6 +511,12 @@ export default function DraftPage() {
                 Draft Locked 🔒
               </div>
             ) : null}
+
+            {lockTime && (
+  <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
+    Locks: {new Date(lockTime).toLocaleString()}
+  </div>
+)}
           </div>
 
           <button
