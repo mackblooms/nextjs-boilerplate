@@ -1,32 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
-type TeamRow = {
-  team_id: string;
+type Team = {
+  id: string;
   name: string;
-  seed: number;
-  round_reached: string;
+  seed_in_region: number | null;
+  region: string | null;
 };
 
-const ROUNDS = ["R64", "R32", "S16", "E8", "F4", "CHIP", "WIN"];
+type GameRow = {
+  id: string;
+  round: string;
+  region: string | null;
+  slot: number;
+  team1_id: string | null;
+  team2_id: string | null;
+  winner_team_id: string | null;
+};
+
+const REGIONS = ["East", "West", "South", "Midwest"] as const;
 
 export default function AdminPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
 
-  const [rows, setRows] = useState<TeamRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+
+  const [games, setGames] = useState<GameRow[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  const teamById = useMemo(() => {
+    const m = new Map<string, Team>();
+    for (const t of teams) m.set(t.id, t);
+    return m;
+  }, [teams]);
+
+  const r64ByRegion = useMemo(() => {
+    const out: Record<string, GameRow[]> = { East: [], West: [], South: [], Midwest: [] };
+    for (const g of games) {
+      if (g.round !== "R64" || !g.region) continue;
+      if (out[g.region]) out[g.region].push(g);
+    }
+    for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
+    return out;
+  }, [games]);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setMsg("");
 
-      // Auth check
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
 
@@ -55,107 +82,168 @@ export default function AdminPage() {
         return;
       }
 
-      // Load teams (from view)
-      const { data, error } = await supabase
-        .from("team_scores")
-        .select("team_id,name,seed,round_reached")
-        .order("seed", { ascending: true });
+      // Load teams
+      const { data: teamRows, error: teamErr } = await supabase
+        .from("teams")
+        .select("id,name,region,seed_in_region");
 
-      if (error) {
-        setMsg(error.message);
+      if (teamErr) {
+        setMsg(teamErr.message);
         setLoading(false);
         return;
       }
+      setTeams((teamRows ?? []) as Team[]);
 
-      setRows((data ?? []) as TeamRow[]);
+      // Load games
+      const { data: gameRows, error: gameErr } = await supabase
+        .from("games")
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+
+      if (gameErr) {
+        setMsg(gameErr.message);
+        setLoading(false);
+        return;
+      }
+      setGames((gameRows ?? []) as GameRow[]);
+
       setLoading(false);
     };
 
     load();
   }, [poolId]);
 
-async function updateWinner(gameId: string, teamId: string) {
-  const { error } = await supabase.rpc("set_game_winner", {
-    p_pool_id: poolId,
-    p_game_id: gameId,
-    p_winner_team_id: teamId,
-  });
+  async function setWinner(gameId: string, winnerTeamId: string) {
+    setMsg("");
 
-  if (error) {
-    setMsg(error.message);
-    return;
+    const { error } = await supabase.rpc("set_game_winner", {
+      p_pool_id: poolId,
+      p_game_id: gameId,
+      p_winner_team_id: winnerTeamId,
+    });
+
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+
+    // Optimistically update local state (so page updates immediately)
+    setGames((prev) =>
+      prev.map((g) => (g.id === gameId ? { ...g, winner_team_id: winnerTeamId } : g))
+    );
+
+    setMsg("Winner updated.");
   }
 
-  setMsg("Winner updated.");
-}
-  
+  function teamLabel(teamId: string | null) {
+    if (!teamId) return "TBD";
+    const t = teamById.get(teamId);
+    if (!t) return "Unknown";
+    const seed = t.seed_in_region ?? "";
+    const region = t.region ?? "";
+    return `${t.name} ${seed ? `(Seed ${seed})` : ""}${region ? ` – ${region}` : ""}`;
+  }
+
+  if (loading) {
+    return (
+      <main style={{ maxWidth: 1100, margin: "48px auto", padding: 16 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
+        <p style={{ marginTop: 12 }}>Loading…</p>
+      </main>
+    );
+  }
+
   return (
-    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
-
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-        <a
-          href={`/pool/${poolId}`}
-          style={{
-            padding: "10px 12px",
-            border: "1px solid #ccc",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 900,
-          }}
-        >
-          Back to Pool
-        </a>
-
-        <a
-          href={`/pool/${poolId}/leaderboard`}
-          style={{
-            padding: "10px 12px",
-            border: "1px solid #ccc",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 900,
-          }}
-        >
-          View Leaderboard
-        </a>
+    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
+        <div style={{ display: "flex", gap: 10 }}>
+          <a
+            href={`/pool/${poolId}`}
+            style={{
+              padding: "10px 12px",
+              border: "1px solid #ccc",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            Back to Pool
+          </a>
+          <a
+            href={`/pool/${poolId}/bracket`}
+            style={{
+              padding: "10px 12px",
+              border: "1px solid #ccc",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            Bracket
+          </a>
+        </div>
       </div>
 
-      {loading ? <p style={{ marginTop: 16 }}>Loading…</p> : null}
-      {msg ? <p style={{ marginTop: 16 }}>{msg}</p> : null}
+      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
-      {!loading && !msg ? (
-        <div style={{ marginTop: 20, display: "grid", gap: 8 }}>
-          {rows.map((r) => (
-            <div
-              key={r.team_id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "60px 1fr 180px",
-                gap: 12,
-                alignItems: "center",
-                padding: "8px 10px",
-                border: "1px solid #eee",
-                borderRadius: 10,
-              }}
-            >
-              <div style={{ fontWeight: 900 }}>{r.seed}</div>
-              <div style={{ fontWeight: 800 }}>{r.name}</div>
-              <select
-                value={r.round_reached}
-                onChange={(e) => updateRound(r.team_id, e.target.value)}
-                style={{ padding: "6px 8px", borderRadius: 6 }}
-              >
-                {ROUNDS.map((round) => (
-                  <option key={round} value={round}>
-                    {round}
-                  </option>
-                ))}
-              </select>
+      <p style={{ marginTop: 12, opacity: 0.8 }}>
+        Set winners for Round of 64 games. Winners will auto-advance to the next round.
+      </p>
+
+      <div
+        style={{
+          marginTop: 18,
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 14,
+        }}
+      >
+        {REGIONS.map((region) => (
+          <section
+            key={region}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 12,
+              padding: 12,
+              minWidth: 0,
+            }}
+          >
+            <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              {(r64ByRegion[region] ?? []).map((g) => (
+                <div
+                  key={g.id}
+                  style={{
+                    border: "1px solid #eee",
+                    borderRadius: 12,
+                    padding: 10,
+                  }}
+                >
+                  <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+                    Game {g.slot}
+                  </div>
+
+                  <div style={{ display: "grid", gap: 8 }}>
+                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team1_id)}</div>
+                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team2_id)}</div>
+                  </div>
+
+                  <select
+                    value={g.winner_team_id ?? ""}
+                    onChange={(e) => setWinner(g.id, e.target.value)}
+                    style={{ marginTop: 10, padding: "6px 8px", borderRadius: 8, width: "100%" }}
+                  >
+                    <option value="">-- Select Winner --</option>
+                    {g.team1_id ? <option value={g.team1_id}>{teamLabel(g.team1_id)}</option> : null}
+                    {g.team2_id ? <option value={g.team2_id}>{teamLabel(g.team2_id)}</option> : null}
+                  </select>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ) : null}
+          </section>
+        ))}
+      </div>
     </main>
   );
 }
