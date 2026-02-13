@@ -134,6 +134,33 @@ export default function AdminPage() {
     setMsg("Winner updated.");
   }
 
+  async function syncLogos() {
+  setMsg("");
+
+  const { data: authData } = await supabase.auth.getUser();
+  const userId = authData.user?.id;
+
+  if (!userId) {
+    setMsg("Not logged in.");
+    return;
+  }
+
+  const res = await fetch("/api/admin/sync-logos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ poolId, userId }),
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    setMsg(json.error ?? "Logo sync failed.");
+    return;
+  }
+
+  setMsg(`Logos updated: ${json.updated}. Missing: ${json.missing?.length ?? 0}`);
+}
+
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
@@ -167,6 +194,21 @@ export default function AdminPage() {
               fontWeight: 900,
             }}
           >
+
+            <button
+  onClick={syncLogos}
+  style={{
+    padding: "10px 12px",
+    border: "1px solid #ccc",
+    borderRadius: 10,
+    fontWeight: 900,
+    background: "white",
+    cursor: "pointer",
+  }}
+>
+  Sync Logos
+</button>
+            
             Back to Pool
           </a>
           <a
