@@ -80,6 +80,18 @@ const overrides: Record<string, string> = {
   // name mismatches
   "connecticut": "uconn",
   "michigan state": "michigan st",
+
+  // Miami (Ohio) variations
+  "miami (oh)": "miami (oh)",
+  "miami ohio": "miami (oh)",
+  "miami oh": "miami (oh)",
+
+  // North Dakota State variations
+  "north dakota st": "north dakota st",
+  "north dakota state": "north dakota st",
+  "ndsu": "north dakota st",
+
+  // other "State" -> "St" style mismatches
   "portland state": "portland st",
   "wright state": "wright st",
 
@@ -88,16 +100,6 @@ const overrides: Record<string, string> = {
   "texas/san diego state": "",
   "njit/morgan state": "",
   "long island/b-cu": "",
-
-  // Miami (Ohio) variations
-"miami (oh)": "miami (oh)",
-"miami ohio": "miami (oh)",
-"miami oh": "miami (oh)",
-
-// North Dakota State variations
-"north dakota st": "north dakota st",
-"north dakota state": "north dakota st",
-"ndsu": "north dakota st",
 };
     let updated = 0;
     let missing: string[] = [];
