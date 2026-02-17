@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import { useSearchParams } from "next/navigation";
 
 type Team = {
   id: string;
@@ -55,6 +56,9 @@ export default function BracketPage() {
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
 
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(new Set());
+
+  const searchParams = useSearchParams();
+  const entryId = searchParams.get("entry");
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -174,13 +178,18 @@ const championship = useMemo(() => {
       setPlayers(opts);
 
       // Default: select first player (or none)
-      setSelectedEntryId(opts[0]?.entry_id ?? "");
+      // If URL has ?entry=, use that player. Otherwise default to first.
+if (entryId) {
+  setSelectedEntryId(entryId);
+} else {
+  setSelectedEntryId(opts[0]?.entry_id ?? "");
+}
 
       setLoading(false);
     };
 
     load();
-  }, [poolId]);
+  }, [poolId, entryId]);
 
   // Load highlighted teams whenever selectedEntryId changes
   useEffect(() => {
