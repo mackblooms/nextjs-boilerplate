@@ -130,7 +130,7 @@ if (!hit && lookupKey.includes(" oh")) {
 }
 
 if (!hit) {
-  missing.push(raw);
+  missing.push(`${raw} (key=${lookupKey})`);
   continue;
 }
 
