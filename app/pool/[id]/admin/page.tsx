@@ -211,6 +211,24 @@ export default function AdminPage() {
             
             Back to Pool
           </a>
+            <button
+    type="button"
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      syncLogos();
+    }}
+    style={{
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      fontWeight: 900,
+      background: "white",
+      cursor: "pointer",
+    }}
+  >
+    Sync Logos
+  </button>
           <a
             href={`/pool/${poolId}/bracket`}
             style={{
