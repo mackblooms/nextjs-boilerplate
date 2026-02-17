@@ -137,18 +137,39 @@ export default function AdminPage() {
 async function syncLogos() {
   setMsg("Syncing logos...");
 
-  const res = await fetch("/api/admin/sync-logos", {
-    method: "POST",
-  });
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  const userId = authData?.user?.id;
 
-  const json = await res.json();
+  if (authErr || !userId) {
+    setMsg("Not logged in (could not read user).");
+    return;
+  }
 
-  setMsg(
-    `Logos updated: ${json.updated}. Missing: ${json.missing?.length ?? 0}` +
-      (json.missing?.length ? ` | Missing teams: ${json.missing.join(", ")}` : "")
-  );
-}
-  
+  try {
+    const res = await fetch("/api/admin/sync-logos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ poolId, userId }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      setMsg(`Sync failed: ${json.error ?? "Unknown error"}`);
+      return;
+    }
+
+    const updated = json.updated ?? 0;
+    const missing = Array.isArray(json.missing) ? json.missing : [];
+
+    setMsg(
+      `Logos updated: ${updated}. Missing: ${missing.length}` +
+        (missing.length ? ` | Missing teams: ${missing.join(", ")}` : "")
+    );
+  } catch (e: any) {
+    setMsg(`Sync failed: ${e?.message ?? "Unknown error"}`);
+  }
+}  
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
