@@ -76,23 +76,21 @@ export async function POST(req: Request) {
     }
 
     // Manual overrides for annoying names (add more as you encounter)
-    const overrides: Record<string, string> = {
-      "st johns": "st johns",
-      "st john's": "st johns",
-      "hawaii": "hawaii rainbow warriors",
-      "miami oh": "miami (oh)",
-      "saint mary's": "saint marys",
-      "saint marys": "saint marys",
-      "ucf": "ucf knights",
-      "usf": "south florida",
-      "smu": "smu mustangs",
-      // play-in placeholders (skip)
-      "miami/new mexico": "",
-      "texas/san diego state": "",
-      "njit/morgan state": "",
-      "long island/b-cu": "",
-    };
+const overrides: Record<string, string> = {
+  // name mismatches
+  "connecticut": "uconn",
+  "michigan state": "michigan st",
+  "miami oh": "miami (oh)",
+  "north dakota state": "north dakota st",
+  "portland state": "portland st",
+  "wright state": "wright st",
 
+  // play-in placeholders (skip for now)
+  "miami/new mexico": "",
+  "texas/san diego state": "",
+  "njit/morgan state": "",
+  "long island/b-cu": "",
+};
     let updated = 0;
     let missing: string[] = [];
 
@@ -109,11 +107,17 @@ export async function POST(req: Request) {
 
       const lookupKey = ov ? normName(ov) : n;
 
-      const hit = map.get(lookupKey);
-      if (!hit) {
-        missing.push(raw);
-        continue;
-      }
+let hit = map.get(lookupKey);
+
+// fallback: "state" -> "st" (common ESPN naming)
+if (!hit && lookupKey.includes(" state")) {
+  hit = map.get(lookupKey.replace(" state", " st"));
+}
+
+if (!hit) {
+  missing.push(raw);
+  continue;
+}
 
       const { error: updErr } = await supabaseAdmin
         .from("teams")
