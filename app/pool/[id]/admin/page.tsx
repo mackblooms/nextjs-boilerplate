@@ -134,33 +134,21 @@ export default function AdminPage() {
     setMsg("Winner updated.");
   }
 
-  async function syncLogos() {
-  setMsg("");
-
-  const { data: authData } = await supabase.auth.getUser();
-  const userId = authData.user?.id;
-
-  if (!userId) {
-    setMsg("Not logged in.");
-    return;
-  }
+async function syncLogos() {
+  setMsg("Syncing logos...");
 
   const res = await fetch("/api/admin/sync-logos", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ poolId, userId }),
   });
 
   const json = await res.json();
 
-  if (!res.ok) {
-    setMsg(json.error ?? "Logo sync failed.");
-    return;
-  }
-
-  setMsg(`Logos updated: ${json.updated}. Missing: ${json.missing?.length ?? 0}`);
+  setMsg(
+    `Logos updated: ${json.updated}. Missing: ${json.missing?.length ?? 0}` +
+      (json.missing?.length ? ` | Missing teams: ${json.missing.join(", ")}` : "")
+  );
 }
-
+  
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
