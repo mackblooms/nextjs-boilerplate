@@ -90,6 +90,16 @@ const overrides: Record<string, string> = {
   "texas/san diego state": "",
   "njit/morgan state": "",
   "long island/b-cu": "",
+
+  // Miami (Ohio) variations
+"miami (oh)": "miami (oh)",
+"miami ohio": "miami (oh)",
+"miami oh": "miami (oh)",
+
+// North Dakota State variations
+"north dakota st": "north dakota st",
+"north dakota state": "north dakota st",
+"ndsu": "north dakota st",
 };
     let updated = 0;
     let missing: string[] = [];
@@ -112,6 +122,11 @@ let hit = map.get(lookupKey);
 // fallback: "state" -> "st" (common ESPN naming)
 if (!hit && lookupKey.includes(" state")) {
   hit = map.get(lookupKey.replace(" state", " st"));
+}
+
+      // fallback: "(oh)" formatting differences
+if (!hit && lookupKey.includes(" oh")) {
+  hit = map.get(lookupKey.replace(" oh", " (oh)"));
 }
 
 if (!hit) {
