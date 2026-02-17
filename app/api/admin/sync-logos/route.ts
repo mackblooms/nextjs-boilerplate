@@ -80,7 +80,6 @@ const overrides: Record<string, string> = {
   // name mismatches
   "connecticut": "uconn",
   "michigan state": "michigan st",
-  "miami oh": "miami (oh)",
   "north dakota state": "north dakota st",
   "portland state": "portland st",
   "wright state": "wright st",
