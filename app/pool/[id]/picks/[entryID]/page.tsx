@@ -7,10 +7,11 @@ import { supabase } from "../../../../../lib/supabaseClient";
 type PickRow = {
   team_id: string;
   team_name: string;
-  seed: number;
-  cost: number;
-  round_reached: string;
-  total_team_score: number;
+  seed: number | null;
+  cost: number | null;
+  round_reached: string | null;
+  total_team_score: number | null;
+  logo_url: string | null;
 };
 
 export default function PicksPage() {
@@ -97,7 +98,7 @@ const entryId =
       // Get picks
       const { data: pickRows, error: picksErr } = await supabase
         .from("entry_pick_details")
-        .select("team_id,team_name,seed,cost,round_reached,total_team_score")
+        .select("team_id,team_name,seed,cost,round_reached,total_team_score,logo_url")
         .eq("entry_id", entryId);
 
       if (picksErr) {
@@ -106,7 +107,9 @@ const entryId =
         return;
       }
 
-      const sorted = (pickRows ?? []).sort((a: any, b: any) => a.seed - b.seed);
+      const sorted = (pickRows ?? []).sort(
+  (a: any, b: any) => (a.seed ?? 999) - (b.seed ?? 999)
+);
       setPicks(sorted as PickRow[]);
       setLoading(false);
     };
@@ -183,7 +186,23 @@ const entryId =
                   alignItems: "center",
                 }}
               >
-                <div style={{ fontWeight: 800 }}>{p.team_name}</div>
+                <div style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+  {p.logo_url ? (
+    <img
+      src={p.logo_url}
+      alt={p.team_name}
+      width={18}
+      height={18}
+      style={{ objectFit: "contain", flexShrink: 0 }}
+    />
+  ) : (
+    <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+  )}
+
+  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+    {p.team_name}
+  </span>
+</div>
                 <div>{p.seed}</div>
                 <div>{p.cost}</div>
                 <div>{p.round_reached}</div>
