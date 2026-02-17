@@ -9,6 +9,7 @@ type Team = {
   name: string;
   seed: number;
   cost: number;
+  logo_url?: string | null;
 };
 
 const BUDGET = 100;
@@ -124,7 +125,7 @@ if (poolRow?.lock_time) {
       // Teams
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,name,seed,cost");
+        .select("id,name,seed,cost,logo_url")
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -414,15 +415,28 @@ if (poolRow?.lock_time) {
                     opacity: locked ? 0.85 : 1,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={locked}
-                      onChange={() => toggleTeam(t.id)}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 800 }}>{t.name}</div>
+<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+  <input
+    type="checkbox"
+    checked={checked}
+    disabled={locked}
+    onChange={() => toggleTeam(t.id)}
+  />
+
+  {t.logo_url ? (
+    <img
+      src={t.logo_url}
+      alt={t.name}
+      width={20}
+      height={20}
+      style={{ objectFit: "contain", flexShrink: 0 }}
+    />
+  ) : (
+    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+  )}
+
+  <div>
+    <div style={{ fontWeight: 800 }}>{t.name}</div>
                       <div style={{ fontSize: 12, opacity: 0.75 }}>
                         Seed {t.seed}
                       </div>
