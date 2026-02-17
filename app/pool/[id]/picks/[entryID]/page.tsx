@@ -137,18 +137,7 @@ const sorted = merged.sort((a: any, b: any) => (a.seed ?? 999) - (b.seed ?? 999)
 setPicks(sorted as PickRow[]);
 setLoading(false);
       
-      if (picksErr) {
-        setMsg(picksErr.message);
-        setLoading(false);
-        return;
-      }
-
-      const sorted = (pickRows ?? []).sort(
-  (a: any, b: any) => (a.seed ?? 999) - (b.seed ?? 999)
-);
-      setPicks(sorted as PickRow[]);
-      setLoading(false);
-    };
+};
 
     load();
   }, [entryId, poolId]);
