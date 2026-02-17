@@ -11,7 +11,7 @@ type PickRow = {
   cost: number | null;
   round_reached: string | null;
   total_team_score: number | null;
-  logo_url: string | null;
+  logo_url?: string | null; // we’ll fill this in after
 };
 
 export default function PicksPage() {
@@ -96,11 +96,47 @@ const entryId =
       setDisplayName(prof?.display_name ?? "Player");
 
       // Get picks
-      const { data: pickRows, error: picksErr } = await supabase
-        .from("entry_pick_details")
-        .select("team_id,team_name,seed,cost,round_reached,total_team_score,logo_url")
-        .eq("entry_id", entryId);
+const { data: pickRows, error: picksErr } = await supabase
+  .from("entry_pick_details")
+  .select("team_id,team_name,seed,cost,round_reached,total_team_score")
+  .eq("entry_id", entryId);
 
+if (picksErr) {
+  setMsg(picksErr.message);
+  setLoading(false);
+  return;
+}
+
+// Build a unique list of team IDs from the picks
+const teamIds = Array.from(new Set((pickRows ?? []).map((p: any) => p.team_id).filter(Boolean)));
+
+// Fetch logos from teams
+let logoById = new Map<string, string | null>();
+if (teamIds.length > 0) {
+  const { data: teamRows, error: teamErr } = await supabase
+    .from("teams")
+    .select("id,logo_url")
+    .in("id", teamIds);
+
+  if (teamErr) {
+    setMsg(teamErr.message);
+    setLoading(false);
+    return;
+  }
+
+  logoById = new Map((teamRows ?? []).map((t: any) => [t.id, t.logo_url ?? null]));
+}
+
+// Merge logos onto picks
+const merged = (pickRows ?? []).map((p: any) => ({
+  ...p,
+  logo_url: logoById.get(p.team_id) ?? null,
+}));
+
+const sorted = merged.sort((a: any, b: any) => (a.seed ?? 999) - (b.seed ?? 999));
+setPicks(sorted as PickRow[]);
+setLoading(false);
+      
       if (picksErr) {
         setMsg(picksErr.message);
         setLoading(false);
@@ -186,7 +222,7 @@ const entryId =
                   alignItems: "center",
                 }}
               >
-                <div style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+<div style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
   {p.logo_url ? (
     <img
       src={p.logo_url}
@@ -203,6 +239,7 @@ const entryId =
     {p.team_name}
   </span>
 </div>
+                
                 <div>{p.seed}</div>
                 <div>{p.cost}</div>
                 <div>{p.round_reached}</div>
