@@ -321,7 +321,41 @@ function renderTeam(teamId: string | null, winnerId: string | null) {
           </a>
         </div>
       </div>
+{entryId ? (
+  <div
+    style={{
+      marginTop: 12,
+      padding: "10px 12px",
+      borderRadius: 12,
+      background: "#fff6d6",
+      border: "1px solid #f3e3a5",
+      fontWeight: 900,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 12,
+    }}
+  >
+    <div>
+      Viewing a player’s bracket (highlighting their teams)
+    </div>
 
+    <a
+      href={`/pool/${poolId}/bracket`}
+      style={{
+        fontWeight: 900,
+        textDecoration: "none",
+        border: "1px solid #d8c77b",
+        padding: "8px 10px",
+        borderRadius: 10,
+        background: "white",
+      }}
+    >
+      Clear
+    </a>
+  </div>
+) : null}
+      
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
       <div
