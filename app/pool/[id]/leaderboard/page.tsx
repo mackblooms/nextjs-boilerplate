@@ -10,6 +10,7 @@ type Row = {
   display_name: string | null;
   total_score: number;
   rank: number;
+  logo_url?: string | null;
 };
 
 export default function LeaderboardPage() {
@@ -36,7 +37,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
-        .select("entry_id,user_id,display_name,total_score,rank")
+        .select("entry_id,user_id,display_name,total_score,rank,logo_url")
         .eq("pool_id", poolId)
         .order("rank", { ascending: true });
 
@@ -126,17 +127,38 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
 >
               <div style={{ fontWeight: 900 }}>{r.rank}</div>
               <div style={{ fontWeight: 800 }}>
-              <div>
-<a
-  href={`/pool/${poolId}/picks/${r.entry_id}`}
-  style={{ fontWeight: 800, textDecoration: "none" }}
->
-  {r.rank === 1 ? "🏆 " : ""}
-  {r.display_name ?? r.user_id.slice(0, 8)}
-  {r.user_id === myUserId ? " (You)" : ""}
-</a>
+  <div>
+    <a
+      href={`/pool/${poolId}/picks/${r.entry_id}`}
+      style={{
+        fontWeight: 800,
+        textDecoration: "none",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        minWidth: 0,
+      }}
+    >
+      {r.logo_url ? (
+        <img
+          src={r.logo_url}
+          alt={r.display_name ?? "Player"}
+          width={18}
+          height={18}
+          style={{ objectFit: "contain", flexShrink: 0 }}
+        />
+      ) : (
+        <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+      )}
+
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {r.rank === 1 ? "🏆 " : ""}
+        {r.display_name ?? r.user_id.slice(0, 8)}
+        {r.user_id === myUserId ? " (You)" : ""}
+      </span>
+    </a>
+  </div>
 </div>
-              </div>
               <div style={{ textAlign: "right", fontWeight: 900 }}>
                 {r.total_score}
               </div>
