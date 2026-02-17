@@ -193,22 +193,7 @@ export default function AdminPage() {
               textDecoration: "none",
               fontWeight: 900,
             }}
-          >
-
-            <button
-  onClick={syncLogos}
-  style={{
-    padding: "10px 12px",
-    border: "1px solid #ccc",
-    borderRadius: 10,
-    fontWeight: 900,
-    background: "white",
-    cursor: "pointer",
-  }}
->
-  Sync Logos
-</button>
-            
+          > 
             Back to Pool
           </a>
             <button
