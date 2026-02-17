@@ -128,7 +128,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
               <div style={{ fontWeight: 800 }}>
   <div>
 <a
-  href={`/pool/${poolId}/picks/${r.entry_id}`}
+  href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
   style={{ fontWeight: 800, textDecoration: "none" }}
 >
   {r.rank === 1 ? "🏆 " : ""}
