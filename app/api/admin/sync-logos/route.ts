@@ -129,7 +129,16 @@ if (!hit && lookupKey.includes(" oh")) {
   hit = map.get(lookupKey.replace(" oh", " (oh)"));
 }
 
+// fallback: try a contains match (useful for ESPN having extra suffix words)
 if (!hit) {
+  for (const [k, v] of map.entries()) {
+    if (k.includes(lookupKey) || lookupKey.includes(k)) {
+      hit = v;
+      break;
+    }
+  }
+}
+      if (!hit) {
   missing.push(`${raw} (key=${lookupKey})`);
   continue;
 }
