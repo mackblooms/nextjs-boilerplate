@@ -9,6 +9,7 @@ type Team = {
   name: string;
   seed_in_region: number | null;
   region: string | null;
+  logo_url?: string | null;
 };
 
 type Game = {
@@ -134,7 +135,8 @@ const championship = useMemo(() => {
       // Teams (need region + seed_in_region)
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,name,region,seed_in_region");
+        .select("id,name,region,seed_in_region,logo_url")
+
 
       if (teamErr) {
         setMsg(teamErr.message);
