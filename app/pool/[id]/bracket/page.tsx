@@ -203,36 +203,63 @@ const championship = useMemo(() => {
     loadHighlights();
   }, [selectedEntryId]);
 
-  function renderTeam(teamId: string | null, winnerId: string | null) {
-    if (!teamId) return <span style={{ opacity: 0.6 }}>TBD</span>;
+function renderTeam(teamId: string | null, winnerId: string | null) {
+  if (!teamId) return <span style={{ opacity: 0.6 }}>TBD</span>;
 
-    const t = teamById.get(teamId);
-    const isHighlighted = highlightTeamIds.has(teamId);
-    const isWinner = winnerId === teamId;
+  const t = teamById.get(teamId);
+  const isHighlighted = highlightTeamIds.has(teamId);
+  const isWinner = winnerId === teamId;
 
-    return (
+  return (
+    <span
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 10,
+        padding: "6px 8px",
+        borderRadius: 8,
+        border: "1px solid #eee",
+        background: isHighlighted ? "#fff6d6" : "transparent",
+        fontWeight: isWinner ? 900 : 700,
+        alignItems: "center",
+      }}
+    >
+      {/* LEFT: logo + team name */}
       <span
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          gap: 10,
-          padding: "6px 8px",
-          borderRadius: 8,
-          border: "1px solid #eee",
-          background: isHighlighted ? "#fff6d6" : "transparent",
-          fontWeight: isWinner ? 900 : 700,
+          alignItems: "center",
+          gap: 8,
+          overflow: "hidden",
+          minWidth: 0,
         }}
       >
+        {t?.logo_url ? (
+          <img
+            src={t.logo_url}
+            alt={t?.name ?? "Team"}
+            width={18}
+            height={18}
+            style={{ objectFit: "contain", flexShrink: 0 }}
+          />
+        ) : (
+          // keeps alignment consistent even if logo missing
+          <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+        )}
+
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {t?.name ?? "Unknown"}
         </span>
-        <span style={{ opacity: 0.75, flexShrink: 0 }}>
-          {t?.seed_in_region ?? ""}
-        </span>
       </span>
-    );
-  }
 
+      {/* RIGHT: seed */}
+      <span style={{ opacity: 0.75, flexShrink: 0 }}>
+        {t?.seed_in_region ?? ""}
+      </span>
+    </span>
+  );
+}
+  
   if (loading) {
     return (
       <main style={{ maxWidth: 1100, margin: "48px auto", padding: 16 }}>
