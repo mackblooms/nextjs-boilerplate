@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 function normName(s: string) {
   return s
@@ -12,6 +12,8 @@ function normName(s: string) {
 }
 
 export async function POST(req: Request) {
+    const supabaseAdmin = getSupabaseAdmin();
+  
   try {
     const body = await req.json().catch(() => ({}));
     const poolId = body.poolId as string | undefined;
