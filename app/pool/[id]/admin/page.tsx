@@ -192,37 +192,67 @@ async function syncLogos() {
     <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          > 
-            Back to Pool
-          </a>
-            <button
-    type="button"
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      syncLogos();
-    }}
+<div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+  <a
+    href={`/pool/${poolId}`}
     style={{
-      padding: "12px 14px",
+      padding: "10px 12px",
+      border: "1px solid #ccc",
+      borderRadius: 10,
+      textDecoration: "none",
+      fontWeight: 900,
+    }}
+  >
+    Back to Pool
+  </a>
+
+  <button
+    onClick={syncLogos}
+    style={{
+      padding: "10px 12px",
       borderRadius: 10,
       border: "1px solid #ccc",
       fontWeight: 900,
-      background: "white",
       cursor: "pointer",
     }}
   >
     Sync Logos
   </button>
+
+  <button
+    onClick={async () => {
+      setMsg("");
+      setLoading(true);
+      try {
+        const date = "2025-MAR-28";
+        const r = await fetch("/api/admin/sync-games", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date }),
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error ?? "Sync failed");
+        setMsg(
+          `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
+        );
+      } catch (e: any) {
+        setMsg(e?.message ?? "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    }}
+    style={{
+      padding: "10px 12px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      fontWeight: 900,
+      cursor: "pointer",
+    }}
+  >
+    Sync Games (SportsDataIO)
+  </button>
+</div>
+
           <a
             href={`/pool/${poolId}/bracket`}
             style={{
