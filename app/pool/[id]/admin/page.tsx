@@ -170,6 +170,36 @@ async function syncLogos() {
     setMsg(`Sync failed: ${e?.message ?? "Unknown error"}`);
   }
 }  
+
+async function fullSync() {
+  setMsg("");
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/admin/full-sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ poolId }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(json?.error ?? "Full sync failed");
+    }
+
+    setMsg(
+      `✅ Full Sync complete | import: ${json?.import?.note ?? "ok"} | linked: ${
+        json?.link?.linked ?? "n/a"
+      } | updated winners: ${json?.scores?.updatedGames ?? "n/a"}`
+    );
+  } catch (e: any) {
+    setMsg(e?.message ?? "Unknown error");
+  } finally {
+    setLoading(false);
+  }
+}
+
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
