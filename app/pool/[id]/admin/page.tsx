@@ -251,20 +251,20 @@ async function syncLogos() {
   >
     Sync Games (SportsDataIO)
   </button>
+    <a
+    href={`/pool/${poolId}/bracket`}
+    style={{
+      padding: "10px 12px",
+      border: "1px solid #ccc",
+      borderRadius: 10,
+      textDecoration: "none",
+      fontWeight: 900,
+    }}
+  >
+    Bracket
+  </a>
 </div>
 
-          <a
-            href={`/pool/${poolId}/bracket`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Bracket
-          </a>
         </div>
       </div>
 
