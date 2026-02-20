@@ -200,6 +200,7 @@ async function fullSync() {
   }
 }
 
+
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
