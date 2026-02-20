@@ -219,6 +219,38 @@ async function syncLogos() {
     Sync Logos
   </button>
 
+  async function fullSync() {
+  setMsg("");
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/admin/full-sync", {
+      method: "POST",
+      headers: {
+        "x-admin-sync-secret": process.env.NEXT_PUBLIC_ADMIN_SYNC_SECRET ?? "",
+      },
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(json?.error ?? "Full sync failed");
+    }
+
+    const importNote = json?.import?.note ?? "import ok";
+    const linked = json?.link?.linked ?? json?.link?.linkedGames ?? "n/a";
+    const updatedGames = json?.scores?.updatedGames ?? "n/a";
+
+    setMsg(
+      `✅ Full Sync complete | import: ${importNote} | linked: ${linked} | updated winners: ${updatedGames}`
+    );
+  } catch (e: any) {
+    setMsg(e?.message ?? "Unknown error");
+  } finally {
+    setLoading(false);
+  }
+}
+
   <button
     onClick={async () => {
       setMsg("");
@@ -251,6 +283,19 @@ async function syncLogos() {
   >
     Sync Games (SportsDataIO)
   </button>
+
+  <button
+  onClick={fullSync}
+  style={{
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #ccc",
+    fontWeight: 900,
+    cursor: "pointer",
+  }}
+>
+  Full Sync (Import + Link + Scores)
+</button>
     <a
     href={`/pool/${poolId}/bracket`}
     style={{
