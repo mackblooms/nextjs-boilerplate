@@ -220,189 +220,164 @@ async function fullSync() {
   }
 
   return (
-    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
-<div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-  <a
-    href={`/pool/${poolId}`}
-    style={{
-      padding: "10px 12px",
-      border: "1px solid #ccc",
-      borderRadius: 10,
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Back to Pool
-  </a>
+  <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 12,
+        flexWrap: "wrap",
+        alignItems: "center",
+      }}
+    >
+      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
 
-  <button
-    onClick={syncLogos}
-    style={{
-      padding: "10px 12px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      fontWeight: 900,
-      cursor: "pointer",
-    }}
-  >
-    Sync Logos
-  </button>
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <a
+          href={`/pool/${poolId}`}
+          style={{
+            padding: "10px 12px",
+            border: "1px solid #ccc",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 900,
+          }}
+        >
+          Back to Pool
+        </a>
 
-  async function fullSync() {
-  setMsg("");
-  setLoading(true);
+        <button
+          onClick={syncLogos}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          Sync Logos
+        </button>
 
-  try {
-    const res = await fetch("/api/admin/full-sync", {
-      method: "POST",
-      headers: {
-        "x-admin-sync-secret": process.env.NEXT_PUBLIC_ADMIN_SYNC_SECRET ?? "",
-      },
-    });
+        <button
+          onClick={async () => {
+            setMsg("");
+            setLoading(true);
+            try {
+              const date = "2025-MAR-28";
+              const r = await fetch("/api/admin/sync-games", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date }),
+              });
+              const j = await r.json();
+              if (!r.ok) throw new Error(j?.error ?? "Sync failed");
+              setMsg(
+                `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
+              );
+            } catch (e: any) {
+              setMsg(e?.message ?? "Unknown error");
+            } finally {
+              setLoading(false);
+            }
+          }}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          Sync Games (SportsDataIO)
+        </button>
 
-    const json = await res.json().catch(() => ({}));
+        <a
+          href={`/pool/${poolId}/bracket`}
+          style={{
+            padding: "10px 12px",
+            border: "1px solid #ccc",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 900,
+          }}
+        >
+          Bracket
+        </a>
+      </div>
+    </div>
 
-    if (!res.ok) {
-      throw new Error(json?.error ?? "Full sync failed");
-    }
+    {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
-    const importNote = json?.import?.note ?? "import ok";
-    const linked = json?.link?.linked ?? json?.link?.linkedGames ?? "n/a";
-    const updatedGames = json?.scores?.updatedGames ?? "n/a";
+    <p style={{ marginTop: 12, opacity: 0.8 }}>
+      Set winners for Round of 64 games. Winners will auto-advance to the next
+      round.
+    </p>
 
-    setMsg(
-      `✅ Full Sync complete | import: ${importNote} | linked: ${linked} | updated winners: ${updatedGames}`
-    );
-  } catch (e: any) {
-    setMsg(e?.message ?? "Unknown error");
-  } finally {
-    setLoading(false);
-  }
-}
+    <div
+      style={{
+        marginTop: 18,
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 14,
+      }}
+    >
+      {REGIONS.map((region) => (
+        <section
+          key={region}
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 12,
+            padding: 12,
+            minWidth: 0,
+          }}
+        >
+          <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
 
-  <button
-    onClick={async () => {
-      setMsg("");
-      setLoading(true);
-      try {
-        const date = "2025-MAR-28";
-        const r = await fetch("/api/admin/sync-games", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date }),
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error ?? "Sync failed");
-        setMsg(
-          `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
-        );
-      } catch (e: any) {
-        setMsg(e?.message ?? "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    }}
-    style={{
-      padding: "10px 12px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      fontWeight: 900,
-      cursor: "pointer",
-    }}
-  >
-    Sync Games (SportsDataIO)
-  </button>
+          <div style={{ display: "grid", gap: 10 }}>
+            {(r64ByRegion[region] ?? []).map((g) => (
+              <div
+                key={g.id}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 10,
+                }}
+              >
+                <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+                  Game {g.slot}
+                </div>
 
-  <button
-  onClick={fullSync}
-  style={{
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid #ccc",
-    fontWeight: 900,
-    cursor: "pointer",
-  }}
->
-  Full Sync (Import + Link + Scores)
-</button>
-    <a
-    href={`/pool/${poolId}/bracket`}
-    style={{
-      padding: "10px 12px",
-      border: "1px solid #ccc",
-      borderRadius: 10,
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Bracket
-  </a>
-</div>
+                <div style={{ display: "grid", gap: 8 }}>
+                  <div style={{ fontWeight: 800 }}>{teamLabel(g.team1_id)}</div>
+                  <div style={{ fontWeight: 800 }}>{teamLabel(g.team2_id)}</div>
+                </div>
 
-        </div>
-
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-
-      <p style={{ marginTop: 12, opacity: 0.8 }}>
-        Set winners for Round of 64 games. Winners will auto-advance to the next round.
-      </p>
-
-      <div
-        style={{
-          marginTop: 18,
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 14,
-        }}
-      >
-        {REGIONS.map((region) => (
-          <section
-            key={region}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 12,
-              padding: 12,
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
-
-            <div style={{ display: "grid", gap: 10 }}>
-              {(r64ByRegion[region] ?? []).map((g) => (
-                <div
-                  key={g.id}
+                <select
+                  value={g.winner_team_id ?? ""}
+                  onChange={(e) => setWinner(g.id, e.target.value || null)}
                   style={{
-                    border: "1px solid #eee",
-                    borderRadius: 12,
-                    padding: 10,
+                    marginTop: 10,
+                    padding: "6px 8px",
+                    borderRadius: 8,
+                    width: "100%",
                   }}
                 >
-                  <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-                    Game {g.slot}
-                  </div>
+                  <option value="">-- Select Winner --</option>
+                  {g.team1_id ? (
+                    <option value={g.team1_id}>{teamLabel(g.team1_id)}</option>
+                  ) : null}
+                  {g.team2_id ? (
+                    <option value={g.team2_id}>{teamLabel(g.team2_id)}</option>
+                  ) : null}
+                </select>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </main>
+);
 
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team1_id)}</div>
-                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team2_id)}</div>
-                  </div>
-
-                  <select
-                    value={g.winner_team_id ?? ""}
-                    onChange={(e) => setWinner(g.id, e.target.value || null)}
-                    style={{ marginTop: 10, padding: "6px 8px", borderRadius: 8, width: "100%" }}
-                  >
-                    <option value="">-- Select Winner --</option>
-                    {g.team1_id ? <option value={g.team1_id}>{teamLabel(g.team1_id)}</option> : null}
-                    {g.team2_id ? <option value={g.team2_id}>{teamLabel(g.team2_id)}</option> : null}
-                  </select>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    </main>
-  );
 }
