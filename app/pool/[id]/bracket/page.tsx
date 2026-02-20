@@ -782,67 +782,184 @@ if (loading) {
           gap: 14,
         }}
       >
-        {REGIONS.map((region) => (
-          <section
-            key={region}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 12,
-              padding: 12,
-              minWidth: 0,
-            }}
-          >
-            <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
+        {/* Bracket */}
+<div style={{ marginTop: 18, display: "grid", gap: 24 }}>
+  {REGIONS.map((region) => {
+    const r64 = r64ByRegion[region] ?? [];
+    const r32 = r32ByRegion[region] ?? [];
+    const s16 = s16ByRegion[region] ?? [];
+    const e8 = e8ByRegion[region] ?? [];
 
-<div style={{ display: "grid", gap: 14 }}>
+    return (
+      <section
+        key={region}
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: 14,
+          padding: 14,
+          overflowX: "auto",
+        }}
+      >
+        <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
+          {region}
+        </div>
 
-  {/* R64 */}
-  <div>
-    <div style={{ fontWeight: 900, marginBottom: 6 }}>Round of 64</div>
-    {(r64ByRegion[region] ?? []).map((g) => (
-      <div key={g.id} style={{ marginBottom: 6 }}>
-        {renderTeam(g.team1_id, g.winner_team_id)}
-        {renderTeam(g.team2_id, g.winner_team_id)}
-      </div>
-    ))}
-  </div>
+        {/* Round headers */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "260px 220px 200px 180px",
+            gap: 18,
+            marginBottom: 10,
+            fontSize: 12,
+            opacity: 0.75,
+            fontWeight: 800,
+          }}
+        >
+          <div>Round of 64</div>
+          <div>Round of 32</div>
+          <div>Sweet 16</div>
+          <div>Elite 8</div>
+        </div>
 
-  {/* R32 */}
-  <div>
-    <div style={{ fontWeight: 900, marginBottom: 6 }}>Round of 32</div>
-    {(r32ByRegion[region] ?? []).map((g) => (
-      <div key={g.id} style={{ marginBottom: 6 }}>
-        {renderTeam(g.team1_id, g.winner_team_id)}
-        {renderTeam(g.team2_id, g.winner_team_id)}
-      </div>
-    ))}
-  </div>
+        {/* Round columns */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "260px 220px 200px 180px",
+            gap: 18,
+            alignItems: "start",
+            minWidth: 900,
+          }}
+        >
+          {/* R64 */}
+          <div style={{ display: "grid", gap: 10 }}>
+            {r64.map((g) => (
+              <div key={g.id} style={{ display: "grid", gap: 8 }}>
+                {renderTeam(g.team1_id, g.winner_team_id)}
+                {renderTeam(g.team2_id, g.winner_team_id)}
+              </div>
+            ))}
+          </div>
 
-  {/* Sweet 16 */}
-  <div>
-    <div style={{ fontWeight: 900, marginBottom: 6 }}>Sweet 16</div>
-    {(s16ByRegion[region] ?? []).map((g) => (
-      <div key={g.id} style={{ marginBottom: 6 }}>
-        {renderTeam(g.team1_id, g.winner_team_id)}
-        {renderTeam(g.team2_id, g.winner_team_id)}
-      </div>
-    ))}
-  </div>
+          {/* R32 */}
+          <div style={{ display: "grid", gap: 18 }}>
+            {r32.map((g) => (
+              <div
+                key={g.id}
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  marginTop: 18, // staggers rounds so it “looks” like a bracket
+                  borderLeft: "2px solid #eee",
+                  paddingLeft: 10,
+                }}
+              >
+                {renderTeam(g.team1_id, g.winner_team_id)}
+                {renderTeam(g.team2_id, g.winner_team_id)}
+              </div>
+            ))}
+          </div>
 
-  {/* Elite 8 */}
-  <div>
-    <div style={{ fontWeight: 900, marginBottom: 6 }}>Elite 8</div>
-    {(e8ByRegion[region] ?? []).map((g) => (
-      <div key={g.id} style={{ marginBottom: 6 }}>
-        {renderTeam(g.team1_id, g.winner_team_id)}
-        {renderTeam(g.team2_id, g.winner_team_id)}
-      </div>
-    ))}
-  </div>
+          {/* S16 */}
+          <div style={{ display: "grid", gap: 32 }}>
+            {s16.map((g) => (
+              <div
+                key={g.id}
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  marginTop: 32,
+                  borderLeft: "2px solid #eee",
+                  paddingLeft: 10,
+                }}
+              >
+                {renderTeam(g.team1_id, g.winner_team_id)}
+                {renderTeam(g.team2_id, g.winner_team_id)}
+              </div>
+            ))}
+          </div>
 
-</div>
-          </section>
+          {/* E8 */}
+          <div style={{ display: "grid", gap: 60 }}>
+            {e8.map((g) => (
+              <div
+                key={g.id}
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  marginTop: 60,
+                  borderLeft: "2px solid #eee",
+                  paddingLeft: 10,
+                }}
+              >
+                {renderTeam(g.team1_id, g.winner_team_id)}
+                {renderTeam(g.team2_id, g.winner_team_id)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  })}
+
+  {/* Final Four + Championship (center section) */}
+  <section
+    style={{
+      border: "1px solid #ddd",
+      borderRadius: 14,
+      padding: 14,
+    }}
+  >
+    <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
+      Final Four
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        gap: 18,
+        alignItems: "start",
+      }}
+    >
+      {/* Final Four left */}
+      <div style={{ display: "grid", gap: 16 }}>
+        {(finalFour ?? []).slice(0, 1).map((g) => (
+          <div key={g.id} style={{ display: "grid", gap: 8 }}>
+            {renderTeam(g.team1_id, g.winner_team_id)}
+            {renderTeam(g.team2_id, g.winner_team_id)}
+          </div>
         ))}
+      </div>
+
+      {/* Championship */}
+      <div style={{ display: "grid", gap: 10 }}>
+        <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
+          Championship
+        </div>
+        {championship ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            {renderTeam(championship.team1_id, championship.winner_team_id)}
+            {renderTeam(championship.team2_id, championship.winner_team_id)}
+          </div>
+        ) : (
+          <div style={{ opacity: 0.6 }}>TBD</div>
+        )}
+      </div>
+
+      {/* Final Four right */}
+      <div style={{ display: "grid", gap: 16 }}>
+        {(finalFour ?? []).slice(1, 2).map((g) => (
+          <div key={g.id} style={{ display: "grid", gap: 8 }}>
+            {renderTeam(g.team1_id, g.winner_team_id)}
+            {renderTeam(g.team2_id, g.winner_team_id)}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</div>
       </div>
       {/* Final Four */}
 <div style={{ marginTop: 30 }}>
