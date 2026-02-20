@@ -266,7 +266,6 @@ async function syncLogos() {
 </div>
 
         </div>
-      </div>
 
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
