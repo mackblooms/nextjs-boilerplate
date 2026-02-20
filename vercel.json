@@ -1,9 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/admin/sync-scores",
-      "schedule": "*/5 * * * *"
+      "path": "/api/admin/sync-bracket",
+      "schedule": "0 12 * * *"
     }
   ]
 }
-
