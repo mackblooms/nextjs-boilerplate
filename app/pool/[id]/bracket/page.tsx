@@ -787,69 +787,80 @@ if (loading) {
             <RegionBracket region={"West"} />
           </div>
 
-          {/* CENTER: Final Four + Championship */}
-          <section
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gap: 18,
-                alignItems: "start",
-              }}
-            >
-              {/* Semifinal 1 */}
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-                  Semifinal 1
-                </div>
-                <GameBox>
-                  {renderTeam(
-                    finalFour?.[0]?.team1_id ?? null,
-                    finalFour?.[0]?.winner_team_id ?? null
-                  )}
-                  {renderTeam(
-                    finalFour?.[0]?.team2_id ?? null,
-                    finalFour?.[0]?.winner_team_id ?? null
-                  )}
-                </GameBox>
-              </div>
+{/* CENTER: Final Four + Championship */}
+<section
+  style={{
+    border: "1px solid #ddd",
+    borderRadius: 16,
+    padding: 14,
+    background: "#fff",
+    minWidth: 360,
+  }}
+>
+  <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
+    Final Four
+  </div>
 
-              {/* Championship */}
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-                  Championship
-                </div>
-                <GameBox>
-                  {renderTeam(
-                    championship?.team1_id ?? null,
-                    championship?.winner_team_id ?? null
-                  )}
-                  {renderTeam(
-                    championship?.team2_id ?? null,
-                    championship?.winner_team_id ?? null
-                  )}
-                </GameBox>
-              </div>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 18,
+      alignItems: "start",
+    }}
+  >
+    {/* Semifinal 1 */}
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
+        Semifinal 1
+      </div>
+      <GameBox>
+        {renderTeam(
+          finalFour?.[0]?.team1_id ?? null,
+          finalFour?.[0]?.winner_team_id ?? null
+        )}
+        {renderTeam(
+          finalFour?.[0]?.team2_id ?? null,
+          finalFour?.[0]?.winner_team_id ?? null
+        )}
+      </GameBox>
+    </div>
 
-              {/* Semifinal 2 */}
-              <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-                  Semifinal 2
-                </div>
-                <GameBox>
-                  {renderTeam(
-                    finalFour?.[1]?.team1_id ?? null,
-                    finalFour?.[1]?.winner_team_id ?? null
-                  )}
-                  {renderTeam(
-                    finalFour?.[1]?.team2_id ?? null,
-                    finalFour?.[1]?.winner_team_id ?? null
-                  )}
-                </GameBox>
-              </div>
-            </div>
-          </div>
-          </section>
+    {/* Championship */}
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
+        Championship
+      </div>
+      <GameBox>
+        {renderTeam(
+          championship?.team1_id ?? null,
+          championship?.winner_team_id ?? null
+        )}
+        {renderTeam(
+          championship?.team2_id ?? null,
+          championship?.winner_team_id ?? null
+        )}
+      </GameBox>
+    </div>
+
+    {/* Semifinal 2 */}
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
+        Semifinal 2
+      </div>
+      <GameBox>
+        {renderTeam(
+          finalFour?.[1]?.team1_id ?? null,
+          finalFour?.[1]?.winner_team_id ?? null
+        )}
+        {renderTeam(
+          finalFour?.[1]?.team2_id ?? null,
+          finalFour?.[1]?.winner_team_id ?? null
+        )}
+      </GameBox>
+    </div>
+  </div>
+</section>
 
 {/* RIGHT SIDE: South + Midwest (mirrored) */}
 <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
