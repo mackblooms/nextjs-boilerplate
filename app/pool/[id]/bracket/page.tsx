@@ -781,67 +781,99 @@ if (loading) {
             <RegionBracket region={"West"} />
           </div>
 
-{/* CENTER: Final Four + Championship (positioned) */}
+{/* CENTER: Final Four -> Championship (continues the bracket) */}
 <section
   style={{
     border: "1px solid #ddd",
     borderRadius: 16,
     padding: 14,
     background: "#fff",
-    minWidth: 360,
+    minWidth: 560, // wider because we now have 2 internal columns
   }}
 >
   <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
     Final Four
   </div>
 
+  {/* Two columns: Final Four (2 games) then Championship (1 game) */}
   <div
     style={{
       display: "grid",
-      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-      gap: 0,
+      gridTemplateColumns: "minmax(260px, 1fr) minmax(260px, 1fr)",
+      gap: 16,
+      alignItems: "start",
     }}
   >
-    {/* Semifinal 1 */}
-    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-      <GameBox>
-        {renderTeam(
-          finalFour?.[0]?.team1_id ?? null,
-          finalFour?.[0]?.winner_team_id ?? null
-        )}
-        {renderTeam(
-          finalFour?.[0]?.team2_id ?? null,
-          finalFour?.[0]?.winner_team_id ?? null
-        )}
-      </GameBox>
+    {/* Final Four column */}
+    <div>
+      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
+        National Semifinals
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+          gap: 0,
+        }}
+      >
+        {/* Semifinal 1 — top half */}
+        <div style={{ gridRow: `${rowStartFor("S16", 1)} / span ${GAME_SPAN}` }}>
+          <GameBox>
+            {renderTeam(
+              finalFour?.[0]?.team1_id ?? null,
+              finalFour?.[0]?.winner_team_id ?? null
+            )}
+            {renderTeam(
+              finalFour?.[0]?.team2_id ?? null,
+              finalFour?.[0]?.winner_team_id ?? null
+            )}
+          </GameBox>
+        </div>
+
+        {/* Semifinal 2 — bottom half */}
+        <div style={{ gridRow: `${rowStartFor("S16", 2)} / span ${GAME_SPAN}` }}>
+          <GameBox>
+            {renderTeam(
+              finalFour?.[1]?.team1_id ?? null,
+              finalFour?.[1]?.winner_team_id ?? null
+            )}
+            {renderTeam(
+              finalFour?.[1]?.team2_id ?? null,
+              finalFour?.[1]?.winner_team_id ?? null
+            )}
+          </GameBox>
+        </div>
+      </div>
     </div>
 
-    {/* Championship */}
-    <div style={{ gridRow: `${rowStartFor("S16", 1)} / span ${GAME_SPAN}` }}>
-      <GameBox>
-        {renderTeam(
-          championship?.team1_id ?? null,
-          championship?.winner_team_id ?? null
-        )}
-        {renderTeam(
-          championship?.team2_id ?? null,
-          championship?.winner_team_id ?? null
-        )}
-      </GameBox>
-    </div>
+    {/* Championship column */}
+    <div>
+      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
+        Championship
+      </div>
 
-    {/* Semifinal 2 */}
-    <div style={{ gridRow: `${rowStartFor("E8", 2)} / span ${GAME_SPAN}` }}>
-      <GameBox>
-        {renderTeam(
-          finalFour?.[1]?.team1_id ?? null,
-          finalFour?.[1]?.winner_team_id ?? null
-        )}
-        {renderTeam(
-          finalFour?.[1]?.team2_id ?? null,
-          finalFour?.[1]?.winner_team_id ?? null
-        )}
-      </GameBox>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+          gap: 0,
+        }}
+      >
+        {/* Championship sits dead center */}
+        <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
+          <GameBox>
+            {renderTeam(
+              championship?.team1_id ?? null,
+              championship?.winner_team_id ?? null
+            )}
+            {renderTeam(
+              championship?.team2_id ?? null,
+              championship?.winner_team_id ?? null
+            )}
+          </GameBox>
+        </div>
+      </div>
     </div>
   </div>
 </section>
