@@ -157,9 +157,9 @@ const byRegionRound = useMemo(() => {
 }, [r64ByRegion, r32ByRegion, s16ByRegion, e8ByRegion]);
 
   // --- Bracket positioning (aligns later rounds between feeders) ---
-  const BRACKET_UNITS = 16;
-  const UNIT_PX = 28;
-  const GAME_SPAN = 2;
+const BRACKET_UNITS = 16;
+const UNIT_PX = 44;   // was 28 — increase to stop overlap
+const GAME_SPAN = 2;
 
   function rowStartFor(round: "R64" | "R32" | "S16" | "E8", slot: number) {
     if (round === "R64") return (slot - 1) * 2 + 1;
@@ -374,9 +374,18 @@ if (entryId) {
       </span>
 
       {/* RIGHT: seed */}
-      <span style={{ opacity: 0.75, flexShrink: 0 }}>
-        {t?.seed_in_region ?? ""}
-      </span>
+<span
+  style={{
+    opacity: 0.75,
+    flexShrink: 0,
+    width: 22,
+    textAlign: "right",
+    whiteSpace: "nowrap",
+    lineHeight: "18px",
+  }}
+>
+  {t?.seed_in_region ?? ""}
+</span>
     </span>
   );
 }
@@ -409,7 +418,8 @@ function GameBox({
   padding: 6,
   background: "white",
   boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
-  minHeight: UNIT_PX * GAME_SPAN - 4,
+  height: "100%",
+  overflow: "hidden",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
