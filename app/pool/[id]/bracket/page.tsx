@@ -788,7 +788,7 @@ if (loading) {
     borderRadius: 16,
     padding: 14,
     background: "#fff",
-    minWidth: 860, // 3 columns
+    minWidth: 860,
   }}
 >
   <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
@@ -803,10 +803,10 @@ if (loading) {
       alignItems: "start",
     }}
   >
-    {/* LEFT SEMIFINAL (winner of East vs winner of West) */}
+    {/* LEFT SEMIFINAL */}
     <div>
       <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        Semifinal (Left)
+        National Semifinal
       </div>
 
       <div
@@ -816,19 +816,17 @@ if (loading) {
           gap: 0,
         }}
       >
-        {/* Top team slot (inside top Elite 8) */}
         <div style={{ gridRow: `${rowStartFor("E8", 1) - 1} / span 1` }}>
           {renderTeam(finalFour?.[0]?.team1_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
         </div>
 
-        {/* Bottom team slot (inside bottom Elite 8) */}
         <div style={{ gridRow: `${rowStartFor("E8", 1) + 1} / span 1` }}>
           {renderTeam(finalFour?.[0]?.team2_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
         </div>
       </div>
     </div>
 
-    {/* CHAMPIONSHIP (dead center) */}
+    {/* CHAMPIONSHIP */}
     <div>
       <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
         Championship
@@ -841,7 +839,6 @@ if (loading) {
           gap: 0,
         }}
       >
-        {/* Put the championship box at the center row */}
         <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
           <div
             style={{
@@ -865,10 +862,10 @@ if (loading) {
       </div>
     </div>
 
-    {/* RIGHT SEMIFINAL (winner of South vs winner of Midwest) */}
+    {/* RIGHT SEMIFINAL */}
     <div>
       <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        Semifinal (Right)
+        National Semifinal
       </div>
 
       <div
@@ -878,12 +875,10 @@ if (loading) {
           gap: 0,
         }}
       >
-        {/* Top team slot (inside top Elite 8) */}
         <div style={{ gridRow: `${rowStartFor("E8", 1) - 1} / span 1` }}>
           {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
         </div>
 
-        {/* Bottom team slot (inside bottom Elite 8) */}
         <div style={{ gridRow: `${rowStartFor("E8", 1) + 1} / span 1` }}>
           {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
         </div>
