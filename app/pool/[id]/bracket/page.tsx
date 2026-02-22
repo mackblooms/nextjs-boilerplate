@@ -47,6 +47,24 @@ export default function BracketPage() {
 
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(new Set());
 
+    // --- Bracket zoom / fit-to-screen ---
+  const [scale, setScale] = useState(1);
+  const [fitMode, setFitMode] = useState(true);
+
+  // Used later for "click a region to zoom" (we’ll wire it up in a later step)
+  const [zoomRegion, setZoomRegion] = useState<(typeof REGIONS)[number] | null>(null);
+
+  // Refs we use to measure the bracket and fit it to the screen
+  const viewportRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
+  const contentRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
+
+  const [scale, setScale] = useState(1);
+  const [fitMode, setFitMode] = useState(true);
+  const [zoomRegion, setZoomRegion] = useState<(typeof REGIONS)[number] | null>(null);
+
+  const viewportRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
+  const contentRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
+
   const searchParams = useSearchParams();
   const entryId = searchParams.get("entry");
 
@@ -235,7 +253,56 @@ if (entryId) {
     loadHighlights();
   }, [selectedEntryId]);
 
-function renderTeam(teamId: string | null, winnerId: string | null) {
+    useEffect(() => {
+    function applyFitScale() {
+      if (!fitMode) return;
+      const viewport = viewportRef.current;
+      const content = contentRef.current;
+      if (!viewport || !content) return;
+
+      // width of visible box
+      const vw = viewport.clientWidth;
+
+      // width of full bracket content
+      const cw = content.scrollWidth;
+
+      if (!cw) return;
+
+      // Fit width, but don't zoom in past 1x
+      const next = Math.min(1, vw / cw);
+
+      // Don't let it become microscopic
+      const clamped = Math.max(0.35, next);
+
+      setScale(clamped);
+    }
+
+    applyFitScale();
+    window.addEventListener("resize", applyFitScale);
+    return () => window.removeEventListener("resize", applyFitScale);
+  }, [fitMode]);
+
+  // --- Zoom helpers (buttons will call these) ---
+  function zoomIn() {
+    setFitMode(false);
+    setScale((s) => Math.min(1.25, +(s + 0.1).toFixed(2)));
+  }
+
+  function zoomOut() {
+    setFitMode(false);
+    setScale((s) => Math.max(0.35, +(s - 0.1).toFixed(2)));
+  }
+
+  function setFit() {
+    setFitMode(true);
+  }
+
+  function set100() {
+    setFitMode(false);
+    setScale(1);
+  }
+
+  function renderTeam(teamId: string | null, winnerId: string | null) {
   if (!teamId)
   return (
     <span
@@ -613,22 +680,107 @@ if (loading) {
         </div>
       </div>
 
-      {/* Bracket (single source of truth) */}
+      {/* Zoom controls */}
       <div
         style={{
-          marginTop: 18,
-          overflowX: "auto",
-          paddingBottom: 12,
+          marginTop: 12,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ fontWeight: 900 }}>View:</div>
+
+        <button
+          onClick={setFit}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            background: fitMode ? "#f3f3f3" : "white",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          Fit
+        </button>
+
+        <button
+          onClick={set100}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            background: !fitMode && scale === 1 ? "#f3f3f3" : "white",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          100%
+        </button>
+
+        <button
+          onClick={zoomOut}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            background: "white",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          −
+        </button>
+
+        <button
+          onClick={zoomIn}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid #ccc",
+            background: "white",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          +
+        </button>
+
+        <div style={{ fontSize: 12, opacity: 0.7 }}>
+          Zoom: <b>{Math.round(scale * 100)}%</b>
+        </div>
+      </div>
+
+      {/* Bracket viewport (scales content to fit screen) */}
+      <div
+        ref={(el) => (viewportRef.current = el)}
+        style={{
+          marginTop: 12,
+          border: "1px solid #eee",
+          borderRadius: 14,
+          background: "#fff",
+          padding: 12,
+          overflow: "hidden",
         }}
       >
         <div
+          ref={(el) => (contentRef.current = el)}
           style={{
-            display: "flex",
-            gap: 18,
-            alignItems: "flex-start",
-            minWidth: 1800,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            width: "fit-content",
           }}
         >
+          <div
+            style={{
+              display: "flex",
+              gap: 18,
+              alignItems: "flex-start",
+              minWidth: 1800,
+            }}
+          >
           {/* LEFT SIDE: East + West */}
           <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
             <RegionBracket region={"East"} />
@@ -637,61 +789,66 @@ if (loading) {
 
           {/* CENTER: Final Four + Championship */}
           <section
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 16,
-              padding: 14,
-              background: "#fff",
-              minWidth: 360,
-            }}
-          >
-            <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
-              Final Four
-            </div>
-
-            <div style={{ display: "grid", gap: 14 }}>
-              <GameBox>
-                <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 18,
+                alignItems: "start",
+              }}
+            >
+              {/* Semifinal 1 */}
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
                   Semifinal 1
                 </div>
-                {renderTeam(
-                  finalFour?.[0]?.team1_id ?? null,
-                  finalFour?.[0]?.winner_team_id ?? null
-                )}
-                {renderTeam(
-                  finalFour?.[0]?.team2_id ?? null,
-                  finalFour?.[0]?.winner_team_id ?? null
-                )}
-              </GameBox>
+                <GameBox>
+                  {renderTeam(
+                    finalFour?.[0]?.team1_id ?? null,
+                    finalFour?.[0]?.winner_team_id ?? null
+                  )}
+                  {renderTeam(
+                    finalFour?.[0]?.team2_id ?? null,
+                    finalFour?.[0]?.winner_team_id ?? null
+                  )}
+                </GameBox>
+              </div>
 
-              <GameBox>
-                <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>
+              {/* Championship */}
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
+                  Championship
+                </div>
+                <GameBox>
+                  {renderTeam(
+                    championship?.team1_id ?? null,
+                    championship?.winner_team_id ?? null
+                  )}
+                  {renderTeam(
+                    championship?.team2_id ?? null,
+                    championship?.winner_team_id ?? null
+                  )}
+                </GameBox>
+              </div>
+
+              {/* Semifinal 2 */}
+              <div style={{ display: "grid", gap: 10 }}>
+                <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
                   Semifinal 2
                 </div>
-                {renderTeam(
-                  finalFour?.[1]?.team1_id ?? null,
-                  finalFour?.[1]?.winner_team_id ?? null
-                )}
-                {renderTeam(
-                  finalFour?.[1]?.team2_id ?? null,
-                  finalFour?.[1]?.winner_team_id ?? null
-                )}
-              </GameBox>
-
-              <div style={{ height: 8 }} />
-
-              <div style={{ fontWeight: 900 }}>Championship</div>
-              <GameBox>
-                {renderTeam(
-                  championship?.team1_id ?? null,
-                  championship?.winner_team_id ?? null
-                )}
-                {renderTeam(
-                  championship?.team2_id ?? null,
-                  championship?.winner_team_id ?? null
-                )}
-              </GameBox>
+                <GameBox>
+                  {renderTeam(
+                    finalFour?.[1]?.team1_id ?? null,
+                    finalFour?.[1]?.winner_team_id ?? null
+                  )}
+                  {renderTeam(
+                    finalFour?.[1]?.team2_id ?? null,
+                    finalFour?.[1]?.winner_team_id ?? null
+                  )}
+                </GameBox>
+              </div>
             </div>
+          </div>
           </section>
 
 {/* RIGHT SIDE: South + Midwest (mirrored) */}
