@@ -58,13 +58,6 @@ export default function BracketPage() {
   const viewportRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
   const contentRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
 
-  const [scale, setScale] = useState(1);
-  const [fitMode, setFitMode] = useState(true);
-  const [zoomRegion, setZoomRegion] = useState<(typeof REGIONS)[number] | null>(null);
-
-  const viewportRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
-  const contentRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
-
   const searchParams = useSearchParams();
   const entryId = searchParams.get("entry");
 
