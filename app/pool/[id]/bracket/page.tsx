@@ -781,7 +781,7 @@ if (loading) {
             <RegionBracket region={"West"} />
           </div>
 
-{/* CENTER: Final Four + Championship (true continuation from Elite 8) */}
+{/* CENTER: Final Four + Championship (safe JSX, no stray tags) */}
 <section
   style={{
     border: "1px solid #ddd",
@@ -840,24 +840,10 @@ if (loading) {
         }}
       >
         <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-          <div
-            style={{
-              border: "1px solid #e9e9e9",
-              borderRadius: 14,
-              background: "white",
-              boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
-              height: "100%",
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-              alignItems: "center",
-              padding: 8,
-              overflow: "hidden",
-            }}
-          >
+          <GameBox>
             {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
             {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
-          </div>
+          </GameBox>
         </div>
       </div>
     </div>
@@ -881,45 +867,6 @@ if (loading) {
 
         <div style={{ gridRow: `${rowStartFor("E8", 1) + 1} / span 1` }}>
           {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-            {renderTeam(
-              finalFour?.[1]?.team2_id ?? null,
-              finalFour?.[1]?.winner_team_id ?? null
-            )}
-          </GameBox>
-        </div>
-      </div>
-    </div>
-
-    {/* Championship column */}
-    <div>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        Championship
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-          gap: 0,
-        }}
-      >
-        {/* Championship sits dead center */}
-        <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-          <GameBox>
-            {renderTeam(
-              championship?.team1_id ?? null,
-              championship?.winner_team_id ?? null
-            )}
-            {renderTeam(
-              championship?.team2_id ?? null,
-              championship?.winner_team_id ?? null
-            )}
-          </GameBox>
         </div>
       </div>
     </div>
