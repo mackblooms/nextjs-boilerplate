@@ -781,7 +781,7 @@ if (loading) {
             <RegionBracket region={"West"} />
           </div>
 
-{/* CENTER: Final Four + Championship */}
+{/* CENTER: Final Four + Championship (positioned) */}
 <section
   style={{
     border: "1px solid #ddd",
@@ -798,16 +798,12 @@ if (loading) {
   <div
     style={{
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
-      gap: 18,
-      alignItems: "start",
+      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+      gap: 0,
     }}
   >
     {/* Semifinal 1 */}
-    <div style={{ display: "grid", gap: 10 }}>
-      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-        Semifinal 1
-      </div>
+    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
       <GameBox>
         {renderTeam(
           finalFour?.[0]?.team1_id ?? null,
@@ -821,10 +817,7 @@ if (loading) {
     </div>
 
     {/* Championship */}
-    <div style={{ display: "grid", gap: 10 }}>
-      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-        Championship
-      </div>
+    <div style={{ gridRow: `${rowStartFor("S16", 1)} / span ${GAME_SPAN}` }}>
       <GameBox>
         {renderTeam(
           championship?.team1_id ?? null,
@@ -838,10 +831,7 @@ if (loading) {
     </div>
 
     {/* Semifinal 2 */}
-    <div style={{ display: "grid", gap: 10 }}>
-      <div style={{ fontWeight: 900, opacity: 0.75, fontSize: 12 }}>
-        Semifinal 2
-      </div>
+    <div style={{ gridRow: `${rowStartFor("E8", 2)} / span ${GAME_SPAN}` }}>
       <GameBox>
         {renderTeam(
           finalFour?.[1]?.team1_id ?? null,
