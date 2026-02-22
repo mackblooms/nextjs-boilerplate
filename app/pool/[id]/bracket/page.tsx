@@ -748,7 +748,9 @@ if (loading) {
 
       {/* Bracket viewport (scales content to fit screen) */}
       <div
-        ref={(el) => (viewportRef.current = el)}
+        ref={(el) => {
+          viewportRef.current = el;
+        }}
         style={{
           marginTop: 12,
           border: "1px solid #eee",
@@ -759,7 +761,9 @@ if (loading) {
         }}
       >
         <div
-          ref={(el) => (contentRef.current = el)}
+          ref={(el) => {
+            contentRef.current = el;
+          }}
           style={{
             transform: `scale(${scale})`,
             transformOrigin: "top left",
