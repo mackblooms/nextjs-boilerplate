@@ -344,7 +344,13 @@ function GameBox({
   );
 }  
 
-function RegionBracket({ region }: { region: (typeof REGIONS)[number] }) {
+function RegionBracket({
+  region,
+  reverse = false,
+}: {
+  region: (typeof REGIONS)[number];
+  reverse?: boolean;
+}) {
   const rounds = byRegionRound[region];
 
   return (
@@ -354,7 +360,7 @@ function RegionBracket({ region }: { region: (typeof REGIONS)[number] }) {
         borderRadius: 16,
         padding: 14,
         background: "#fafafa",
-        minWidth: 4 * 260 + 3 * 16 + 40, // keeps region width stable
+        minWidth: 4 * 260 + 3 * 16 + 40,
       }}
     >
       <div style={{ fontWeight: 900, marginBottom: 12 }}>{region}</div>
@@ -367,41 +373,86 @@ function RegionBracket({ region }: { region: (typeof REGIONS)[number] }) {
           alignItems: "start",
         }}
       >
-        <BracketColumn title="Round of 64">
-          {(rounds?.R64 ?? []).map((g) => (
-            <GameBox key={g.id}>
-              {renderTeam(g.team1_id, g.winner_team_id)}
-              {renderTeam(g.team2_id, g.winner_team_id)}
-            </GameBox>
-          ))}
-        </BracketColumn>
+        {/* If reverse=false (left side): R64 -> R32 -> S16 -> E8 */}
+        {/* If reverse=true  (right side): E8 -> S16 -> R32 -> R64 */}
 
-        <BracketColumn title="Round of 32">
-          {(rounds?.R32 ?? []).map((g) => (
-            <GameBox key={g.id}>
-              {renderTeam(g.team1_id, g.winner_team_id)}
-              {renderTeam(g.team2_id, g.winner_team_id)}
-            </GameBox>
-          ))}
-        </BracketColumn>
+        {!reverse ? (
+          <>
+            <BracketColumn title="Round of 64">
+              {(rounds?.R64 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
 
-        <BracketColumn title="Sweet 16">
-          {(rounds?.S16 ?? []).map((g) => (
-            <GameBox key={g.id}>
-              {renderTeam(g.team1_id, g.winner_team_id)}
-              {renderTeam(g.team2_id, g.winner_team_id)}
-            </GameBox>
-          ))}
-        </BracketColumn>
+            <BracketColumn title="Round of 32">
+              {(rounds?.R32 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
 
-        <BracketColumn title="Elite 8">
-          {(rounds?.E8 ?? []).map((g) => (
-            <GameBox key={g.id}>
-              {renderTeam(g.team1_id, g.winner_team_id)}
-              {renderTeam(g.team2_id, g.winner_team_id)}
-            </GameBox>
-          ))}
-        </BracketColumn>
+            <BracketColumn title="Sweet 16">
+              {(rounds?.S16 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+
+            <BracketColumn title="Elite 8">
+              {(rounds?.E8 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+          </>
+        ) : (
+          <>
+            <BracketColumn title="Elite 8">
+              {(rounds?.E8 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+
+            <BracketColumn title="Sweet 16">
+              {(rounds?.S16 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+
+            <BracketColumn title="Round of 32">
+              {(rounds?.R32 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+
+            <BracketColumn title="Round of 64">
+              {(rounds?.R64 ?? []).map((g) => (
+                <GameBox key={g.id}>
+                  {renderTeam(g.team1_id, g.winner_team_id)}
+                  {renderTeam(g.team2_id, g.winner_team_id)}
+                </GameBox>
+              ))}
+            </BracketColumn>
+          </>
+        )}
       </div>
     </section>
   );
@@ -643,11 +694,11 @@ if (loading) {
             </div>
           </section>
 
-          {/* RIGHT SIDE: South + Midwest */}
-          <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-            <RegionBracket region={"South"} />
-            <RegionBracket region={"Midwest"} />
-          </div>
+{/* RIGHT SIDE: South + Midwest (mirrored) */}
+<div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+  <RegionBracket region="South" reverse />
+  <RegionBracket region="Midwest" reverse />
+</div>
         </div>
        </div>
     </main>
