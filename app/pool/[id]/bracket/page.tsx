@@ -866,9 +866,13 @@ if (loading) {
 <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
   <RegionBracket region="South" reverse />
   <RegionBracket region="Midwest" reverse />
-</div>
+          </div>
         </div>
-       </div>
+      </div>
+    </div>
+
+      {/* (anything else like modal goes here, still inside <main>) */}
+
     </main>
   );
 }
