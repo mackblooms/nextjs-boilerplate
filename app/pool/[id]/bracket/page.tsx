@@ -155,6 +155,18 @@ const byRegionRound = useMemo(() => {
     },
   };
 }, [r64ByRegion, r32ByRegion, s16ByRegion, e8ByRegion]);
+
+  // --- Bracket positioning (aligns later rounds between feeders) ---
+  const BRACKET_UNITS = 16;
+  const UNIT_PX = 28;
+  const GAME_SPAN = 2;
+
+  function rowStartFor(round: "R64" | "R32" | "S16" | "E8", slot: number) {
+    if (round === "R64") return (slot - 1) * 2 + 1;
+    if (round === "R32") return (slot - 1) * 4 + 2;
+    if (round === "S16") return (slot - 1) * 8 + 4;
+    return 8; // E8
+  }
   
   useEffect(() => {
     const load = async () => {
@@ -392,12 +404,16 @@ function GameBox({
   return (
     <div
       style={{
-        border: "1px solid #e9e9e9",
-        borderRadius: 14,
-        padding: 10,
-        background: "white",
-        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
-      }}
+  border: "1px solid #e9e9e9",
+  borderRadius: 14,
+  padding: 6,
+  background: "white",
+  boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+  minHeight: UNIT_PX * GAME_SPAN - 4,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+}}
     >
       <div style={{ display: "grid", gap: 8 }}>{children}</div>
     </div>
@@ -413,6 +429,39 @@ function RegionBracket({
 }) {
   const rounds = byRegionRound[region];
 
+// 👇 PASTE THIS FUNCTION RIGHT HERE
+function renderRoundColumn(title: string, roundKey: "R64" | "R32" | "S16" | "E8") {
+  const gamesForRound = rounds?.[roundKey] ?? [];
+
+  return (
+    <div style={{ minWidth: 260 }}>
+      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>{title}</div>
+
+      {/* 16-row grid that we position games inside */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+          gap: 0,
+        }}
+      >
+        {gamesForRound.map((g) => {
+          const start = rowStartFor(roundKey, g.slot);
+
+          return (
+            <div key={g.id} style={{ gridRow: `${start} / span ${GAME_SPAN}` }}>
+              <GameBox>
+                {renderTeam(g.team1_id, g.winner_team_id)}
+                {renderTeam(g.team2_id, g.winner_team_id)}
+              </GameBox>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
   return (
     <section
       style={{
@@ -425,95 +474,33 @@ function RegionBracket({
     >
       <div style={{ fontWeight: 900, marginBottom: 12 }}>{region}</div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(260px, 1fr))",
-          gap: 16,
-          alignItems: "start",
-        }}
-      >
-        {/* If reverse=false (left side): R64 -> R32 -> S16 -> E8 */}
-        {/* If reverse=true  (right side): E8 -> S16 -> R32 -> R64 */}
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(260px, 1fr))",
+    gap: 16,
+    alignItems: "start",
+  }}
+>
+  {/* If reverse=false (left side): R64 -> R32 -> S16 -> E8 */}
+  {/* If reverse=true  (right side): E8 -> S16 -> R32 -> R64 */}
 
-        {!reverse ? (
-          <>
-            <BracketColumn title="Round of 64">
-              {(rounds?.R64 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Round of 32">
-              {(rounds?.R32 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Sweet 16">
-              {(rounds?.S16 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Elite 8">
-              {(rounds?.E8 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-          </>
-        ) : (
-          <>
-            <BracketColumn title="Elite 8">
-              {(rounds?.E8 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Sweet 16">
-              {(rounds?.S16 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Round of 32">
-              {(rounds?.R32 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-
-            <BracketColumn title="Round of 64">
-              {(rounds?.R64 ?? []).map((g) => (
-                <GameBox key={g.id}>
-                  {renderTeam(g.team1_id, g.winner_team_id)}
-                  {renderTeam(g.team2_id, g.winner_team_id)}
-                </GameBox>
-              ))}
-            </BracketColumn>
-          </>
-        )}
-      </div>
+  {!reverse ? (
+    <>
+      {renderRoundColumn("Round of 64", "R64")}
+      {renderRoundColumn("Round of 32", "R32")}
+      {renderRoundColumn("Sweet 16", "S16")}
+      {renderRoundColumn("Elite 8", "E8")}
+    </>
+  ) : (
+    <>
+      {renderRoundColumn("Elite 8", "E8")}
+      {renderRoundColumn("Sweet 16", "S16")}
+      {renderRoundColumn("Round of 32", "R32")}
+      {renderRoundColumn("Round of 64", "R64")}
+    </>
+  )}
+</div>
     </section>
   );
 }
