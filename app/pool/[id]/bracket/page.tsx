@@ -910,8 +910,6 @@ if (loading) {
   </div>
 </div>
 
-</section>
-
 {/* RIGHT SIDE: South + Midwest (mirrored) */}
 <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
   <RegionBracket region="South" reverse />
