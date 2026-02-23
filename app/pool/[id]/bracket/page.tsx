@@ -799,32 +799,54 @@ if (loading) {
     style={{
       display: "grid",
       gridTemplateColumns: "minmax(260px, 1fr) minmax(260px, 1fr) minmax(260px, 1fr)",
-      gap: 16,
+      gap: 2,
       alignItems: "start",
     }}
   >
-    {/* LEFT SEMIFINAL */}
-    <div>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        National Semifinal
-      </div>
 
+{/* LEFT SEMIFINAL */}
+<div>
+  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
+    National Semifinal
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+      gap: 0,
+    }}
+  >
+    {/* One matchup row: left team | center spine | right team */}
+    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
       <div
         style={{
           display: "grid",
-          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-          gap: 0,
+          gridTemplateColumns: "1fr 18px 1fr",
+          alignItems: "center",
+          height: "100%",
         }}
       >
-        <div style={{ gridRow: `${rowStartFor("E8", 1) - 1} / span 1` }}>
-          {renderTeam(finalFour?.[0]?.team1_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
+        {/* left side team */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ width: "92%" }}>
+            {renderTeam(finalFour?.[0]?.team1_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
+          </div>
         </div>
 
-        <div style={{ gridRow: `${rowStartFor("E8", 1) + 1} / span 1` }}>
-          {renderTeam(finalFour?.[0]?.team2_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
+        {/* center spine */}
+        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
+
+        {/* right side team */}
+        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ width: "92%" }}>
+            {renderTeam(finalFour?.[0]?.team2_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
+          </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     {/* CHAMPIONSHIP */}
     <div>
@@ -848,29 +870,46 @@ if (loading) {
       </div>
     </div>
 
-    {/* RIGHT SEMIFINAL */}
-    <div>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        National Semifinal
-      </div>
+{/* RIGHT SEMIFINAL */}
+<div>
+  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
+    National Semifinal
+  </div>
 
+  <div
+    style={{
+      display: "grid",
+      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+      gap: 0,
+    }}
+  >
+    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
       <div
         style={{
           display: "grid",
-          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-          gap: 0,
+          gridTemplateColumns: "1fr 18px 1fr",
+          alignItems: "center",
+          height: "100%",
         }}
       >
-        <div style={{ gridRow: `${rowStartFor("E8", 1) - 1} / span 1` }}>
-          {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ width: "92%" }}>
+            {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+          </div>
         </div>
 
-        <div style={{ gridRow: `${rowStartFor("E8", 1) + 1} / span 1` }}>
-          {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
+
+        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ width: "92%" }}>
+            {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
+
 </section>
 
 {/* RIGHT SIDE: South + Midwest (mirrored) */}
