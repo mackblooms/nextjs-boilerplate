@@ -312,7 +312,7 @@ export default function BracketPage() {
     </div>
   );
 
- const renderSingleTeamBox = (teamId: string | null, winnerId: string | null) => (
+  const renderSingleTeamBox = (teamId: string | null, winnerId: string | null) => (
     <div
       style={{
         border: "1px solid #e9e9e9",
@@ -370,7 +370,7 @@ export default function BracketPage() {
           minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
-         <div style={{ fontWeight: 900, marginBottom: 12, textAlign: reverse ? "left" : "inherit" }}>{region}</div>
+        <div style={{ fontWeight: 900, marginBottom: 12, textAlign: reverse ? "left" : "inherit" }}>{region}</div>
         <div
           style={{
             display: "grid",
@@ -458,8 +458,8 @@ export default function BracketPage() {
 
             <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", minWidth: 860 }}>
               <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>Final Four</div>
-              </div>
-                              style={{
+              <div
+                style={{
                   display: "grid",
                   gridTemplateColumns: "minmax(240px, 1fr) minmax(280px, 1fr) minmax(240px, 1fr)",
                   gridTemplateRows: "repeat(2, minmax(140px, auto))",
