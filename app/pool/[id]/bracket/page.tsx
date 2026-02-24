@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
-import { useSearchParams } from "next/navigation";
 
 type Team = {
   id: string;
@@ -29,37 +30,32 @@ type PlayerOption = {
   display_name: string | null;
 };
 
-const REGIONS = ["East", "West", "South", "Midwest"] as const;
+type RoundKey = "R64" | "R32" | "S16" | "E8";
 
-// Mapping for R64 slot -> seed pair (for label display only)
+const REGIONS = ["East", "West", "South", "Midwest"] as const;
+type Region = (typeof REGIONS)[number];
+
+const isRegion = (value: string | null): value is Region => value !== null && REGIONS.includes(value as Region);
 
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
+  const searchParams = useSearchParams();
+  const entryId = searchParams.get("entry");
 
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
-
   const [teams, setTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
-
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(new Set());
 
-    // --- Bracket zoom / fit-to-screen ---
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
 
-  // Used later for "click a region to zoom" (we’ll wire it up in a later step)
-  const [zoomRegion, setZoomRegion] = useState<(typeof REGIONS)[number] | null>(null);
-
-  // Refs we use to measure the bracket and fit it to the screen
-  const viewportRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
-  const contentRef = useMemo(() => ({ current: null as HTMLDivElement | null }), []);
-
-  const searchParams = useSearchParams();
-  const entryId = searchParams.get("entry");
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -67,107 +63,48 @@ export default function BracketPage() {
     return m;
   }, [teams]);
 
-const r64ByRegion = useMemo(() => {
-  const out: Record<string, Game[]> = {};
-  for (const r of REGIONS) out[r] = [];
-  for (const g of games) {
-    if (g.round === "R64" && g.region && out[g.region]) {
-      out[g.region].push(g);
+  const byRoundByRegion = useMemo(() => {
+    const out: Record<Region, Record<RoundKey, Game[]>> = {
+      East: { R64: [], R32: [], S16: [], E8: [] },
+      West: { R64: [], R32: [], S16: [], E8: [] },
+      South: { R64: [], R32: [], S16: [], E8: [] },
+      Midwest: { R64: [], R32: [], S16: [], E8: [] },
+    };
+
+    for (const g of games) {
+      if (!isRegion(g.region)) continue;
+      if (g.round === "R64" || g.round === "R32" || g.round === "S16" || g.round === "E8") {
+        out[g.region][g.round].push(g);
+      }
     }
-  }
-  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
-  return out;
-}, [games]);
 
-const r32ByRegion = useMemo(() => {
-  const out: Record<string, Game[]> = {};
-  for (const r of REGIONS) out[r] = [];
-  for (const g of games) {
-    if (g.round === "R32" && g.region && out[g.region]) {
-      out[g.region].push(g);
+    for (const region of REGIONS) {
+      for (const round of ["R64", "R32", "S16", "E8"] as const) {
+        out[region][round].sort((a, b) => a.slot - b.slot);
+      }
     }
-  }
-  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
-  return out;
-}, [games]);
 
-const s16ByRegion = useMemo(() => {
-  const out: Record<string, Game[]> = {};
-  for (const r of REGIONS) out[r] = [];
-  for (const g of games) {
-    if (g.round === "S16" && g.region && out[g.region]) {
-      out[g.region].push(g);
-    }
-  }
-  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
-  return out;
-}, [games]);
+    return out;
+  }, [games]);
 
-const e8ByRegion = useMemo(() => {
-  const out: Record<string, Game[]> = {};
-  for (const r of REGIONS) out[r] = [];
-  for (const g of games) {
-    if (g.round === "E8" && g.region && out[g.region]) {
-      out[g.region].push(g);
-    }
-  }
-  for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
-  return out;
-}, [games]);
+  const finalFour = useMemo(
+    () => games.filter((g) => g.round === "F4").sort((a, b) => a.slot - b.slot),
+    [games],
+  );
 
-const finalFour = useMemo(() => {
-  return games
-    .filter((g) => g.round === "F4")
-    .sort((a, b) => a.slot - b.slot);
-}, [games]);
+  const championship = useMemo(() => games.find((g) => g.round === "CHIP"), [games]);
 
-const championship = useMemo(() => {
-  return games.find((g) => g.round === "CHIP");
-}, [games]);
+  const BRACKET_UNITS = 16;
+  const UNIT_PX = 44;
+  const GAME_SPAN = 2;
 
-
-
-const byRegionRound = useMemo(() => {
-  return {
-    East: {
-      R64: r64ByRegion["East"] ?? [],
-      R32: r32ByRegion["East"] ?? [],
-      S16: s16ByRegion["East"] ?? [],
-      E8: e8ByRegion["East"] ?? [],
-    },
-    West: {
-      R64: r64ByRegion["West"] ?? [],
-      R32: r32ByRegion["West"] ?? [],
-      S16: s16ByRegion["West"] ?? [],
-      E8: e8ByRegion["West"] ?? [],
-    },
-    South: {
-      R64: r64ByRegion["South"] ?? [],
-      R32: r32ByRegion["South"] ?? [],
-      S16: s16ByRegion["South"] ?? [],
-      E8: e8ByRegion["South"] ?? [],
-    },
-    Midwest: {
-      R64: r64ByRegion["Midwest"] ?? [],
-      R32: r32ByRegion["Midwest"] ?? [],
-      S16: s16ByRegion["Midwest"] ?? [],
-      E8: e8ByRegion["Midwest"] ?? [],
-    },
-  };
-}, [r64ByRegion, r32ByRegion, s16ByRegion, e8ByRegion]);
-
-  // --- Bracket positioning (aligns later rounds between feeders) ---
-const BRACKET_UNITS = 16;
-const UNIT_PX = 44;   // was 28 — increase to stop overlap
-const GAME_SPAN = 2;
-
-  function rowStartFor(round: "R64" | "R32" | "S16" | "E8", slot: number) {
+  const rowStartFor = (round: RoundKey, slot: number) => {
     if (round === "R64") return (slot - 1) * 2 + 1;
     if (round === "R32") return (slot - 1) * 4 + 2;
     if (round === "S16") return (slot - 1) * 8 + 4;
-    return 8; // E8
-  }
-  
+    return 8;
+  };
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -180,11 +117,9 @@ const GAME_SPAN = 2;
         return;
       }
 
-      // Teams (need region + seed_in_region)
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,name,region,seed_in_region,logo_url")
-
+        .select("id,name,region,seed_in_region,logo_url");
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -193,7 +128,6 @@ const GAME_SPAN = 2;
       }
       setTeams((teamRows ?? []) as Team[]);
 
-      // Games
       const { data: gameRows, error: gameErr } = await supabase
         .from("games")
         .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
@@ -205,7 +139,6 @@ const GAME_SPAN = 2;
       }
       setGames((gameRows ?? []) as Game[]);
 
-      // Players in this pool (use pool_leaderboard to get entry_id + display name)
       const { data: playerRows, error: playerErr } = await supabase
         .from("pool_leaderboard")
         .select("entry_id,user_id,display_name")
@@ -220,26 +153,16 @@ const GAME_SPAN = 2;
 
       const opts = (playerRows ?? []) as PlayerOption[];
       setPlayers(opts);
-
-      // Default: select first player (or none)
-      // If URL has ?entry=, use that player. Otherwise default to first.
-if (entryId) {
-  setSelectedEntryId(entryId);
-} else {
-  setSelectedEntryId(opts[0]?.entry_id ?? "");
-}
-
+      setSelectedEntryId(entryId ?? opts[0]?.entry_id ?? "");
       setLoading(false);
     };
 
-    load();
-  }, [poolId, entryId]);
+    void load();
+  }, [entryId, poolId]);
 
-  // Load highlighted teams whenever selectedEntryId changes
   useEffect(() => {
     const loadHighlights = async () => {
       setHighlightTeamIds(new Set());
-
       if (!selectedEntryId) return;
 
       const { data, error } = await supabase
@@ -252,718 +175,325 @@ if (entryId) {
         return;
       }
 
-      setHighlightTeamIds(new Set((data ?? []).map((r: any) => r.team_id)));
+      setHighlightTeamIds(new Set((data ?? []).map((r) => r.team_id as string)));
     };
 
-    loadHighlights();
+    void loadHighlights();
   }, [selectedEntryId]);
 
-    useEffect(() => {
-    function applyFitScale() {
+  useEffect(() => {
+    const applyFitScale = () => {
       if (!fitMode) return;
       const viewport = viewportRef.current;
       const content = contentRef.current;
       if (!viewport || !content) return;
 
-      // width of visible box
-      const vw = viewport.clientWidth;
-
-      // width of full bracket content
-      const cw = content.scrollWidth;
-
-      if (!cw) return;
-
-      // Fit width, but don't zoom in past 1x
-      const next = Math.min(1, vw / cw);
-
-      // Don't let it become microscopic
-      const clamped = Math.max(0.35, next);
-
-      setScale(clamped);
-    }
+      const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
+      setScale(Math.max(0.35, next));
+    };
 
     applyFitScale();
     window.addEventListener("resize", applyFitScale);
     return () => window.removeEventListener("resize", applyFitScale);
   }, [fitMode]);
 
-  // --- Zoom helpers (buttons will call these) ---
-  function zoomIn() {
+  const zoomIn = () => {
     setFitMode(false);
     setScale((s) => Math.min(1.25, +(s + 0.1).toFixed(2)));
-  }
+  };
 
-  function zoomOut() {
+  const zoomOut = () => {
     setFitMode(false);
     setScale((s) => Math.max(0.35, +(s - 0.1).toFixed(2)));
-  }
+  };
 
-  function setFit() {
-    setFitMode(true);
-  }
-
-  function set100() {
+  const setFit = () => setFitMode(true);
+  const set100 = () => {
     setFitMode(false);
     setScale(1);
-  }
+  };
 
-  function renderTeam(teamId: string | null, winnerId: string | null) {
-  if (!teamId)
-  return (
-    <span
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 10,
-        padding: "6px 8px",
-        borderRadius: 8,
-        border: "1px solid #eee",
-        opacity: 0.6,
-        fontWeight: 700,
-      }}
-    >
-      <span>TBD</span>
-      <span />
-    </span>
-  );
+  const renderTeam = (teamId: string | null, winnerId: string | null) => {
+    if (!teamId) {
+      return (
+        <span
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "6px 8px",
+            borderRadius: 8,
+            border: "1px solid #eee",
+            opacity: 0.6,
+            fontWeight: 700,
+          }}
+        >
+          <span>TBD</span>
+          <span />
+        </span>
+      );
+    }
 
-  const t = teamById.get(teamId);
-  const isHighlighted = highlightTeamIds.has(teamId);
-  const isWinner = winnerId === teamId;
+    const t = teamById.get(teamId);
+    const isHighlighted = highlightTeamIds.has(teamId);
+    const isWinner = winnerId === teamId;
 
-  return (
-    <span
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 10,
-        padding: "6px 8px",
-        borderRadius: 8,
-        border: "1px solid #eee",
-        background: isHighlighted ? "#fff6d6" : "transparent",
-        fontWeight: isWinner ? 900 : 700,
-        alignItems: "center",
-      }}
-    >
-      {/* LEFT: logo + team name */}
+    return (
       <span
         style={{
           display: "flex",
+          justifyContent: "space-between",
+          gap: 10,
+          padding: "6px 8px",
+          borderRadius: 8,
+          border: "1px solid #eee",
+          background: isHighlighted ? "#fff6d6" : "transparent",
+          fontWeight: isWinner ? 900 : 700,
           alignItems: "center",
-          gap: 8,
-          overflow: "hidden",
-          minWidth: 0,
         }}
       >
-        {t?.logo_url ? (
-          <img
-            src={t.logo_url}
-            alt={t?.name ?? "Team"}
-            width={18}
-            height={18}
-            style={{ objectFit: "contain", flexShrink: 0 }}
-          />
-        ) : (
-          // keeps alignment consistent even if logo missing
-          <span style={{ width: 18, height: 18, flexShrink: 0 }} />
-        )}
-
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {t?.name ?? "Unknown"}
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            overflow: "hidden",
+            minWidth: 0,
+          }}
+        >
+          {t?.logo_url ? (
+            <Image
+              src={t.logo_url}
+              alt={t.name ?? "Team"}
+              width={18}
+              height={18}
+              style={{ objectFit: "contain", flexShrink: 0 }}
+              unoptimized
+            />
+          ) : (
+            <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+          )}
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {t?.name ?? "Unknown"}
+          </span>
+        </span>
+        <span
+          style={{
+            opacity: 0.75,
+            flexShrink: 0,
+            width: 22,
+            textAlign: "right",
+            whiteSpace: "nowrap",
+            lineHeight: "18px",
+          }}
+        >
+          {t?.seed_in_region ?? ""}
         </span>
       </span>
+    );
+  };
 
-      {/* RIGHT: seed */}
-<span
-  style={{
-    opacity: 0.75,
-    flexShrink: 0,
-    width: 22,
-    textAlign: "right",
-    whiteSpace: "nowrap",
-    lineHeight: "18px",
-  }}
->
-  {t?.seed_in_region ?? ""}
-</span>
-    </span>
-  );
-}
-  
-function BracketColumn({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ minWidth: 260 }}>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>{title}</div>
-      <div style={{ display: "grid", gap: 14 }}>{children}</div>
-    </div>
-  );
-}
-
-function GameBox({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
+  const renderGameBox = (children: ReactNode) => (
     <div
       style={{
-  border: "1px solid #e9e9e9",
-  borderRadius: 14,
-  padding: 6,
-  background: "white",
-  boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
-  height: "100%",
-  overflow: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-}}
+        border: "1px solid #e9e9e9",
+        borderRadius: 14,
+        padding: 6,
+        background: "white",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+        height: "100%",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
     >
       <div style={{ display: "grid", gap: 8 }}>{children}</div>
     </div>
   );
-}  
 
-function RegionBracket({
-  region,
-  reverse = false,
-}: {
-  region: (typeof REGIONS)[number];
-  reverse?: boolean;
-}) {
-  const rounds = byRegionRound[region];
+  const renderRegionBracket = (region: Region, reverse = false) => {
+    const rounds = byRoundByRegion[region];
 
-// 👇 PASTE THIS FUNCTION RIGHT HERE
-function renderRoundColumn(title: string, roundKey: "R64" | "R32" | "S16" | "E8") {
-  const gamesForRound = rounds?.[roundKey] ?? [];
+    const renderRoundColumn = (title: string, roundKey: RoundKey) => {
+      const gamesForRound = rounds[roundKey] ?? [];
 
-  return (
-    <div style={{ minWidth: 260 }}>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>{title}</div>
-
-      {/* 16-row grid that we position games inside */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-          gap: 0,
-        }}
-      >
-        {gamesForRound.map((g) => {
-          const start = rowStartFor(roundKey, g.slot);
-
-          return (
-            <div key={g.id} style={{ gridRow: `${start} / span ${GAME_SPAN}` }}>
-              <GameBox>
-                {renderTeam(g.team1_id, g.winner_team_id)}
-                {renderTeam(g.team2_id, g.winner_team_id)}
-              </GameBox>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-  return (
-    <section
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: 16,
-        padding: 14,
-        background: "#fafafa",
-        minWidth: 4 * 260 + 3 * 16 + 40,
-      }}
-    >
-      <div style={{ fontWeight: 900, marginBottom: 12 }}>{region}</div>
-
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(260px, 1fr))",
-    gap: 16,
-    alignItems: "start",
-  }}
->
-  {/* If reverse=false (left side): R64 -> R32 -> S16 -> E8 */}
-  {/* If reverse=true  (right side): E8 -> S16 -> R32 -> R64 */}
-
-  {!reverse ? (
-    <>
-      {renderRoundColumn("Round of 64", "R64")}
-      {renderRoundColumn("Round of 32", "R32")}
-      {renderRoundColumn("Sweet 16", "S16")}
-      {renderRoundColumn("Elite 8", "E8")}
-    </>
-  ) : (
-    <>
-      {renderRoundColumn("Elite 8", "E8")}
-      {renderRoundColumn("Sweet 16", "S16")}
-      {renderRoundColumn("Round of 32", "R32")}
-      {renderRoundColumn("Round of 64", "R64")}
-    </>
-  )}
-</div>
-    </section>
-  );
-}
-
-if (loading) {
-  return (
-    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
-
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Back to Pool
-          </a>
-
-          <a
-            href={`/pool/${poolId}/leaderboard`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Leaderboard
-          </a>
-        </div>
-      </div>
-
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-      <p style={{ marginTop: 12, opacity: 0.8 }}>Loading…</p>
-    </main>
-  );
-}
-
-  return (
-    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
-
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Back to Pool
-          </a>
-
-          <a
-            href={`/pool/${poolId}/leaderboard`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Leaderboard
-          </a>
-        </div>
-      </div>
-{entryId ? (
-  <div
-    style={{
-      marginTop: 12,
-      padding: "10px 12px",
-      borderRadius: 12,
-      background: "#fff6d6",
-      border: "1px solid #f3e3a5",
-      fontWeight: 900,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 12,
-    }}
-  >
-    <div>
-      Viewing a player’s bracket (highlighting their teams)
-    </div>
-
-    <a
-      href={`/pool/${poolId}/bracket`}
-      style={{
-        fontWeight: 900,
-        textDecoration: "none",
-        border: "1px solid #d8c77b",
-        padding: "8px 10px",
-        borderRadius: 10,
-        background: "white",
-      }}
-    >
-      Clear
-    </a>
-  </div>
-) : null}
-      
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-
-      <div
-        style={{
-          marginTop: 16,
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ fontWeight: 900 }}>Highlight picks for:</div>
-        <select
-          value={selectedEntryId}
-          onChange={(e) => setSelectedEntryId(e.target.value)}
-          style={{ padding: "8px 10px", borderRadius: 10 }}
-        >
-          {players.length === 0 ? <option value="">No players yet</option> : null}
-          {players.map((p) => (
-            <option key={p.entry_id} value={p.entry_id}>
-              {p.display_name ?? p.user_id.slice(0, 8)}
-            </option>
-          ))}
-        </select>
-
-        <div style={{ fontSize: 12, opacity: 0.7 }}>
-          Highlighted teams show in <b>yellow</b>.
-        </div>
-      </div>
-
-      {/* Zoom controls */}
-      <div
-        style={{
-          marginTop: 12,
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ fontWeight: 900 }}>View:</div>
-
-        <button
-          onClick={setFit}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            background: fitMode ? "#f3f3f3" : "white",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          Fit
-        </button>
-
-        <button
-          onClick={set100}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            background: !fitMode && scale === 1 ? "#f3f3f3" : "white",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          100%
-        </button>
-
-        <button
-          onClick={zoomOut}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            background: "white",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          −
-        </button>
-
-        <button
-          onClick={zoomIn}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid #ccc",
-            background: "white",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          +
-        </button>
-
-        <div style={{ fontSize: 12, opacity: 0.7 }}>
-          Zoom: <b>{Math.round(scale * 100)}%</b>
-        </div>
-      </div>
-
-      {/* Bracket viewport (scales content to fit screen) */}
-      <div
-        ref={(el) => {
-          viewportRef.current = el;
-        }}
-        style={{
-          marginTop: 12,
-          border: "1px solid #eee",
-          borderRadius: 14,
-          background: "#fff",
-          padding: 12,
-          overflow: "hidden",
-        }}
-      >
-        <div
-          ref={(el) => {
-            contentRef.current = el;
-          }}
-          style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-            width: "fit-content",
-          }}
-        >
+      return (
+        <div style={{ minWidth: 260 }}>
+          <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>{title}</div>
           <div
             style={{
-              display: "flex",
-              gap: 18,
-              alignItems: "flex-start",
-              minWidth: 1800,
+              display: "grid",
+              gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+              gap: 0,
             }}
           >
-          {/* LEFT SIDE: East + West */}
-          <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-            <RegionBracket region={"East"} />
-            <RegionBracket region={"West"} />
+            {gamesForRound.map((g) => {
+              const start = rowStartFor(roundKey, g.slot);
+              return (
+                <div key={g.id} style={{ gridRow: `${start} / span ${GAME_SPAN}` }}>
+                  {renderGameBox(
+                    <>
+                      {renderTeam(g.team1_id, g.winner_team_id)}
+                      {renderTeam(g.team2_id, g.winner_team_id)}
+                    </>,
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </div>
+      );
+    };
 
-{/* CENTER: Final Four + Championship (safe JSX, no stray tags) */}
-<section
-  style={{
-    border: "1px solid #ddd",
-    borderRadius: 16,
-    padding: 14,
-    background: "#fff",
-    minWidth: 860,
-  }}
->
-  <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>
-    Final Four
-  </div>
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "minmax(260px, 1fr) minmax(260px, 1fr) minmax(260px, 1fr)",
-      gap: 2,
-      alignItems: "start",
-    }}
-  >
-
-{/* LEFT SEMIFINAL */}
-<div>
-  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-    National Semifinal
-  </div>
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-      gap: 0,
-    }}
-  >
-    {/* One matchup row: left team | center spine | right team */}
-    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-      <div
+    return (
+      <section
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 18px 1fr",
-          alignItems: "center",
-          height: "100%",
+          border: "1px solid #ddd",
+          borderRadius: 16,
+          padding: 14,
+          background: "#fafafa",
+          minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
-        {/* left side team */}
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <div style={{ width: "92%" }}>
-            {renderTeam(finalFour?.[0]?.team1_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
-          </div>
+        <div style={{ fontWeight: 900, marginBottom: 12 }}>{region}</div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, minmax(260px, 1fr))",
+            gap: 16,
+            alignItems: "start",
+          }}
+        >
+          {!reverse ? (
+            <>
+              {renderRoundColumn("Round of 64", "R64")}
+              {renderRoundColumn("Round of 32", "R32")}
+              {renderRoundColumn("Sweet 16", "S16")}
+              {renderRoundColumn("Elite 8", "E8")}
+            </>
+          ) : (
+            <>
+              {renderRoundColumn("Elite 8", "E8")}
+              {renderRoundColumn("Sweet 16", "S16")}
+              {renderRoundColumn("Round of 32", "R32")}
+              {renderRoundColumn("Round of 64", "R64")}
+            </>
+          )}
         </div>
+      </section>
+    );
+  };
 
-        {/* center spine */}
-        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
+  if (loading) {
+    return (
+      <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
+        {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+        <p style={{ marginTop: 12, opacity: 0.8 }}>Loading…</p>
+      </main>
+    );
+  }
 
-        {/* right side team */}
-        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-          <div style={{ width: "92%" }}>
-            {renderTeam(finalFour?.[0]?.team2_id ?? null, finalFour?.[0]?.winner_team_id ?? null)}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-    {/* CHAMPIONSHIP */}
-    <div>
-      <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-        Championship
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-          gap: 0,
-        }}
-      >
-        <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-          <GameBox>
-            {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
-            {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
-          </GameBox>
-        </div>
-      </div>
-    </div>
-
-{/* RIGHT SEMIFINAL */}
-<div>
-  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>
-    National Semifinal
-  </div>
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-      gap: 0,
-    }}
-  >
-    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 18px 1fr",
-          alignItems: "center",
-          height: "100%",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <div style={{ width: "92%" }}>
-            {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
-          </div>
-        </div>
-
-        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
-
-        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-          <div style={{ width: "92%" }}>
-            {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
-          </div>
+  return (
+    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Link href={`/pool/${poolId}`} style={{ padding: "10px 12px", border: "1px solid #ccc", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Back to Pool</Link>
+          <Link href={`/pool/${poolId}/leaderboard`} style={{ padding: "10px 12px", border: "1px solid #ccc", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Leaderboard</Link>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-{/* RIGHT SIDE: South + Midwest (mirrored) */}
-<div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-  <RegionBracket region="South" reverse />
-  <RegionBracket region="Midwest" reverse />
-          </div>
+      {entryId ? (
+        <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "#fff6d6", border: "1px solid #f3e3a5", fontWeight: 900, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div>Viewing a player’s bracket (highlighting their teams)</div>
+          <Link href={`/pool/${poolId}/bracket`} style={{ fontWeight: 900, textDecoration: "none", border: "1px solid #d8c77b", padding: "8px 10px", borderRadius: 10, background: "white" }}>Clear</Link>
+        </div>
+      ) : null}
 
-          </div>
+      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
-                      gap: 0,
-                    }}
-                  >
+      <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ fontWeight: 900 }}>Highlight picks for:</div>
+        <select value={selectedEntryId} onChange={(e) => setSelectedEntryId(e.target.value)} style={{ padding: "8px 10px", borderRadius: 10 }}>
+          {players.length === 0 ? <option value="">No players yet</option> : null}
+          {players.map((p) => (
+            <option key={p.entry_id} value={p.entry_id}>{p.display_name ?? p.user_id.slice(0, 8)}</option>
+          ))}
+        </select>
+        <div style={{ fontSize: 12, opacity: 0.7 }}>Highlighted teams show in <b>yellow</b>.</div>
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ fontWeight: 900 }}>View:</div>
+        <button onClick={setFit} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: fitMode ? "#f3f3f3" : "white", fontWeight: 900, cursor: "pointer" }}>Fit</button>
+        <button onClick={set100} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: !fitMode && scale === 1 ? "#f3f3f3" : "white", fontWeight: 900, cursor: "pointer" }}>100%</button>
+        <button onClick={zoomOut} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: "white", fontWeight: 900, cursor: "pointer" }}>−</button>
+        <button onClick={zoomIn} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: "white", fontWeight: 900, cursor: "pointer" }}>+</button>
+        <div style={{ fontSize: 12, opacity: 0.7 }}>Zoom: <b>{Math.round(scale * 100)}%</b></div>
+      </div>
+
+      <div ref={viewportRef} style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 14, background: "#fff", padding: 12, overflow: "hidden" }}>
+        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: "top left", width: "fit-content" }}>
+          <div style={{ display: "flex", gap: 18, alignItems: "flex-start", minWidth: 1800 }}>
+            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+              {renderRegionBracket("East")}
+              {renderRegionBracket("West")}
+            </div>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", minWidth: 860 }}>
+              <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>Final Four</div>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 1fr) minmax(260px, 1fr) minmax(260px, 1fr)", gap: 2, alignItems: "start" }}>
+                <div>
+                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>National Semifinal</div>
+                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
                     <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 18px 1fr",
-                          alignItems: "center",
-                          height: "100%",
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                          <div style={{ width: "92%" }}>
-                            {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
-                          </div>
-                        </div>
-
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 18px 1fr", alignItems: "center", height: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div></div>
                         <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
-
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                          <div style={{ width: "92%" }}>
-                            {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
-                          </div>
-                        </div>
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div></div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* RIGHT SIDE: South + Midwest (mirrored) */}
-                <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-                  <RegionBracket region="South" reverse />
-                  <RegionBracket region="Midwest" reverse />
+                <div>
+                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>Championship</div>
+                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
+                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
+                      {renderGameBox(
+                        <>
+                        {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
+                        {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
+                        </>,
+                      )}
+                    </div>
+                  </div>
                 </div>
 
+                <div>
+                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>National Semifinal</div>
+                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
+                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 18px 1fr", alignItems: "center", height: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div></div>
+                        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </section>
 
-              {/* (anything else like modal goes here, still inside <main>) */}
+            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+              {renderRegionBracket("South", true)}
+              {renderRegionBracket("Midwest", true)}
             </div>
           </div>
         </div>
-      </main>
-    );
+      </div>
+    </main>
+  );
 }
