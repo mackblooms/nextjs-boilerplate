@@ -3,6 +3,10 @@
     {
       "path": "/api/admin/sync-bracket",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/admin/sync-scores",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
