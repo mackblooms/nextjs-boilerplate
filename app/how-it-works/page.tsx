@@ -2,7 +2,7 @@ export default function HowItWorksPage() {
   return (
     <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
       <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
-        How BracketPool Works
+        How bracketball Works
       </h1>
 
       <p style={{ marginTop: 0, opacity: 0.85 }}>
