@@ -18,6 +18,7 @@ export default function PoolPage() {
   const [pool, setPool] = useState<Pool | null>(null);
   const [msg, setMsg] = useState("");
   const [isMember, setIsMember] = useState<boolean | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -25,10 +26,7 @@ export default function PoolPage() {
 
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
-      if (!user) {
-        setMsg("Please log in first.");
-        return;
-      }
+      setIsLoggedIn(!!user);
 
       const { data: poolData, error: poolErr } = await supabase
         .from("pools")
@@ -42,6 +40,12 @@ export default function PoolPage() {
       }
 
       setPool(poolData);
+
+            if (!user) {
+        setIsMember(false);
+        setMsg("Please log in first.");
+        return;
+      }
 
       const { data: memberRow } = await supabase
         .from("pool_members")
@@ -106,23 +110,39 @@ export default function PoolPage() {
             New Pool
           </a>
 
-          <a
-            href="/profile"
-            style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 800,
-            }}
-          >
-            Profile
-          </a>
+          {isLoggedIn ? (
+            <a
+              href="/profile"
+              style={{
+                padding: "10px 12px",
+                border: "1px solid #ccc",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 800,
+              }}
+            >
+              Profile
+            </a>
+          ) : (
+            <a
+              href={`/login?next=${encodeURIComponent(`/pool/${poolId}`)}`}
+              style={{
+                padding: "10px 12px",
+                border: "1px solid #ccc",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 800,
+              }}
+            >
+              Log in / Sign up
+            </a>
+          )}
+
         </div>
       </div>
 
       <div style={{ marginTop: 18 }}>
-{isMember ? (
+{!isMember ? (
   <>
     <button
       onClick={joinPool}
