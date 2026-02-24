@@ -918,8 +918,51 @@ if (loading) {
 
           </div>
 
-      {/* (anything else like modal goes here, still inside <main>) */}
+                    style={{
+                      display: "grid",
+                      gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
+                      gap: 0,
+                    }}
+                  >
+                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 18px 1fr",
+                          alignItems: "center",
+                          height: "100%",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                          <div style={{ width: "92%" }}>
+                            {renderTeam(finalFour?.[1]?.team1_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+                          </div>
+                        </div>
 
-    </main>
-  );
+                        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
+
+                        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                          <div style={{ width: "92%" }}>
+                            {renderTeam(finalFour?.[1]?.team2_id ?? null, finalFour?.[1]?.winner_team_id ?? null)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT SIDE: South + Midwest (mirrored) */}
+                <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+                  <RegionBracket region="South" reverse />
+                  <RegionBracket region="Midwest" reverse />
+                </div>
+
+              </div>
+
+              {/* (anything else like modal goes here, still inside <main>) */}
+            </div>
+          </div>
+        </div>
+      </main>
+    );
 }
