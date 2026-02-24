@@ -918,6 +918,7 @@ if (loading) {
 
           </div>
 
+                  <div
                     style={{
                       display: "grid",
                       gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)`,
