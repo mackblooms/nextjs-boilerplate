@@ -448,54 +448,72 @@ export default function BracketPage() {
         <div style={{ fontSize: 12, opacity: 0.7 }}>Zoom: <b>{Math.round(scale * 100)}%</b></div>
       </div>
 
-      <div ref={viewportRef} style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 14, background: "#fff", padding: 12, overflow: "hidden", maxWidth: 1800, marginInline: "auto" }}>
-        <div ref={contentRef} style={{ transform: `scale(${scale})`, transformOrigin: "top center", width: "fit-content", margin: "0 auto" }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "stretch", justifyContent: "center", minWidth: 3600 }}>
-            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-              {renderRegionBracket("East")}
-              {renderRegionBracket("West")}
-            </div>
+<div
+  ref={viewportRef}
+  style={{
+    marginTop: 12,
+    border: "1px solid #eee",
+    borderRadius: 14,
+    background: "#fff",
+    padding: 12,
+    overflowX: "auto",
+    overflowY: "hidden",
+  }}
+>
+  <div
+    ref={contentRef}
+    style={{
+      transform: `scale(${scale})`,
+      transformOrigin: "top left",
+      width: "max-content",
+      margin: "0 auto",
+    }}
+  >
+    <div style={{ display: "flex", gap: 18, alignItems: "flex-start", minWidth: 3200 }}>
+      <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+        {renderRegionBracket("East")}
+        {renderRegionBracket("West")}
+      </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 860, paddingInline: 8 }}>
-              <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", width: 860 }}>
-                <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16, textAlign: "center" }}>Final Four</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 860 }}>
+        <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", width: 860 }}>
+          <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16, textAlign: "center" }}>Final Four</div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
+              gridTemplateRows: "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
+              columnGap: 18,
+              rowGap: 20,
+              alignItems: "center",
+            }}
+          >
+            <div style={{ gridColumn: 1, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
+            <div style={{ gridColumn: 3, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
+            <div style={{ gridColumn: 1, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
+            <div style={{ gridColumn: 3, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
-                    gridTemplateRows: "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
-                    columnGap: 18,
-                    rowGap: 20,
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ gridColumn: 1, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
-                  <div style={{ gridColumn: 3, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
-
-                  <div style={{ gridColumn: 1, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
-                  <div style={{ gridColumn: 3, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
-
-                  <div style={{ gridColumn: 2, gridRow: 2, alignSelf: "center", justifySelf: "center", width: "100%" }}>
-                    <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12, textAlign: "center" }}>Championship</div>
-                    {renderGameBox(
-                      <>
-                        {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
-                        {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
-                      </>,
-                    )}
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-              {renderRegionBracket("South", true)}
-              {renderRegionBracket("Midwest", true)}
+            <div style={{ gridColumn: 2, gridRow: 2, alignSelf: "center", justifySelf: "center", width: "100%" }}>
+              <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12, textAlign: "center" }}>Championship</div>
+              {renderGameBox(
+                <>
+                  {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
+                  {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
+                </>,
+              )}
             </div>
           </div>
-        </div>
+        </section>
       </div>
+
+      <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+        {renderRegionBracket("South", true)}
+        {renderRegionBracket("Midwest", true)}
+      </div>
+    </div>
+  </div>
+</div>
+
     </main>
   );
 }
