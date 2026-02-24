@@ -312,6 +312,20 @@ export default function BracketPage() {
     </div>
   );
 
+ const renderSingleTeamBox = (teamId: string | null, winnerId: string | null) => (
+    <div
+      style={{
+        border: "1px solid #e9e9e9",
+        borderRadius: 14,
+        padding: 6,
+        background: "white",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+      }}
+    >
+      {renderTeam(teamId, winnerId)}
+    </div>
+  );
+
   const renderRegionBracket = (region: Region, reverse = false) => {
     const rounds = byRoundByRegion[region];
 
@@ -356,7 +370,7 @@ export default function BracketPage() {
           minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
-        <div style={{ fontWeight: 900, marginBottom: 12 }}>{region}</div>
+         <div style={{ fontWeight: 900, marginBottom: 12, textAlign: reverse ? "left" : "inherit" }}>{region}</div>
         <div
           style={{
             display: "grid",
@@ -444,45 +458,29 @@ export default function BracketPage() {
 
             <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", minWidth: 860 }}>
               <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16 }}>Final Four</div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(260px, 1fr) minmax(260px, 1fr) minmax(260px, 1fr)", gap: 2, alignItems: "start" }}>
-                <div>
-                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>National Semifinal</div>
-                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
-                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 18px 1fr", alignItems: "center", height: "100%" }}>
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div></div>
-                        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              </div>
+                              style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(240px, 1fr) minmax(280px, 1fr) minmax(240px, 1fr)",
+                  gridTemplateRows: "repeat(2, minmax(140px, auto))",
+                  columnGap: 18,
+                  rowGap: 44,
+                  alignItems: "start",
+                }}
+              >
+                <div style={{ gridColumn: 1, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
+                <div style={{ gridColumn: 3, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
+                <div style={{ gridColumn: 1, gridRow: 2 }}>{renderSingleTeamBox(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
+                <div style={{ gridColumn: 3, gridRow: 2 }}>{renderSingleTeamBox(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
 
-                <div>
-                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>Championship</div>
-                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
-                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-                      {renderGameBox(
-                        <>
-                        {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
-                        {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
-                        </>,
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12 }}>National Semifinal</div>
-                  <div style={{ display: "grid", gridTemplateRows: `repeat(${BRACKET_UNITS}, ${UNIT_PX}px)` }}>
-                    <div style={{ gridRow: `${rowStartFor("E8", 1)} / span ${GAME_SPAN}` }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 18px 1fr", alignItems: "center", height: "100%" }}>
-                        <div style={{ display: "flex", justifyContent: "flex-end" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div></div>
-                        <div style={{ height: "100%", borderLeft: "2px solid #ddd", margin: "0 auto" }} />
-                        <div style={{ display: "flex", justifyContent: "flex-start" }}><div style={{ width: "92%" }}>{renderTeam(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div></div>
-                      </div>
-                    </div>
-                  </div>
+                <div style={{ gridColumn: 2, gridRow: "1 / span 2", alignSelf: "center" }}>
+                  <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12, textAlign: "center" }}>Championship</div>
+                  {renderGameBox(
+                    <>
+                      {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
+                      {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
+                    </>,
+                  )}
                 </div>
               </div>
             </section>
