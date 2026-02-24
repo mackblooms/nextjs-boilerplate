@@ -6,7 +6,7 @@ export default function Home() {
       <AuthStatus />
 
       <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>
-        BracketBall (Beta)
+        bracketball (Beta)
       </h1>
 
       <p style={{ marginBottom: 18, opacity: 0.9 }}>
