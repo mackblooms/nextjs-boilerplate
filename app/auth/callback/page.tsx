@@ -14,6 +14,7 @@ export default function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
+        const next = url.searchParams.get("next") || "/";
 
         // If we got a code param (common), exchange it for a session
         if (code) {
@@ -56,7 +57,7 @@ export default function AuthCallbackPage() {
         }
 
         setStatus("Signed in! Redirecting…");
-        router.replace("/");
+        router.replace(next.startsWith("/") ? next : "/");
       } catch (e: any) {
         setStatus("Sign-in failed.");
         setDetails(e?.message ?? String(e));
