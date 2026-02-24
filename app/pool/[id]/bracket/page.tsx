@@ -469,7 +469,7 @@ export default function BracketPage() {
       margin: "0 auto",
     }}
   >
-    <div style={{ display: "flex", gap: 18, alignItems: "flex-start", minWidth: 3200 }}>
+    <div style={{ display: "flex", gap: 18, alignItems: "center", minWidth: 3200 }}>
       <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
         {renderRegionBracket("East")}
         {renderRegionBracket("West")}
