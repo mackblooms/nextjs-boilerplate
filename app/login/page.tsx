@@ -1,15 +1,13 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 
-export default function LoginPage() {
-
+export default function LoginClient() {
   const searchParams = useSearchParams();
-  const next = useMemo(() => searchParams.get("next") || "/", [searchParams]);
+  const next = searchParams.get("next") || "/";
+
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
@@ -24,7 +22,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(new URLSearchParams(window.location.search).get("next") || "/")}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         shouldCreateUser: true,
       },
     });
@@ -79,9 +77,7 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {msg ? (
-        <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p>
-      ) : null}
+      {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
     </main>
   );
 }
