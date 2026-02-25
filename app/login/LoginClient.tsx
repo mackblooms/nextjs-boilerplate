@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+
+const MAGIC_LINK_COOLDOWN_SECONDS = 60;
+
+function getRateLimitMessage() {
+  return "We just sent you a magic link. Please wait about a minute before requesting another one.";
+}
 
 export default function LoginClient() {
   const [email, setEmail] = useState("");
@@ -9,9 +15,38 @@ export default function LoginClient() {
     "idle"
   );
   const [msg, setMsg] = useState("");
+  const [cooldownEndsAt, setCooldownEndsAt] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
+
+  const secondsRemaining =
+    cooldownEndsAt === null
+      ? 0
+      : Math.max(0, Math.ceil((cooldownEndsAt - now) / 1000));
+
+  useEffect(() => {
+    if (!cooldownEndsAt) return;
+
+    const interval = setInterval(() => {
+      const currentTime = Date.now();
+      setNow(currentTime);
+      const remaining = Math.max(0, Math.ceil((cooldownEndsAt - currentTime) / 1000));
+      if (remaining <= 0) {
+        setCooldownEndsAt(null);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [cooldownEndsAt]);
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();
+
+    if (secondsRemaining > 0) {
+      setStatus("error");
+      setMsg(getRateLimitMessage());
+      return;
+    }
+
     setStatus("sending");
     setMsg("");
 
@@ -25,12 +60,18 @@ export default function LoginClient() {
 
     if (error) {
       setStatus("error");
-      setMsg(error.message);
+      if (error.message.toLowerCase().includes("rate limit")) {
+        setMsg(getRateLimitMessage());
+      } else {
+        setMsg(error.message);
+      }
       return;
     }
 
     setStatus("sent");
     setMsg("Magic link sent! Check your email.");
+    setCooldownEndsAt(Date.now() + MAGIC_LINK_COOLDOWN_SECONDS * 1000);
+    setNow(Date.now());
   }
 
   return (
@@ -59,7 +100,7 @@ export default function LoginClient() {
         />
         <button
           type="submit"
-          disabled={status === "sending"}
+          disabled={status === "sending" || secondsRemaining > 0}
           style={{
             width: "100%",
             padding: "12px 14px",
@@ -69,10 +110,13 @@ export default function LoginClient() {
             fontWeight: 700,
           }}
         >
-          {status === "sending" ? "Sending..." : "Send magic link"}
+          {status === "sending"
+            ? "Sending..."
+            : secondsRemaining > 0
+              ? `Try again in ${secondsRemaining}s`
+              : "Send magic link"}
         </button>
       </form>
-
       {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
     </main>
   );
