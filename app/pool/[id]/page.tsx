@@ -141,9 +141,8 @@ export default function PoolPage() {
         </div>
       </div>
 
-      <div style={{ marginTop: 18 }}>
+<div style={{ marginTop: 18 }}>
 {!isMember ? (
-  <>
     <button
       onClick={joinPool}
       style={{
@@ -157,22 +156,23 @@ export default function PoolPage() {
       Join pool
     </button>
 
-    <a
-      href="/how-it-works"
-      style={{
-        padding: "12px 14px",
-        borderRadius: 10,
-        border: "1px solid #ccc",
-        cursor: "pointer",
-        fontWeight: 900,
-        textDecoration: "none",
-        display: "inline-block",
-      }}
-    >
-      How it works
-    </a>
-  </>
 ) : null}
+
+  <a
+    href="/how-it-works"
+    style={{
+      padding: "12px 14px",
+      borderRadius: 10,
+      border: "1px solid #ccc",
+      cursor: "pointer",
+      fontWeight: 900,
+      textDecoration: "none",
+      display: "inline-block",
+      marginLeft: !isMember ? 10 : 0,
+    }}
+  >
+    How it works
+  </a>
 </div>
 
 <div style={{ marginTop: 24 }}>
