@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/admin/sync-scores",
-      "schedule": "0 24 * * *"
+      "schedule": "0 0 * * *" 
     }
   ]
 }
