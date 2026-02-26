@@ -19,6 +19,7 @@ export default function PoolPage() {
   const [msg, setMsg] = useState("");
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -41,7 +42,7 @@ export default function PoolPage() {
 
       setPool(poolData);
 
-            if (!user) {
+      if (!user) {
         setIsMember(false);
         setMsg("Please log in first.");
         return;
@@ -84,159 +85,221 @@ export default function PoolPage() {
   }
 
   return (
-    <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
-            {pool ? pool.name : "Pool"}
-          </h1>
-          <div style={{ fontSize: 14, opacity: 0.8 }}>
-            Share link:{" "}
-            <span style={{ fontFamily: "monospace" }}>{shareLink}</span>
+    <>
+      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
+              {pool ? pool.name : "Pool"}
+            </h1>
+            <div style={{ fontSize: 14, opacity: 0.8 }}>
+              Share link: <span style={{ fontFamily: "monospace" }}>{shareLink}</span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <a
+              href="/pools/new"
+              style={{
+                padding: "10px 12px",
+                border: "1px solid #ccc",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 800,
+              }}
+            >
+              New Pool
+            </a>
+
+            {isLoggedIn ? (
+              <a
+                href="/profile"
+                style={{
+                  padding: "10px 12px",
+                  border: "1px solid #ccc",
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Profile
+              </a>
+            ) : (
+              <a
+                href={`/login?next=${encodeURIComponent(`/pool/${poolId}`)}`}
+                style={{
+                  padding: "10px 12px",
+                  border: "1px solid #ccc",
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                Log in / Sign up
+              </a>
+            )}
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <a
-            href="/pools/new"
+        <div style={{ marginTop: 18 }}>
+          {!isMember ? (
+            <button
+              onClick={joinPool}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 900,
+              }}
+            >
+              Join pool
+            </button>
+          ) : null}
+
+          <button
+            onClick={() => setIsHowItWorksOpen(true)}
             style={{
-              padding: "10px 12px",
-              border: "1px solid #ccc",
+              padding: "12px 14px",
               borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 800,
+              border: "1px solid #ccc",
+              cursor: "pointer",
+              fontWeight: 900,
+              marginLeft: !isMember ? 10 : 0,
+              background: "transparent",
             }}
           >
-            New Pool
-          </a>
-
-          {isLoggedIn ? (
-            <a
-              href="/profile"
-              style={{
-                padding: "10px 12px",
-                border: "1px solid #ccc",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 800,
-              }}
-            >
-              Profile
-            </a>
-          ) : (
-            <a
-              href={`/login?next=${encodeURIComponent(`/pool/${poolId}`)}`}
-              style={{
-                padding: "10px 12px",
-                border: "1px solid #ccc",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 800,
-              }}
-            >
-              Log in / Sign up
-            </a>
-          )}
-
+            How it works
+          </button>
         </div>
-      </div>
 
-<div style={{ marginTop: 18 }}>
-{!isMember ? (
-    <button
-      onClick={joinPool}
-      style={{
-        padding: "12px 14px",
-        borderRadius: 10,
-        border: "none",
-        cursor: "pointer",
-        fontWeight: 900,
-      }}
-    >
-      Join pool
-    </button>
+        <div style={{ marginTop: 24 }}>
+          {isMember ? (
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <a
+                href={`/pool/${poolId}/draft`}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #ccc",
+                  textDecoration: "none",
+                  fontWeight: 900,
+                }}
+              >
+                Go to Draft
+              </a>
 
-) : null}
+              <a
+                href={`/pool/${poolId}/bracket`}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #ccc",
+                  textDecoration: "none",
+                  fontWeight: 900,
+                }}
+              >
+                Bracket
+              </a>
 
-  <a
-    href="/how-it-works"
-    style={{
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      cursor: "pointer",
-      fontWeight: 900,
-      textDecoration: "none",
-      display: "inline-block",
-      marginLeft: !isMember ? 10 : 0,
-    }}
-  >
-    How it works
-  </a>
-</div>
+              <a
+                href={`/pool/${poolId}/leaderboard`}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #ccc",
+                  textDecoration: "none",
+                  fontWeight: 900,
+                }}
+              >
+                Leaderboard
+              </a>
 
-<div style={{ marginTop: 24 }}>
-  {isMember ? (
-<div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-  <a
-    href={`/pool/${poolId}/draft`}
-    style={{
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Go to Draft
-  </a>
+              <a
+                href={`/pool/${poolId}/admin`}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid #ccc",
+                  textDecoration: "none",
+                  fontWeight: 900,
+                }}
+              >
+                Admin
+              </a>
+            </div>
+          ) : (
+            <p style={{ opacity: 0.85 }}>Join the pool to draft your teams.</p>
+          )}
+          </div>
 
-  {/* ✅ ADD THIS BLOCK RIGHT HERE */}
-  <a
-    href={`/pool/${poolId}/bracket`}
-    style={{
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Bracket
-  </a>
+        {msg ? <p style={{ marginTop: 14 }}>{msg}</p> : null}
+      </main>
 
-  <a
-    href={`/pool/${poolId}/leaderboard`}
-    style={{
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Leaderboard
-  </a>
+      {isHowItWorksOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="How it works"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 50,
+          }}
+          onClick={() => setIsHowItWorksOpen(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 560,
+              background: "#fff",
+              borderRadius: 12,
+              padding: 20,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>How it works</h2>
+            <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+              <li>Join the pool.</li>
+              <li>Draft your teams before games lock.</li>
+              <li>Follow scores and rankings on the leaderboard.</li>
+            </ol>
 
-  <a
-    href={`/pool/${poolId}/admin`}
-    style={{
-      padding: "12px 14px",
-      borderRadius: 10,
-      border: "1px solid #ccc",
-      textDecoration: "none",
-      fontWeight: 900,
-    }}
-  >
-    Admin
-  </a>
-</div>
-  ) : (
-    <p style={{ opacity: 0.85 }}>Join the pool to draft your teams.</p>
-  )}
-</div>
-
-      {msg ? <p style={{ marginTop: 14 }}>{msg}</p> : null}
-    </main>
+            <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+              <a
+                href="/how-it-works"
+                style={{
+                  padding: "10px 12px",
+                  border: "1px solid #ccc",
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                View full guide
+              </a>
+              <button
+                onClick={() => setIsHowItWorksOpen(false)}
+                style={{
+                  padding: "10px 12px",
+                  border: "none",
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      </>
   );
 }
