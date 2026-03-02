@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
 
   useEffect(() => {
     const loadDestination = async () => {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        setHref("/");
+        return;
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
 
@@ -41,17 +50,18 @@ export default function HomeButton() {
       aria-label="Go to bracketball home"
       style={{
         position: "fixed",
-        top: 12,
-        left: 12,
+        top: 18,
+        left: 20,
         zIndex: 1000,
-        background: "#111",
-        color: "#fff",
-        borderRadius: 999,
-        padding: "8px 14px",
-        fontWeight: 800,
+        color: "#111",
         textDecoration: "none",
+        fontFamily:
+          "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
+        fontSize: 28,
+        letterSpacing: "0.18em",
+        fontWeight: 500,
         lineHeight: 1,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        textTransform: "lowercase",
       }}
     >
       bracketball
