@@ -223,7 +223,7 @@ export default function BracketPage() {
             gap: 10,
             padding: "6px 8px",
             borderRadius: 8,
-            border: "1px solid #eee",
+            border: "1px solid var(--border-color)",
             opacity: 0.6,
             fontWeight: 700,
           }}
@@ -246,8 +246,8 @@ export default function BracketPage() {
           gap: 10,
           padding: "6px 8px",
           borderRadius: 8,
-          border: "1px solid #eee",
-          background: isHighlighted ? "#fff6d6" : "transparent",
+          border: "1px solid var(--border-color)",
+          background: isHighlighted ? "var(--highlight)" : "transparent",
           fontWeight: isWinner ? 900 : 700,
           alignItems: "center",
         }}
@@ -296,10 +296,10 @@ export default function BracketPage() {
   const renderGameBox = (children: ReactNode) => (
     <div
       style={{
-        border: "1px solid #e9e9e9",
+        border: "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 6,
-        background: "white",
+        background: "var(--surface)",
         boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
         height: "100%",
         overflow: "hidden",
@@ -315,10 +315,10 @@ export default function BracketPage() {
   const renderSingleTeamBox = (teamId: string | null, winnerId: string | null) => (
     <div
       style={{
-        border: "1px solid #e9e9e9",
+        border: "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 6,
-        background: "white",
+        background: "var(--surface)",
         boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
       }}
     >
@@ -363,10 +363,10 @@ export default function BracketPage() {
     return (
       <section
         style={{
-          border: "1px solid #ddd",
+          border: "1px solid var(--border-color)",
           borderRadius: 16,
           padding: 14,
-          background: "#fafafa",
+          background: "var(--surface-muted)",
           minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
@@ -414,15 +414,15 @@ export default function BracketPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", maxWidth: 1800, margin: "0 auto" }}>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <Link href={`/pool/${poolId}`} style={{ padding: "10px 12px", border: "1px solid #ccc", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Back to Pool</Link>
-          <Link href={`/pool/${poolId}/leaderboard`} style={{ padding: "10px 12px", border: "1px solid #ccc", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Leaderboard</Link>
+          <Link href={`/pool/${poolId}`} style={{ padding: "10px 12px", border: "1px solid var(--border-color)", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Back to Pool</Link>
+          <Link href={`/pool/${poolId}/leaderboard`} style={{ padding: "10px 12px", border: "1px solid var(--border-color)", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Leaderboard</Link>
         </div>
       </div>
 
       {entryId ? (
-        <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "#fff6d6", border: "1px solid #f3e3a5", fontWeight: 900, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, maxWidth: 1800, marginInline: "auto" }}>
-          <div>Viewing a player’s bracket (highlighting their teams)</div>
-          <Link href={`/pool/${poolId}/bracket`} style={{ fontWeight: 900, textDecoration: "none", border: "1px solid #d8c77b", padding: "8px 10px", borderRadius: 10, background: "white" }}>Clear</Link>
+        <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--highlight)", border: "1px solid var(--highlight-border)", fontWeight: 900, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, maxWidth: 1800, marginInline: "auto" }}>
+        <div>Viewing a player’s bracket (highlighting their teams)</div>
+          <Link href={`/pool/${poolId}/bracket`} style={{ fontWeight: 900, textDecoration: "none", border: "1px solid var(--highlight-border)", padding: "8px 10px", borderRadius: 10, background: "var(--surface)" }}>Clear</Link>
         </div>
       ) : null}
 
@@ -441,10 +441,10 @@ export default function BracketPage() {
 
       <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", maxWidth: 1800, marginInline: "auto" }}>
         <div style={{ fontWeight: 900 }}>View:</div>
-        <button onClick={setFit} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: fitMode ? "#f3f3f3" : "white", fontWeight: 900, cursor: "pointer" }}>Fit</button>
-        <button onClick={set100} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: !fitMode && scale === 1 ? "#f3f3f3" : "white", fontWeight: 900, cursor: "pointer" }}>100%</button>
-        <button onClick={zoomOut} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: "white", fontWeight: 900, cursor: "pointer" }}>−</button>
-        <button onClick={zoomIn} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid #ccc", background: "white", fontWeight: 900, cursor: "pointer" }}>+</button>
+        <button onClick={setFit} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: fitMode ? "var(--surface-elevated)" : "var(--surface)", fontWeight: 900, cursor: "pointer" }}>Fit</button>
+        <button onClick={set100} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: !fitMode && scale === 1 ? "var(--surface-elevated)" : "var(--surface)", fontWeight: 900, cursor: "pointer" }}>100%</button>
+        <button onClick={zoomOut} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--surface)", fontWeight: 900, cursor: "pointer" }}>−</button>
+        <button onClick={zoomIn} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--surface)", fontWeight: 900, cursor: "pointer" }}>+</button>
         <div style={{ fontSize: 12, opacity: 0.7 }}>Zoom: <b>{Math.round(scale * 100)}%</b></div>
       </div>
 
@@ -452,9 +452,9 @@ export default function BracketPage() {
   ref={viewportRef}
   style={{
     marginTop: 12,
-    border: "1px solid #eee",
+    border: "1px solid var(--border-color)",
     borderRadius: 14,
-    background: "#fff",
+    background: "var(--surface)",
     padding: 12,
     overflowX: "auto",
     overflowY: "hidden",
@@ -476,7 +476,7 @@ export default function BracketPage() {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 860 }}>
-        <section style={{ border: "1px solid #ddd", borderRadius: 16, padding: 14, background: "#fff", width: 860 }}>
+        <section style={{ border: "1px solid var(--border-color)", borderRadius: 16, padding: 14, background: "var(--surface)", width: 860 }}>
           <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16, textAlign: "center" }}>Final Four</div>
           <div
             style={{

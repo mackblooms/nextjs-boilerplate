@@ -53,7 +53,7 @@ export default function HomeButton() {
         top: 18,
         left: 20,
         zIndex: 1000,
-        color: "#111",
+        color: "var(--foreground)",
         textDecoration: "none",
         fontFamily:
           "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",

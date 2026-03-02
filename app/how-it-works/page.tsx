@@ -11,8 +11,8 @@ export default function HowItWorksPage() {
 
       <section style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>📊 Base Points Per Win</h2>    
-            <div style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", fontWeight: 900, background: "#fafafa" }}>
+            <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", fontWeight: 900, background: "var(--surface-muted)" }}>
             <div>Round Won</div>
             <div style={{ textAlign: "right" }}>Points</div>
           </div>
@@ -25,8 +25,8 @@ export default function HowItWorksPage() {
             ["Final Four", "300"],
             ["Championship", "360"],
           ].map(([label, pts]) => (
-            <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid #f1f1f1" }}>
-              <div>{label}</div>
+            <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid var(--border-color)" }}>
+            <div>{label}</div>
               <div style={{ textAlign: "right", fontWeight: 900 }}>{pts}</div>
             </div>
           ))}
@@ -86,7 +86,7 @@ export default function HowItWorksPage() {
           style={{
             display: "inline-block",
             padding: "10px 12px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 10,
             textDecoration: "none",
             fontWeight: 900,

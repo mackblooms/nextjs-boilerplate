@@ -102,7 +102,7 @@ export default function PoolPage() {
               href="/pools/new"
               style={{
                 padding: "10px 12px",
-                border: "1px solid #ccc",
+                border: "1px solid var(--border-color)",
                 borderRadius: 10,
                 textDecoration: "none",
                 fontWeight: 800,
@@ -116,7 +116,7 @@ export default function PoolPage() {
                 href="/profile"
                 style={{
                   padding: "10px 12px",
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 10,
                   textDecoration: "none",
                   fontWeight: 800,
@@ -129,7 +129,7 @@ export default function PoolPage() {
                 href={`/login?next=${encodeURIComponent(`/pool/${poolId}`)}`}
                 style={{
                   padding: "10px 12px",
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 10,
                   textDecoration: "none",
                   fontWeight: 800,
@@ -162,7 +162,7 @@ export default function PoolPage() {
             style={{
               padding: "12px 14px",
               borderRadius: 10,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               cursor: "pointer",
               fontWeight: 900,
               marginLeft: !isMember ? 10 : 0,
@@ -181,7 +181,7 @@ export default function PoolPage() {
                 style={{
                   padding: "12px 14px",
                   borderRadius: 10,
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 900,
                 }}
@@ -194,7 +194,7 @@ export default function PoolPage() {
                 style={{
                   padding: "12px 14px",
                   borderRadius: 10,
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 900,
                 }}
@@ -207,7 +207,7 @@ export default function PoolPage() {
                 style={{
                   padding: "12px 14px",
                   borderRadius: 10,
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 900,
                 }}
@@ -220,7 +220,7 @@ export default function PoolPage() {
                 style={{
                   padding: "12px 14px",
                   borderRadius: 10,
-                  border: "1px solid #ccc",
+                  border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 900,
                 }}
@@ -259,7 +259,7 @@ export default function PoolPage() {
               maxWidth: 760,
               maxHeight: "85vh",
               overflowY: "auto",
-              background: "#fff",
+              background: "var(--surface)",
               borderRadius: 12,
               padding: 20,
               boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
@@ -275,8 +275,8 @@ export default function PoolPage() {
 
             <section style={{ marginTop: 24 }}>
               <h3 style={{ fontSize: 20, fontWeight: 900 }}>📊 Base Points Per Win</h3>
-              <div style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", fontWeight: 900, background: "#fafafa" }}>
+              <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", fontWeight: 900, background: "var(--surface-muted)" }}>
                   <div>Round Won</div>
                   <div style={{ textAlign: "right" }}>Points</div>
                 </div>
@@ -288,8 +288,8 @@ export default function PoolPage() {
                   ["Final Four", "300"],
                   ["Championship", "360"],
                 ].map(([label, pts]) => (
-                  <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid #f1f1f1" }}>
-                    <div>{label}</div>
+                  <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid var(--border-color)" }}>
+                  <div>{label}</div>
                     <div style={{ textAlign: "right", fontWeight: 900 }}>{pts}</div>
                   </div>
                 ))}

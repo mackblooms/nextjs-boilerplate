@@ -334,7 +334,7 @@ if (poolRow?.lock_time) {
             href={`/pool/${poolId}`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
@@ -346,7 +346,7 @@ if (poolRow?.lock_time) {
             href={`/pool/${poolId}/leaderboard`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
@@ -389,7 +389,7 @@ if (poolRow?.lock_time) {
         {/* Team list */}
         <section
           style={{
-            border: "1px solid #ddd",
+            border: "1px solid var(--border-color)",
             borderRadius: 12,
             padding: 14,
           }}
@@ -408,7 +408,7 @@ if (poolRow?.lock_time) {
                     justifyContent: "space-between",
                     gap: 10,
                     padding: "10px 10px",
-                    border: "1px solid #eee",
+                    border: "1px solid var(--border-color)",
                     borderRadius: 10,
                     cursor: locked ? "not-allowed" : "pointer",
                     userSelect: "none",
@@ -453,7 +453,7 @@ if (poolRow?.lock_time) {
         {/* Sidebar */}
         <aside
           style={{
-            border: "1px solid #ddd",
+            border: "1px solid var(--border-color)",
             borderRadius: 12,
             padding: 14,
             height: "fit-content",
@@ -474,7 +474,7 @@ if (poolRow?.lock_time) {
               <b>{remaining}</b>
             </div>
 
-            <hr style={{ border: "none", borderTop: "1px solid #eee" }} />
+            <hr style={{ border: "none", borderTop: "1px solid var(--border-color)" }} />
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>1-seeds</span>
@@ -503,8 +503,8 @@ if (poolRow?.lock_time) {
               style={{
                 padding: "10px 12px",
                 borderRadius: 10,
-                border: "1px solid #eee",
-                background: isValid ? "#f6fff7" : "#fff6f6",
+                border: "1px solid var(--border-color)",
+                background: isValid ? "var(--success-bg)" : "var(--danger-bg)",
                 fontWeight: 900,
               }}
             >
@@ -517,8 +517,8 @@ if (poolRow?.lock_time) {
                   marginTop: 10,
                   padding: "10px 12px",
                   borderRadius: 10,
-                  background: "#fff3cd",
-                  border: "1px solid #ffeeba",
+                  background: "var(--warning-bg)",
+                  border: "1px solid var(--warning-border)",
                   fontWeight: 900,
                 }}
               >
