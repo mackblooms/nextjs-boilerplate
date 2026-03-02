@@ -266,112 +266,69 @@ export default function PoolPage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>How bracketball Works</h2>
+            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>🏀 BracketPool Scoring System</h2>
 
-            <p style={{ marginTop: 0, opacity: 0.85 }}>
-              Everything you need to know about drafting, scoring, and tie-breakers.
+            <p style={{ marginTop: 0, lineHeight: 1.6 }}>
+              BracketPool is scored <b>per game won</b>, not by furthest round reached. Every win by a team you drafted adds to your
+              total cumulatively.
             </p>
 
             <section style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 900 }}>Quick Summary</h3>
-              <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-                <li>Each player drafts teams within a fixed budget.</li>
-                <li>Your score is the sum of points your drafted teams earn.</li>
-                <li>Teams earn more points the further they advance.</li>
-              </ul>
-            </section>
-
-            <section style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 900 }}>Draft Rules</h3>
-              <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-                <li>
-                  <b>Budget:</b> $100 total (example — update if different).
-                </li>
-                <li>
-                  <b>Roster limits:</b> (ex: max 2 one-seeds, max 2 two-seeds, max 4 12-seeds).
-                </li>
-                <li>
-                  <b>Draft lock:</b> picks lock at tip-off of the first game (or when commissioner locks).
-                </li>
-              </ul>
-            </section>
-
-            <section style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 900 }}>Scoring</h3>
-              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-                Points are awarded based on the <b>furthest round a team reaches</b>.
-              </p>
-
-              <div
-                style={{
-                  marginTop: 12,
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 140px",
-                    padding: "10px 12px",
-                    fontWeight: 900,
-                    background: "#fafafa",
-                  }}
-                >
-                  <div>Round Reached</div>
+              <h3 style={{ fontSize: 20, fontWeight: 900 }}>📊 Base Points Per Win</h3>
+              <div style={{ marginTop: 12, border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", fontWeight: 900, background: "#fafafa" }}>
+                  <div>Round Won</div>
                   <div style={{ textAlign: "right" }}>Points</div>
                 </div>
-
                 {[
-                  ["Round of 64 (Win 1)", "X"],
-                  ["Round of 32 (Win 2)", "X"],
-                  ["Sweet 16", "X"],
-                  ["Elite 8", "X"],
-                  ["Final Four", "X"],
-                  ["Champion", "X"],
+                  ["Round of 64", "12"],
+                  ["Round of 32", "36"],
+                  ["Sweet 16", "84"],
+                  ["Elite 8", "180"],
+                  ["Final Four", "300"],
+                  ["Championship", "360"],
                 ].map(([label, pts]) => (
-                  <div
-                    key={label}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 140px",
-                      padding: "10px 12px",
-                      borderTop: "1px solid #f1f1f1",
-                    }}
-                  >
+                  <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid #f1f1f1" }}>
                     <div>{label}</div>
                     <div style={{ textAlign: "right", fontWeight: 900 }}>{pts}</div>
                   </div>
                 ))}
               </div>
-
-              <p style={{ marginTop: 10, opacity: 0.8 }}>Replace the X’s with your real scoring values.</p>
+              <p style={{ marginTop: 10, opacity: 0.85 }}>
+                A champion that wins all 6 games earns 972 base points before bonuses.
+              </p>
             </section>
 
             <section style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 900 }}>Tie-breakers</h3>
-              <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-                <li>Total points (obviously).</li>
-                <li>If tied: most Final Four teams drafted.</li>
-                <li>If still tied: most Championship teams drafted.</li>
-                <li>If still tied: split pot (or commissioner decides).</li>
-              </ul>
+              <h3 style={{ fontSize: 20, fontWeight: 900 }}>🔥 Upset Bonus</h3>
+              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+                Upsets add bonus points on each win: <b>12 × (Team Seed − Opponent Seed)</b>, minimum 0.
+              </p>
             </section>
 
             <section style={{ marginTop: 24 }}>
-              <h3 style={{ fontSize: 20, fontWeight: 900 }}>FAQ / Edge Cases</h3>
-              <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-                <li>
-                  <b>Play-in teams:</b> once decided, the winner inherits the slot and scoring.
-                </li>
-                <li>
-                  <b>Vacated wins / forfeits:</b> scoring follows official bracket advancement.
-                </li>
-                <li>
-                  <b>Scoring updates:</b> automated via SportsDataIO when games go Final.
-                </li>
-              </ul>
+              <h3 style={{ fontSize: 20, fontWeight: 900 }}>📈 Seed Multiplier (base points only)</h3>
+              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+                Base win points are multiplied by seed value from <b>1.00x (1-seed)</b> up to <b>1.525x (16-seed)</b>.
+                Upset and historic bonuses are not multiplied.
+              </p>
+            </section>
+
+            <section style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 900 }}>🏆 Historic Upset Bonus</h3>
+              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+                One-time tournament bonus on a first Round of 64 win: 14-seed <b>+144</b>, 15-seed <b>+240</b>, 16-seed <b>+336</b>.
+              </p>
+            </section>
+
+            <section style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 900 }}>🧮 Final Formula</h3>
+              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+                <b>Win Score = (Base Round Points × Seed Multiplier) + Upset Bonus + Historic Bonus (if eligible)</b>
+              </p>
+              <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+                Leaderboard and player totals use this formula and update from recorded game winners.
+              </p>
             </section>
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
@@ -390,7 +347,7 @@ export default function PoolPage() {
             </div>
           </div>
         </div>
-      ) : null}
+     ) : null}
     </>
   );
 }
