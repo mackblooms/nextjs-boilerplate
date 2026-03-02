@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import { scoreTeamWins, type ScoringGame } from "../../../../lib/scoring";
 
 type Row = {
   entry_id: string;
@@ -11,6 +12,9 @@ type Row = {
   total_score: number;
   rank: number;
 };
+
+type TeamSeedRow = { id: string; seed_in_region: number | null };
+type PickRow = { entry_id: string; team_id: string };
 
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
@@ -36,9 +40,8 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
-        .select("entry_id,user_id,display_name,total_score,rank")
-        .eq("pool_id", poolId)
-        .order("rank", { ascending: true });
+        .select("entry_id,user_id,display_name")
+        .eq("pool_id", poolId);
 
       if (error) {
         setMsg(error.message);
@@ -46,7 +49,72 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
         return;
       }
 
-      setRows((data ?? []) as Row[]);
+      const baseRows = (data ?? []) as Omit<Row, "total_score" | "rank">[];
+      const entryIds = baseRows.map((r) => r.entry_id);
+
+      const { data: teamRows, error: teamErr } = await supabase
+        .from("teams")
+        .select("id,seed_in_region");
+
+      if (teamErr) {
+        setMsg(teamErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const teamSeedById = new Map((teamRows as TeamSeedRow[] | null ?? []).map((t) => [t.id, t.seed_in_region]));
+
+      const { data: gameRows, error: gameErr } = await supabase
+        .from("games")
+        .select("round,team1_id,team2_id,winner_team_id");
+
+      if (gameErr) {
+        setMsg(gameErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const teamScores = scoreTeamWins((gameRows ?? []) as ScoringGame[], teamSeedById);
+
+      let picksByEntry = new Map<string, string[]>();
+      if (entryIds.length > 0) {
+        const { data: pickRows, error: picksErr } = await supabase
+          .from("entry_picks")
+          .select("entry_id,team_id")
+          .in("entry_id", entryIds);
+
+        if (picksErr) {
+          setMsg(picksErr.message);
+          setLoading(false);
+          return;
+        }
+
+        picksByEntry = new Map<string, string[]>();
+        for (const row of ((pickRows ?? []) as PickRow[])) {
+          const arr = picksByEntry.get(row.entry_id) ?? [];
+          arr.push(row.team_id);
+          picksByEntry.set(row.entry_id, arr);
+        }
+      }
+
+      const computed = baseRows
+        .map((r) => {
+          const teamIds = picksByEntry.get(r.entry_id) ?? [];
+          const totalScore = teamIds.reduce((sum, teamId) => sum + (teamScores.get(teamId) ?? 0), 0);
+          return { ...r, total_score: totalScore };
+        })
+        .sort((a, b) => b.total_score - a.total_score || (a.display_name ?? "").localeCompare(b.display_name ?? ""));
+
+      let prevScore: number | null = null;
+      let prevRank = 0;
+      const ranked: Row[] = computed.map((r, idx) => {
+        const rank = prevScore === r.total_score ? prevRank : idx + 1;
+        prevScore = r.total_score;
+        prevRank = rank;
+        return { ...r, rank };
+      });
+
+      setRows(ranked);
       setLoading(false);
     };
 
