@@ -4,6 +4,58 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../../lib/supabaseClient";
 
+type ScoringGame = {
+  round: string;
+  team1_id: string | null;
+  team2_id: string | null;
+  winner_team_id: string | null;
+};
+
+const BASE_POINTS_BY_ROUND: Record<string, number> = {
+  R64: 12,
+  R32: 36,
+  S16: 84,
+  E8: 180,
+  F4: 300,
+  CHIP: 360,
+};
+
+const HISTORIC_BONUS_BY_SEED: Record<number, number> = { 14: 144, 15: 240, 16: 336 };
+
+function seedMultiplier(seed: number | null | undefined): number {
+  if (!seed || seed < 1 || seed > 16) return 1;
+  return 1 + (seed - 1) * 0.035;
+}
+
+function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {
+  const totals = new Map<string, number>();
+  const historicAwarded = new Set<string>();
+
+  for (const g of games) {
+    const winnerId = g.winner_team_id;
+    if (!winnerId) continue;
+
+    const base = BASE_POINTS_BY_ROUND[g.round] ?? 0;
+    if (!base) continue;
+
+    const winnerSeed = teamSeedById.get(winnerId) ?? null;
+    const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
+    const opponentSeed = opponentId ? (teamSeedById.get(opponentId) ?? null) : null;
+    const upsetBonus = !winnerSeed || !opponentSeed ? 0 : Math.max(0, 12 * (winnerSeed - opponentSeed));
+
+    let historicBonus = 0;
+    if (g.round === "R64" && winnerSeed && HISTORIC_BONUS_BY_SEED[winnerSeed] && !historicAwarded.has(winnerId)) {
+      historicBonus = HISTORIC_BONUS_BY_SEED[winnerSeed];
+      historicAwarded.add(winnerId);
+    }
+
+    const winScore = Math.round(base * seedMultiplier(winnerSeed) + upsetBonus + historicBonus);
+    totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
+  }
+
+  return totals;
+}
+
 type PickRow = {
   team_id: string;
   team_name: string;
@@ -11,7 +63,7 @@ type PickRow = {
   cost: number | null;
   round_reached: string | null;
   total_team_score: number | null;
-  logo_url?: string | null; // we’ll fill this in after
+  logo_url?: string | null;
 };
 
 export default function PicksPage() {
@@ -96,46 +148,59 @@ const entryId =
       setDisplayName(prof?.display_name ?? "Player");
 
       // Get picks
-const { data: pickRows, error: picksErr } = await supabase
-  .from("entry_pick_details")
-  .select("team_id,team_name,seed,cost,round_reached,total_team_score")
-  .eq("entry_id", entryId);
+      const { data: pickRows, error: picksErr } = await supabase
+        .from("entry_pick_details")
+        .select("team_id,team_name,seed,cost,round_reached,total_team_score")
+        .eq("entry_id", entryId);
 
-if (picksErr) {
-  setMsg(picksErr.message);
-  setLoading(false);
-  return;
-}
+      if (picksErr) {
+        setMsg(picksErr.message);
+        setLoading(false);
+        return;
+      }
 
-// Build a unique list of team IDs from the picks
-const teamIds = Array.from(new Set((pickRows ?? []).map((p: any) => p.team_id).filter(Boolean)));
+      const teamIds = Array.from(new Set((pickRows ?? []).map((p) => p.team_id).filter(Boolean)));
 
-// Fetch logos from teams
-let logoById = new Map<string, string | null>();
-if (teamIds.length > 0) {
-  const { data: teamRows, error: teamErr } = await supabase
-    .from("teams")
-    .select("id,logo_url")
-    .in("id", teamIds);
+      const { data: gameRows, error: gameErr } = await supabase
+        .from("games")
+        .select("round,team1_id,team2_id,winner_team_id");
 
-  if (teamErr) {
-    setMsg(teamErr.message);
-    setLoading(false);
-    return;
-  }
+      if (gameErr) {
+        setMsg(gameErr.message);
+        setLoading(false);
+        return;
+      }
 
-  logoById = new Map((teamRows ?? []).map((t: any) => [t.id, t.logo_url ?? null]));
-}
+      let logoById = new Map<string, string | null>();
+      let seedById = new Map<string, number | null>();
 
-// Merge logos onto picks
-const merged = (pickRows ?? []).map((p: any) => ({
-  ...p,
-  logo_url: logoById.get(p.team_id) ?? null,
-}));
+      if (teamIds.length > 0) {
+        const { data: teamRows, error: teamErr } = await supabase
+          .from("teams")
+          .select("id,logo_url,seed_in_region")
+          .in("id", teamIds);
 
-const sorted = merged.sort((a: any, b: any) => (a.seed ?? 999) - (b.seed ?? 999));
-setPicks(sorted as PickRow[]);
-setLoading(false);
+        if (teamErr) {
+          setMsg(teamErr.message);
+          setLoading(false);
+          return;
+        }
+
+        logoById = new Map((teamRows ?? []).map((t) => [t.id, t.logo_url ?? null]));
+        seedById = new Map((teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]));
+      }
+
+      const computedTeamScores = scoreTeamWins((gameRows ?? []) as ScoringGame[], seedById);
+
+      const merged = (pickRows ?? []).map((p) => ({
+        ...p,
+        total_team_score: computedTeamScores.get(p.team_id) ?? 0,
+        logo_url: logoById.get(p.team_id) ?? null,
+      }));
+
+      const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+      setPicks(sorted as PickRow[]);
+      setLoading(false);
       
 };
 
