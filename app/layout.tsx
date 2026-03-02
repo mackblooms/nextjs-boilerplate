@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import HomeButton from "./components/HomeButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,26 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-                <Link
-          href="/"
-          aria-label="Go to bracketball home"
-          style={{
-            position: "fixed",
-            top: 12,
-            left: 12,
-            zIndex: 1000,
-            background: "#111",
-            color: "#fff",
-            borderRadius: 999,
-            padding: "8px 14px",
-            fontWeight: 800,
-            textDecoration: "none",
-            lineHeight: 1,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          }}
-        >
-          bracketball
-        </Link>
+        <HomeButton />
 
         {children}
       </body>
