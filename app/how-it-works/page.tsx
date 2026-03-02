@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HowItWorksPage() {
   return (
     <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
@@ -60,11 +62,39 @@ export default function HowItWorksPage() {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900 }}>🧮 Final Scoring Per Win</h2>
-        <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-          <b>Win Score = (Base Round Points × Seed Multiplier) + Upset Bonus + Historic Bonus (if applicable)</b>
-        </p>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>Tie-breakers</h2>
+        <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
+          <li>Total points (obviously).</li>
+          <li>If tied: most Final Four teams drafted.</li>
+          <li>If still tied: most Championship teams drafted.</li>
+          <li>If still tied: split pot (or commissioner decides).</li>
+        </ul>
       </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>FAQ / Edge Cases</h2>
+        <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
+          <li><b>Play-in teams:</b> once decided, the winner inherits the slot and scoring.</li>
+          <li><b>Vacated wins / forfeits:</b> scoring follows official bracket advancement.</li>
+          <li><b>Scoring updates:</b> automated via SportsDataIO when games go Final.</li>
+        </ul>
+      </section>
+
+      <div style={{ marginTop: 30 }}>
+                <Link
+          href="/"
+          style={{
+            display: "inline-block",
+            padding: "10px 12px",
+            border: "1px solid #ccc",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 900,
+          }}
+        >
+          Back to Home
+        </Link>
+      </div>
     </main>
   );
 }
