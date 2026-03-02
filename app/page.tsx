@@ -63,7 +63,7 @@ export default function Home() {
           This week’s checklist
         </h2>
         <ol style={{ lineHeight: 1.7, paddingLeft: 18, opacity: 0.9 }}>
-          <li>Log in via magic link</li>
+          <li>Create an account and log in with password</li>
           <li>Set your display name in Profile</li>
           <li>Create a pool and share the link</li>
           <li>Join pool on a second account to test “friend flow”</li>
