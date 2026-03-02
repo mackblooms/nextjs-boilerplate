@@ -9,8 +9,36 @@ export default function LoginClient() {
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
   const [msg, setMsg] = useState("");
+
+  async function resendConfirmation() {
+    setStatus("sending");
+    setMsg("");
+
+    const next =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("next") || "/pools"
+        : "/pools";
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
+      });
+
+      if (error) {
+        setStatus("error");
+      setMsg(error.message);
+      return;
+    }
+
+    setStatus("success");
+    setMsg("Confirmation email sent. Check your inbox and spam folder.");
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +51,13 @@ export default function LoginClient() {
         : "/pools";
 
     if (mode === "sign-up") {
-      const { error } = await supabase.auth.signUp({
+      if (password !== confirmPassword) {
+        setStatus("error");
+        setMsg("Passwords do not match.");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -37,8 +71,21 @@ export default function LoginClient() {
         return;
       }
 
+      const hasIdentity = Boolean(data.user?.identities && data.user.identities.length > 0);
+      const hasSession = Boolean(data.session);
+
       setStatus("success");
-      setMsg("Account created. If email confirmation is enabled, check your inbox once. After that, sign in with your password.");
+      if (hasSession) {
+        setMsg("Account created and signed in. Redirecting...");
+        window.location.href = next;
+        return;
+      }
+
+      if (hasIdentity) {
+        setMsg("Account created. We sent a confirmation email—open it to activate your account.");
+      } else {
+        setMsg("If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'.");
+      }
       return;
     }
 
@@ -52,12 +99,11 @@ export default function LoginClient() {
 
     setStatus("success");
     setMsg("Signed in successfully. Redirecting...");
-
     window.location.href = next;
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
+    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}></main>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Sign in</h1>
       <p style={{ marginBottom: 24 }}>Use email + password so you don’t need a magic link every time.</p>
 
@@ -112,7 +158,7 @@ export default function LoginClient() {
 
         <input
           type="password"
-          placeholder="Password"
+          placeholder={mode === "sign-up" ? "New password" : "Password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -126,6 +172,24 @@ export default function LoginClient() {
           }}
         />
 
+        {mode === "sign-up" ? (
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
+          />
+        ) : null}
+
         <button
           type="submit"
           disabled={status === "sending"}
@@ -138,16 +202,32 @@ export default function LoginClient() {
             fontWeight: 700,
           }}
         >
-          {status === "sending"
-            ? "Working..."
-            : mode === "sign-up"
-              ? "Create account"
-              : "Sign in"}
+          {status === "sending" ? "Working..." : mode === "sign-up" ? "Create account" : "Sign in"}
         </button>
       </form>
 
+      {mode === "sign-up" ? (
+        <button
+          type="button"
+          onClick={resendConfirmation}
+          disabled={status === "sending" || !email}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid var(--border-color)",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: "transparent",
+          }}
+        >
+          Resend confirmation email
+        </button>
+      ) : null}
+
       <p style={{ marginTop: 12, opacity: 0.8, fontSize: 14 }}>
-        Prefer magic link? You can still request one from Supabase later if needed.
+        For confirmation emails to send, Supabase must have Email provider configured and &quot;Confirm email&quot; enabled in Auth settings.
       </p>
 
       {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
