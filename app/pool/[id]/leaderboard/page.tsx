@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
-import { scoreTeamWins, type ScoringGame } from "../../../../lib/scoring";
+import { scoreTeamWins, type ScoringGame } from "@/lib/scoring";
 
 type Row = {
   entry_id: string;
