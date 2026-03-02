@@ -181,7 +181,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
             href={`/pool/${poolId}`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
@@ -193,7 +193,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
             href={`/pool/${poolId}/draft`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
@@ -211,7 +211,7 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
         <div
           style={{
             marginTop: 16,
-            border: "1px solid #ddd",
+            border: "1px solid var(--border-color)",
             borderRadius: 12,
             overflow: "hidden",
           }}
@@ -222,8 +222,8 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
               gridTemplateColumns: "80px 1fr 140px",
               padding: "10px 12px",
               fontWeight: 900,
-              background: "#fafafa",
-              borderBottom: "1px solid #eee",
+              background: "var(--surface-muted)",
+              borderBottom: "1px solid var(--border-color)",
             }}
           >
             <div>Rank</div>
@@ -238,9 +238,9 @@ const [myUserId, setMyUserId] = useState<string | null>(null);
     display: "grid",
     gridTemplateColumns: "80px 1fr 140px",
     padding: "10px 12px",
-    borderBottom: "1px solid #f1f1f1",
+    borderBottom: "1px solid var(--border-color)",
     alignItems: "center",
-    background: r.user_id === myUserId ? "#f0f8ff" : "transparent",
+    background: r.user_id === myUserId ? "var(--surface-elevated)" : "transparent",
   }}
 >
               <div style={{ fontWeight: 900 }}>{r.rank}</div>
