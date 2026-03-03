@@ -24,20 +24,44 @@ export default function LoginClient() {
 
     const { error } = await supabase.auth.resend({
       type: "signup",
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        },
-      });
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
+    });
 
-      if (error) {
-        setStatus("error");
+    if (error) {
+      setStatus("error");
       setMsg(error.message);
       return;
     }
 
     setStatus("success");
     setMsg("Confirmation email sent. Check your inbox and spam folder.");
+  }
+
+  async function sendPasswordReset() {
+    if (!email) {
+      setStatus("error");
+      setMsg("Enter your email first, then click Forgot password.");
+      return;
+    }
+
+    setStatus("sending");
+    setMsg("");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
+    });
+
+    if (error) {
+      setStatus("error");
+      setMsg(error.message);
+      return;
+    }
+
+    setStatus("success");
+    setMsg("Password reset email sent. Open the link in your email to set a new password.");
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -203,6 +227,26 @@ export default function LoginClient() {
         </button>
       </form>
 
+      {mode === "sign-in" ? (
+        <button
+          type="button"
+          onClick={sendPasswordReset}
+          disabled={status === "sending"}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid var(--border-color)",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: "transparent",
+          }}
+        >
+          Forgot password?
+        </button>
+      ) : null}
+
       {mode === "sign-up" ? (
         <button
           type="button"
@@ -224,7 +268,8 @@ export default function LoginClient() {
       ) : null}
 
       <p style={{ marginTop: 12, opacity: 0.8, fontSize: 14 }}>
-        For confirmation emails to send, Supabase must have Email provider configured and &quot;Confirm email&quot; enabled in Auth settings.
+        For confirmation emails and password resets to send, Supabase must have Email provider configured and &quot;Confirm email&quot;
+        enabled in Auth settings.
       </p>
 
       {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
