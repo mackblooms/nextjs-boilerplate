@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 
@@ -9,7 +9,58 @@ export default function LoginResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [ready, setReady] = useState(false);
+  const [msg, setMsg] = useState("Validating your reset link...");
+
+  useEffect(() => {
+    const bootstrapSession = async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+        }
+
+        const hash = window.location.hash.startsWith("#")
+          ? window.location.hash.slice(1)
+          : window.location.hash;
+
+        if (hash) {
+          const hashParams = new URLSearchParams(hash);
+          const access_token = hashParams.get("access_token");
+          const refresh_token = hashParams.get("refresh_token");
+
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
+            if (error) throw error;
+          }
+        }
+
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (!data.session) {
+          setMsg(
+            "Your reset link is invalid or expired. Request a new password reset email from the login page."
+          );
+          return;
+        }
+
+        setReady(true);
+        setMsg("");
+      } catch (e: unknown) {
+        const detail = e instanceof Error ? e.message : String(e);
+        setMsg(`Could not validate reset link: ${detail}`);
+      }
+    };
+
+    bootstrapSession();
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,56 +90,58 @@ export default function LoginResetPasswordPage() {
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Reset password</h1>
       <p style={{ marginBottom: 24 }}>Enter your new password below.</p>
 
-      <form onSubmit={onSubmit}>
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={6}
-          required
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
-        />
+      {ready ? (
+        <form onSubmit={onSubmit}>
+          <input
+            type="password"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={6}
+            required
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
+          />
 
-        <input
-          type="password"
-          placeholder="Confirm new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          minLength={6}
-          required
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            marginBottom: 12,
-          }}
-        />
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            minLength={6}
+            required
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              marginBottom: 12,
+            }}
+          />
 
-        <button
-          type="submit"
-          disabled={saving}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
-        >
-          {saving ? "Saving..." : "Save new password"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={saving}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            {saving ? "Saving..." : "Save new password"}
+          </button>
+        </form>
+      ) : null}
 
-      {msg ? <p style={{ marginTop: 16 }}>{msg}</p> : null}
+      {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
     </main>
   );
 }

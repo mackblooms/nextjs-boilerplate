@@ -58,9 +58,10 @@ export default function AuthCallbackPage() {
 
         setStatus("Signed in! Redirecting…");
         router.replace(next.startsWith("/") ? next : "/");
-      } catch (e: any) {
+      } catch (e: unknown) {
         setStatus("Sign-in failed.");
-        setDetails(e?.message ?? String(e));
+        const detail = e instanceof Error ? e.message : String(e);
+        setDetails(detail);
       }
     };
 
