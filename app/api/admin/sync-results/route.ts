@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Server-side Supabase (service role)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 function assertEnv(name: string) {
   const v = process.env[name];
   if (!v) throw new Error(`${name} is required.`);
   return v;
+}
+
+
+function getSupabaseAdmin() {
+  const supabaseUrl =
+    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) throw new Error("NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL) is required.");
+  if (!supabaseKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is required.");
+
+  return createClient(supabaseUrl, supabaseKey);
 }
 
 type HighlightlyGame = {
@@ -25,6 +31,7 @@ type HighlightlyGame = {
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     // --- Protect the route (cron secret) ---
     const cronSecret = assertEnv("CRON_SECRET");
     const provided = req.headers.get("x-cron-secret");
@@ -137,10 +144,8 @@ export async function POST(req: Request) {
     // await supabaseAdmin.rpc("recalculate_pool_scores");
 
     return NextResponse.json({ ok: true, date, updated, skipped });
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message ?? "Unknown error" },
-      { status: 500 }
-    );
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
