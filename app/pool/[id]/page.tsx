@@ -266,10 +266,10 @@ export default function PoolPage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>🏀 BracketPool Scoring System</h2>
+            <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 12 }}>🏀 bracketball Scoring System</h2>
 
             <p style={{ marginTop: 0, lineHeight: 1.6 }}>
-              BracketPool is scored <b>per game won</b>, not by furthest round reached. Every win by a team you drafted adds to your
+              bracketball is scored <b>per game won</b>, not by furthest round reached. Every win by a team you drafted adds to your 
               total cumulatively.
             </p>
 

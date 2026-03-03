@@ -3,11 +3,11 @@ import Link from "next/link";
 export default function HowItWorksPage() {
   return (
     <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>🏀 BracketPool Scoring System</h1>
+      <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>🏀 bracketball Scoring System</h1>
 
       <p style={{ marginTop: 0, lineHeight: 1.6 }}>
-        BracketPool is scored <b>per game won</b>. Every tournament win by a team you drafted adds points cumulatively.
-      </p>
+        bracketball is scored <b>per game won</b>. Every tournament win by a team you drafted adds points cumulatively.
+          </p>
 
       <section style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>📊 Base Points Per Win</h2>    

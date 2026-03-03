@@ -69,7 +69,7 @@ export default function NewPoolPage() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., BracketBall — Friends 2026"
+          placeholder="e.g., bracketball — Friends 2026"
           style={{
             width: "100%",
             padding: "12px 14px",
