@@ -13,14 +13,14 @@ export default function LoginClient() {
   const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
   const [msg, setMsg] = useState("");
 
+  const next =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("next") || "/pools"
+      : "/pools";
+
   async function resendConfirmation() {
     setStatus("sending");
     setMsg("");
-
-    const next =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("next") || "/pools"
-        : "/pools";
 
     const { error } = await supabase.auth.resend({
       type: "signup",
@@ -44,11 +44,6 @@ export default function LoginClient() {
     e.preventDefault();
     setStatus("sending");
     setMsg("");
-
-    const next =
-      typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("next") || "/pools"
-        : "/pools";
 
     if (mode === "sign-up") {
       if (password !== confirmPassword) {
@@ -82,9 +77,11 @@ export default function LoginClient() {
       }
 
       if (hasIdentity) {
-        setMsg("Account created. We sent a confirmation email—open it to activate your account.");
+        setMsg("Account created. We sent a confirmation email. Open it to activate your account.");
       } else {
-        setMsg("If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'.");
+        setMsg(
+          "If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'."
+        );
       }
       return;
     }
@@ -103,9 +100,9 @@ export default function LoginClient() {
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}></main>
+    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Sign in</h1>
-      <p style={{ marginBottom: 24 }}>Use email + password so you don’t need a magic link every time.</p>
+      <p style={{ marginBottom: 24 }}>Use email + password so you do not need a magic link every time.</p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         <button
