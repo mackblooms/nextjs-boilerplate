@@ -12,6 +12,9 @@ type Team = {
   logo_url?: string | null;
 };
 
+type EntryRow = { id: string; entry_name: string | null };
+type PickTeamRow = { team_id: string };
+
 const BUDGET = 100;
 const MAX_1 = 2;
 const MAX_2 = 2;
@@ -28,6 +31,7 @@ export default function DraftPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [entryId, setEntryId] = useState<string | null>(null);
+  const [entryName, setEntryName] = useState("");
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -43,18 +47,18 @@ export default function DraftPage() {
 
   const totalCost = useMemo(
     () => selectedTeams.reduce((sum, t) => sum + t.cost, 0),
-    [selectedTeams]
+    [selectedTeams],
   );
 
   const remaining = BUDGET - totalCost;
 
   const count1 = useMemo(
     () => selectedTeams.filter((t) => t.seed === 1).length,
-    [selectedTeams]
+    [selectedTeams],
   );
   const count2 = useMemo(
     () => selectedTeams.filter((t) => t.seed === 2).length,
-    [selectedTeams]
+    [selectedTeams],
   );
   const count12 = count1 + count2;
 
@@ -98,13 +102,13 @@ export default function DraftPage() {
         return;
       }
 
-if (poolRow?.lock_time) {
-  setLockTime(poolRow.lock_time);
-  const lock = new Date(poolRow.lock_time);
-  setLocked(new Date() > lock);
-} else {
-  setLocked(false);
-}
+      if (poolRow?.lock_time) {
+        setLockTime(poolRow.lock_time);
+        const lock = new Date(poolRow.lock_time);
+        setLocked(new Date() > lock);
+      } else {
+        setLocked(false);
+      }
 
       // Membership
       const { data: mem, error: memErr } = await supabase
@@ -125,7 +129,7 @@ if (poolRow?.lock_time) {
       // Teams
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,name,seed,cost,logo_url")
+        .select("id,name,seed,cost,logo_url");
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -138,7 +142,7 @@ if (poolRow?.lock_time) {
       // Entry
       const { data: existingEntry, error: entrySelErr } = await supabase
         .from("entries")
-        .select("id")
+        .select("id,entry_name")
         .eq("pool_id", poolId)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -149,12 +153,18 @@ if (poolRow?.lock_time) {
         return;
       }
 
-      let eid = existingEntry?.id as string | undefined;
+      const typedEntry = (existingEntry as EntryRow | null) ?? null;
+      let eid = typedEntry?.id;
+      if (typedEntry?.entry_name) setEntryName(typedEntry.entry_name);
 
       if (!eid) {
         const { data: newEntry, error: entryInsErr } = await supabase
           .from("entries")
-          .insert({ pool_id: poolId, user_id: user.id })
+          .insert({
+            pool_id: poolId,
+            user_id: user.id,
+            entry_name: "My Bracket",
+          })
           .select("id")
           .single();
 
@@ -165,6 +175,7 @@ if (poolRow?.lock_time) {
         }
 
         eid = newEntry.id as string;
+        setEntryName("My Bracket");
       }
 
       setEntryId(eid);
@@ -181,7 +192,9 @@ if (poolRow?.lock_time) {
         return;
       }
 
-      setSelected(new Set((picks ?? []).map((p: any) => p.team_id)));
+      setSelected(
+        new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)),
+      );
 
       setLoading(false);
     };
@@ -240,7 +253,7 @@ if (poolRow?.lock_time) {
     if (cost > BUDGET || c1 > MAX_1 || c2 > MAX_2 || c1 + c2 > MAX_12) {
       const t = map.get(teamId);
       setMsg(
-        `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`
+        `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`,
       );
       return;
     }
@@ -268,7 +281,24 @@ if (poolRow?.lock_time) {
       return;
     }
 
+    const nickname = entryName.trim();
+    if (!nickname) {
+      setMsg("Please add a bracket nickname before saving.");
+      return;
+    }
+
     setSaving(true);
+
+    const { error: entryUpdateErr } = await supabase
+      .from("entries")
+      .update({ entry_name: nickname })
+      .eq("id", entryId);
+
+    if (entryUpdateErr) {
+      setMsg(entryUpdateErr.message);
+      setSaving(false);
+      return;
+    }
 
     const { error: delErr } = await supabase
       .from("entry_picks")
@@ -324,8 +354,8 @@ if (poolRow?.lock_time) {
             Draft
           </h1>
           <div style={{ fontSize: 14, opacity: 0.85 }}>
-            Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2} two-seeds,
-            max {MAX_12} combined
+            Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2}{" "}
+            two-seeds, max {MAX_12} combined
           </div>
         </div>
 
@@ -359,9 +389,7 @@ if (poolRow?.lock_time) {
 
       {!isMember ? (
         <div style={{ marginTop: 18 }}>
-          <p style={{ opacity: 0.9 }}>
-            You’re not a member of this pool yet.
-          </p>
+          <p style={{ opacity: 0.9 }}>You’re not a member of this pool yet.</p>
           <button
             onClick={joinPool}
             style={{
@@ -415,28 +443,30 @@ if (poolRow?.lock_time) {
                     opacity: locked ? 0.85 : 1,
                   }}
                 >
-<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-  <input
-    type="checkbox"
-    checked={checked}
-    disabled={locked}
-    onChange={() => toggleTeam(t.id)}
-  />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={locked}
+                      onChange={() => toggleTeam(t.id)}
+                    />
 
-  {t.logo_url ? (
-    <img
-      src={t.logo_url}
-      alt={t.name}
-      width={20}
-      height={20}
-      style={{ objectFit: "contain", flexShrink: 0 }}
-    />
-  ) : (
-    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-  )}
+                    {t.logo_url ? (
+                      <img
+                        src={t.logo_url}
+                        alt={t.name}
+                        width={20}
+                        height={20}
+                        style={{ objectFit: "contain", flexShrink: 0 }}
+                      />
+                    ) : (
+                      <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                    )}
 
-  <div>
-    <div style={{ fontWeight: 800 }}>{t.name}</div>
+                    <div>
+                      <div style={{ fontWeight: 800 }}>{t.name}</div>
                       <div style={{ fontSize: 12, opacity: 0.75 }}>
                         Seed {t.seed}
                       </div>
@@ -463,6 +493,31 @@ if (poolRow?.lock_time) {
         >
           <div style={{ fontWeight: 900, marginBottom: 10 }}>Summary</div>
 
+          <label
+            style={{
+              display: "block",
+              fontSize: 13,
+              fontWeight: 700,
+              marginBottom: 6,
+            }}
+          >
+            Bracket nickname
+          </label>
+          <input
+            value={entryName}
+            onChange={(e) => setEntryName(e.target.value)}
+            placeholder="e.g., Cardiac Cinderellas"
+            disabled={locked}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid var(--border-color)",
+              marginBottom: 12,
+              opacity: locked ? 0.8 : 1,
+            }}
+          />
+
           <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>Total cost</span>
@@ -474,7 +529,12 @@ if (poolRow?.lock_time) {
               <b>{remaining}</b>
             </div>
 
-            <hr style={{ border: "none", borderTop: "1px solid var(--border-color)" }} />
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid var(--border-color)",
+              }}
+            />
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>1-seeds</span>
@@ -527,10 +587,10 @@ if (poolRow?.lock_time) {
             ) : null}
 
             {lockTime && (
-  <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
-    Locks: {new Date(lockTime).toLocaleString()}
-  </div>
-)}
+              <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
+                Locks: {new Date(lockTime).toLocaleString()}
+              </div>
+            )}
           </div>
 
           <button
