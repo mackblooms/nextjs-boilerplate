@@ -12,6 +12,20 @@ type ProfileRow = {
   bio: string | null;
 };
 
+type ProfileUpsert = {
+  user_id: string;
+  display_name: string;
+  full_name: string;
+  favorite_team: string;
+  avatar_url: string | null;
+  bio: string | null;
+};
+
+function missingColumnFromError(message: string): string | null {
+  const match = message.match(/Could not find the '([^']+)' column/i);
+  return match?.[1] ?? null;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const search =
@@ -20,6 +34,7 @@ export default function ProfilePage() {
       : null;
   const onboarding = search?.get("onboarding") === "1";
   const nextPath = search?.get("next") || "/pools";
+
   const [displayName, setDisplayName] = useState("");
   const [fullName, setFullName] = useState("");
   const [favoriteTeam, setFavoriteTeam] = useState("");
@@ -40,11 +55,17 @@ export default function ProfilePage() {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileErr } = await supabase
         .from("profiles")
-        .select("display_name,full_name,favorite_team,avatar_url,bio")
+        .select("*")
         .eq("user_id", authData.user.id)
         .maybeSingle();
+
+      if (profileErr) {
+        setMsg(profileErr.message);
+        setLoading(false);
+        return;
+      }
 
       const row = (profile as ProfileRow | null) ?? null;
       if (row?.display_name) setDisplayName(row.display_name);
@@ -58,6 +79,24 @@ export default function ProfilePage() {
 
     load();
   }, []);
+
+  async function upsertProfileWithFallback(payload: ProfileUpsert) {
+    const workingPayload: Partial<ProfileUpsert> = { ...payload };
+
+    for (let attempts = 0; attempts < 6; attempts += 1) {
+      const { error } = await supabase.from("profiles").upsert(workingPayload);
+      if (!error) return { error: null };
+
+      const missingCol = missingColumnFromError(error.message);
+      if (!missingCol || !(missingCol in workingPayload)) {
+        return { error };
+      }
+
+      delete workingPayload[missingCol as keyof ProfileUpsert];
+    }
+
+    return { error: { message: "Unable to save profile right now." } };
+  }
 
   async function save() {
     setMsg("");
@@ -86,7 +125,7 @@ export default function ProfilePage() {
       return;
     }
 
-    const { error } = await supabase.from("profiles").upsert({
+    const { error } = await upsertProfileWithFallback({
       user_id: authData.user.id,
       display_name: bracketName,
       full_name: legalName,
