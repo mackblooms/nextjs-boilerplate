@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 
 type ProfileRow = {
@@ -14,10 +14,12 @@ type ProfileRow = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const onboarding = searchParams.get("onboarding") === "1";
-  const next = searchParams.get("next") || "/pools";
-
+  const search =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : null;
+  const onboarding = search?.get("onboarding") === "1";
+  const nextPath = search?.get("next") || "/pools";
   const [displayName, setDisplayName] = useState("");
   const [fullName, setFullName] = useState("");
   const [favoriteTeam, setFavoriteTeam] = useState("");
@@ -99,7 +101,7 @@ export default function ProfilePage() {
     }
 
     if (onboarding) {
-      router.replace(next.startsWith("/") ? next : "/pools");
+      router.replace(nextPath.startsWith("/") ? nextPath : "/pools");
       return;
     }
 
