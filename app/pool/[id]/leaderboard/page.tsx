@@ -339,7 +339,11 @@ export default function LeaderboardPage() {
                     style={{ textDecoration: "none", display: "inline-block" }}
                   >
                     <div
-                      style={{ fontWeight: 800, color: "#fff", fontSize: 17 }}
+                      style={{
+                        fontWeight: 800,
+                        color: "var(--foreground)",
+                        fontSize: 17,
+                      }}
                     >
                       {r.rank === 1 ? "🏆 " : ""}
                       {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
@@ -347,7 +351,8 @@ export default function LeaderboardPage() {
                     </div>
                     <div
                       style={{
-                        color: "rgba(255, 255, 255, 0.7)",
+                        color: "var(--foreground)",
+                        opacity: 0.72,
                         fontSize: 13,
                         marginTop: 2,
                       }}

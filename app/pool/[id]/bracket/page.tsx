@@ -28,6 +28,11 @@ type PlayerOption = {
   entry_id: string;
   user_id: string;
   display_name: string | null;
+  entry_name: string | null;
+  full_name: string | null;
+  favorite_team: string | null;
+  avatar_url: string | null;
+  bio: string | null;
 };
 
 type RoundKey = "R64" | "R32" | "S16" | "E8";
@@ -35,7 +40,8 @@ type RoundKey = "R64" | "R32" | "S16" | "E8";
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 type Region = (typeof REGIONS)[number];
 
-const isRegion = (value: string | null): value is Region => value !== null && REGIONS.includes(value as Region);
+const isRegion = (value: string | null): value is Region =>
+  value !== null && REGIONS.includes(value as Region);
 
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
@@ -49,7 +55,9 @@ export default function BracketPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
-  const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(new Set());
+  const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -73,7 +81,12 @@ export default function BracketPage() {
 
     for (const g of games) {
       if (!isRegion(g.region)) continue;
-      if (g.round === "R64" || g.round === "R32" || g.round === "S16" || g.round === "E8") {
+      if (
+        g.round === "R64" ||
+        g.round === "R32" ||
+        g.round === "S16" ||
+        g.round === "E8"
+      ) {
         out[g.region][g.round].push(g);
       }
     }
@@ -92,7 +105,10 @@ export default function BracketPage() {
     [games],
   );
 
-  const championship = useMemo(() => games.find((g) => g.round === "CHIP"), [games]);
+  const championship = useMemo(
+    () => games.find((g) => g.round === "CHIP"),
+    [games],
+  );
 
   const BRACKET_UNITS = 16;
   const UNIT_PX = 44;
@@ -151,7 +167,83 @@ export default function BracketPage() {
         return;
       }
 
-      const opts = (playerRows ?? []) as PlayerOption[];
+      const basePlayers = (playerRows ?? []) as {
+        entry_id: string;
+        user_id: string;
+        display_name: string | null;
+      }[];
+
+      const entryIds = basePlayers.map((p) => p.entry_id);
+      const userIds = Array.from(new Set(basePlayers.map((p) => p.user_id)));
+
+      let entryNameById = new Map<string, string | null>();
+      if (entryIds.length > 0) {
+        const { data: entryRows } = await supabase
+          .from("entries")
+          .select("id,entry_name")
+          .in("id", entryIds);
+
+        entryNameById = new Map(
+          (
+            (entryRows as { id: string; entry_name: string | null }[] | null) ??
+            []
+          ).map((row) => [row.id, row.entry_name]),
+        );
+      }
+
+      let profileByUser = new Map<
+        string,
+        {
+          full_name: string | null;
+          favorite_team: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+        }
+      >();
+
+      if (userIds.length > 0) {
+        const { data: profileRows } = await supabase
+          .from("profiles")
+          .select("user_id,full_name,favorite_team,avatar_url,bio")
+          .in("user_id", userIds);
+
+        profileByUser = new Map(
+          (
+            (profileRows as
+              | {
+                  user_id: string;
+                  full_name: string | null;
+                  favorite_team: string | null;
+                  avatar_url: string | null;
+                  bio: string | null;
+                }[]
+              | null) ?? []
+          ).map((row) => [
+            row.user_id,
+            {
+              full_name: row.full_name,
+              favorite_team: row.favorite_team,
+              avatar_url: row.avatar_url,
+              bio: row.bio,
+            },
+          ]),
+        );
+      }
+
+      const opts: PlayerOption[] = basePlayers.map((p) => {
+        const profile = profileByUser.get(p.user_id);
+        return {
+          entry_id: p.entry_id,
+          user_id: p.user_id,
+          display_name: p.display_name,
+          entry_name: entryNameById.get(p.entry_id) ?? null,
+          full_name: profile?.full_name ?? null,
+          favorite_team: profile?.favorite_team ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+          bio: profile?.bio ?? null,
+        };
+      });
+
       setPlayers(opts);
       setSelectedEntryId(entryId ?? opts[0]?.entry_id ?? "");
       setLoading(false);
@@ -175,7 +267,9 @@ export default function BracketPage() {
         return;
       }
 
-      setHighlightTeamIds(new Set((data ?? []).map((r) => r.team_id as string)));
+      setHighlightTeamIds(
+        new Set((data ?? []).map((r) => r.team_id as string)),
+      );
     };
 
     void loadHighlights();
@@ -212,6 +306,11 @@ export default function BracketPage() {
     setFitMode(false);
     setScale(1);
   };
+
+  const selectedPlayer = useMemo(
+    () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
+    [players, selectedEntryId],
+  );
 
   const renderTeam = (teamId: string | null, winnerId: string | null) => {
     if (!teamId) {
@@ -273,7 +372,13 @@ export default function BracketPage() {
           ) : (
             <span style={{ width: 18, height: 18, flexShrink: 0 }} />
           )}
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {t?.name ?? "Unknown"}
           </span>
         </span>
@@ -312,7 +417,10 @@ export default function BracketPage() {
     </div>
   );
 
-  const renderSingleTeamBox = (teamId: string | null, winnerId: string | null) => (
+  const renderSingleTeamBox = (
+    teamId: string | null,
+    winnerId: string | null,
+  ) => (
     <div
       style={{
         border: "1px solid var(--border-color)",
@@ -334,7 +442,9 @@ export default function BracketPage() {
 
       return (
         <div style={{ minWidth: 260 }}>
-          <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>{title}</div>
+          <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9 }}>
+            {title}
+          </div>
           <div
             style={{
               display: "grid",
@@ -345,7 +455,10 @@ export default function BracketPage() {
             {gamesForRound.map((g) => {
               const start = rowStartFor(roundKey, g.slot);
               return (
-                <div key={g.id} style={{ gridRow: `${start} / span ${GAME_SPAN}` }}>
+                <div
+                  key={g.id}
+                  style={{ gridRow: `${start} / span ${GAME_SPAN}` }}
+                >
                   {renderGameBox(
                     <>
                       {renderTeam(g.team1_id, g.winner_team_id)}
@@ -370,7 +483,15 @@ export default function BracketPage() {
           minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
-        <div style={{ fontWeight: 900, marginBottom: 12, textAlign: reverse ? "left" : "inherit" }}>{region}</div>
+        <div
+          style={{
+            fontWeight: 900,
+            marginBottom: 12,
+            textAlign: reverse ? "left" : "inherit",
+          }}
+        >
+          {region}
+        </div>
         <div
           style={{
             display: "grid",
@@ -411,109 +532,427 @@ export default function BracketPage() {
 
   return (
     <main style={{ maxWidth: "100%", margin: "48px auto", padding: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", maxWidth: 1800, margin: "0 auto" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+          maxWidth: 1800,
+          margin: "0 auto",
+        }}
+      >
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <Link href={`/pool/${poolId}`} style={{ padding: "10px 12px", border: "1px solid var(--border-color)", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Back to Pool</Link>
-          <Link href={`/pool/${poolId}/leaderboard`} style={{ padding: "10px 12px", border: "1px solid var(--border-color)", borderRadius: 10, textDecoration: "none", fontWeight: 900 }}>Leaderboard</Link>
+          <Link
+            href={`/pool/${poolId}`}
+            style={{
+              padding: "10px 12px",
+              border: "1px solid var(--border-color)",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            Back to Pool
+          </Link>
+          <Link
+            href={`/pool/${poolId}/leaderboard`}
+            style={{
+              padding: "10px 12px",
+              border: "1px solid var(--border-color)",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+            }}
+          >
+            Leaderboard
+          </Link>
         </div>
       </div>
 
       {entryId ? (
-        <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "var(--highlight)", border: "1px solid var(--highlight-border)", fontWeight: 900, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, maxWidth: 1800, marginInline: "auto" }}>
-        <div>Viewing a player’s bracket (highlighting their teams)</div>
-          <Link href={`/pool/${poolId}/bracket`} style={{ fontWeight: 900, textDecoration: "none", border: "1px solid var(--highlight-border)", padding: "8px 10px", borderRadius: 10, background: "var(--surface)" }}>Clear</Link>
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 12px",
+            borderRadius: 12,
+            background: "var(--highlight)",
+            border: "1px solid var(--highlight-border)",
+            fontWeight: 900,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            maxWidth: 1800,
+            marginInline: "auto",
+          }}
+        >
+          <div>Viewing a player’s bracket (highlighting their teams)</div>
+          <Link
+            href={`/pool/${poolId}/bracket`}
+            style={{
+              fontWeight: 900,
+              textDecoration: "none",
+              border: "1px solid var(--highlight-border)",
+              padding: "8px 10px",
+              borderRadius: 10,
+              background: "var(--surface)",
+            }}
+          >
+            Clear
+          </Link>
         </div>
       ) : null}
 
-      {msg ? <p style={{ marginTop: 12, maxWidth: 1800, marginInline: "auto" }}>{msg}</p> : null}
+      {msg ? (
+        <p style={{ marginTop: 12, maxWidth: 1800, marginInline: "auto" }}>
+          {msg}
+        </p>
+      ) : null}
 
-      <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", maxWidth: 1800, marginInline: "auto" }}>
-        <div style={{ fontWeight: 900 }}>Highlight picks for:</div>
-        <select value={selectedEntryId} onChange={(e) => setSelectedEntryId(e.target.value)} style={{ padding: "8px 10px", borderRadius: 10 }}>
-          {players.length === 0 ? <option value="">No players yet</option> : null}
-          {players.map((p) => (
-            <option key={p.entry_id} value={p.entry_id}>{p.display_name ?? p.user_id.slice(0, 8)}</option>
-          ))}
-        </select>
-        <div style={{ fontSize: 12, opacity: 0.7 }}>Highlighted teams show in <b>yellow</b>.</div>
-      </div>
-
-      <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", maxWidth: 1800, marginInline: "auto" }}>
-        <div style={{ fontWeight: 900 }}>View:</div>
-        <button onClick={setFit} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: fitMode ? "var(--surface-elevated)" : "var(--surface)", fontWeight: 900, cursor: "pointer" }}>Fit</button>
-        <button onClick={set100} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: !fitMode && scale === 1 ? "var(--surface-elevated)" : "var(--surface)", fontWeight: 900, cursor: "pointer" }}>100%</button>
-        <button onClick={zoomOut} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--surface)", fontWeight: 900, cursor: "pointer" }}>−</button>
-        <button onClick={zoomIn} style={{ padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border-color)", background: "var(--surface)", fontWeight: 900, cursor: "pointer" }}>+</button>
-        <div style={{ fontSize: 12, opacity: 0.7 }}>Zoom: <b>{Math.round(scale * 100)}%</b></div>
-      </div>
-
-<div
-  ref={viewportRef}
-  style={{
-    marginTop: 12,
-    border: "1px solid var(--border-color)",
-    borderRadius: 14,
-    background: "var(--surface)",
-    padding: 12,
-    overflowX: "auto",
-    overflowY: "hidden",
-  }}
->
-  <div
-    ref={contentRef}
-    style={{
-      transform: `scale(${scale})`,
-      transformOrigin: "top left",
-      width: "max-content",
-      margin: "0 auto",
-    }}
-  >
-    <div style={{ display: "flex", gap: 18, alignItems: "center", minWidth: 3200 }}>
-      <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-        {renderRegionBracket("East")}
-        {renderRegionBracket("West")}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 860 }}>
-        <section style={{ border: "1px solid var(--border-color)", borderRadius: 16, padding: 14, background: "var(--surface)", width: 860 }}>
-          <div style={{ fontWeight: 900, marginBottom: 12, fontSize: 16, textAlign: "center" }}>Final Four</div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
-              gridTemplateRows: "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
-              columnGap: 18,
-              rowGap: 20,
-              alignItems: "center",
-            }}
-          >
-            <div style={{ gridColumn: 1, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team1_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
-            <div style={{ gridColumn: 3, gridRow: 1 }}>{renderSingleTeamBox(finalFour[0]?.team2_id ?? null, finalFour[0]?.winner_team_id ?? null)}</div>
-            <div style={{ gridColumn: 1, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team1_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
-            <div style={{ gridColumn: 3, gridRow: 3 }}>{renderSingleTeamBox(finalFour[1]?.team2_id ?? null, finalFour[1]?.winner_team_id ?? null)}</div>
-
-            <div style={{ gridColumn: 2, gridRow: 2, alignSelf: "center", justifySelf: "center", width: "100%" }}>
-              <div style={{ fontWeight: 900, marginBottom: 10, opacity: 0.9, fontSize: 12, textAlign: "center" }}>Championship</div>
-              {renderGameBox(
-                <>
-                  {renderTeam(championship?.team1_id ?? null, championship?.winner_team_id ?? null)}
-                  {renderTeam(championship?.team2_id ?? null, championship?.winner_team_id ?? null)}
-                </>,
-              )}
+      {selectedPlayer ? (
+        <section
+          style={{
+            marginTop: 14,
+            maxWidth: 1800,
+            marginInline: "auto",
+            border: "1px solid var(--border-color)",
+            borderRadius: 14,
+            background: "var(--surface)",
+            padding: 14,
+            display: "flex",
+            gap: 14,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          {selectedPlayer.avatar_url ? (
+            <Image
+              src={selectedPlayer.avatar_url}
+              alt={
+                selectedPlayer.full_name ??
+                selectedPlayer.display_name ??
+                "Player"
+              }
+              width={72}
+              height={72}
+              unoptimized
+              style={{
+                borderRadius: 9999,
+                objectFit: "cover",
+                border: "1px solid var(--border-color)",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 9999,
+                border: "1px solid var(--border-color)",
+                display: "grid",
+                placeItems: "center",
+                fontWeight: 900,
+                fontSize: 22,
+                background: "var(--surface-muted)",
+              }}
+            >
+              {(selectedPlayer.full_name ?? selectedPlayer.display_name ?? "P")
+                .slice(0, 1)
+                .toUpperCase()}
             </div>
+          )}
+
+          <div style={{ minWidth: 240, flex: 1 }}>
+            <div style={{ fontWeight: 900, fontSize: 21 }}>
+              {selectedPlayer.entry_name ??
+                selectedPlayer.display_name ??
+                "Bracket"}
+            </div>
+            <div style={{ marginTop: 2, opacity: 0.75, fontWeight: 700 }}>
+              {selectedPlayer.full_name ??
+                selectedPlayer.display_name ??
+                "Player"}
+            </div>
+
+            <div
+              style={{
+                marginTop: 8,
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {selectedPlayer.favorite_team ? (
+                <span
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    fontWeight: 800,
+                    background: "var(--surface-muted)",
+                  }}
+                >
+                  Favorite team: {selectedPlayer.favorite_team}
+                </span>
+              ) : null}
+            </div>
+
+            {selectedPlayer.bio ? (
+              <p style={{ marginTop: 10, opacity: 0.85, lineHeight: 1.45 }}>
+                {selectedPlayer.bio}
+              </p>
+            ) : null}
           </div>
         </section>
+      ) : null}
+
+      <div
+        style={{
+          marginTop: 16,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+          maxWidth: 1800,
+          marginInline: "auto",
+        }}
+      >
+        <div style={{ fontWeight: 900 }}>Highlight picks for:</div>
+        <select
+          value={selectedEntryId}
+          onChange={(e) => setSelectedEntryId(e.target.value)}
+          style={{ padding: "8px 10px", borderRadius: 10 }}
+        >
+          {players.length === 0 ? (
+            <option value="">No players yet</option>
+          ) : null}
+          {players.map((p) => (
+            <option key={p.entry_id} value={p.entry_id}>
+              {p.entry_name ?? p.display_name ?? p.user_id.slice(0, 8)}
+            </option>
+          ))}
+        </select>
+        <div style={{ fontSize: 12, opacity: 0.7 }}>
+          Highlighted teams show in <b>yellow</b>.
+        </div>
       </div>
 
-      <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-        {renderRegionBracket("South", true)}
-        {renderRegionBracket("Midwest", true)}
+      <div
+        style={{
+          marginTop: 12,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+          maxWidth: 1800,
+          marginInline: "auto",
+        }}
+      >
+        <div style={{ fontWeight: 900 }}>View:</div>
+        <button
+          onClick={setFit}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid var(--border-color)",
+            background: fitMode ? "var(--surface-elevated)" : "var(--surface)",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          Fit
+        </button>
+        <button
+          onClick={set100}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid var(--border-color)",
+            background:
+              !fitMode && scale === 1
+                ? "var(--surface-elevated)"
+                : "var(--surface)",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          100%
+        </button>
+        <button
+          onClick={zoomOut}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid var(--border-color)",
+            background: "var(--surface)",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          −
+        </button>
+        <button
+          onClick={zoomIn}
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid var(--border-color)",
+            background: "var(--surface)",
+            fontWeight: 900,
+            cursor: "pointer",
+          }}
+        >
+          +
+        </button>
+        <div style={{ fontSize: 12, opacity: 0.7 }}>
+          Zoom: <b>{Math.round(scale * 100)}%</b>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
+      <div
+        ref={viewportRef}
+        style={{
+          marginTop: 12,
+          border: "1px solid var(--border-color)",
+          borderRadius: 14,
+          background: "var(--surface)",
+          padding: 12,
+          overflowX: "auto",
+          overflowY: "hidden",
+        }}
+      >
+        <div
+          ref={contentRef}
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            width: "max-content",
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 18,
+              alignItems: "center",
+              minWidth: 3200,
+            }}
+          >
+            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+              {renderRegionBracket("East")}
+              {renderRegionBracket("West")}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: 860,
+              }}
+            >
+              <section
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 16,
+                  padding: 14,
+                  background: "var(--surface)",
+                  width: 860,
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 900,
+                    marginBottom: 12,
+                    fontSize: 16,
+                    textAlign: "center",
+                  }}
+                >
+                  Final Four
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
+                    gridTemplateRows:
+                      "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
+                    columnGap: 18,
+                    rowGap: 20,
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ gridColumn: 1, gridRow: 1 }}>
+                    {renderSingleTeamBox(
+                      finalFour[0]?.team1_id ?? null,
+                      finalFour[0]?.winner_team_id ?? null,
+                    )}
+                  </div>
+                  <div style={{ gridColumn: 3, gridRow: 1 }}>
+                    {renderSingleTeamBox(
+                      finalFour[0]?.team2_id ?? null,
+                      finalFour[0]?.winner_team_id ?? null,
+                    )}
+                  </div>
+                  <div style={{ gridColumn: 1, gridRow: 3 }}>
+                    {renderSingleTeamBox(
+                      finalFour[1]?.team1_id ?? null,
+                      finalFour[1]?.winner_team_id ?? null,
+                    )}
+                  </div>
+                  <div style={{ gridColumn: 3, gridRow: 3 }}>
+                    {renderSingleTeamBox(
+                      finalFour[1]?.team2_id ?? null,
+                      finalFour[1]?.winner_team_id ?? null,
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      gridColumn: 2,
+                      gridRow: 2,
+                      alignSelf: "center",
+                      justifySelf: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 900,
+                        marginBottom: 10,
+                        opacity: 0.9,
+                        fontSize: 12,
+                        textAlign: "center",
+                      }}
+                    >
+                      Championship
+                    </div>
+                    {renderGameBox(
+                      <>
+                        {renderTeam(
+                          championship?.team1_id ?? null,
+                          championship?.winner_team_id ?? null,
+                        )}
+                        {renderTeam(
+                          championship?.team2_id ?? null,
+                          championship?.winner_team_id ?? null,
+                        )}
+                      </>,
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+              {renderRegionBracket("South", true)}
+              {renderRegionBracket("Midwest", true)}
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

@@ -12,20 +12,6 @@ type ProfileRow = {
   bio: string | null;
 };
 
-type ProfileUpsert = {
-  user_id: string;
-  display_name: string;
-  full_name: string;
-  favorite_team: string;
-  avatar_url: string | null;
-  bio: string | null;
-};
-
-function missingColumnFromError(message: string): string | null {
-  const match = message.match(/Could not find the '([^']+)' column/i);
-  return match?.[1] ?? null;
-}
-
 export default function ProfilePage() {
   const router = useRouter();
   const search =
@@ -57,7 +43,7 @@ export default function ProfilePage() {
 
       const { data: profile, error: profileErr } = await supabase
         .from("profiles")
-        .select("*")
+        .select("display_name,full_name,favorite_team,avatar_url,bio")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
@@ -79,24 +65,6 @@ export default function ProfilePage() {
 
     load();
   }, []);
-
-  async function upsertProfileWithFallback(payload: ProfileUpsert) {
-    const workingPayload: Partial<ProfileUpsert> = { ...payload };
-
-    for (let attempts = 0; attempts < 6; attempts += 1) {
-      const { error } = await supabase.from("profiles").upsert(workingPayload);
-      if (!error) return { error: null };
-
-      const missingCol = missingColumnFromError(error.message);
-      if (!missingCol || !(missingCol in workingPayload)) {
-        return { error };
-      }
-
-      delete workingPayload[missingCol as keyof ProfileUpsert];
-    }
-
-    return { error: { message: "Unable to save profile right now." } };
-  }
 
   async function save() {
     setMsg("");
@@ -125,7 +93,7 @@ export default function ProfilePage() {
       return;
     }
 
-    const { error } = await upsertProfileWithFallback({
+    const { error } = await supabase.from("profiles").upsert({
       user_id: authData.user.id,
       display_name: bracketName,
       full_name: legalName,
