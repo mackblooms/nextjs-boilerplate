@@ -117,7 +117,7 @@ export default function LeaderboardPage() {
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
-        .select("entry_id,user_id,display_name,full_name")
+        .select("entry_id,user_id,display_name")
         .eq("pool_id", poolId);
 
       if (error) {
@@ -126,7 +126,10 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const baseRows = (data ?? []) as Omit<Row, "total_score" | "rank" | "entry_name">[];
+      const baseRows = (data ?? []) as Omit<
+        Row,
+        "total_score" | "rank" | "full_name" | "entry_name"
+      >[];
       const entryIds = baseRows.map((r) => r.entry_id);
 
       let entryNameById = new Map<string, string | null>();
@@ -141,6 +144,29 @@ export default function LeaderboardPage() {
             (entryRows as { id: string; entry_name: string | null }[] | null) ??
             []
           ).map((row) => [row.id, row.entry_name]),
+        );
+      }
+
+      const userIds = Array.from(new Set(baseRows.map((r) => r.user_id)));
+      let fullNameByUser = new Map<string, string | null>();
+      if (userIds.length > 0) {
+        const { data: profileRows, error: profilesErr } = await supabase
+          .from("profiles")
+          .select("user_id,full_name")
+          .in("user_id", userIds);
+
+        if (profilesErr) {
+          setMsg(profilesErr.message);
+          setLoading(false);
+          return;
+        }
+
+        fullNameByUser = new Map(
+          (
+            (profileRows as
+              | { user_id: string; full_name: string | null }[]
+              | null) ?? []
+          ).map((row) => [row.user_id, row.full_name]),
         );
       }
 
@@ -207,7 +233,7 @@ export default function LeaderboardPage() {
           return {
             ...r,
             entry_name: entryNameById.get(r.entry_id) ?? null,
-            full_name: r.full_name ?? null,
+            full_name: fullNameByUser.get(r.user_id) ?? null,
             total_score: totalScore,
           };
         })
