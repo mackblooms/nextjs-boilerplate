@@ -280,67 +280,50 @@ export default function AdminPage() {
     setDeletingPoolId(targetPoolId);
     setMsg("");
 
-    const { data: entryRows, error: entryErr } = await supabase
-      .from("entries")
-      .select("id")
-      .eq("pool_id", targetPoolId);
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
 
-    if (entryErr) {
-      setMsg(entryErr.message);
+    if (authErr || !userId) {
+      setMsg("Not logged in (could not read user).");
       setDeletingPoolId(null);
       return;
     }
 
-    const entryIds = (entryRows ?? []).map((e) => e.id);
-    if (entryIds.length > 0) {
-      const { error: deletePicksErr } = await supabase.from("entry_picks").delete().in("entry_id", entryIds);
-      if (deletePicksErr) {
-        setMsg(deletePicksErr.message);
+    try {
+      const res = await fetch("/api/admin/delete-pool", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ poolId: targetPoolId, userId }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setMsg(`Delete failed: ${json.error ?? "Unknown error"}`);
         setDeletingPoolId(null);
         return;
       }
 
-      const { error: deleteEntriesErr } = await supabase.from("entries").delete().in("id", entryIds);
-      if (deleteEntriesErr) {
-        setMsg(deleteEntriesErr.message);
-        setDeletingPoolId(null);
-        return;
+      setAdminPools((prev) => prev.filter((p) => p.id !== targetPoolId));
+      setMembersByPool((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
+
+      if (targetPoolId === poolId) {
+        setMembers([]);
       }
-    }
 
-    const { error: deleteMembersErr } = await supabase
-      .from("pool_members")
-      .delete()
-      .eq("pool_id", targetPoolId);
+      setMsg("Pool deleted successfully. This pool and all associated data have been removed.");
 
-    if (deleteMembersErr) {
-      setMsg(deleteMembersErr.message);
+      if (targetPoolId === poolId) {
+        router.push("/pools");
+      }
+    } catch (e: unknown) {
+      setMsg(`Delete failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
       setDeletingPoolId(null);
-      return;
-    }
-
-    const { error: deletePoolErr } = await supabase.from("pools").delete().eq("id", targetPoolId);
-    if (deletePoolErr) {
-      setMsg(deletePoolErr.message);
-      setDeletingPoolId(null);
-      return;
-    }
-
-    setAdminPools((prev) => prev.filter((p) => p.id !== targetPoolId));
-    setMembersByPool((prev) => {
-      const next = { ...prev };
-      delete next[targetPoolId];
-      return next;
-    });
-    if (targetPoolId === poolId) {
-      setMembers([]);
-    }
-
-    setMsg("Pool deleted successfully. This pool and all associated data have been removed.");
-    setDeletingPoolId(null);
-
-    if (targetPoolId === poolId) {
-      router.push("/pools");
     }
   }
 
