@@ -78,7 +78,7 @@ export default function DraftPage() {
   const ensureEntry = useCallback(async (userId: string) => {
     const { data: rows, error: entrySelErr } = await supabase
       .from("entries")
-      .select("id,entry_name")
+      .select("id")
       .eq("pool_id", poolId)
       .eq("user_id", userId)
       .limit(1);
@@ -87,12 +87,40 @@ export default function DraftPage() {
       return { entry: null as EntryRow | null, error: entrySelErr.message };
     }
 
-    const existing = (((rows ?? []) as EntryRow[])[0] ?? null) as
-      | EntryRow
+    const existing = (((rows ?? []) as { id: string }[])[0] ?? null) as
+      | { id: string }
       | null;
 
     if (existing) {
-      return { entry: existing, error: null };
+      return { entry: { id: existing.id, entry_name: null }, error: null };
+    }
+
+    const { data: newEntryWithName, error: namedInsErr } = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolId,
+        user_id: userId,
+        entry_name: "My Bracket",
+      })
+      .select("id")
+      .single();
+
+    if (!namedInsErr && newEntryWithName) {
+      return {
+        entry: { id: newEntryWithName.id as string, entry_name: "My Bracket" },
+        error: null,
+      };
+    }
+
+    const missingEntryName = namedInsErr?.message.includes(
+      "column entries.entry_name does not exist",
+    );
+
+    if (!missingEntryName) {
+      return {
+        entry: null as EntryRow | null,
+        error: namedInsErr?.message ?? "Failed to create entry.",
+      };
     }
 
     const { data: newEntry, error: entryInsErr } = await supabase
@@ -100,9 +128,8 @@ export default function DraftPage() {
       .insert({
         pool_id: poolId,
         user_id: userId,
-        entry_name: "My Bracket",
       })
-      .select("id,entry_name")
+      .select("id")
       .single();
 
     if (entryInsErr || !newEntry) {
@@ -112,7 +139,7 @@ export default function DraftPage() {
       };
     }
 
-    return { entry: newEntry as EntryRow, error: null };
+    return { entry: { id: newEntry.id as string, entry_name: null }, error: null };
   }, [poolId]);
 
   useEffect(() => {
@@ -240,7 +267,7 @@ export default function DraftPage() {
 
     setIsMember(true);
 
-        const { entry, error: entryErr } = await ensureEntry(user.id);
+    const { entry, error: entryErr } = await ensureEntry(user.id);
     if (entryErr || !entry) {
       setMsg(entryErr ?? "Joined, but failed to create entry.");
       return;
@@ -307,7 +334,7 @@ export default function DraftPage() {
       return;
     }
 
-        if (!resolvedEntryId) {
+    if (!resolvedEntryId) {
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
       if (!user) {
@@ -351,9 +378,15 @@ export default function DraftPage() {
       .eq("id", resolvedEntryId);
 
     if (entryUpdateErr) {
-      setMsg(entryUpdateErr.message);
-      setSaving(false);
-      return;
+      const missingEntryName = entryUpdateErr.message.includes(
+        "column entries.entry_name does not exist",
+      );
+
+      if (!missingEntryName) {
+        setMsg(entryUpdateErr.message);
+        setSaving(false);
+        return;
+      }
     }
 
     const { error: delErr } = await supabase
