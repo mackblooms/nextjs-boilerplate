@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
 type Team = {
@@ -26,6 +27,16 @@ type PoolMemberRow = {
   display_name: string | null;
 };
 
+type PoolMemberWithPoolRow = PoolMemberRow & {
+  pool_id: string;
+};
+
+type AdminPoolRow = {
+  id: string;
+  name: string;
+  created_by: string;
+};
+
 type EntryRow = {
   id: string;
   user_id: string;
@@ -34,6 +45,7 @@ type EntryRow = {
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 
 export default function AdminPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const poolId = params.id;
 
@@ -43,8 +55,12 @@ export default function AdminPage() {
   const [games, setGames] = useState<GameRow[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [members, setMembers] = useState<PoolMemberRow[]>([]);
+  const [adminPools, setAdminPools] = useState<AdminPoolRow[]>([]);
+  const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -75,6 +91,8 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
+
+      setCurrentUserId(user.id);
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
@@ -131,14 +149,55 @@ export default function AdminPage() {
       }
 
       setMembers((memberRows ?? []) as PoolMemberRow[]);
+
+      const { data: allPoolRows, error: allPoolErr } = await supabase
+        .from("pools")
+        .select("id,name,created_by")
+        .eq("created_by", user.id)
+        .order("name", { ascending: true });
+
+      if (allPoolErr) {
+        setMsg(allPoolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const pools = (allPoolRows ?? []) as AdminPoolRow[];
+      setAdminPools(pools);
+
+      if (pools.length > 0) {
+        const ids = pools.map((p) => p.id);
+        const { data: allMembersRows, error: allMembersErr } = await supabase
+          .from("pool_leaderboard")
+          .select("pool_id,user_id,display_name")
+          .in("pool_id", ids)
+          .order("display_name", { ascending: true });
+
+        if (allMembersErr) {
+          setMsg(allMembersErr.message);
+          setLoading(false);
+          return;
+        }
+
+        const grouped: Record<string, PoolMemberRow[]> = {};
+        for (const row of ((allMembersRows ?? []) as PoolMemberWithPoolRow[])) {
+          if (!grouped[row.pool_id]) grouped[row.pool_id] = [];
+          grouped[row.pool_id].push({
+            user_id: row.user_id,
+            display_name: row.display_name,
+          });
+        }
+        setMembersByPool(grouped);
+      }
+
       setLoading(false);
     };
 
     load();
   }, [poolId]);
 
-  async function removeUserFromPool(userId: string) {
-    if (!poolId || !userId) return;
+  async function removeUserFromPool(targetPoolId: string, userId: string) {
+    if (!targetPoolId || !userId) return;
 
     setRemovingUserId(userId);
     setMsg("");
@@ -146,7 +205,7 @@ export default function AdminPage() {
     const { data: entries, error: entryLoadErr } = await supabase
       .from("entries")
       .select("id,user_id")
-      .eq("pool_id", poolId)
+      .eq("pool_id", targetPoolId)
       .eq("user_id", userId);
 
     if (entryLoadErr) {
@@ -185,7 +244,7 @@ export default function AdminPage() {
     const { error: membershipDeleteErr } = await supabase
       .from("pool_members")
       .delete()
-      .eq("pool_id", poolId)
+      .eq("pool_id", targetPoolId)
       .eq("user_id", userId);
 
     if (membershipDeleteErr) {
@@ -195,8 +254,87 @@ export default function AdminPage() {
     }
 
     setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+    setMembersByPool((prev) => {
+      const existing = prev[targetPoolId] ?? [];
+      return {
+        ...prev,
+        [targetPoolId]: existing.filter((m) => m.user_id !== userId),
+      };
+    });
     setMsg("User removed from this pool.");
     setRemovingUserId(null);
+  }
+
+  async function deletePool(targetPoolId: string) {
+    if (!targetPoolId) return;
+
+    const confirmed = window.confirm(
+      "Delete this pool permanently? This removes entries, picks, and member access."
+    );
+
+    if (!confirmed) return;
+
+    setDeletingPoolId(targetPoolId);
+    setMsg("");
+
+    const { data: entryRows, error: entryErr } = await supabase
+      .from("entries")
+      .select("id")
+      .eq("pool_id", targetPoolId);
+
+    if (entryErr) {
+      setMsg(entryErr.message);
+      setDeletingPoolId(null);
+      return;
+    }
+
+    const entryIds = (entryRows ?? []).map((e) => e.id);
+    if (entryIds.length > 0) {
+      const { error: deletePicksErr } = await supabase.from("entry_picks").delete().in("entry_id", entryIds);
+      if (deletePicksErr) {
+        setMsg(deletePicksErr.message);
+        setDeletingPoolId(null);
+        return;
+      }
+
+      const { error: deleteEntriesErr } = await supabase.from("entries").delete().in("id", entryIds);
+      if (deleteEntriesErr) {
+        setMsg(deleteEntriesErr.message);
+        setDeletingPoolId(null);
+        return;
+      }
+    }
+
+    const { error: deleteMembersErr } = await supabase
+      .from("pool_members")
+      .delete()
+      .eq("pool_id", targetPoolId);
+
+    if (deleteMembersErr) {
+      setMsg(deleteMembersErr.message);
+      setDeletingPoolId(null);
+      return;
+    }
+
+    const { error: deletePoolErr } = await supabase.from("pools").delete().eq("id", targetPoolId);
+    if (deletePoolErr) {
+      setMsg(deletePoolErr.message);
+      setDeletingPoolId(null);
+      return;
+    }
+
+    setAdminPools((prev) => prev.filter((p) => p.id !== targetPoolId));
+    setMembersByPool((prev) => {
+      const next = { ...prev };
+      delete next[targetPoolId];
+      return next;
+    });
+    setMsg("Pool deleted successfully.");
+    setDeletingPoolId(null);
+
+    if (targetPoolId === poolId) {
+      router.push("/pools");
+    }
   }
 
   async function setWinner(gameId: string, winnerTeamId: string | null) {
@@ -442,7 +580,7 @@ export default function AdminPage() {
                 </div>
                 <button
                   disabled={isCreator || removingUserId === m.user_id}
-                  onClick={() => removeUserFromPool(m.user_id)}
+                  onClick={() => removeUserFromPool(poolId, m.user_id)}
                   style={{
                     padding: "8px 10px",
                     borderRadius: 8,
@@ -460,6 +598,120 @@ export default function AdminPage() {
           })}
 
           {members.length === 0 ? <p style={{ margin: 0 }}>No members found.</p> : null}
+        </div>
+      </section>
+
+      <section
+        style={{
+          marginTop: 16,
+          border: "1px solid #ddd",
+          borderRadius: 12,
+          padding: 12,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools you manage</h2>
+        <p style={{ margin: 0, opacity: 0.8 }}>
+          See every active pool you created. You can remove members or permanently delete a pool.
+        </p>
+
+        {adminPools.length === 0 ? <p style={{ margin: 0 }}>No active pools found.</p> : null}
+
+        <div style={{ display: "grid", gap: 12 }}>
+          {adminPools.map((pool) => {
+            const poolMembers = membersByPool[pool.id] ?? [];
+            return (
+              <div
+                key={pool.id}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 12,
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontWeight: 900 }}>{pool.name}</div>
+                    <div style={{ fontSize: 13, opacity: 0.7 }}>Members: {poolMembers.length}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <a
+                      href={`/pool/${pool.id}/admin`}
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 8,
+                        border: "1px solid #ccc",
+                        textDecoration: "none",
+                        fontWeight: 800,
+                      }}
+                    >
+                      Open admin
+                    </a>
+                    <button
+                      disabled={deletingPoolId === pool.id}
+                      onClick={() => deletePool(pool.id)}
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 8,
+                        border: "1px solid #d33",
+                        background: "#fff",
+                        color: "#a00",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {deletingPoolId === pool.id ? "Deleting…" : "Delete pool"}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  {poolMembers.map((m) => {
+                    const isCreator = m.user_id === currentUserId;
+                    const label = m.display_name ?? m.user_id.slice(0, 8);
+                    return (
+                      <div
+                        key={`${pool.id}-${m.user_id}`}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 12,
+                          border: "1px solid #f0f0f0",
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                        }}
+                      >
+                        <div style={{ fontWeight: 700 }}>
+                          {label}
+                          {isCreator ? " (commissioner)" : ""}
+                        </div>
+                        <button
+                          disabled={isCreator || removingUserId === m.user_id}
+                          onClick={() => removeUserFromPool(pool.id, m.user_id)}
+                          style={{
+                            padding: "6px 9px",
+                            borderRadius: 8,
+                            border: "1px solid #d33",
+                            background: isCreator ? "#f5f5f5" : "#fff",
+                            color: isCreator ? "#888" : "#a00",
+                            fontWeight: 700,
+                            cursor: isCreator ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {removingUserId === m.user_id ? "Removing…" : "Remove"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {poolMembers.length === 0 ? <p style={{ margin: 0 }}>No members found in this pool.</p> : null}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
