@@ -204,7 +204,7 @@ export default function BracketPage() {
       if (userIds.length > 0) {
         const { data: profileRows } = await supabase
           .from("profiles")
-          .select("user_id,display_name,favorite_team,avatar_url,bio")
+          .select("user_id,display_name,full_name,favorite_team,avatar_url,bio")
           .in("user_id", userIds);
 
         profileByUser = new Map(
@@ -213,6 +213,7 @@ export default function BracketPage() {
               | {
                   user_id: string;
                   display_name: string | null;
+                  full_name: string | null;
                   favorite_team: string | null;
                   avatar_url: string | null;
                   bio: string | null;
@@ -221,7 +222,7 @@ export default function BracketPage() {
           ).map((row) => [
             row.user_id,
             {
-              full_name: row.display_name,
+              full_name: row.full_name ?? row.display_name,
               favorite_team: row.favorite_team,
               avatar_url: row.avatar_url,
               bio: row.bio,

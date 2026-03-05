@@ -6,12 +6,13 @@ import { supabase } from "../../lib/supabaseClient";
 
 type ProfileRow = {
   display_name: string | null;
+  full_name: string | null;
   favorite_team: string | null;
   avatar_url: string | null;
   bio: string | null;
 };
 
-const OPTIONAL_PROFILE_COLUMNS = ["avatar_url", "bio"] as const;
+const OPTIONAL_PROFILE_COLUMNS = ["full_name", "favorite_team", "avatar_url", "bio"] as const;
 
 function getMissingProfilesColumn(error: { message?: string; code?: string } | null) {
   if (!error || error.code !== "PGRST204" || !error.message?.includes("profiles")) {
@@ -78,6 +79,7 @@ export default function ProfilePage() {
           row = selectedRow
             ? {
                 display_name: selectedRow.display_name ?? null,
+                full_name: selectedRow.full_name ?? null,
                 favorite_team: selectedRow.favorite_team ?? null,
                 avatar_url: selectedRow.avatar_url ?? null,
                 bio: selectedRow.bio ?? null,
@@ -105,6 +107,7 @@ export default function ProfilePage() {
 
       const profileExists =
         Boolean(row?.display_name) ||
+        Boolean(row?.full_name) ||
         Boolean(row?.favorite_team) ||
         Boolean(row?.avatar_url) ||
         Boolean(row?.bio);
@@ -113,7 +116,11 @@ export default function ProfilePage() {
       setIsEditing(onboarding ? true : !profileExists);
 
       if (row?.display_name) setDisplayName(row.display_name);
-      if (row?.display_name) setFullName(row.display_name);
+      if (row?.full_name) {
+        setFullName(row.full_name);
+      } else if (row?.display_name) {
+        setFullName(row.display_name);
+      }
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
       if (row?.avatar_url) setAvatarUrl(row.avatar_url);
       if (row?.bio) setBio(row.bio);
@@ -153,7 +160,8 @@ export default function ProfilePage() {
 
     const payload: Record<string, string | null> = {
       user_id: authData.user.id,
-      display_name: legalName,
+      display_name: bracketName,
+      full_name: legalName,
       favorite_team: team,
       avatar_url: avatarUrl.trim() || null,
       bio: bio.trim() || null,
