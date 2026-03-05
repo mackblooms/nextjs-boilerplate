@@ -11,14 +11,20 @@ type ProfileRow = {
   bio: string | null;
 };
 
-function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
-  if (!error) return false;
+const OPTIONAL_PROFILE_COLUMNS = ["avatar_url", "bio"] as const;
 
-  return (
-    error.code === "PGRST204" &&
-    error.message?.includes("avatar_url") &&
-    error.message?.includes("profiles")
-  );
+function getMissingProfilesColumn(error: { message?: string; code?: string } | null) {
+  if (!error || error.code !== "PGRST204" || !error.message?.includes("profiles")) {
+    return null;
+  }
+
+  const match = error.message.match(/Could not find the '([^']+)' column/);
+  if (!match) return null;
+
+  const column = match[1];
+  return OPTIONAL_PROFILE_COLUMNS.includes(column as (typeof OPTIONAL_PROFILE_COLUMNS)[number])
+    ? column
+    : null;
 }
 
 export default function ProfilePage() {
@@ -52,39 +58,49 @@ export default function ProfilePage() {
         return;
       }
 
-      const { data: profile, error: profileErr } = await supabase
-        .from("profiles")
-        .select("display_name,favorite_team,avatar_url,bio")
-        .eq("user_id", authData.user.id)
-        .maybeSingle();
+      const selectedColumns = [
+        "display_name",
+        "favorite_team",
+        ...OPTIONAL_PROFILE_COLUMNS,
+      ] as string[];
 
-      let row = (profile as ProfileRow | null) ?? null;
+      let row: ProfileRow | null = null;
 
-      if (profileErr) {
-        if (!isMissingAvatarColumnError(profileErr)) {
+      while (true) {
+        const { data: profile, error: profileErr } = await supabase
+          .from("profiles")
+          .select(selectedColumns.join(","))
+          .eq("user_id", authData.user.id)
+          .maybeSingle();
+
+        if (!profileErr) {
+          const selectedRow = (profile as Partial<ProfileRow> | null) ?? null;
+          row = selectedRow
+            ? {
+                display_name: selectedRow.display_name ?? null,
+                favorite_team: selectedRow.favorite_team ?? null,
+                avatar_url: selectedRow.avatar_url ?? null,
+                bio: selectedRow.bio ?? null,
+              }
+            : null;
+          break;
+        }
+
+        const missingColumn = getMissingProfilesColumn(profileErr);
+        if (!missingColumn) {
           setMsg(profileErr.message);
           setLoading(false);
           return;
         }
 
-        const { data: profileWithoutAvatar, error: fallbackErr } = await supabase
-          .from("profiles")
-          .select("display_name,favorite_team,bio")
-          .eq("user_id", authData.user.id)
-          .maybeSingle();
-
-        if (fallbackErr) {
-          setMsg(fallbackErr.message);
+        const missingIndex = selectedColumns.indexOf(missingColumn);
+        if (missingIndex === -1) {
+          setMsg(profileErr.message);
           setLoading(false);
           return;
         }
 
-        row = profileWithoutAvatar
-          ? {
-              ...(profileWithoutAvatar as Omit<ProfileRow, "avatar_url">),
-              avatar_url: null,
-            }
-          : null;
+        selectedColumns.splice(missingIndex, 1);
       }
 
       const profileExists =
@@ -135,7 +151,7 @@ export default function ProfilePage() {
       return;
     }
 
-    const payload = {
+    const payload: Record<string, string | null> = {
       user_id: authData.user.id,
       display_name: legalName,
       favorite_team: team,
@@ -143,28 +159,20 @@ export default function ProfilePage() {
       bio: bio.trim() || null,
     };
 
-    const { error } = await supabase.from("profiles").upsert(payload);
+    while (true) {
+      const { error } = await supabase.from("profiles").upsert(payload);
 
-    if (error) {
-      if (!isMissingAvatarColumnError(error)) {
+      if (!error) {
+        break;
+      }
+
+      const missingColumn = getMissingProfilesColumn(error);
+      if (!missingColumn || !(missingColumn in payload)) {
         setMsg(error.message);
         return;
       }
 
-      const payloadWithoutAvatar = {
-        user_id: payload.user_id,
-        display_name: payload.display_name,
-        favorite_team: payload.favorite_team,
-        bio: payload.bio,
-      };
-      const { error: fallbackErr } = await supabase
-        .from("profiles")
-        .upsert(payloadWithoutAvatar);
-
-      if (fallbackErr) {
-        setMsg(fallbackErr.message);
-        return;
-      }
+      delete payload[missingColumn];
     }
 
     setHasProfile(true);
