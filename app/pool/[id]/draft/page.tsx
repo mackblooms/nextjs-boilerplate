@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
@@ -75,6 +75,46 @@ export default function DraftPage() {
     });
   }, [teams]);
 
+  const ensureEntry = useCallback(async (userId: string) => {
+    const { data: rows, error: entrySelErr } = await supabase
+      .from("entries")
+      .select("id,entry_name")
+      .eq("pool_id", poolId)
+      .eq("user_id", userId)
+      .limit(1);
+
+    if (entrySelErr) {
+      return { entry: null as EntryRow | null, error: entrySelErr.message };
+    }
+
+    const existing = (((rows ?? []) as EntryRow[])[0] ?? null) as
+      | EntryRow
+      | null;
+
+    if (existing) {
+      return { entry: existing, error: null };
+    }
+
+    const { data: newEntry, error: entryInsErr } = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolId,
+        user_id: userId,
+        entry_name: "My Bracket",
+      })
+      .select("id,entry_name")
+      .single();
+
+    if (entryInsErr || !newEntry) {
+      return {
+        entry: null as EntryRow | null,
+        error: entryInsErr?.message ?? "Failed to create entry.",
+      };
+    }
+
+    return { entry: newEntry as EntryRow, error: null };
+  }, [poolId]);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -139,52 +179,28 @@ export default function DraftPage() {
 
       setTeams((teamRows ?? []) as Team[]);
 
-      // Entry
-      const { data: existingEntry, error: entrySelErr } = await supabase
-        .from("entries")
-        .select("id,entry_name")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (entrySelErr) {
-        setMsg(entrySelErr.message);
+      if (!mem) {
+        setEntryId(null);
+        setSelected(new Set());
         setLoading(false);
         return;
       }
 
-      const typedEntry = (existingEntry as EntryRow | null) ?? null;
-      let eid = typedEntry?.id;
-      if (typedEntry?.entry_name) setEntryName(typedEntry.entry_name);
-
-      if (!eid) {
-        const { data: newEntry, error: entryInsErr } = await supabase
-          .from("entries")
-          .insert({
-            pool_id: poolId,
-            user_id: user.id,
-            entry_name: "My Bracket",
-          })
-          .select("id")
-          .single();
-
-        if (entryInsErr || !newEntry) {
-          setMsg(entryInsErr?.message ?? "Failed to create entry.");
-          setLoading(false);
-          return;
-        }
-
-        eid = newEntry.id as string;
-        setEntryName("My Bracket");
+      const { entry, error: entryErr } = await ensureEntry(user.id);
+      if (entryErr || !entry) {
+        setMsg(entryErr ?? "Failed to load entry.");
+        setLoading(false);
+        return;
       }
 
-      setEntryId(eid);
+      setEntryId(entry.id);
+      setEntryName(entry.entry_name ?? "My Bracket");
 
       // Picks
       const { data: picks, error: picksErr } = await supabase
         .from("entry_picks")
         .select("team_id")
-        .eq("entry_id", eid);
+        .eq("entry_id", entry.id);
 
       if (picksErr) {
         setMsg(picksErr.message);
@@ -200,7 +216,7 @@ export default function DraftPage() {
     };
 
     load();
-  }, [poolId]);
+  }, [poolId, ensureEntry]);
 
   async function joinPool() {
     setMsg("");
@@ -223,6 +239,27 @@ export default function DraftPage() {
     }
 
     setIsMember(true);
+
+        const { entry, error: entryErr } = await ensureEntry(user.id);
+    if (entryErr || !entry) {
+      setMsg(entryErr ?? "Joined, but failed to create entry.");
+      return;
+    }
+
+    setEntryId(entry.id);
+    setEntryName(entry.entry_name ?? "My Bracket");
+
+    const { data: picks, error: picksErr } = await supabase
+      .from("entry_picks")
+      .select("team_id")
+      .eq("entry_id", entry.id);
+
+    if (picksErr) {
+      setMsg(picksErr.message);
+      return;
+    }
+
+    setSelected(new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)));
     setMsg("Joined pool. You can draft now.");
   }
 
@@ -264,14 +301,33 @@ export default function DraftPage() {
   async function savePicks() {
     setMsg("");
 
-    if (!entryId) {
-      setMsg("Entry not ready yet. Refresh and try again.");
-      return;
-    }
+    let resolvedEntryId = entryId;
     if (!isMember) {
       setMsg("Join the pool before drafting.");
       return;
     }
+
+        if (!resolvedEntryId) {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+      if (!user) {
+        setMsg("Please log in first.");
+        return;
+      }
+
+      const { entry, error: entryErr } = await ensureEntry(user.id);
+      if (entryErr || !entry) {
+        setMsg(entryErr ?? "Entry not ready yet. Refresh and try again.");
+        return;
+      }
+
+      resolvedEntryId = entry.id;
+      setEntryId(entry.id);
+      if (!entryName.trim()) {
+        setEntryName(entry.entry_name ?? "My Bracket");
+      }
+    }
+
     if (locked) {
       setMsg("Draft is locked.");
       return;
@@ -292,7 +348,7 @@ export default function DraftPage() {
     const { error: entryUpdateErr } = await supabase
       .from("entries")
       .update({ entry_name: nickname })
-      .eq("id", entryId);
+      .eq("id", resolvedEntryId);
 
     if (entryUpdateErr) {
       setMsg(entryUpdateErr.message);
@@ -303,7 +359,7 @@ export default function DraftPage() {
     const { error: delErr } = await supabase
       .from("entry_picks")
       .delete()
-      .eq("entry_id", entryId);
+      .eq("entry_id", resolvedEntryId);
 
     if (delErr) {
       setMsg(delErr.message);
@@ -312,7 +368,7 @@ export default function DraftPage() {
     }
 
     const rows = Array.from(selected).map((team_id) => ({
-      entry_id: entryId,
+      entry_id: resolvedEntryId,
       team_id,
     }));
 
