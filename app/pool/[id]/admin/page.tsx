@@ -59,8 +59,10 @@ export default function AdminPage() {
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
+
+  const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -199,7 +201,8 @@ export default function AdminPage() {
   async function removeUserFromPool(targetPoolId: string, userId: string) {
     if (!targetPoolId || !userId) return;
 
-    setRemovingUserId(userId);
+    const targetMemberKey = memberKey(targetPoolId, userId);
+    setRemovingMemberKey(targetMemberKey);
     setMsg("");
 
     const { data: entries, error: entryLoadErr } = await supabase
@@ -210,7 +213,7 @@ export default function AdminPage() {
 
     if (entryLoadErr) {
       setMsg(entryLoadErr.message);
-      setRemovingUserId(null);
+      setRemovingMemberKey(null);
       return;
     }
 
@@ -225,7 +228,7 @@ export default function AdminPage() {
 
       if (picksDeleteErr) {
         setMsg(picksDeleteErr.message);
-        setRemovingUserId(null);
+        setRemovingMemberKey(null);
         return;
       }
 
@@ -236,7 +239,7 @@ export default function AdminPage() {
 
       if (entriesDeleteErr) {
         setMsg(entriesDeleteErr.message);
-        setRemovingUserId(null);
+        setRemovingMemberKey(null);
         return;
       }
     }
@@ -249,7 +252,7 @@ export default function AdminPage() {
 
     if (membershipDeleteErr) {
       setMsg(membershipDeleteErr.message);
-      setRemovingUserId(null);
+      setRemovingMemberKey(null);
       return;
     }
 
@@ -262,7 +265,7 @@ export default function AdminPage() {
       };
     });
     setMsg("User removed from this pool.");
-    setRemovingUserId(null);
+    setRemovingMemberKey(null);
   }
 
   async function deletePool(targetPoolId: string) {
@@ -329,7 +332,11 @@ export default function AdminPage() {
       delete next[targetPoolId];
       return next;
     });
-    setMsg("Pool deleted successfully.");
+    if (targetPoolId === poolId) {
+      setMembers([]);
+    }
+
+    setMsg("Pool deleted successfully. This pool and all associated data have been removed.");
     setDeletingPoolId(null);
 
     if (targetPoolId === poolId) {
@@ -579,7 +586,7 @@ export default function AdminPage() {
                   {isCreator ? " (commissioner)" : ""}
                 </div>
                 <button
-                  disabled={isCreator || removingUserId === m.user_id}
+                  disabled={isCreator || removingMemberKey === memberKey(poolId, m.user_id)}
                   onClick={() => removeUserFromPool(poolId, m.user_id)}
                   style={{
                     padding: "8px 10px",
@@ -591,7 +598,7 @@ export default function AdminPage() {
                     cursor: isCreator ? "not-allowed" : "pointer",
                   }}
                 >
-                  {removingUserId === m.user_id ? "Removing…" : "Remove from pool"}
+                  {removingMemberKey === memberKey(poolId, m.user_id) ? "Removing…" : "Remove from pool"}
                 </button>
               </div>
             );
@@ -613,7 +620,7 @@ export default function AdminPage() {
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools you manage</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          See every active pool you created. You can remove members or permanently delete a pool.
+          See every active pool you created. Deleting a pool removes members, entries, picks, and the pool record so it no longer appears for players.
         </p>
 
         {adminPools.length === 0 ? <p style={{ margin: 0 }}>No active pools found.</p> : null}
@@ -690,7 +697,7 @@ export default function AdminPage() {
                           {isCreator ? " (commissioner)" : ""}
                         </div>
                         <button
-                          disabled={isCreator || removingUserId === m.user_id}
+                          disabled={isCreator || removingMemberKey === memberKey(pool.id, m.user_id)}
                           onClick={() => removeUserFromPool(pool.id, m.user_id)}
                           style={{
                             padding: "6px 9px",
@@ -702,7 +709,7 @@ export default function AdminPage() {
                             cursor: isCreator ? "not-allowed" : "pointer",
                           }}
                         >
-                          {removingUserId === m.user_id ? "Removing…" : "Remove"}
+                          {removingMemberKey === memberKey(pool.id, m.user_id) ? "Removing…" : "Remove"}
                         </button>
                       </div>
                     );
