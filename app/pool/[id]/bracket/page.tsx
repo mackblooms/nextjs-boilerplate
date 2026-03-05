@@ -212,10 +212,10 @@ export default function BracketPage() {
             (profileRows as
               | {
                   user_id: string;
-                  full_name?: string | null;
-                  favorite_team?: string | null;
-                  avatar_url?: string | null;
-                  bio?: string | null;
+                  full_name: string | null;
+                  favorite_team: string | null;
+                  avatar_url: string | null;
+                  bio: string | null;
                 }[]
               | null) ?? []
           ).map((row) => [
