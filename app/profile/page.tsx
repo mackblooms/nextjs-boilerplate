@@ -6,7 +6,6 @@ import { supabase } from "../../lib/supabaseClient";
 
 type ProfileRow = {
   display_name: string | null;
-  full_name: string | null;
   favorite_team: string | null;
   avatar_url: string | null;
   bio: string | null;
@@ -45,7 +44,7 @@ export default function ProfilePage() {
 
       const { data: profile, error: profileErr } = await supabase
         .from("profiles")
-        .select("display_name,full_name,favorite_team,avatar_url,bio")
+        .select("display_name,favorite_team,avatar_url,bio")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
@@ -58,7 +57,6 @@ export default function ProfilePage() {
       const row = (profile as ProfileRow | null) ?? null;
       const profileExists =
         Boolean(row?.display_name) ||
-        Boolean(row?.full_name) ||
         Boolean(row?.favorite_team) ||
         Boolean(row?.avatar_url) ||
         Boolean(row?.bio);
@@ -67,7 +65,7 @@ export default function ProfilePage() {
       setIsEditing(onboarding ? true : !profileExists);
 
       if (row?.display_name) setDisplayName(row.display_name);
-      if (row?.full_name) setFullName(row.full_name);
+      if (row?.display_name) setFullName(row.display_name);
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
       if (row?.avatar_url) setAvatarUrl(row.avatar_url);
       if (row?.bio) setBio(row.bio);
@@ -107,8 +105,7 @@ export default function ProfilePage() {
 
     const { error } = await supabase.from("profiles").upsert({
       user_id: authData.user.id,
-      display_name: bracketName,
-      full_name: legalName,
+      display_name: legalName,
       favorite_team: team,
       avatar_url: avatarUrl.trim() || null,
       bio: bio.trim() || null,

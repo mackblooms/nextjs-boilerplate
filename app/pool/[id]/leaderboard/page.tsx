@@ -152,7 +152,7 @@ export default function LeaderboardPage() {
       if (userIds.length > 0) {
         const { data: profileRows, error: profilesErr } = await supabase
           .from("profiles")
-          .select("user_id,full_name")
+          .select("user_id,display_name")
           .in("user_id", userIds);
 
         if (profilesErr) {
@@ -164,9 +164,9 @@ export default function LeaderboardPage() {
         fullNameByUser = new Map(
           (
             (profileRows as
-              | { user_id: string; full_name: string | null }[]
+              | { user_id: string; display_name: string | null }[]
               | null) ?? []
-          ).map((row) => [row.user_id, row.full_name]),
+          ).map((row) => [row.user_id, row.display_name]),
         );
       }
 
