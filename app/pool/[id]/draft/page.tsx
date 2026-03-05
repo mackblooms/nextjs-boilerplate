@@ -75,6 +75,14 @@ export default function DraftPage() {
     });
   }, [teams]);
 
+  const isMissingEntryNameError = (message?: string) => {
+    if (!message) return false;
+    return (
+      message.includes("column entries.entry_name does not exist") ||
+      message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+    );
+  };
+
   const ensureEntry = useCallback(async (userId: string) => {
     const { data: rows, error: entrySelErr } = await supabase
       .from("entries")
@@ -112,9 +120,7 @@ export default function DraftPage() {
       };
     }
 
-    const missingEntryName = namedInsErr?.message.includes(
-      "column entries.entry_name does not exist",
-    );
+    const missingEntryName = isMissingEntryNameError(namedInsErr?.message);
 
     if (!missingEntryName) {
       return {
@@ -365,24 +371,16 @@ export default function DraftPage() {
     }
 
     const nickname = entryName.trim();
-    if (!nickname) {
-      setMsg("Please add a bracket nickname before saving.");
-      return;
-    }
 
     setSaving(true);
 
-    const { error: entryUpdateErr } = await supabase
-      .from("entries")
-      .update({ entry_name: nickname })
-      .eq("id", resolvedEntryId);
+    if (nickname) {
+      const { error: entryUpdateErr } = await supabase
+        .from("entries")
+        .update({ entry_name: nickname })
+        .eq("id", resolvedEntryId);
 
-    if (entryUpdateErr) {
-      const missingEntryName = entryUpdateErr.message.includes(
-        "column entries.entry_name does not exist",
-      );
-
-      if (!missingEntryName) {
+      if (entryUpdateErr && !isMissingEntryNameError(entryUpdateErr.message)) {
         setMsg(entryUpdateErr.message);
         setSaving(false);
         return;
