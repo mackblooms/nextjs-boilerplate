@@ -12,20 +12,6 @@ type ProfileRow = {
   bio: string | null;
 };
 
-type ProfileUpsert = {
-  user_id: string;
-  display_name: string;
-  full_name: string;
-  favorite_team: string;
-  avatar_url: string | null;
-  bio: string | null;
-};
-
-function missingColumnFromError(message: string): string | null {
-  const match = message.match(/Could not find the '([^']+)' column/i);
-  return match?.[1] ?? null;
-}
-
 export default function ProfilePage() {
   const router = useRouter();
   const search =
@@ -42,6 +28,8 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+  const [isEditing, setIsEditing] = useState(onboarding);
 
   useEffect(() => {
     const load = async () => {
@@ -57,7 +45,7 @@ export default function ProfilePage() {
 
       const { data: profile, error: profileErr } = await supabase
         .from("profiles")
-        .select("*")
+        .select("display_name,full_name,favorite_team,avatar_url,bio")
         .eq("user_id", authData.user.id)
         .maybeSingle();
 
@@ -68,6 +56,16 @@ export default function ProfilePage() {
       }
 
       const row = (profile as ProfileRow | null) ?? null;
+      const profileExists =
+        Boolean(row?.display_name) ||
+        Boolean(row?.full_name) ||
+        Boolean(row?.favorite_team) ||
+        Boolean(row?.avatar_url) ||
+        Boolean(row?.bio);
+
+      setHasProfile(profileExists);
+      setIsEditing(onboarding ? true : !profileExists);
+
       if (row?.display_name) setDisplayName(row.display_name);
       if (row?.full_name) setFullName(row.full_name);
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
@@ -78,25 +76,7 @@ export default function ProfilePage() {
     };
 
     load();
-  }, []);
-
-  async function upsertProfileWithFallback(payload: ProfileUpsert) {
-    const workingPayload: Partial<ProfileUpsert> = { ...payload };
-
-    for (let attempts = 0; attempts < 6; attempts += 1) {
-      const { error } = await supabase.from("profiles").upsert(workingPayload);
-      if (!error) return { error: null };
-
-      const missingCol = missingColumnFromError(error.message);
-      if (!missingCol || !(missingCol in workingPayload)) {
-        return { error };
-      }
-
-      delete workingPayload[missingCol as keyof ProfileUpsert];
-    }
-
-    return { error: { message: "Unable to save profile right now." } };
-  }
+  }, [onboarding]);
 
   async function save() {
     setMsg("");
@@ -125,7 +105,7 @@ export default function ProfilePage() {
       return;
     }
 
-    const { error } = await upsertProfileWithFallback({
+    const { error } = await supabase.from("profiles").upsert({
       user_id: authData.user.id,
       display_name: bracketName,
       full_name: legalName,
@@ -139,11 +119,14 @@ export default function ProfilePage() {
       return;
     }
 
+    setHasProfile(true);
+
     if (onboarding) {
       router.replace(nextPath.startsWith("/") ? nextPath : "/pools");
       return;
     }
 
+    setIsEditing(false);
     setMsg("Saved!");
   }
 
@@ -159,9 +142,9 @@ export default function ProfilePage() {
         </p>
       ) : null}
 
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
+      {loading ? <p>Loading…</p> : null}
+
+      {!loading && isEditing ? (
         <>
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
             Bracket nickname
@@ -245,22 +228,128 @@ export default function ProfilePage() {
             }}
           />
 
-          <button
-            onClick={save}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              onClick={save}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                fontWeight: 800,
+              }}
+            >
+              {onboarding ? "Save and continue" : "Save"}
+            </button>
+
+            {hasProfile && !onboarding ? (
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setMsg("");
+                }}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  background: "transparent",
+                }}
+              >
+                Cancel
+              </button>
+            ) : null}
+          </div>
+        </>
+      ) : null}
+
+      {!loading && !isEditing ? (
+        <section
+          style={{
+            border: "1px solid var(--border-color)",
+            borderRadius: 12,
+            padding: 14,
+            background: "var(--surface)",
+          }}
+        >
+          <div
             style={{
-              padding: "12px 14px",
-              borderRadius: 8,
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 800,
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              marginBottom: 12,
             }}
           >
-            {onboarding ? "Save and continue" : "Save"}
-          </button>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={fullName || displayName || "Profile"}
+                width={72}
+                height={72}
+                style={{
+                  borderRadius: 999,
+                  objectFit: "cover",
+                  border: "1px solid var(--border-color)",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 999,
+                  border: "1px solid var(--border-color)",
+                  display: "grid",
+                  placeItems: "center",
+                  fontWeight: 900,
+                  fontSize: 24,
+                  background: "var(--surface-muted)",
+                }}
+              >
+                {(fullName || displayName || "P").slice(0, 1).toUpperCase()}
+              </div>
+            )}
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 22 }}>
+                {displayName || "Bracket nickname"}
+              </div>
+              <div style={{ opacity: 0.75, fontWeight: 700 }}>
+                {fullName || "Full name"}
+              </div>
+            </div>
+          </div>
 
-          {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-        </>
-      )}
+          <div style={{ display: "grid", gap: 8 }}>
+            <div>
+              <b>Favorite team:</b> {favoriteTeam || "Not set"}
+            </div>
+            <div>
+              <b>Bio:</b> {bio || "No bio yet."}
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setIsEditing(true);
+              setMsg("");
+            }}
+            style={{
+              marginTop: 12,
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: 800,
+              background: "transparent",
+            }}
+          >
+            Edit profile
+          </button>
+        </section>
+      ) : null}
+
+      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
     </main>
   );
 }
