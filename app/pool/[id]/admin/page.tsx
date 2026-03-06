@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
 type Team = {
@@ -37,11 +36,6 @@ type AdminPoolRow = {
   created_by: string;
 };
 
-type EntryRow = {
-  id: string;
-  user_id: string;
-};
-
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 
 export default function AdminPage() {
@@ -61,6 +55,8 @@ export default function AdminPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
+  const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
+  const [poolNameDrafts, setPoolNameDrafts] = useState<Record<string, string>>({});
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
@@ -82,6 +78,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     const load = async () => {
+      if (!poolId) {
+        setMsg("Missing pool id.");
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setMsg("");
 
@@ -149,7 +151,6 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
-
       setMembers((memberRows ?? []) as PoolMemberRow[]);
 
       const { data: allPoolRows, error: allPoolErr } = await supabase
@@ -166,6 +167,7 @@ export default function AdminPage() {
 
       const pools = (allPoolRows ?? []) as AdminPoolRow[];
       setAdminPools(pools);
+      setPoolNameDrafts(Object.fromEntries(pools.map((pool) => [pool.id, pool.name])));
 
       if (pools.length > 0) {
         const ids = pools.map((p) => p.id);
@@ -182,7 +184,7 @@ export default function AdminPage() {
         }
 
         const grouped: Record<string, PoolMemberRow[]> = {};
-        for (const row of ((allMembersRows ?? []) as PoolMemberWithPoolRow[])) {
+        for (const row of (allMembersRows ?? []) as PoolMemberWithPoolRow[]) {
           if (!grouped[row.pool_id]) grouped[row.pool_id] = [];
           grouped[row.pool_id].push({
             user_id: row.user_id,
@@ -190,6 +192,8 @@ export default function AdminPage() {
           });
         }
         setMembersByPool(grouped);
+      } else {
+        setMembersByPool({});
       }
 
       setLoading(false);
@@ -198,74 +202,57 @@ export default function AdminPage() {
     load();
   }, [poolId]);
 
-  async function removeUserFromPool(targetPoolId: string, userId: string) {
-    if (!targetPoolId || !userId) return;
+  async function removeUserFromPool(targetPoolId: string, targetUserId: string) {
+    if (!targetPoolId || !targetUserId) return;
 
-    const targetMemberKey = memberKey(targetPoolId, userId);
+    const targetMemberKey = memberKey(targetPoolId, targetUserId);
     setRemovingMemberKey(targetMemberKey);
     setMsg("");
 
-    const { data: entries, error: entryLoadErr } = await supabase
-      .from("entries")
-      .select("id,user_id")
-      .eq("pool_id", targetPoolId)
-      .eq("user_id", userId);
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const currentUser = authData?.user;
 
-    if (entryLoadErr) {
-      setMsg(entryLoadErr.message);
+    if (authErr || !currentUser) {
+      setMsg("Not logged in (could not read user).");
       setRemovingMemberKey(null);
       return;
     }
 
-    const entryRows = (entries ?? []) as EntryRow[];
-    const entryIds = entryRows.map((e) => e.id);
+    try {
+      const res = await fetch("/api/admin/remove-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          poolId: targetPoolId,
+          userId: currentUser.id,
+          targetUserId,
+        }),
+      });
 
-    if (entryIds.length > 0) {
-      const { error: picksDeleteErr } = await supabase
-        .from("entry_picks")
-        .delete()
-        .in("entry_id", entryIds);
-
-      if (picksDeleteErr) {
-        setMsg(picksDeleteErr.message);
-        setRemovingMemberKey(null);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(`Remove failed: ${json.error ?? "Unknown error"}`);
         return;
       }
 
-      const { error: entriesDeleteErr } = await supabase
-        .from("entries")
-        .delete()
-        .in("id", entryIds);
-
-      if (entriesDeleteErr) {
-        setMsg(entriesDeleteErr.message);
-        setRemovingMemberKey(null);
-        return;
+      if (targetPoolId === poolId) {
+        setMembers((prev) => prev.filter((m) => m.user_id !== targetUserId));
       }
-    }
 
-    const { error: membershipDeleteErr } = await supabase
-      .from("pool_members")
-      .delete()
-      .eq("pool_id", targetPoolId)
-      .eq("user_id", userId);
+      setMembersByPool((prev) => {
+        const existing = prev[targetPoolId] ?? [];
+        return {
+          ...prev,
+          [targetPoolId]: existing.filter((m) => m.user_id !== targetUserId),
+        };
+      });
 
-    if (membershipDeleteErr) {
-      setMsg(membershipDeleteErr.message);
+      setMsg("User removed from this pool.");
+    } catch (e: unknown) {
+      setMsg(`Remove failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
       setRemovingMemberKey(null);
-      return;
     }
-
-    setMembers((prev) => prev.filter((m) => m.user_id !== userId));
-    setMembersByPool((prev) => {
-      const existing = prev[targetPoolId] ?? [];
-      return {
-        ...prev,
-        [targetPoolId]: existing.filter((m) => m.user_id !== userId),
-      };
-    });
-    setMsg("User removed from this pool.");
-    setRemovingMemberKey(null);
   }
 
   async function deletePool(targetPoolId: string) {
@@ -274,7 +261,6 @@ export default function AdminPage() {
     const confirmed = window.confirm(
       "Delete this pool permanently? This removes entries, picks, and member access."
     );
-
     if (!confirmed) return;
 
     setDeletingPoolId(targetPoolId);
@@ -297,23 +283,24 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         setMsg(`Delete failed: ${json.error ?? "Unknown error"}`);
-        setDeletingPoolId(null);
         return;
       }
 
       setAdminPools((prev) => prev.filter((p) => p.id !== targetPoolId));
+      setPoolNameDrafts((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
       setMembersByPool((prev) => {
         const next = { ...prev };
         delete next[targetPoolId];
         return next;
       });
 
-      if (targetPoolId === poolId) {
-        setMembers([]);
-      }
+      if (targetPoolId === poolId) setMembers([]);
 
       setMsg("Pool deleted successfully. This pool and all associated data have been removed.");
 
@@ -324,6 +311,58 @@ export default function AdminPage() {
       setMsg(`Delete failed: ${e instanceof Error ? e.message : "Unknown error"}`);
     } finally {
       setDeletingPoolId(null);
+    }
+  }
+
+  async function renamePool(targetPoolId: string) {
+    const nextName = (poolNameDrafts[targetPoolId] ?? "").trim();
+    if (!targetPoolId || !nextName) {
+      setMsg("Enter a pool name before saving.");
+      return;
+    }
+
+    setRenamingPoolId(targetPoolId);
+    setMsg("");
+
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const currentUser = authData?.user;
+
+    if (authErr || !currentUser) {
+      setMsg("Not logged in (could not read user).");
+      setRenamingPoolId(null);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/rename-pool", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          poolId: targetPoolId,
+          userId: currentUser.id,
+          name: nextName,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(`Rename failed: ${json.error ?? "Unknown error"}`);
+        return;
+      }
+
+      const savedName = String(json.name ?? nextName);
+
+      setAdminPools((prev) =>
+        prev
+          .map((pool) => (pool.id === targetPoolId ? { ...pool, name: savedName } : pool))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      setPoolNameDrafts((prev) => ({ ...prev, [targetPoolId]: savedName }));
+      setMsg("Pool name updated.");
+    } catch (e: unknown) {
+      setMsg(`Rename failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setRenamingPoolId(null);
     }
   }
 
@@ -355,7 +394,7 @@ export default function AdminPage() {
       setMsg("Not logged in (could not read user).");
       return;
     }
-    
+
     try {
       const res = await fetch("/api/admin/sync-logos", {
         method: "POST",
@@ -364,7 +403,6 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         setMsg(`Sync failed: ${json.error ?? "Unknown error"}`);
         return;
@@ -372,7 +410,6 @@ export default function AdminPage() {
 
       const updated = json.updated ?? 0;
       const missing = Array.isArray(json.missing) ? json.missing : [];
-      
       setMsg(
         `Logos updated: ${updated}. Missing: ${missing.length}` +
           (missing.length ? ` | Missing teams: ${missing.join(", ")}` : "")
@@ -382,11 +419,11 @@ export default function AdminPage() {
     }
   }
 
-    async function fullSync() {
+  async function fullSync() {
     setMsg("");
     setLoading(true);
 
-        try {
+    try {
       const res = await fetch("/api/admin/full-sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -394,13 +431,12 @@ export default function AdminPage() {
       });
 
       const json = await res.json().catch(() => ({}));
-
       if (!res.ok) {
         throw new Error(json?.error ?? "Full sync failed");
       }
-      
+
       setMsg(
-        `✅ Full Sync complete | import: ${json?.import?.note ?? "ok"} | linked: ${
+        `Full Sync complete | import: ${json?.import?.note ?? "ok"} | linked: ${
           json?.link?.linked ?? "n/a"
         } | updated winners: ${json?.scores?.updatedGames ?? "n/a"}`
       );
@@ -410,21 +446,21 @@ export default function AdminPage() {
       setLoading(false);
     }
   }
-  
-    function teamLabel(teamId: string | null) {
+
+  function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
     if (!t) return "Unknown";
     const seed = t.seed_in_region ?? "";
     const region = t.region ?? "";
-    return `${t.name} ${seed ? `(Seed ${seed})` : ""}${region ? ` – ${region}` : ""}`;
+    return `${t.name} ${seed ? `(Seed ${seed})` : ""}${region ? ` - ${region}` : ""}`;
   }
 
   if (loading) {
     return (
       <main style={{ maxWidth: 1100, margin: "48px auto", padding: 16 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
-        <p style={{ marginTop: 12 }}>Loading…</p>
+        <p style={{ marginTop: 12 }}>Loading...</p>
       </main>
     );
   }
@@ -493,10 +529,12 @@ export default function AdminPage() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ date }),
                 });
-                const j = await r.json();
+                const j = await r.json().catch(() => ({}));
                 if (!r.ok) throw new Error(j?.error ?? "Sync failed");
+
                 setMsg(
-                  `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
+                  `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, ` +
+                    `Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
                 );
               } catch (e: unknown) {
                 setMsg(e instanceof Error ? e.message : "Unknown error");
@@ -529,7 +567,7 @@ export default function AdminPage() {
           </a>
         </div>
       </div>
-      
+
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
       <section
@@ -581,7 +619,7 @@ export default function AdminPage() {
                     cursor: isCreator ? "not-allowed" : "pointer",
                   }}
                 >
-                  {removingMemberKey === memberKey(poolId, m.user_id) ? "Removing…" : "Remove from pool"}
+                  {removingMemberKey === memberKey(poolId, m.user_id) ? "Removing..." : "Remove from pool"}
                 </button>
               </div>
             );
@@ -603,7 +641,8 @@ export default function AdminPage() {
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools you manage</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          See every active pool you created. Deleting a pool removes members, entries, picks, and the pool record so it no longer appears for players.
+          See every active pool you created. Deleting a pool removes members, entries, picks, and the pool
+          record so it no longer appears for players.
         </p>
 
         {adminPools.length === 0 ? <p style={{ margin: 0 }}>No active pools found.</p> : null}
@@ -623,9 +662,41 @@ export default function AdminPage() {
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                  <div>
+                  <div style={{ display: "grid", gap: 8 }}>
                     <div style={{ fontWeight: 900 }}>{pool.name}</div>
                     <div style={{ fontSize: 13, opacity: 0.7 }}>Members: {poolMembers.length}</div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <input
+                        value={poolNameDrafts[pool.id] ?? ""}
+                        onChange={(e) =>
+                          setPoolNameDrafts((prev) => ({
+                            ...prev,
+                            [pool.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Pool name"
+                        style={{
+                          padding: "7px 9px",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                          minWidth: 230,
+                        }}
+                      />
+                      <button
+                        disabled={renamingPoolId === pool.id}
+                        onClick={() => renamePool(pool.id)}
+                        style={{
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          border: "1px solid #999",
+                          background: "#fff",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {renamingPoolId === pool.id ? "Saving..." : "Save name"}
+                      </button>
+                    </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <a
@@ -653,7 +724,7 @@ export default function AdminPage() {
                         cursor: "pointer",
                       }}
                     >
-                      {deletingPoolId === pool.id ? "Deleting…" : "Delete pool"}
+                      {deletingPoolId === pool.id ? "Deleting..." : "Delete pool"}
                     </button>
                   </div>
                 </div>
@@ -692,7 +763,7 @@ export default function AdminPage() {
                             cursor: isCreator ? "not-allowed" : "pointer",
                           }}
                         >
-                          {removingMemberKey === memberKey(pool.id, m.user_id) ? "Removing…" : "Remove"}
+                          {removingMemberKey === memberKey(pool.id, m.user_id) ? "Removing..." : "Remove"}
                         </button>
                       </div>
                     );
