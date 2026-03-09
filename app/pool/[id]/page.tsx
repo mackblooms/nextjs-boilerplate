@@ -89,7 +89,7 @@ export default function PoolPage() {
       await navigator.clipboard.writeText(shareLink);
       setCopyMsg("Share link copied.");
     } catch {
-      setCopyMsg("Unable to copy automatically. Copy the link below.");
+      setCopyMsg("Unable to copy automatically. Please try again.");
     }
   }
 
@@ -116,7 +116,7 @@ export default function PoolPage() {
           }}
         >
           <Image
-            src="/pool-logo.svg"
+            src="/pool-logo.svg?v=2"
             alt=""
             aria-hidden="true"
             width={420}

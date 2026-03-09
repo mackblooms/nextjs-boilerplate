@@ -1,4 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" fill="none">
-  <path d="M70 60H320V240H70" stroke="black" stroke-width="8" stroke-linejoin="miter"/>
-  <path d="M440 60H690M440 240H690M440 60V240M320 150H440" stroke="black" stroke-width="8" stroke-linejoin="miter"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" fill="none" shape-rendering="geometricPrecision">
+  <rect x="70" y="56" width="250" height="8" fill="black"/>
+  <rect x="312" y="60" width="8" height="180" fill="black"/>
+  <rect x="70" y="236" width="250" height="8" fill="black"/>
+
+  <rect x="440" y="56" width="250" height="8" fill="black"/>
+  <rect x="440" y="60" width="8" height="180" fill="black"/>
+  <rect x="440" y="236" width="250" height="8" fill="black"/>
+
+  <rect x="320" y="146" width="120" height="8" fill="black"/>
 </svg>
