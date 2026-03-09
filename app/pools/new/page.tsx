@@ -7,6 +7,8 @@ import { supabase } from "../../../lib/supabaseClient";
 export default function NewPoolPage() {
   const router = useRouter();
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -15,48 +17,60 @@ export default function NewPoolPage() {
     setMsg("");
     setSaving(true);
 
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
-    if (!user) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) {
       setMsg("Please log in first.");
       setSaving(false);
       return;
     }
 
     const poolName = name.trim();
+    const poolPassword = password.trim();
+    const confirmation = confirmPassword.trim();
+
     if (!poolName) {
       setMsg("Enter a pool name.");
       setSaving(false);
       return;
     }
 
-    // 1) create pool
-    const { data: pool, error: poolErr } = await supabase
-      .from("pools")
-      .insert({ name: poolName, created_by: user.id })
-      .select("id")
-      .single();
-
-    if (poolErr || !pool) {
-      setMsg(poolErr?.message ?? "Failed to create pool.");
+    if (poolPassword.length < 4) {
+      setMsg("Enter a pool password with at least 4 characters.");
       setSaving(false);
       return;
     }
 
-    // 2) auto-join creator
-    const { error: joinErr } = await supabase.from("pool_members").insert({
-      pool_id: pool.id,
-      user_id: user.id,
+    if (poolPassword !== confirmation) {
+      setMsg("Pool passwords do not match.");
+      setSaving(false);
+      return;
+    }
+
+    const res = await fetch("/api/pools/create", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        name: poolName,
+        password: poolPassword,
+      }),
     });
 
-    if (joinErr) {
-      setMsg(joinErr.message);
+    const body = (await res.json().catch(() => ({}))) as {
+      poolId?: string;
+      error?: string;
+    };
+
+    if (!res.ok || !body.poolId) {
+      setMsg(body.error ?? "Failed to create pool.");
       setSaving(false);
       return;
     }
 
-    // 3) redirect to pool page
-    router.push(`/pool/${pool.id}`);
+    router.push(`/pool/${body.poolId}`);
   }
 
   return (
@@ -69,7 +83,35 @@ export default function NewPoolPage() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g., bracketball — Friends 2026"
+          placeholder="e.g., bracketball - Friends 2026"
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Pool password (required)"
+          minLength={4}
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        />
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm pool password"
+          minLength={4}
           style={{
             width: "100%",
             padding: "12px 14px",
@@ -89,9 +131,13 @@ export default function NewPoolPage() {
             fontWeight: 800,
           }}
         >
-          {saving ? "Creating…" : "Create pool"}
+          {saving ? "Creating..." : "Create pool"}
         </button>
       </form>
+
+      <p style={{ marginTop: 12, opacity: 0.75, fontSize: 13 }}>
+        New pools are private by default and require this password to join.
+      </p>
 
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
     </main>

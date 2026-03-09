@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
-import { ensurePoolMembership, getInvitePoolIdFromNextPath } from "../../../lib/poolInvite";
+import { getInvitePoolIdFromNextPath } from "../../../lib/poolInvite";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -22,13 +22,6 @@ export default function AuthCallbackPage() {
         const invitePoolId =
           url.searchParams.get("invitePoolId") ||
           getInvitePoolIdFromNextPath(safeRequestedNext);
-
-        const maybeJoinInvitedPool = async () => {
-          if (!invitePoolId) return null;
-          const { data: userData, error: userErr } = await supabase.auth.getUser();
-          if (userErr) throw userErr;
-          return ensurePoolMembership(invitePoolId, userData.user?.id);
-        };
 
         const fallbackNextPath = invitePoolId ? `/pool/${invitePoolId}` : "/";
         const recoveryNextPath = (() => {
@@ -70,10 +63,6 @@ export default function AuthCallbackPage() {
               refresh_token: refreshToken,
             });
             if (error) throw error;
-            const joinErr = await maybeJoinInvitedPool();
-            if (joinErr) {
-              setDetails(`Signed in, but invite auto-join failed: ${joinErr}`);
-            }
             setStatus("Signed in! Redirecting...");
             router.replace(nextPath);
             return;
@@ -100,10 +89,6 @@ export default function AuthCallbackPage() {
               ? recoveryNextPath
               : fallbackNextPath;
 
-        const joinErr = await maybeJoinInvitedPool();
-        if (joinErr) {
-          setDetails(`Signed in, but invite auto-join failed: ${joinErr}`);
-        }
         setStatus("Signed in! Redirecting...");
         router.replace(nextPath);
       } catch (e: unknown) {

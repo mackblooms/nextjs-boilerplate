@@ -37,6 +37,9 @@ export default function DraftPage() {
 
   const [locked, setLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
+  const [poolIsPrivate, setPoolIsPrivate] = useState(true);
+  const [joinPassword, setJoinPassword] = useState("");
+  const [joining, setJoining] = useState(false);
 
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
@@ -165,7 +168,7 @@ export default function DraftPage() {
       // ✅ Lock check (paste-in safe)
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("lock_time")
+        .select("lock_time,is_private")
         .eq("id", poolId)
         .single();
 
@@ -182,6 +185,8 @@ export default function DraftPage() {
       } else {
         setLocked(false);
       }
+
+      setPoolIsPrivate((poolRow?.is_private ?? true) !== false);
 
       // Membership
       const { data: mem, error: memErr } = await supabase
@@ -279,29 +284,57 @@ export default function DraftPage() {
 
   async function joinPool() {
     setMsg("");
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
+    setJoining(true);
 
-    if (!user) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) {
       setMsg("Please log in first.");
+      setJoining(false);
       return;
     }
 
-    const { error } = await supabase.from("pool_members").insert({
-      pool_id: poolId,
-      user_id: user.id,
+    if (poolIsPrivate && !joinPassword.trim()) {
+      setMsg("Enter this pool's password.");
+      setJoining(false);
+      return;
+    }
+
+    const res = await fetch("/api/pools/join", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        poolId,
+        password: joinPassword,
+      }),
     });
 
-    if (error) {
-      setMsg(error.message);
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+
+    if (!res.ok) {
+      setMsg(body.error ?? "Failed to join pool.");
+      setJoining(false);
       return;
     }
 
     setIsMember(true);
+    setJoinPassword("");
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setMsg("Joined, but failed to load your entry. Refresh and try again.");
+      setJoining(false);
+      return;
+    }
 
     const { entry, error: entryErr } = await ensureEntry(user.id);
     if (entryErr || !entry) {
       setMsg(entryErr ?? "Joined, but failed to create entry.");
+      setJoining(false);
       return;
     }
 
@@ -315,11 +348,13 @@ export default function DraftPage() {
 
     if (picksErr) {
       setMsg(picksErr.message);
+      setJoining(false);
       return;
     }
 
     setSelected(new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)));
     setMsg("Joined pool. You can draft now.");
+    setJoining(false);
   }
 
   function toggleTeam(teamId: string) {
@@ -502,19 +537,37 @@ export default function DraftPage() {
 
       {!isMember ? (
         <div style={{ marginTop: 18 }}>
-          <p style={{ opacity: 0.9 }}>You’re not a member of this pool yet.</p>
+          <p style={{ opacity: 0.9 }}>You are not a member of this pool yet.</p>
+          {poolIsPrivate ? (
+            <input
+              type="password"
+              value={joinPassword}
+              onChange={(e) => setJoinPassword(e.target.value)}
+              placeholder="Pool password"
+              style={{
+                marginTop: 10,
+                width: "100%",
+                maxWidth: 360,
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+              }}
+            />
+          ) : null}
           <button
             onClick={joinPool}
+            disabled={joining}
             style={{
               marginTop: 10,
               padding: "12px 14px",
               borderRadius: 10,
               border: "none",
-              cursor: "pointer",
+              cursor: joining ? "not-allowed" : "pointer",
               fontWeight: 900,
+              opacity: joining ? 0.7 : 1,
             }}
           >
-            Join pool
+            {joining ? "Joining..." : "Join pool"}
           </button>
         </div>
       ) : null}
@@ -733,3 +786,4 @@ export default function DraftPage() {
     </main>
   );
 }
+

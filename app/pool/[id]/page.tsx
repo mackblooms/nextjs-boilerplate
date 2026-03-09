@@ -5,7 +5,12 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 
-type Pool = { id: string; name: string; created_by: string };
+type Pool = {
+  id: string;
+  name: string;
+  created_by: string;
+  is_private: boolean | null;
+};
 
 export default function PoolPage() {
   const params = useParams<{ id: string }>();
@@ -20,6 +25,8 @@ export default function PoolPage() {
   const [msg, setMsg] = useState("");
   const [copyMsg, setCopyMsg] = useState("");
   const [isMember, setIsMember] = useState<boolean | null>(null);
+  const [joinPassword, setJoinPassword] = useState("");
+  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -27,7 +34,7 @@ export default function PoolPage() {
 
       const { data: poolData, error: poolErr } = await supabase
         .from("pools")
-        .select("id,name,created_by")
+        .select("id,name,created_by,is_private")
         .eq("id", poolId)
         .single();
 
@@ -36,7 +43,7 @@ export default function PoolPage() {
         return;
       }
 
-      setPool(poolData);
+      setPool(poolData as Pool);
 
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
@@ -61,25 +68,48 @@ export default function PoolPage() {
 
   async function joinPool() {
     setMsg("");
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
-    if (!user) {
+    setJoining(true);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+
+    if (!session) {
       setMsg("Please log in first.");
+      setJoining(false);
       return;
     }
 
-    const { error } = await supabase.from("pool_members").insert({
-      pool_id: poolId,
-      user_id: user.id,
+    const poolIsPrivate = (pool?.is_private ?? true) !== false;
+    if (poolIsPrivate && !joinPassword.trim()) {
+      setMsg("Enter this pool's password.");
+      setJoining(false);
+      return;
+    }
+
+    const res = await fetch("/api/pools/join", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        poolId,
+        password: joinPassword,
+      }),
     });
 
-    if (error) {
-      setMsg(error.message);
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+
+    if (!res.ok) {
+      setMsg(body.error ?? "Failed to join pool.");
+      setJoining(false);
       return;
     }
 
     setIsMember(true);
+    setJoinPassword("");
     setMsg("Joined!");
+    setJoining(false);
   }
 
   async function copyShareLink() {
@@ -141,18 +171,37 @@ export default function PoolPage() {
         {copyMsg ? <p style={{ marginTop: 2, fontWeight: 700 }}>{copyMsg}</p> : null}
 
         {isMember === false ? (
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 12, width: "min(100%, 360px)" }}>
+            {(pool?.is_private ?? true) !== false ? (
+              <input
+                type="password"
+                value={joinPassword}
+                onChange={(e) => setJoinPassword(e.target.value)}
+                placeholder="Pool password"
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  marginBottom: 10,
+                }}
+              />
+            ) : null}
+
             <button
               onClick={joinPool}
+              disabled={joining}
               style={{
+                width: "100%",
                 padding: "12px 14px",
                 borderRadius: 10,
                 border: "none",
-                cursor: "pointer",
+                cursor: joining ? "not-allowed" : "pointer",
                 fontWeight: 900,
+                opacity: joining ? 0.7 : 1,
               }}
             >
-              Join pool
+              {joining ? "Joining..." : "Join pool"}
             </button>
           </div>
         ) : null}

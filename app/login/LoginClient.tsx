@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { ensurePoolMembership, resolveInvitePoolId } from "../../lib/poolInvite";
+import { resolveInvitePoolId } from "../../lib/poolInvite";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -40,11 +40,6 @@ export default function LoginClient() {
     const params = new URLSearchParams({ next: nextPath });
     if (invitePoolId) params.set("invitePoolId", invitePoolId);
     return `${window.location.origin}/auth/callback?${params.toString()}`;
-  }
-
-  async function autoJoinInvitedPool(userId: string | null | undefined) {
-    if (!invitePoolId || !userId) return null;
-    return ensurePoolMembership(invitePoolId, userId);
   }
 
   async function resendConfirmation() {
@@ -128,12 +123,7 @@ export default function LoginClient() {
 
       setStatus("success");
       if (hasSession) {
-        const joinErr = await autoJoinInvitedPool(data.user?.id);
-        setMsg(
-          joinErr
-            ? `Account created and signed in. Could not auto-join your invite yet: ${joinErr}\nRedirecting...`
-            : "Account created and signed in. Redirecting...",
-        );
+        setMsg("Account created and signed in. Redirecting...");
         window.location.href = profileSetupNext;
         return;
       }
@@ -150,7 +140,7 @@ export default function LoginClient() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -162,12 +152,7 @@ export default function LoginClient() {
     }
 
     setStatus("success");
-    const joinErr = await autoJoinInvitedPool(data.user?.id);
-    setMsg(
-      joinErr
-        ? `Signed in successfully. Could not auto-join your invite yet: ${joinErr}\nRedirecting...`
-        : "Signed in successfully. Redirecting...",
-    );
+    setMsg("Signed in successfully. Redirecting...");
     window.location.href = profileSetupNext;
   }
 
