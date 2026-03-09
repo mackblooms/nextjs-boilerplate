@@ -12,6 +12,10 @@ type PoolRow = {
   join_password_ciphertext: string | null;
 };
 
+function isMissingCiphertextColumnError(message: string | undefined): boolean {
+  return Boolean(message && message.includes("join_password_ciphertext"));
+}
+
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
@@ -74,6 +78,16 @@ export async function POST(req: Request) {
       .in("id", requestedPoolIds);
 
     if (poolErr) {
+      if (isMissingCiphertextColumnError(poolErr.message)) {
+        return NextResponse.json(
+          {
+            error:
+              "Pool password storage is not fully migrated. Run db/migrations/20260309_pool_password_ciphertext.sql.",
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json({ error: poolErr.message }, { status: 400 });
     }
 

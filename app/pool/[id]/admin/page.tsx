@@ -97,8 +97,23 @@ export default function AdminPage() {
     setShowPoolPasswords(Object.fromEntries(targetPoolIds.map((id) => [id, false])));
 
     const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token;
-    if (sessionErr || !accessToken) {
+    let accessToken = sessionData?.session?.access_token ?? null;
+
+    if (!accessToken) {
+      const { data: refreshData, error: refreshErr } = await supabase.auth.refreshSession();
+      if (refreshErr) {
+        setMsg(`Could not load stored pool passwords: ${refreshErr.message}`);
+        return;
+      }
+      accessToken = refreshData?.session?.access_token ?? null;
+    }
+
+    if (!accessToken) {
+      setMsg(
+        sessionErr
+          ? `Could not load stored pool passwords: ${sessionErr.message}`
+          : "Could not load stored pool passwords: missing auth token."
+      );
       return;
     }
 
@@ -114,6 +129,7 @@ export default function AdminPage() {
 
       const json = (await res.json().catch(() => ({}))) as PoolPasswordResponse;
       if (!res.ok) {
+        setMsg(`Could not load stored pool passwords: ${json.error ?? "Unknown error"}`);
         return;
       }
 

@@ -3,6 +3,10 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 
+function isMissingCiphertextColumnError(message: string | undefined): boolean {
+  return Boolean(message && message.includes("join_password_ciphertext"));
+}
+
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
@@ -44,7 +48,19 @@ export async function POST(req: Request) {
       })
       .eq("id", poolId);
 
-    if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 400 });
+    if (updateErr) {
+      if (isMissingCiphertextColumnError(updateErr.message)) {
+        return NextResponse.json(
+          {
+            error:
+              "Pool password storage is not fully migrated. Run db/migrations/20260309_pool_password_ciphertext.sql.",
+          },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ error: updateErr.message }, { status: 400 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {
