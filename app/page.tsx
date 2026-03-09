@@ -1,5 +1,10 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "../lib/supabaseClient";
 
 const buttonStyle = {
   display: "inline-block",
@@ -13,6 +18,34 @@ const buttonStyle = {
 };
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const invitePoolId = searchParams.get("invite");
+  const [invitePoolName, setInvitePoolName] = useState<string | null>(null);
+
+  const loginHref = useMemo(() => {
+    if (!invitePoolId) return "/login";
+    return `/login?next=${encodeURIComponent(`/pool/${invitePoolId}`)}`;
+  }, [invitePoolId]);
+
+  useEffect(() => {
+    const loadInvitePoolName = async () => {
+      if (!invitePoolId) {
+        setInvitePoolName(null);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("pools")
+        .select("name")
+        .eq("id", invitePoolId)
+        .maybeSingle();
+
+      setInvitePoolName(data?.name ?? null);
+    };
+
+    loadInvitePoolName();
+  }, [invitePoolId]);
+
   return (
     <main
       style={{
@@ -26,17 +59,23 @@ export default function Home() {
       }}
     >
       <Image
-        src="/pool-logo.svg"
+        src="/pool-logo.svg?v=2"
         alt="bracketball logo"
         width={560}
         height={206}
         priority
-        style={{ width: "min(100%, 560px)", height: "auto" }}
+        style={{ width: "min(100%, 560px)", height: "auto", filter: "var(--logo-filter)" }}
       />
 
       <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>
         bracketball (beta)
       </h1>
+
+      {invitePoolId ? (
+        <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
+          You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
+        </p>
+      ) : null}
 
       <div
         style={{
@@ -52,7 +91,7 @@ export default function Home() {
         <Link href="/pools/new" style={buttonStyle}>
           Create a pool
         </Link>
-        <Link href="/login" style={buttonStyle}>
+        <Link href={loginHref} style={buttonStyle}>
           Login / Sign up
         </Link>
       </div>

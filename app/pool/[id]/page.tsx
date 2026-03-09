@@ -13,7 +13,7 @@ export default function PoolPage() {
 
   const shareLink = useMemo(() => {
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}/pool/${poolId}`;
+    return `${window.location.origin}/?invite=${encodeURIComponent(poolId)}`;
   }, [poolId]);
 
   const [pool, setPool] = useState<Pool | null>(null);
