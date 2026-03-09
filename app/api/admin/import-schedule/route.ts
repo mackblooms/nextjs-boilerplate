@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
-const KEY = process.env.SPORTS_DATA_IO_KEY;
+const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
 
 /**
@@ -171,3 +171,4 @@ export async function POST() {
     );
   }
 }
+

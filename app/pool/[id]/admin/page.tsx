@@ -523,18 +523,22 @@ export default function AdminPage() {
               setMsg("");
               setLoading(true);
               try {
-                const date = "2025-MAR-28";
-                const r = await fetch("/api/admin/sync-games", {
+                const bracketRes = await fetch("/api/admin/sync-bracket", {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ date }),
                 });
-                const j = await r.json().catch(() => ({}));
-                if (!r.ok) throw new Error(j?.error ?? "Sync failed");
+                const bracketJson = await bracketRes.json().catch(() => ({}));
+                if (!bracketRes.ok) throw new Error(bracketJson?.error ?? "Bracket sync failed");
+
+                const scoresRes = await fetch("/api/admin/sync-scores", {
+                  method: "POST",
+                });
+                const scoresJson = await scoresRes.json().catch(() => ({}));
+                if (!scoresRes.ok) throw new Error(scoresJson?.error ?? "Score sync failed");
 
                 setMsg(
-                  `Synced games for ${date}. Linked: ${j.linked}, Winners set: ${j.winnersSet}, ` +
-                    `Skipped no match: ${j.skippedNoMatch}, Skipped tie/no score: ${j.skippedTieOrNoScore}`
+                  `Bracket linked: ${bracketJson.linked ?? 0} ` +
+                    `(already linked: ${bracketJson.alreadyLinked ?? 0}, skipped: ${bracketJson.skippedNoMap ?? 0}). ` +
+                    `Scores updated: ${scoresJson.updatedGames ?? 0} (finals seen: ${scoresJson.finalsSeen ?? 0}).`
                 );
               } catch (e: unknown) {
                 setMsg(e instanceof Error ? e.message : "Unknown error");

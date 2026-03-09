@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
-const KEY = process.env.SPORTS_DATA_IO_KEY;
+const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
 
 // YYYY-MM-DD (SportsDataIO expects this for BoxScoresByDate)
@@ -109,3 +109,4 @@ export async function POST() {
   // Same behavior as GET so you can trigger either way
   return GET();
 }
+
