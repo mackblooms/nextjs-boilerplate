@@ -126,6 +126,7 @@ export default function AppTopNav() {
           pointerEvents: "auto",
         }}
       >
+        <Link href="/" style={pillStyle}>Home</Link>
         <Link href="/how-it-works" style={pillStyle}>How it works</Link>
         <Link href="/pools" style={pillStyle}>My Pools</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Draft</Link> : null}
