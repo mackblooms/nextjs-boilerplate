@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 
 type Pool = { id: string; name: string; created_by: string };
@@ -107,36 +108,26 @@ export default function PoolPage() {
           aria-label="Copy shareable pool link"
           title="Copy shareable pool link"
           style={{
-            border: "1px solid var(--border-color)",
-            background: "var(--surface)",
-            color: "var(--foreground)",
-            borderRadius: 14,
-            padding: "16px 18px",
+            border: "none",
+            background: "transparent",
+            padding: 0,
             cursor: "pointer",
             lineHeight: 0,
           }}
         >
-          <svg
+          <Image
+            src="/pool-logo.svg"
+            alt=""
             aria-hidden="true"
-            width="420"
-            height="170"
-            viewBox="0 0 760 280"
-            fill="none"
-            style={{ display: "block", maxWidth: "100%", height: "auto" }}
-          >
-            <path
-              d="M70 60H320V240H70"
-              stroke="currentColor"
-              strokeWidth="8"
-              strokeLinejoin="miter"
-            />
-            <path
-              d="M440 60H690M440 240H690M440 60V240M320 150H440"
-              stroke="currentColor"
-              strokeWidth="8"
-              strokeLinejoin="miter"
-            />
-          </svg>
+            width={420}
+            height={170}
+            priority
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              filter: "var(--logo-filter)",
+            }}
+          />
         </button>
 
         <div style={{ fontSize: 14, opacity: 0.85, fontWeight: 700 }}>
