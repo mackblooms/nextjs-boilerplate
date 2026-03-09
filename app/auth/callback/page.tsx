@@ -6,7 +6,7 @@ import { supabase } from "../../../lib/supabaseClient";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const [status, setStatus] = useState("Signing you in…");
+  const [status, setStatus] = useState("Signing you in...");
   const [details, setDetails] = useState("");
 
   useEffect(() => {
@@ -14,50 +14,69 @@ export default function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
-        const next = url.searchParams.get("next") || "/";
+        const requestedNext = url.searchParams.get("next");
+        const queryType = url.searchParams.get("type");
 
-        // If we got a code param (common), exchange it for a session
+        // If we got a code param (common), exchange it for a session.
         if (code) {
-          setStatus("Exchanging code for session…");
+          setStatus("Exchanging code for session...");
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         }
 
-        // If tokens are in the hash (sometimes), set session from them
+        // If tokens are in the hash (sometimes), set session from them.
         const hash = window.location.hash.startsWith("#")
           ? window.location.hash.slice(1)
           : window.location.hash;
 
         if (hash) {
           const hashParams = new URLSearchParams(hash);
-          const access_token = hashParams.get("access_token");
-          const refresh_token = hashParams.get("refresh_token");
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          const hashType = hashParams.get("type");
 
-          if (access_token && refresh_token) {
-            setStatus("Saving session from token hash…");
+          const nextPath =
+            requestedNext && requestedNext.startsWith("/")
+              ? requestedNext
+              : (queryType || hashType) === "recovery"
+                ? "/login/reset-password"
+                : "/";
+
+          if (accessToken && refreshToken) {
+            setStatus("Saving session from token hash...");
             const { error } = await supabase.auth.setSession({
-              access_token,
-              refresh_token,
+              access_token: accessToken,
+              refresh_token: refreshToken,
             });
             if (error) throw error;
+            setStatus("Signed in! Redirecting...");
+            router.replace(nextPath);
+            return;
           }
         }
 
-        // Confirm session exists locally
-        setStatus("Confirming session…");
+        // Confirm session exists locally.
+        setStatus("Confirming session...");
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
         if (!data.session) {
           setStatus("No session found.");
           setDetails(
-            "We redirected back successfully, but no session was created. This usually means the redirect URL wasn’t /auth/callback or isn’t allowed in Supabase."
+            "We redirected back successfully, but no session was created. This usually means the redirect URL was not /auth/callback or is not allowed in Supabase."
           );
           return;
         }
 
-        setStatus("Signed in! Redirecting…");
-        router.replace(next.startsWith("/") ? next : "/");
+        const nextPath =
+          requestedNext && requestedNext.startsWith("/")
+            ? requestedNext
+            : queryType === "recovery"
+              ? "/login/reset-password"
+              : "/";
+
+        setStatus("Signed in! Redirecting...");
+        router.replace(nextPath);
       } catch (e: unknown) {
         setStatus("Sign-in failed.");
         const detail = e instanceof Error ? e.message : String(e);
