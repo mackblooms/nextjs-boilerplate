@@ -3,26 +3,65 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type EntryIdRow = { id: string };
 
+function getBearerToken(req: Request): string | null {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) return null;
+
+  const [scheme, token] = authHeader.split(" ");
+  if (scheme?.toLowerCase() !== "bearer" || !token) return null;
+  return token;
+}
+
+function getSiteAdminUserIds(): Set<string> {
+  const raw =
+    process.env.POOL_SITE_ADMIN_USER_IDS ??
+    process.env.POOL_ADMIN_USER_IDS ??
+    process.env.ADMIN_USER_IDS ??
+    "";
+
+  return new Set(
+    raw
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean)
+  );
+}
+
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    const token = getBearerToken(req);
+    if (!token) {
+      return NextResponse.json({ error: "Missing authorization token." }, { status: 401 });
+    }
+
+    const { data: authData, error: authErr } = await supabaseAdmin.auth.getUser(token);
+    if (authErr || !authData.user) {
+      return NextResponse.json({ error: authErr?.message ?? "Unauthorized." }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const poolId = body.poolId as string | undefined;
-    const userId = body.userId as string | undefined;
 
-    if (!poolId || !userId) {
-      return NextResponse.json({ error: "missing poolId/userId" }, { status: 400 });
+    if (!poolId) {
+      return NextResponse.json({ error: "missing poolId" }, { status: 400 });
     }
 
     const { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
       .select("id,created_by")
       .eq("id", poolId)
-      .single();
+      .maybeSingle();
 
     if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
+    if (!poolRow) return NextResponse.json({ error: "pool not found" }, { status: 404 });
+
+    const requesterUserId = authData.user.id;
+    const isPoolCreator = poolRow.created_by === requesterUserId;
+    const isSiteAdmin = getSiteAdminUserIds().has(requesterUserId);
+
+    if (!isPoolCreator && !isSiteAdmin) {
       return NextResponse.json({ error: "not authorized" }, { status: 403 });
     }
 

@@ -267,11 +267,11 @@ export default function AdminPage() {
     setDeletingPoolId(targetPoolId);
     setMsg("");
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
+    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+    const session = sessionData?.session;
 
-    if (authErr || !userId) {
-      setMsg("Not logged in (could not read user).");
+    if (sessionErr || !session?.access_token) {
+      setMsg("Not logged in (could not read session).");
       setDeletingPoolId(null);
       return;
     }
@@ -279,8 +279,11 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/delete-pool", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ poolId: targetPoolId, userId }),
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ poolId: targetPoolId }),
       });
 
       const json = await res.json().catch(() => ({}));
