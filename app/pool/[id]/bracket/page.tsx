@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
@@ -64,6 +71,15 @@ export default function BracketPage() {
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const applyFitScale = useCallback(() => {
+    const viewport = viewportRef.current;
+    const content = contentRef.current;
+    if (!viewport || !content) return;
+
+    const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
+    setScale(Math.max(0.35, next));
+  }, []);
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -277,20 +293,16 @@ export default function BracketPage() {
   }, [selectedEntryId]);
 
   useEffect(() => {
-    const applyFitScale = () => {
-      if (!fitMode) return;
-      const viewport = viewportRef.current;
-      const content = contentRef.current;
-      if (!viewport || !content) return;
+    if (!fitMode || loading) return;
 
-      const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
-      setScale(Math.max(0.35, next));
+    const runFit = () => {
+      window.requestAnimationFrame(applyFitScale);
     };
 
-    applyFitScale();
-    window.addEventListener("resize", applyFitScale);
-    return () => window.removeEventListener("resize", applyFitScale);
-  }, [fitMode]);
+    runFit();
+    window.addEventListener("resize", runFit);
+    return () => window.removeEventListener("resize", runFit);
+  }, [applyFitScale, fitMode, loading]);
 
   const zoomIn = () => {
     setFitMode(false);
@@ -302,7 +314,10 @@ export default function BracketPage() {
     setScale((s) => Math.max(0.35, +(s - 0.1).toFixed(2)));
   };
 
-  const setFit = () => setFitMode(true);
+  const setFit = () => {
+    setFitMode(true);
+    window.requestAnimationFrame(applyFitScale);
+  };
   const set100 = () => {
     setFitMode(false);
     setScale(1);
