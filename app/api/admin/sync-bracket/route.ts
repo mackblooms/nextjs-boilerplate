@@ -92,22 +92,38 @@ function toSeason(value: unknown): number | null {
   return year;
 }
 
-async function parseSeason(req: Request): Promise<number> {
+function toBool(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    if (v === "true" || v === "1" || v === "yes" || v === "on") return true;
+    if (v === "false" || v === "0" || v === "no" || v === "off") return false;
+  }
+  return null;
+}
+
+async function parseSyncParams(req: Request): Promise<{ season: number; sportsDataOnly: boolean }> {
   const url = new URL(req.url);
-  const querySeason = toSeason(url.searchParams.get("season"));
-  if (querySeason) return querySeason;
+  let season = toSeason(url.searchParams.get("season"));
+  let sportsDataOnly = toBool(url.searchParams.get("sportsDataOnly")) ?? false;
 
   if (req.method === "POST") {
     try {
       const body = await req.json();
       const bodySeason = toSeason(body?.season);
-      if (bodySeason) return bodySeason;
+      const bodySportsDataOnly = toBool(body?.sportsDataOnly);
+      if (bodySeason) season = bodySeason;
+      if (bodySportsDataOnly != null) sportsDataOnly = bodySportsDataOnly;
     } catch {
       // Allow empty or invalid JSON bodies and fall back to default.
     }
   }
 
-  return DEFAULT_SEASON;
+  return {
+    season: season ?? DEFAULT_SEASON,
+    sportsDataOnly,
+  };
 }
 
 function bracketToRegion(bracket: unknown): "East" | "West" | "South" | "Midwest" | null {
@@ -303,7 +319,7 @@ async function hasScheduleColumns(supabaseAdmin: ReturnType<typeof getSupabaseAd
   throw new Error(msg);
 }
 
-async function runSyncBracket(season: number) {
+async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   if (!KEY) throw new Error("Missing SportsData key. Set SPORTS_DATA_IO_KEY or SPORTSDATAIO_KEY.");
   const url = `${BASE}/v3/cbb/scores/json/Tournament/${season}?key=${encodeURIComponent(KEY)}`;
   const resp = await fetchJsonOrEmpty(url);
@@ -475,6 +491,29 @@ async function runSyncBracket(season: number) {
   let gameTeamsUpdated = 0;
   const nowIso = new Date().toISOString();
   const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
+  let clearedR64Teams = 0;
+
+  if (sportsDataOnly) {
+    const { data: r64Rows, error: r64SelErr } = await supabaseAdmin
+      .from("games")
+      .select("id")
+      .eq("round", "R64")
+      .or("team1_id.not.is.null,team2_id.not.is.null");
+    if (r64SelErr) throw r64SelErr;
+
+    clearedR64Teams = r64Rows?.length ?? 0;
+    if (clearedR64Teams > 0) {
+      const { error: clearErr } = await supabaseAdmin
+        .from("games")
+        .update({
+          team1_id: null,
+          team2_id: null,
+          last_synced_at: nowIso,
+        })
+        .eq("round", "R64");
+      if (clearErr) throw clearErr;
+    }
+  }
 
   for (const g of gamesArray) {
     const gameId = getSportsGameId(g);
@@ -639,6 +678,8 @@ async function runSyncBracket(season: number) {
     teamsCreated,
     teamsUpdated,
     gameTeamsUpdated,
+    sportsDataOnly,
+    clearedR64Teams,
     skippedDuplicateSportsId,
     skippedNoMap,
     skippedAmbiguous,
@@ -648,8 +689,8 @@ async function runSyncBracket(season: number) {
 
 export async function GET(req: Request) {
   try {
-    const season = await parseSeason(req);
-    const result = await runSyncBracket(season);
+    const { season, sportsDataOnly } = await parseSyncParams(req);
+    const result = await runSyncBracket(season, sportsDataOnly);
     return NextResponse.json({ ok: true, ...result });
   } catch (e: unknown) {
     return NextResponse.json(

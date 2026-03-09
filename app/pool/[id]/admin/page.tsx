@@ -58,6 +58,7 @@ export default function AdminPage() {
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
   const [poolNameDrafts, setPoolNameDrafts] = useState<Record<string, string>>({});
   const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
+  const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(true);
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
@@ -433,7 +434,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/full-sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ poolId, season }),
+        body: JSON.stringify({ poolId, season, sportsDataOnly: sportsDataOnlyMode }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -451,11 +452,12 @@ export default function AdminPage() {
       const teamsCreated = Number(json?.bracket?.teamsCreated ?? 0);
       const teamsUpdated = Number(json?.bracket?.teamsUpdated ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
+      const clearedR64Teams = Number(json?.totals?.clearedR64Teams ?? json?.bracket?.clearedR64Teams ?? 0);
 
       setMsg(
-        `Full Sync complete (season ${season}, passes ${passCount}) | linked: ${linkedTotal} ` +
+        `Full Sync complete (season ${season}, passes ${passCount}, sportsdata-only: ${sportsDataOnlyMode ? "on" : "off"}) | linked: ${linkedTotal} ` +
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids: ${skippedDuplicateSportsId}) | ` +
-          `teams created/updated: ${teamsCreated}/${teamsUpdated}, game teams updated: ${gameTeamsUpdated} | ` +
+          `teams created/updated: ${teamsCreated}/${teamsUpdated}, game teams updated: ${gameTeamsUpdated}, r64 cleared: ${clearedR64Teams} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );
@@ -519,6 +521,30 @@ export default function AdminPage() {
               }}
             />
           </div>
+          <label
+            htmlFor="sportsdata-only-mode"
+            style={{
+              display: "flex",
+              gap: 6,
+              alignItems: "center",
+              fontWeight: 800,
+              fontSize: 13,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              padding: "7px 9px",
+              background: "#fff",
+              whiteSpace: "nowrap",
+            }}
+            title="When on, Round of 64 team slots are cleared before applying SportsData teams."
+          >
+            <input
+              id="sportsdata-only-mode"
+              type="checkbox"
+              checked={sportsDataOnlyMode}
+              onChange={(e) => setSportsDataOnlyMode(e.target.checked)}
+            />
+            SportsData-only mode
+          </label>
 
           <a
             href={`/pool/${poolId}`}

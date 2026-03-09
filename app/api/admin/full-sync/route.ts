@@ -27,6 +27,17 @@ function toSeason(value: unknown): number | null {
   return year;
 }
 
+function toBool(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    if (v === "true" || v === "1" || v === "yes" || v === "on") return true;
+    if (v === "false" || v === "0" || v === "no" || v === "off") return false;
+  }
+  return null;
+}
+
 function asObject(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 }
@@ -41,25 +52,33 @@ export async function POST(req: Request) {
   try {
     const origin = new URL(req.url).origin;
     const querySeason = toSeason(new URL(req.url).searchParams.get("season"));
+    const querySportsDataOnly = toBool(new URL(req.url).searchParams.get("sportsDataOnly"));
 
     let bodySeason: number | null = null;
+    let bodySportsDataOnly: boolean | null = null;
     if (req.method === "POST") {
       try {
         const body = await req.json();
         bodySeason = toSeason(body?.season);
+        bodySportsDataOnly = toBool(body?.sportsDataOnly);
       } catch {
         // Allow empty body.
       }
     }
 
     const season = bodySeason ?? querySeason;
-    const syncBody = season ? JSON.stringify({ season }) : "{}";
+    const sportsDataOnly = bodySportsDataOnly ?? querySportsDataOnly ?? false;
+    const syncPayload: Record<string, unknown> = {};
+    if (season) syncPayload.season = season;
+    syncPayload.sportsDataOnly = sportsDataOnly;
+    const syncBody = JSON.stringify(syncPayload);
 
     const passSummaries: Array<{
       pass: number;
       linked: number;
       alreadyLinked: number;
       skippedNoMap: number;
+      clearedR64Teams: number;
       updatedWinners: number;
       finalsSeen: number;
     }> = [];
@@ -68,6 +87,7 @@ export async function POST(req: Request) {
     let scoresRes: unknown = null;
     let totalLinked = 0;
     let totalUpdatedWinners = 0;
+    let totalClearedR64Teams = 0;
 
     const MAX_PASSES = 8;
     for (let pass = 1; pass <= MAX_PASSES; pass++) {
@@ -86,6 +106,7 @@ export async function POST(req: Request) {
       const linked = countField(bracketRes, "linked");
       const alreadyLinked = countField(bracketRes, "alreadyLinked");
       const skippedNoMap = countField(bracketRes, "skippedNoMap");
+      const clearedR64Teams = countField(bracketRes, "clearedR64Teams");
       const updatedWinners = countField(scoresRes, "updatedGames");
       const finalsSeen = countField(scoresRes, "finalsSeen");
 
@@ -94,12 +115,14 @@ export async function POST(req: Request) {
         linked,
         alreadyLinked,
         skippedNoMap,
+        clearedR64Teams,
         updatedWinners,
         finalsSeen,
       });
 
       totalLinked += linked;
       totalUpdatedWinners += updatedWinners;
+      totalClearedR64Teams += clearedR64Teams;
 
       if (linked === 0 && updatedWinners === 0) break;
     }
@@ -107,6 +130,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       season: season ?? null,
+      sportsDataOnly,
       bracket: bracketRes,
       scores: scoresRes,
       passCount: passSummaries.length,
@@ -114,6 +138,7 @@ export async function POST(req: Request) {
       totals: {
         linked: totalLinked,
         updatedWinners: totalUpdatedWinners,
+        clearedR64Teams: totalClearedR64Teams,
       },
     });
   } catch (e: unknown) {
