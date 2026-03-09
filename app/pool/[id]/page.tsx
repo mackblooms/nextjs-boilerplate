@@ -118,22 +118,22 @@ export default function PoolPage() {
         >
           <svg
             aria-hidden="true"
-            width="320"
-            height="120"
-            viewBox="0 0 600 220"
+            width="420"
+            height="170"
+            viewBox="0 0 760 280"
             fill="none"
             style={{ display: "block", maxWidth: "100%", height: "auto" }}
           >
             <path
-              d="M20 30H210V190H20"
+              d="M70 60H320V240H70"
               stroke="currentColor"
-              strokeWidth="10"
+              strokeWidth="8"
               strokeLinejoin="miter"
             />
             <path
-              d="M390 30H580M390 190H580M390 30V190M210 110H390"
+              d="M440 60H690M440 240H690M440 60V240M320 150H440"
               stroke="currentColor"
-              strokeWidth="10"
+              strokeWidth="8"
               strokeLinejoin="miter"
             />
           </svg>
@@ -146,10 +146,6 @@ export default function PoolPage() {
         <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
           {pool ? pool.name : "Pool"}
         </h1>
-
-        <div style={{ fontSize: 14, opacity: 0.8 }}>
-          Share link: <span style={{ fontFamily: "monospace" }}>{shareLink}</span>
-        </div>
 
         {copyMsg ? <p style={{ marginTop: 2, fontWeight: 700 }}>{copyMsg}</p> : null}
 
