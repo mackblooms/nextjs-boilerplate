@@ -55,7 +55,9 @@ export default function AdminPage() {
   const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
+  const [rotatingPasswordPoolId, setRotatingPasswordPoolId] = useState<string | null>(null);
   const [poolNameDrafts, setPoolNameDrafts] = useState<Record<string, string>>({});
+  const [poolPasswordDrafts, setPoolPasswordDrafts] = useState<Record<string, string>>({});
   const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
   const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(true);
 
@@ -166,6 +168,7 @@ export default function AdminPage() {
       const pools = (allPoolRows ?? []) as AdminPoolRow[];
       setAdminPools(pools);
       setPoolNameDrafts(Object.fromEntries(pools.map((pool) => [pool.id, pool.name])));
+      setPoolPasswordDrafts(Object.fromEntries(pools.map((pool) => [pool.id, ""])));
 
       if (pools.length > 0) {
         const ids = pools.map((p) => p.id);
@@ -292,6 +295,11 @@ export default function AdminPage() {
         delete next[targetPoolId];
         return next;
       });
+      setPoolPasswordDrafts((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
       setMembersByPool((prev) => {
         const next = { ...prev };
         delete next[targetPoolId];
@@ -361,6 +369,51 @@ export default function AdminPage() {
       setMsg(`Rename failed: ${e instanceof Error ? e.message : "Unknown error"}`);
     } finally {
       setRenamingPoolId(null);
+    }
+  }
+
+  async function rotatePoolPassword(targetPoolId: string) {
+    const nextPassword = (poolPasswordDrafts[targetPoolId] ?? "").trim();
+    if (!targetPoolId || nextPassword.length < 4) {
+      setMsg("Enter a password with at least 4 characters.");
+      return;
+    }
+
+    setRotatingPasswordPoolId(targetPoolId);
+    setMsg("");
+
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const currentUser = authData?.user;
+
+    if (authErr || !currentUser) {
+      setMsg("Not logged in (could not read user).");
+      setRotatingPasswordPoolId(null);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/rotate-pool-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          poolId: targetPoolId,
+          userId: currentUser.id,
+          password: nextPassword,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(`Password update failed: ${json.error ?? "Unknown error"}`);
+        return;
+      }
+
+      setPoolPasswordDrafts((prev) => ({ ...prev, [targetPoolId]: "" }));
+      setMsg("Pool password updated. This pool is now private.");
+    } catch (e: unknown) {
+      setMsg(`Password update failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setRotatingPasswordPoolId(null);
     }
   }
 
@@ -736,6 +789,40 @@ export default function AdminPage() {
                         }}
                       >
                         {renamingPoolId === pool.id ? "Saving..." : "Save name"}
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <input
+                        type="password"
+                        value={poolPasswordDrafts[pool.id] ?? ""}
+                        onChange={(e) =>
+                          setPoolPasswordDrafts((prev) => ({
+                            ...prev,
+                            [pool.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="New pool password"
+                        minLength={4}
+                        style={{
+                          padding: "7px 9px",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                          minWidth: 230,
+                        }}
+                      />
+                      <button
+                        disabled={rotatingPasswordPoolId === pool.id}
+                        onClick={() => rotatePoolPassword(pool.id)}
+                        style={{
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          border: "1px solid #999",
+                          background: "#fff",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {rotatingPasswordPoolId === pool.id ? "Updating..." : "Update password"}
                       </button>
                     </div>
                   </div>
