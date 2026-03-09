@@ -53,6 +53,11 @@ type Region = (typeof REGIONS)[number];
 const isRegion = (value: string | null): value is Region =>
   value !== null && REGIONS.includes(value as Region);
 
+function isMissingColumnError(message: string) {
+  const msg = message.toLowerCase();
+  return msg.includes("column") && msg.includes("does not exist");
+}
+
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -204,9 +209,22 @@ export default function BracketPage() {
       }
       setTeams((teamRows ?? []) as Team[]);
 
-      const { data: gameRows, error: gameErr } = await supabase
+      let { data: gameRows, error: gameErr } = await supabase
         .from("games")
         .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id");
+
+      if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
+        const fallback = await supabase
+          .from("games")
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+        gameRows = (fallback.data ?? []).map((row) => ({
+          ...row,
+          status: null,
+          start_time: null,
+          game_date: null,
+        })) as Game[];
+        gameErr = fallback.error;
+      }
 
       if (gameErr) {
         setMsg(gameErr.message);

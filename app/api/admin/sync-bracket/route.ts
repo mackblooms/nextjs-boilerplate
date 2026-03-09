@@ -29,9 +29,6 @@ type SportsGame = {
 type LocalGameRow = {
   id: string;
   sportsdata_game_id: number | null;
-  status: string | null;
-  start_time: string | null;
-  game_date: string | null;
 };
 
 async function fetchJsonOrEmpty(url: string) {
@@ -54,6 +51,31 @@ async function fetchJsonOrEmpty(url: string) {
 }
 
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
+
+function describeError(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (typeof e === "string") return e;
+  if (e && typeof e === "object") {
+    const anyErr = e as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    if (typeof anyErr.message === "string") {
+      const extra = [anyErr.code, anyErr.details, anyErr.hint]
+        .filter((v) => typeof v === "string" && v.trim().length > 0)
+        .join(" | ");
+      return extra ? `${anyErr.message} (${extra})` : anyErr.message;
+    }
+    try {
+      return JSON.stringify(e);
+    } catch {
+      return String(e);
+    }
+  }
+  return "Unknown error";
+}
+
+function isMissingColumnError(message: string): boolean {
+  const msg = message.toLowerCase();
+  return msg.includes("column") && msg.includes("does not exist");
+}
 
 function toSeason(value: unknown): number | null {
   if (value == null) return null;
@@ -234,6 +256,19 @@ function buildPlaceholderFallbackMap(games: SportsGame[]) {
   return map;
 }
 
+async function hasScheduleColumns(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>): Promise<boolean> {
+  const { error } = await supabaseAdmin
+    .from("games")
+    .select("id,status,start_time,game_date")
+    .limit(1);
+
+  if (!error) return true;
+
+  const msg = describeError(error);
+  if (isMissingColumnError(msg)) return false;
+  throw new Error(msg);
+}
+
 async function runSyncBracket(season: number) {
   if (!KEY) throw new Error("Missing SportsData key. Set SPORTS_DATA_IO_KEY or SPORTSDATAIO_KEY.");
   const url = `${BASE}/v3/cbb/scores/json/Tournament/${season}?key=${encodeURIComponent(KEY)}`;
@@ -284,6 +319,7 @@ async function runSyncBracket(season: number) {
   }
 
   const supabaseAdmin = getSupabaseAdmin();
+  const scheduleColumnsAvailable = await hasScheduleColumns(supabaseAdmin);
 
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
@@ -393,15 +429,8 @@ async function runSyncBracket(season: number) {
       continue;
     }
 
-    const nextStatus = toIso(g.Status ?? g.status);
-    const nextStartTime = toIso(g.DateTimeUTC ?? g.DateTime ?? null);
-    const nextGameDate = toDateOnly(g.Day ?? g.DateTimeUTC ?? g.DateTime ?? null);
-
     const needsLink = ourGame.sportsdata_game_id !== gameId;
-    const needsStatusUpdate = nextStatus != null && ourGame.status !== nextStatus;
-    const needsStartTimeUpdate = nextStartTime != null && ourGame.start_time !== nextStartTime;
-    const needsGameDateUpdate = nextGameDate != null && ourGame.game_date !== nextGameDate;
-    const needsScheduleUpdate = needsStatusUpdate || needsStartTimeUpdate || needsGameDateUpdate;
+    const needsScheduleUpdate = scheduleColumnsAvailable;
 
     if (!needsLink && !needsScheduleUpdate) {
       alreadyLinked++;
@@ -412,9 +441,11 @@ async function runSyncBracket(season: number) {
       last_synced_at: nowIso,
     };
     if (needsLink) updatePayload.sportsdata_game_id = gameId;
-    if (needsStatusUpdate) updatePayload.status = nextStatus;
-    if (needsStartTimeUpdate) updatePayload.start_time = nextStartTime;
-    if (needsGameDateUpdate) updatePayload.game_date = nextGameDate;
+    if (scheduleColumnsAvailable) {
+      updatePayload.status = toIso(g.Status ?? g.status);
+      updatePayload.start_time = toIso(g.DateTimeUTC ?? g.DateTime ?? null);
+      updatePayload.game_date = toDateOnly(g.Day ?? g.DateTimeUTC ?? g.DateTime ?? null);
+    }
 
     const { error: updErr } = await supabaseAdmin
       .from("games")
@@ -424,7 +455,7 @@ async function runSyncBracket(season: number) {
     if (updErr) throw updErr;
     if (needsLink) linked++;
     else alreadyLinked++;
-    if (needsScheduleUpdate) scheduleUpdated++;
+    if (scheduleColumnsAvailable) scheduleUpdated++;
   }
 
   return {
@@ -439,6 +470,7 @@ async function runSyncBracket(season: number) {
     matchedByPlaceholder,
     matchedByTeams,
     scheduleUpdated,
+    scheduleColumnsAvailable,
     skippedNoMap,
     skippedAmbiguous,
     sampleGame: gamesArray[0] ?? null,
@@ -452,7 +484,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, ...result });
   } catch (e: unknown) {
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "Unknown error" },
+      { ok: false, error: describeError(e) },
       { status: 500 }
     );
   }
