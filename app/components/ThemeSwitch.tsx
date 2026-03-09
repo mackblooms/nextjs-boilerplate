@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
@@ -17,14 +18,51 @@ function getPreferredTheme(): Theme {
     : "light";
 }
 
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
 export default function ThemeSwitch() {
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
+  const [isAuthed, setIsAuthed] = useState(false);
   const isDark = theme === "dark";
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     window.localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    const syncAuth = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      setIsAuthed(Boolean(authData.user));
+    };
+
+    syncAuth();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthed(Boolean(session?.user));
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (!isAuthed) {
+    return null;
+  }
 
   return (
     <button
@@ -55,8 +93,12 @@ export default function ThemeSwitch() {
           height: "100%",
         }}
       >
-        <span style={{ position: "absolute", left: 9, top: 8, fontSize: 16 }}>🌙</span>
-        <span style={{ position: "absolute", right: 9, top: 8, fontSize: 16 }}>☀️</span>
+        <span style={{ position: "absolute", left: 10, top: 9, fontSize: 12 }}>
+          D
+        </span>
+        <span style={{ position: "absolute", right: 11, top: 9, fontSize: 12 }}>
+          L
+        </span>
         <span
           style={{
             position: "absolute",
