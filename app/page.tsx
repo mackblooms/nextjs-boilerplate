@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -17,7 +17,7 @@ const buttonStyle = {
   textAlign: "center" as const,
 };
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const invitePoolId = searchParams.get("invite");
   const [invitePoolName, setInvitePoolName] = useState<string | null>(null);
@@ -96,5 +96,61 @@ export default function Home() {
         </Link>
       </div>
     </main>
+  );
+}
+
+function HomeFallback() {
+  return (
+    <main
+      style={{
+        maxWidth: 900,
+        margin: "48px auto",
+        padding: 16,
+        display: "grid",
+        justifyItems: "center",
+        textAlign: "center",
+        gap: 20,
+      }}
+    >
+      <Image
+        src="/pool-logo.svg?v=2"
+        alt="bracketball logo"
+        width={560}
+        height={206}
+        priority
+        style={{ width: "min(100%, 560px)", height: "auto", filter: "var(--logo-filter)" }}
+      />
+
+      <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>
+        bracketball (beta)
+      </h1>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        <Link href="/how-it-works" style={buttonStyle}>
+          How it works
+        </Link>
+        <Link href="/pools/new" style={buttonStyle}>
+          Create a pool
+        </Link>
+        <Link href="/login" style={buttonStyle}>
+          Login / Sign up
+        </Link>
+      </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<HomeFallback />}>
+      <HomeContent />
+    </Suspense>
   );
 }
