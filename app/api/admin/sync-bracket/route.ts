@@ -398,7 +398,7 @@ async function runSyncBracket(season: number) {
       if (slotErr) throw slotErr;
 
       if ((slotMatches?.length ?? 0) === 1) {
-        ourGame = slotMatches?.[0] as LocalGameRow;
+        ourGame = slotMatches?.[0] as unknown as LocalGameRow;
         if (placeholderFallback.has(gameId)) {
           matchedByPlaceholder++;
         } else {
@@ -432,7 +432,7 @@ async function runSyncBracket(season: number) {
         if (teamErr2) throw teamErr2;
 
         if ((teamMatches?.length ?? 0) === 1) {
-          ourGame = teamMatches?.[0] as LocalGameRow;
+          ourGame = teamMatches?.[0] as unknown as LocalGameRow;
           matchedByTeams++;
         } else if ((teamMatches?.length ?? 0) > 1) {
           skippedAmbiguous++;
