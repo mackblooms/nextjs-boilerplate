@@ -448,10 +448,14 @@ export default function AdminPage() {
       const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
       const scheduleUpdated = Number(json?.bracket?.scheduleUpdated ?? 0);
       const skippedDuplicateSportsId = Number(json?.bracket?.skippedDuplicateSportsId ?? 0);
+      const teamsCreated = Number(json?.bracket?.teamsCreated ?? 0);
+      const teamsUpdated = Number(json?.bracket?.teamsUpdated ?? 0);
+      const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
 
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}) | linked: ${linkedTotal} ` +
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids: ${skippedDuplicateSportsId}) | ` +
+          `teams created/updated: ${teamsCreated}/${teamsUpdated}, game teams updated: ${gameTeamsUpdated} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );

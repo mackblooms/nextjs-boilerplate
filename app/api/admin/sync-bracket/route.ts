@@ -9,6 +9,10 @@ type SportsGame = {
   GameID?: number;
   GameId?: number;
   gameId?: number;
+  HomeTeam?: string | null;
+  AwayTeam?: string | null;
+  HomeTeamSeed?: number | string | null;
+  AwayTeamSeed?: number | string | null;
   Status?: string | null;
   status?: string | null;
   DateTimeUTC?: string | null;
@@ -29,6 +33,8 @@ type SportsGame = {
 type LocalGameRow = {
   id: string;
   sportsdata_game_id: number | null;
+  team1_id: string | null;
+  team2_id: string | null;
 };
 
 async function fetchJsonOrEmpty(url: string) {
@@ -206,6 +212,34 @@ function toDateOnly(value: unknown): string | null {
   return iso ? iso.slice(0, 10) : null;
 }
 
+function toInt(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.trunc(n) : null;
+}
+
+function costForSeed(seed: number | null): number | null {
+  if (!seed) return null;
+  const map: Record<number, number> = {
+    1: 22,
+    2: 19,
+    3: 14,
+    4: 12,
+    5: 10,
+    6: 8,
+    7: 7,
+    8: 6,
+    9: 6,
+    10: 5,
+    11: 4,
+    12: 4,
+    13: 3,
+    14: 3,
+    15: 2,
+    16: 1,
+  };
+  return map[seed] ?? null;
+}
+
 type RoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
 type FallbackRoundSlot = {
   roundCode: RoundCode;
@@ -321,18 +355,99 @@ async function runSyncBracket(season: number) {
   const supabaseAdmin = getSupabaseAdmin();
   const scheduleColumnsAvailable = await hasScheduleColumns(supabaseAdmin);
   const gameSelectCols = scheduleColumnsAvailable
-    ? "id,sportsdata_game_id,status,start_time,game_date"
-    : "id,sportsdata_game_id";
+    ? "id,sportsdata_game_id,team1_id,team2_id,status,start_time,game_date"
+    : "id,sportsdata_game_id,team1_id,team2_id";
 
-  const { data: teamRows, error: teamErr } = await supabaseAdmin
-    .from("teams")
-    .select("id,sportsdata_team_id")
-    .not("sportsdata_team_id", "is", null);
-  if (teamErr) throw teamErr;
+  const sportsTeams = new Map<number, { name: string | null; seed: number | null; region: "East" | "West" | "South" | "Midwest" | null }>();
+  for (const g of gamesArray) {
+    const region = bracketToRegion(g.Bracket ?? g.bracket);
 
+    const homeId = toInt(g.HomeTeamID);
+    if (homeId) {
+      const existing = sportsTeams.get(homeId);
+      sportsTeams.set(homeId, {
+        name: existing?.name ?? toIso(g.HomeTeam),
+        seed: existing?.seed ?? toInt(g.HomeTeamSeed),
+        region: existing?.region ?? region,
+      });
+    }
+
+    const awayId = toInt(g.AwayTeamID);
+    if (awayId) {
+      const existing = sportsTeams.get(awayId);
+      sportsTeams.set(awayId, {
+        name: existing?.name ?? toIso(g.AwayTeam),
+        seed: existing?.seed ?? toInt(g.AwayTeamSeed),
+        region: existing?.region ?? region,
+      });
+    }
+  }
+
+  let teamsCreated = 0;
+  let teamsUpdated = 0;
+
+  const sportsTeamIds = Array.from(sportsTeams.keys());
   const localTeamBySports = new Map<number, string>();
-  for (const t of teamRows ?? []) {
-    localTeamBySports.set(Number(t.sportsdata_team_id), String(t.id));
+
+  if (sportsTeamIds.length > 0) {
+    const { data: existingTeams, error: existingTeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,sportsdata_team_id,name,seed,seed_in_region,region,cost")
+      .in("sportsdata_team_id", sportsTeamIds);
+    if (existingTeamsErr) throw existingTeamsErr;
+
+    const existingBySportsId = new Map<number, Record<string, unknown>>();
+    for (const row of existingTeams ?? []) {
+      existingBySportsId.set(Number(row.sportsdata_team_id), row as unknown as Record<string, unknown>);
+    }
+
+    for (const [sportsId, incoming] of sportsTeams.entries()) {
+      const existing = existingBySportsId.get(sportsId);
+      const incomingSeed = incoming.seed;
+      const incomingCost = costForSeed(incomingSeed);
+
+      if (!existing) {
+        const { error: insErr } = await supabaseAdmin.from("teams").insert({
+          sportsdata_team_id: sportsId,
+          name: incoming.name ?? `Team ${sportsId}`,
+          seed: incomingSeed,
+          seed_in_region: incomingSeed,
+          region: incoming.region,
+          cost: incomingCost,
+        });
+        if (insErr) throw insErr;
+        teamsCreated++;
+        continue;
+      }
+
+      const updates: Record<string, unknown> = {};
+      if (incoming.name && incoming.name !== existing.name) updates.name = incoming.name;
+      if (incomingSeed != null && incomingSeed !== Number(existing.seed ?? NaN)) updates.seed = incomingSeed;
+      if (incomingSeed != null && incomingSeed !== Number(existing.seed_in_region ?? NaN)) {
+        updates.seed_in_region = incomingSeed;
+      }
+      if (incoming.region && incoming.region !== existing.region) updates.region = incoming.region;
+      if (incomingCost != null && incomingCost !== Number(existing.cost ?? NaN)) updates.cost = incomingCost;
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updErr } = await supabaseAdmin
+          .from("teams")
+          .update(updates)
+          .eq("id", String(existing.id));
+        if (updErr) throw updErr;
+        teamsUpdated++;
+      }
+    }
+
+    const { data: syncedTeams, error: syncedTeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,sportsdata_team_id")
+      .in("sportsdata_team_id", sportsTeamIds);
+    if (syncedTeamsErr) throw syncedTeamsErr;
+
+    for (const t of syncedTeams ?? []) {
+      localTeamBySports.set(Number(t.sportsdata_team_id), String(t.id));
+    }
   }
 
   const { data: existingLinkedRows, error: existingLinkedErr } = await supabaseAdmin
@@ -357,6 +472,7 @@ async function runSyncBracket(season: number) {
   let matchedByPlaceholder = 0;
   let scheduleUpdated = 0;
   let skippedDuplicateSportsId = 0;
+  let gameTeamsUpdated = 0;
   const nowIso = new Date().toISOString();
   const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
 
@@ -454,8 +570,16 @@ async function runSyncBracket(season: number) {
 
     const needsLink = ourGame.sportsdata_game_id !== gameId;
     const needsScheduleUpdate = scheduleColumnsAvailable;
+    const homeLocal = localTeamBySports.get(Number(g.HomeTeamID));
+    const awayLocal = localTeamBySports.get(Number(g.AwayTeamID));
+    const hasGameTeams = !!homeLocal && !!awayLocal;
+    const nextTeam1 = hasGameTeams ? awayLocal : null;
+    const nextTeam2 = hasGameTeams ? homeLocal : null;
+    const needsGameTeamsUpdate =
+      hasGameTeams &&
+      (ourGame.team1_id !== nextTeam1 || ourGame.team2_id !== nextTeam2);
 
-    if (!needsLink && !needsScheduleUpdate) {
+    if (!needsLink && !needsScheduleUpdate && !needsGameTeamsUpdate) {
       alreadyLinked++;
       continue;
     }
@@ -468,6 +592,10 @@ async function runSyncBracket(season: number) {
       updatePayload.status = toIso(g.Status ?? g.status);
       updatePayload.start_time = toIso(g.DateTimeUTC ?? g.DateTime ?? null);
       updatePayload.game_date = toDateOnly(g.Day ?? g.DateTimeUTC ?? g.DateTime ?? null);
+    }
+    if (needsGameTeamsUpdate) {
+      updatePayload.team1_id = nextTeam1;
+      updatePayload.team2_id = nextTeam2;
     }
 
     const { error: updErr } = await supabaseAdmin
@@ -487,6 +615,11 @@ async function runSyncBracket(season: number) {
       alreadyLinked++;
     }
     if (scheduleColumnsAvailable) scheduleUpdated++;
+    if (needsGameTeamsUpdate) {
+      ourGame.team1_id = nextTeam1;
+      ourGame.team2_id = nextTeam2;
+      gameTeamsUpdated++;
+    }
   }
 
   return {
@@ -502,6 +635,10 @@ async function runSyncBracket(season: number) {
     matchedByTeams,
     scheduleUpdated,
     scheduleColumnsAvailable,
+    teamsSeenInPayload: sportsTeamIds.length,
+    teamsCreated,
+    teamsUpdated,
+    gameTeamsUpdated,
     skippedDuplicateSportsId,
     skippedNoMap,
     skippedAmbiguous,

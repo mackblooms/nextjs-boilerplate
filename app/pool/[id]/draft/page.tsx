@@ -200,9 +200,31 @@ export default function DraftPage() {
       setIsMember(!!mem);
 
       // Teams
-      const { data: teamRows, error: teamErr } = await supabase
+      const { data: r64Games, error: r64Err } = await supabase
+        .from("games")
+        .select("team1_id,team2_id")
+        .eq("round", "R64");
+
+      if (r64Err) {
+        setMsg(r64Err.message);
+        setLoading(false);
+        return;
+      }
+
+      const r64TeamIds = Array.from(
+        new Set(
+          (r64Games ?? [])
+            .flatMap((g) => [g.team1_id, g.team2_id])
+            .filter((id): id is string => !!id),
+        ),
+      );
+
+      let teamsQuery = supabase
         .from("teams")
         .select("id,name,seed,cost,logo_url");
+      if (r64TeamIds.length > 0) teamsQuery = teamsQuery.in("id", r64TeamIds);
+
+      const { data: teamRows, error: teamErr } = await teamsQuery;
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -211,6 +233,10 @@ export default function DraftPage() {
       }
 
       setTeams((teamRows ?? []) as Team[]);
+
+      if (r64TeamIds.length === 0) {
+        setMsg("Tournament field is still TBD in SportsDataIO. Draft teams will appear once R64 teams are assigned.");
+      }
 
       if (!mem) {
         setEntryId(null);
