@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
+import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
@@ -32,12 +33,14 @@ export async function POST(req: Request) {
     }
 
     const passwordHash = hashPoolPassword(nextPassword);
+    const passwordCiphertext = encryptPoolPassword(nextPassword);
 
     const { error: updateErr } = await supabaseAdmin
       .from("pools")
       .update({
         is_private: true,
         join_password_hash: passwordHash,
+        join_password_ciphertext: passwordCiphertext,
       })
       .eq("id", poolId);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 
@@ -36,6 +36,11 @@ type AdminPoolRow = {
   created_by: string;
 };
 
+type PoolPasswordResponse = {
+  passwords?: Record<string, string | null>;
+  error?: string;
+};
+
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 
 export default function AdminPage() {
@@ -58,6 +63,8 @@ export default function AdminPage() {
   const [rotatingPasswordPoolId, setRotatingPasswordPoolId] = useState<string | null>(null);
   const [poolNameDrafts, setPoolNameDrafts] = useState<Record<string, string>>({});
   const [poolPasswordDrafts, setPoolPasswordDrafts] = useState<Record<string, string>>({});
+  const [poolPasswords, setPoolPasswords] = useState<Record<string, string | null>>({});
+  const [showPoolPasswords, setShowPoolPasswords] = useState<Record<string, boolean>>({});
   const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
   const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(true);
 
@@ -78,6 +85,44 @@ export default function AdminPage() {
     for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
     return out;
   }, [games]);
+
+  const loadPoolPasswords = useCallback(async (targetPoolIds: string[]) => {
+    if (targetPoolIds.length === 0) {
+      setPoolPasswords({});
+      setShowPoolPasswords({});
+      return;
+    }
+
+    setPoolPasswords(Object.fromEntries(targetPoolIds.map((id) => [id, null])));
+    setShowPoolPasswords(Object.fromEntries(targetPoolIds.map((id) => [id, false])));
+
+    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (sessionErr || !accessToken) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/pool-passwords", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ poolIds: targetPoolIds }),
+      });
+
+      const json = (await res.json().catch(() => ({}))) as PoolPasswordResponse;
+      if (!res.ok) {
+        return;
+      }
+
+      const passwords = json.passwords ?? {};
+      setPoolPasswords((prev) => ({ ...prev, ...passwords }));
+    } catch {
+      // Keep page usable even if password loading fails.
+    }
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -169,6 +214,7 @@ export default function AdminPage() {
       setAdminPools(pools);
       setPoolNameDrafts(Object.fromEntries(pools.map((pool) => [pool.id, pool.name])));
       setPoolPasswordDrafts(Object.fromEntries(pools.map((pool) => [pool.id, ""])));
+      await loadPoolPasswords(pools.map((pool) => pool.id));
 
       if (pools.length > 0) {
         const ids = pools.map((p) => p.id);
@@ -201,7 +247,7 @@ export default function AdminPage() {
     };
 
     load();
-  }, [poolId]);
+  }, [loadPoolPasswords, poolId]);
 
   async function removeUserFromPool(targetPoolId: string, targetUserId: string) {
     if (!targetPoolId || !targetUserId) return;
@@ -304,6 +350,16 @@ export default function AdminPage() {
         return next;
       });
       setPoolPasswordDrafts((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
+      setPoolPasswords((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
+      setShowPoolPasswords((prev) => {
         const next = { ...prev };
         delete next[targetPoolId];
         return next;
@@ -417,6 +473,8 @@ export default function AdminPage() {
       }
 
       setPoolPasswordDrafts((prev) => ({ ...prev, [targetPoolId]: "" }));
+      setPoolPasswords((prev) => ({ ...prev, [targetPoolId]: nextPassword }));
+      setShowPoolPasswords((prev) => ({ ...prev, [targetPoolId]: false }));
       setMsg("Pool password updated. This pool is now private.");
     } catch (e: unknown) {
       setMsg(`Password update failed: ${e instanceof Error ? e.message : "Unknown error"}`);
@@ -752,6 +810,13 @@ export default function AdminPage() {
         <div style={{ display: "grid", gap: 12 }}>
           {adminPools.map((pool) => {
             const poolMembers = membersByPool[pool.id] ?? [];
+            const storedPassword = poolPasswords[pool.id] ?? null;
+            const isPasswordVisible = showPoolPasswords[pool.id] ?? false;
+            const canTogglePassword = storedPassword !== null;
+            const passwordPlaceholder =
+              pool.created_by === creatorId
+                ? "No stored password yet. Update password once to reveal it here."
+                : "Only this pool's creator can view its password.";
             return (
               <div
                 key={pool.id}
@@ -797,6 +862,42 @@ export default function AdminPage() {
                         }}
                       >
                         {renamingPoolId === pool.id ? "Saving..." : "Save name"}
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div style={{ fontSize: 12, opacity: 0.75, width: "100%" }}>Current pool password</div>
+                      <input
+                        type={isPasswordVisible ? "text" : "password"}
+                        value={storedPassword ?? ""}
+                        readOnly
+                        placeholder={passwordPlaceholder}
+                        style={{
+                          padding: "7px 9px",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                          minWidth: 320,
+                          background: "#fafafa",
+                        }}
+                      />
+                      <button
+                        disabled={!canTogglePassword}
+                        onClick={() =>
+                          setShowPoolPasswords((prev) => ({
+                            ...prev,
+                            [pool.id]: !isPasswordVisible,
+                          }))
+                        }
+                        style={{
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          border: "1px solid #999",
+                          background: canTogglePassword ? "#fff" : "#f3f3f3",
+                          color: canTogglePassword ? "#111" : "#888",
+                          fontWeight: 700,
+                          cursor: canTogglePassword ? "pointer" : "not-allowed",
+                        }}
+                      >
+                        {isPasswordVisible ? "Hide password" : "Show password"}
                       </button>
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

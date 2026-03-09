@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
+import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 
 type CreatePoolRequest = {
   name?: string;
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
     }
 
     const joinPasswordHash = hashPoolPassword(password);
+    const joinPasswordCiphertext = encryptPoolPassword(password);
 
     const { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
@@ -55,6 +57,7 @@ export async function POST(req: Request) {
         created_by: authData.user.id,
         is_private: true,
         join_password_hash: joinPasswordHash,
+        join_password_ciphertext: joinPasswordCiphertext,
       })
       .select("id")
       .single();
