@@ -270,20 +270,25 @@ export default function AdminPage() {
     const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
     const session = sessionData?.session;
 
-    if (sessionErr || !session?.access_token) {
+    const { data: authData } = await supabase.auth.getUser();
+    const fallbackUserId = authData?.user?.id ?? null;
+
+    if (sessionErr && !fallbackUserId) {
       setMsg("Not logged in (could not read session).");
       setDeletingPoolId(null);
       return;
     }
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        headers.authorization = `Bearer ${session.access_token}`;
+      }
+
       const res = await fetch("/api/admin/delete-pool", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ poolId: targetPoolId }),
+        headers,
+        body: JSON.stringify({ poolId: targetPoolId, userId: fallbackUserId }),
       });
 
       const json = await res.json().catch(() => ({}));
