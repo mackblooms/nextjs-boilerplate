@@ -79,12 +79,8 @@ export default function LoginClient() {
     setStatus("sending");
     setMsg("");
 
-    const resetParams = new URLSearchParams({ next });
-    if (invitePoolId) resetParams.set("invitePoolId", invitePoolId);
-    const resetPasswordNext = `/login/reset-password?${resetParams.toString()}`;
-
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: buildAuthCallbackUrl(resetPasswordNext),
+      redirectTo: `${window.location.origin}/login/reset-password`,
     });
 
     if (error) {
