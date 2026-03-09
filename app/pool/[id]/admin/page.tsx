@@ -52,7 +52,6 @@ export default function AdminPage() {
   const [adminPools, setAdminPools] = useState<AdminPoolRow[]>([]);
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
@@ -97,8 +96,6 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
-
-      setCurrentUserId(user.id);
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
@@ -158,7 +155,6 @@ export default function AdminPage() {
       const { data: allPoolRows, error: allPoolErr } = await supabase
         .from("pools")
         .select("id,name,created_by")
-        .eq("created_by", user.id)
         .order("name", { ascending: true });
 
       if (allPoolErr) {
@@ -684,9 +680,9 @@ export default function AdminPage() {
           gap: 10,
         }}
       >
-        <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools you manage</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools on the site</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          See every active pool you created. Deleting a pool removes members, entries, picks, and the pool
+          See every active pool across all players. Deleting a pool removes members, entries, picks, and the pool
           record so it no longer appears for players.
         </p>
 
@@ -776,7 +772,7 @@ export default function AdminPage() {
 
                 <div style={{ display: "grid", gap: 8 }}>
                   {poolMembers.map((m) => {
-                    const isCreator = m.user_id === currentUserId;
+                    const isCreator = m.user_id === pool.created_by;
                     const label = m.display_name ?? m.user_id.slice(0, 8);
                     return (
                       <div
