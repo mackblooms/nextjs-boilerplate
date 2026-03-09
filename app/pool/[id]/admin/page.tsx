@@ -446,10 +446,11 @@ export default function AdminPage() {
       const updatedTotal = Number(json?.totals?.updatedWinners ?? json?.scores?.updatedGames ?? 0);
       const finalsSeen = Number(json?.scores?.finalsSeen ?? 0);
       const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
+      const scheduleUpdated = Number(json?.bracket?.scheduleUpdated ?? 0);
 
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}) | linked: ${linkedTotal} ` +
-          `(unmatched on last pass: ${skippedNoMap}) | updated winners: ${updatedTotal} ` +
+          `(unmatched on last pass: ${skippedNoMap}) | times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );
     } catch (e: unknown) {

@@ -26,6 +26,9 @@ type Game = {
   round: string;
   region: string | null;
   slot: number;
+  status: string | null;
+  start_time: string | null;
+  game_date: string | null;
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
@@ -203,7 +206,7 @@ export default function BracketPage() {
 
       const { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id");
 
       if (gameErr) {
         setMsg(gameErr.message);
@@ -385,6 +388,43 @@ export default function BracketPage() {
     setScale(1);
   };
 
+  const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
+    if (!g) return null;
+
+    if (g.start_time) {
+      const d = new Date(g.start_time);
+      if (!Number.isNaN(d.getTime())) {
+        return (
+          d.toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }) + " ET"
+        );
+      }
+    }
+
+    if (g.game_date) {
+      const d = new Date(`${g.game_date}T00:00:00Z`);
+      if (!Number.isNaN(d.getTime())) {
+        return (
+          d.toLocaleDateString("en-US", {
+            timeZone: "America/New_York",
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }) + " ET"
+        );
+      }
+    }
+
+    return null;
+  }, []);
+
   const selectedPlayer = useMemo(
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
@@ -476,7 +516,7 @@ export default function BracketPage() {
     );
   };
 
-  const renderGameBox = (children: ReactNode) => (
+  const renderGameBox = (children: ReactNode, meta?: string | null) => (
     <div
       style={{
         border: "1px solid var(--border-color)",
@@ -488,10 +528,29 @@ export default function BracketPage() {
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
+        justifyContent: "space-between",
       }}
     >
-      <div style={{ display: "grid", gap: 8 }}>{children}</div>
+      <div style={{ display: "grid", gap: 6 }}>{children}</div>
+      {meta ? (
+        <div
+          style={{
+            marginTop: 6,
+            paddingTop: 5,
+            borderTop: "1px solid var(--border-color)",
+            fontSize: 10,
+            fontWeight: 700,
+            opacity: 0.72,
+            textAlign: "center",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+          title={meta}
+        >
+          {meta}
+        </div>
+      ) : null}
     </div>
   );
 
@@ -532,6 +591,7 @@ export default function BracketPage() {
           >
             {gamesForRound.map((g) => {
               const start = rowStartFor(roundKey, g.slot);
+              const meta = formatGameTimeEst(g);
               return (
                 <div
                   key={g.id}
@@ -542,6 +602,7 @@ export default function BracketPage() {
                       {renderTeam(g.team1_id, g.winner_team_id)}
                       {renderTeam(g.team2_id, g.winner_team_id)}
                     </>,
+                    meta,
                   )}
                 </div>
               );
@@ -1034,6 +1095,7 @@ export default function BracketPage() {
                           championship?.winner_team_id ?? null,
                         )}
                       </>,
+                      formatGameTimeEst(championship),
                     )}
                   </div>
                 </div>

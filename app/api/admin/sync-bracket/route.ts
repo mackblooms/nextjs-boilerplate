@@ -9,6 +9,11 @@ type SportsGame = {
   GameID?: number;
   GameId?: number;
   gameId?: number;
+  Status?: string | null;
+  status?: string | null;
+  DateTimeUTC?: string | null;
+  DateTime?: string | null;
+  Day?: string | null;
   Bracket?: string | null;
   bracket?: string | null;
   Round?: number | string | null;
@@ -24,6 +29,9 @@ type SportsGame = {
 type LocalGameRow = {
   id: string;
   sportsdata_game_id: number | null;
+  status: string | null;
+  start_time: string | null;
+  game_date: string | null;
 };
 
 async function fetchJsonOrEmpty(url: string) {
@@ -165,6 +173,67 @@ function getSportsGameId(g: SportsGame): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+function toIso(value: unknown): string | null {
+  if (!value) return null;
+  const s = String(value).trim();
+  return s || null;
+}
+
+function toDateOnly(value: unknown): string | null {
+  const iso = toIso(value);
+  return iso ? iso.slice(0, 10) : null;
+}
+
+type RoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
+type FallbackRoundSlot = {
+  roundCode: RoundCode;
+  slot: number;
+  region: "East" | "West" | "South" | "Midwest";
+};
+
+function buildPlaceholderFallbackMap(games: SportsGame[]) {
+  const byRegion = new Map<"East" | "West" | "South" | "Midwest", SportsGame[]>();
+
+  for (const g of games) {
+    const gameId = getSportsGameId(g);
+    const region = bracketToRegion(g.Bracket ?? g.bracket);
+    const roundCode = roundToCode(g.Round ?? g.round);
+    if (!gameId || !region || roundCode) continue;
+
+    if (!byRegion.has(region)) byRegion.set(region, []);
+    byRegion.get(region)!.push(g);
+  }
+
+  const map = new Map<number, FallbackRoundSlot>();
+  const regionTemplate: Array<{ roundCode: RoundCode; count: number }> = [
+    { roundCode: "R64", count: 8 },
+    { roundCode: "R32", count: 4 },
+    { roundCode: "S16", count: 2 },
+    { roundCode: "E8", count: 1 },
+  ];
+
+  for (const [region, regionGames] of byRegion.entries()) {
+    const sorted = [...regionGames].sort((a, b) => {
+      const aTs = Date.parse(String(a.DateTimeUTC ?? a.DateTime ?? a.Day ?? "")) || 0;
+      const bTs = Date.parse(String(b.DateTimeUTC ?? b.DateTime ?? b.Day ?? "")) || 0;
+      if (aTs !== bTs) return aTs - bTs;
+      return (getSportsGameId(a) ?? 0) - (getSportsGameId(b) ?? 0);
+    });
+
+    let i = 0;
+    for (const stage of regionTemplate) {
+      for (let slot = 1; slot <= stage.count; slot++) {
+        const g = sorted[i++];
+        const gameId = g ? getSportsGameId(g) : null;
+        if (!gameId) continue;
+        map.set(gameId, { roundCode: stage.roundCode, slot, region });
+      }
+    }
+  }
+
+  return map;
+}
+
 async function runSyncBracket(season: number) {
   if (!KEY) throw new Error("Missing SportsData key. Set SPORTS_DATA_IO_KEY or SPORTSDATAIO_KEY.");
   const url = `${BASE}/v3/cbb/scores/json/Tournament/${season}?key=${encodeURIComponent(KEY)}`;
@@ -233,12 +302,25 @@ async function runSyncBracket(season: number) {
   let skippedAmbiguous = 0;
   let matchedBySlot = 0;
   let matchedByTeams = 0;
+  let matchedByPlaceholder = 0;
+  let scheduleUpdated = 0;
+  const nowIso = new Date().toISOString();
+  const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
 
   for (const g of gamesArray) {
     const gameId = getSportsGameId(g);
-    const roundCode = roundToCode(g.Round ?? g.round);
-    const region = bracketToRegion(g.Bracket ?? g.bracket);
-    const slot = roundCode ? readSlot(g, roundCode) : null;
+    let roundCode = roundToCode(g.Round ?? g.round);
+    let region = bracketToRegion(g.Bracket ?? g.bracket);
+    let slot = roundCode ? readSlot(g, roundCode) : null;
+
+    if (gameId && !roundCode) {
+      const fallback = placeholderFallback.get(gameId);
+      if (fallback) {
+        roundCode = fallback.roundCode;
+        region = fallback.region;
+        slot = fallback.slot;
+      }
+    }
 
     if (!gameId || !roundCode) {
       skippedNoMap++;
@@ -250,7 +332,7 @@ async function runSyncBracket(season: number) {
     if (slot) {
       let slotQuery = supabaseAdmin
         .from("games")
-        .select("id,sportsdata_game_id")
+        .select("id,sportsdata_game_id,status,start_time,game_date")
         .eq("round", roundCode)
         .eq("slot", slot)
         .limit(2);
@@ -264,7 +346,11 @@ async function runSyncBracket(season: number) {
 
       if ((slotMatches?.length ?? 0) === 1) {
         ourGame = slotMatches?.[0] as LocalGameRow;
-        matchedBySlot++;
+        if (placeholderFallback.has(gameId)) {
+          matchedByPlaceholder++;
+        } else {
+          matchedBySlot++;
+        }
       } else if ((slotMatches?.length ?? 0) > 1) {
         skippedAmbiguous++;
         continue;
@@ -278,7 +364,7 @@ async function runSyncBracket(season: number) {
       if (homeLocal && awayLocal) {
         let teamQuery = supabaseAdmin
           .from("games")
-          .select("id,sportsdata_game_id")
+          .select("id,sportsdata_game_id,status,start_time,game_date")
           .eq("round", roundCode)
           .or(
             `and(team1_id.eq.${homeLocal},team2_id.eq.${awayLocal}),and(team1_id.eq.${awayLocal},team2_id.eq.${homeLocal})`
@@ -307,21 +393,38 @@ async function runSyncBracket(season: number) {
       continue;
     }
 
-    if (ourGame.sportsdata_game_id === gameId) {
+    const nextStatus = toIso(g.Status ?? g.status);
+    const nextStartTime = toIso(g.DateTimeUTC ?? g.DateTime ?? null);
+    const nextGameDate = toDateOnly(g.Day ?? g.DateTimeUTC ?? g.DateTime ?? null);
+
+    const needsLink = ourGame.sportsdata_game_id !== gameId;
+    const needsStatusUpdate = nextStatus != null && ourGame.status !== nextStatus;
+    const needsStartTimeUpdate = nextStartTime != null && ourGame.start_time !== nextStartTime;
+    const needsGameDateUpdate = nextGameDate != null && ourGame.game_date !== nextGameDate;
+    const needsScheduleUpdate = needsStatusUpdate || needsStartTimeUpdate || needsGameDateUpdate;
+
+    if (!needsLink && !needsScheduleUpdate) {
       alreadyLinked++;
       continue;
     }
 
+    const updatePayload: Record<string, unknown> = {
+      last_synced_at: nowIso,
+    };
+    if (needsLink) updatePayload.sportsdata_game_id = gameId;
+    if (needsStatusUpdate) updatePayload.status = nextStatus;
+    if (needsStartTimeUpdate) updatePayload.start_time = nextStartTime;
+    if (needsGameDateUpdate) updatePayload.game_date = nextGameDate;
+
     const { error: updErr } = await supabaseAdmin
       .from("games")
-      .update({
-        sportsdata_game_id: gameId,
-        last_synced_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", ourGame.id);
 
     if (updErr) throw updErr;
-    linked++;
+    if (needsLink) linked++;
+    else alreadyLinked++;
+    if (needsScheduleUpdate) scheduleUpdated++;
   }
 
   return {
@@ -333,7 +436,9 @@ async function runSyncBracket(season: number) {
     linked,
     alreadyLinked,
     matchedBySlot,
+    matchedByPlaceholder,
     matchedByTeams,
+    scheduleUpdated,
     skippedNoMap,
     skippedAmbiguous,
     sampleGame: gamesArray[0] ?? null,
