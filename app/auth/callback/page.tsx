@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
+import { ensurePoolMembership, getInvitePoolIdFromNextPath } from "../../../lib/poolInvite";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -16,6 +17,26 @@ export default function AuthCallbackPage() {
         const code = url.searchParams.get("code");
         const requestedNext = url.searchParams.get("next");
         const queryType = url.searchParams.get("type");
+        const safeRequestedNext =
+          requestedNext && requestedNext.startsWith("/") ? requestedNext : null;
+        const invitePoolId =
+          url.searchParams.get("invitePoolId") ||
+          getInvitePoolIdFromNextPath(safeRequestedNext);
+
+        const maybeJoinInvitedPool = async () => {
+          if (!invitePoolId) return null;
+          const { data: userData, error: userErr } = await supabase.auth.getUser();
+          if (userErr) throw userErr;
+          return ensurePoolMembership(invitePoolId, userData.user?.id);
+        };
+
+        const fallbackNextPath = invitePoolId ? `/pool/${invitePoolId}` : "/";
+        const recoveryNextPath = (() => {
+          const params = new URLSearchParams();
+          params.set("next", fallbackNextPath);
+          if (invitePoolId) params.set("invitePoolId", invitePoolId);
+          return `/login/reset-password?${params.toString()}`;
+        })();
 
         // If we got a code param (common), exchange it for a session.
         if (code) {
@@ -36,11 +57,11 @@ export default function AuthCallbackPage() {
           const hashType = hashParams.get("type");
 
           const nextPath =
-            requestedNext && requestedNext.startsWith("/")
-              ? requestedNext
+            safeRequestedNext
+              ? safeRequestedNext
               : (queryType || hashType) === "recovery"
-                ? "/login/reset-password"
-                : "/";
+                ? recoveryNextPath
+                : fallbackNextPath;
 
           if (accessToken && refreshToken) {
             setStatus("Saving session from token hash...");
@@ -49,6 +70,10 @@ export default function AuthCallbackPage() {
               refresh_token: refreshToken,
             });
             if (error) throw error;
+            const joinErr = await maybeJoinInvitedPool();
+            if (joinErr) {
+              setDetails(`Signed in, but invite auto-join failed: ${joinErr}`);
+            }
             setStatus("Signed in! Redirecting...");
             router.replace(nextPath);
             return;
@@ -69,12 +94,16 @@ export default function AuthCallbackPage() {
         }
 
         const nextPath =
-          requestedNext && requestedNext.startsWith("/")
-            ? requestedNext
+          safeRequestedNext
+            ? safeRequestedNext
             : queryType === "recovery"
-              ? "/login/reset-password"
-              : "/";
+              ? recoveryNextPath
+              : fallbackNextPath;
 
+        const joinErr = await maybeJoinInvitedPool();
+        if (joinErr) {
+          setDetails(`Signed in, but invite auto-join failed: ${joinErr}`);
+        }
         setStatus("Signed in! Redirecting...");
         router.replace(nextPath);
       } catch (e: unknown) {

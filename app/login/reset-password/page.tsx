@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
+import { resolveInvitePoolId } from "../../../lib/poolInvite";
 
 export default function LoginResetPasswordPage() {
   const router = useRouter();
@@ -11,6 +12,13 @@ export default function LoginResetPasswordPage() {
   const [saving, setSaving] = useState(false);
   const [ready, setReady] = useState(false);
   const [msg, setMsg] = useState("Validating your reset link...");
+
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : null;
+  const nextPath = searchParams?.get("next") || "/pools";
+  const invitePoolId = searchParams ? resolveInvitePoolId(searchParams) : null;
 
   useEffect(() => {
     const bootstrapSession = async () => {
@@ -82,7 +90,16 @@ export default function LoginResetPasswordPage() {
 
     setMsg("Password updated. Redirecting to login...");
     await supabase.auth.signOut();
-    router.replace("/login");
+
+    const loginParams = new URLSearchParams({
+      next: nextPath.startsWith("/") ? nextPath : "/pools",
+    });
+
+    if (invitePoolId) {
+      loginParams.set("invitePoolId", invitePoolId);
+    }
+
+    router.replace(`/login?${loginParams.toString()}`);
   }
 
   return (

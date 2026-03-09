@@ -24,7 +24,11 @@ function HomeContent() {
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
-    return `/login?next=${encodeURIComponent(`/pool/${invitePoolId}`)}`;
+    const params = new URLSearchParams({
+      next: `/pool/${invitePoolId}`,
+      invitePoolId,
+    });
+    return `/login?${params.toString()}`;
   }, [invitePoolId]);
 
   useEffect(() => {

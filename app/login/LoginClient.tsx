@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { ensurePoolMembership, resolveInvitePoolId } from "../../lib/poolInvite";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -20,10 +21,31 @@ export default function LoginClient() {
       ? new URLSearchParams(window.location.search).get("next") || "/pools"
       : "/pools";
 
-  const profileSetupNext =
+  const invitePoolId =
     typeof window !== "undefined"
-      ? `/profile?onboarding=1&next=${encodeURIComponent(next)}`
-      : "/profile";
+      ? resolveInvitePoolId(new URLSearchParams(window.location.search))
+      : null;
+
+  const profileSetupNext =
+    (() => {
+      const params = new URLSearchParams({
+        onboarding: "1",
+        next,
+      });
+      if (invitePoolId) params.set("invitePoolId", invitePoolId);
+      return `/profile?${params.toString()}`;
+    })();
+
+  function buildAuthCallbackUrl(nextPath: string) {
+    const params = new URLSearchParams({ next: nextPath });
+    if (invitePoolId) params.set("invitePoolId", invitePoolId);
+    return `${window.location.origin}/auth/callback?${params.toString()}`;
+  }
+
+  async function autoJoinInvitedPool(userId: string | null | undefined) {
+    if (!invitePoolId || !userId) return null;
+    return ensurePoolMembership(invitePoolId, userId);
+  }
 
   async function resendConfirmation() {
     setStatus("sending");
@@ -33,7 +55,7 @@ export default function LoginClient() {
       type: "signup",
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(profileSetupNext)}`,
+        emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
       },
     });
 
@@ -57,8 +79,12 @@ export default function LoginClient() {
     setStatus("sending");
     setMsg("");
 
+    const resetParams = new URLSearchParams({ next });
+    if (invitePoolId) resetParams.set("invitePoolId", invitePoolId);
+    const resetPasswordNext = `/login/reset-password?${resetParams.toString()}`;
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: buildAuthCallbackUrl(resetPasswordNext),
     });
 
     if (error) {
@@ -89,7 +115,7 @@ export default function LoginClient() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(profileSetupNext)}`,
+          emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
         },
       });
 
@@ -106,7 +132,12 @@ export default function LoginClient() {
 
       setStatus("success");
       if (hasSession) {
-        setMsg("Account created and signed in. Redirecting...");
+        const joinErr = await autoJoinInvitedPool(data.user?.id);
+        setMsg(
+          joinErr
+            ? `Account created and signed in. Could not auto-join your invite yet: ${joinErr}\nRedirecting...`
+            : "Account created and signed in. Redirecting...",
+        );
         window.location.href = profileSetupNext;
         return;
       }
@@ -123,7 +154,7 @@ export default function LoginClient() {
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -135,7 +166,12 @@ export default function LoginClient() {
     }
 
     setStatus("success");
-    setMsg("Signed in successfully. Redirecting...");
+    const joinErr = await autoJoinInvitedPool(data.user?.id);
+    setMsg(
+      joinErr
+        ? `Signed in successfully. Could not auto-join your invite yet: ${joinErr}\nRedirecting...`
+        : "Signed in successfully. Redirecting...",
+    );
     window.location.href = profileSetupNext;
   }
 
