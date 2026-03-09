@@ -20,14 +20,21 @@ const BASE_POINTS_BY_ROUND: Record<string, number> = {
   CHIP: 360,
 };
 
-const HISTORIC_BONUS_BY_SEED: Record<number, number> = { 14: 144, 15: 240, 16: 336 };
+const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
+  14: 144,
+  15: 240,
+  16: 336,
+};
 
 function seedMultiplier(seed: number | null | undefined): number {
   if (!seed || seed < 1 || seed > 16) return 1;
   return 1 + (seed - 1) * 0.035;
 }
 
-function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {
+function scoreTeamWins(
+  games: ScoringGame[],
+  teamSeedById: Map<string, number | null>,
+): Map<string, number> {
   const totals = new Map<string, number>();
   const historicAwarded = new Set<string>();
 
@@ -39,17 +46,34 @@ function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | 
     if (!base) continue;
 
     const winnerSeed = teamSeedById.get(winnerId) ?? null;
-    const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
-    const opponentSeed = opponentId ? (teamSeedById.get(opponentId) ?? null) : null;
-    const upsetBonus = !winnerSeed || !opponentSeed ? 0 : Math.max(0, 12 * (winnerSeed - opponentSeed));
+    const opponentId =
+      g.team1_id === winnerId
+        ? g.team2_id
+        : g.team2_id === winnerId
+          ? g.team1_id
+          : null;
+    const opponentSeed = opponentId
+      ? (teamSeedById.get(opponentId) ?? null)
+      : null;
+    const upsetBonus =
+      !winnerSeed || !opponentSeed
+        ? 0
+        : Math.max(0, 12 * (winnerSeed - opponentSeed));
 
     let historicBonus = 0;
-    if (g.round === "R64" && winnerSeed && HISTORIC_BONUS_BY_SEED[winnerSeed] && !historicAwarded.has(winnerId)) {
+    if (
+      g.round === "R64" &&
+      winnerSeed &&
+      HISTORIC_BONUS_BY_SEED[winnerSeed] &&
+      !historicAwarded.has(winnerId)
+    ) {
       historicBonus = HISTORIC_BONUS_BY_SEED[winnerSeed];
       historicAwarded.add(winnerId);
     }
 
-    const winScore = Math.round(base * seedMultiplier(winnerSeed) + upsetBonus + historicBonus);
+    const winScore = Math.round(
+      base * seedMultiplier(winnerSeed) + upsetBonus + historicBonus,
+    );
     totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
   }
 
@@ -67,44 +91,29 @@ type PickRow = {
 };
 
 export default function PicksPage() {
-  const params = useParams() as any;
+  const params = useParams() as Record<string, string | undefined>;
 
-const poolId = params.id as string | undefined;
+  const poolId = params.id;
 
-// supports [entryId] OR [entryid] OR [entryID]
-const entryId =
-  (params.entryId as string | undefined) ??
-  (params.entryid as string | undefined) ??
-  (params.entryID as string | undefined);
-
-  if (!poolId || !entryId) {
-  return (
-    <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 900 }}>Player Picks</h1>
-      <p style={{ marginTop: 12 }}>
-        Missing poolId or entryId in the URL. This usually means the folder name
-        for the route doesn’t match the param name (e.g., [entryId] vs [entryid]).
-      </p>
-      <p style={{ marginTop: 12, opacity: 0.85 }}>
-        Current URL should look like: /pool/&lt;poolId&gt;/picks/&lt;entryId&gt;
-      </p>
-    </main>
-  );
-}
+  // supports [entryId] OR [entryid] OR [entryID]
+  const entryId = params.entryId ?? params.entryid ?? params.entryID;
+  const hasRouteParams = !!poolId && !!entryId;
 
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
   const [displayName, setDisplayName] = useState("Player");
   const [picks, setPicks] = useState<PickRow[]>([]);
+  const [draftLocked, setDraftLocked] = useState(false);
+  const [lockTime, setLockTime] = useState<string | null>(null);
 
   const totalScore = useMemo(
     () => picks.reduce((s, p) => s + (p.total_team_score ?? 0), 0),
-    [picks]
+    [picks],
   );
 
   const totalCost = useMemo(
     () => picks.reduce((s, p) => s + (p.cost ?? 0), 0),
-    [picks]
+    [picks],
   );
 
   useEffect(() => {
@@ -112,14 +121,58 @@ const entryId =
       setLoading(true);
       setMsg("");
 
+      if (!poolId || !entryId) {
+        setLoading(false);
+        setMsg("Missing pool id or entry id in the URL.");
+        return;
+      }
+
       const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) {
+      const user = authData.user;
+
+      if (!user) {
         setMsg("Please log in first.");
         setLoading(false);
         return;
       }
 
-      // Get entry info
+      const { data: memberRow, error: memberErr } = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (memberErr) {
+        setMsg(memberErr.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!memberRow) {
+        setMsg("Join this pool to view picks.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: poolRow, error: poolErr } = await supabase
+        .from("pools")
+        .select("lock_time")
+        .eq("id", poolId)
+        .single();
+
+      if (poolErr) {
+        setMsg(poolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const resolvedLockTime = poolRow?.lock_time ?? null;
+      const isLocked =
+        !!resolvedLockTime && new Date() >= new Date(resolvedLockTime);
+      setLockTime(resolvedLockTime);
+      setDraftLocked(isLocked);
+
       const { data: entryRow, error: entryErr } = await supabase
         .from("entries")
         .select("id,pool_id,user_id")
@@ -138,7 +191,13 @@ const entryId =
         return;
       }
 
-      // Get display name
+      if (!isLocked && entryRow.user_id !== user.id) {
+        setMsg("Drafts are private until lock. You can only view your picks right now.");
+        setPicks([]);
+        setLoading(false);
+        return;
+      }
+
       const { data: prof } = await supabase
         .from("profiles")
         .select("display_name")
@@ -147,7 +206,6 @@ const entryId =
 
       setDisplayName(prof?.display_name ?? "Player");
 
-      // Get picks
       const { data: pickRows, error: picksErr } = await supabase
         .from("entry_pick_details")
         .select("team_id,team_name,seed,cost,round_reached,total_team_score")
@@ -159,7 +217,9 @@ const entryId =
         return;
       }
 
-      const teamIds = Array.from(new Set((pickRows ?? []).map((p) => p.team_id).filter(Boolean)));
+      const teamIds = Array.from(
+        new Set((pickRows ?? []).map((p) => p.team_id).filter(Boolean)),
+      );
 
       const { data: gameRows, error: gameErr } = await supabase
         .from("games")
@@ -187,10 +247,15 @@ const entryId =
         }
 
         logoById = new Map((teamRows ?? []).map((t) => [t.id, t.logo_url ?? null]));
-        seedById = new Map((teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]));
+        seedById = new Map(
+          (teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]),
+        );
       }
 
-      const computedTeamScores = scoreTeamWins((gameRows ?? []) as ScoringGame[], seedById);
+      const computedTeamScores = scoreTeamWins(
+        (gameRows ?? []) as ScoringGame[],
+        seedById,
+      );
 
       const merged = (pickRows ?? []).map((p) => ({
         ...p,
@@ -201,17 +266,31 @@ const entryId =
       const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
       setPicks(sorted as PickRow[]);
       setLoading(false);
-      
-};
+    };
 
-    load();
+    void load();
   }, [entryId, poolId]);
+
+  if (!hasRouteParams) {
+    return (
+      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Player Picks</h1>
+        <p style={{ marginTop: 12 }}>
+          Missing poolId or entryId in the URL. This usually means the folder name
+          for the route does not match the param name (e.g., [entryId] vs [entryid]).
+        </p>
+        <p style={{ marginTop: 12, opacity: 0.85 }}>
+          Current URL should look like: /pool/&lt;poolId&gt;/picks/&lt;entryId&gt;
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>
-          {displayName}’s Picks
+          {displayName}&apos;s Picks
         </h1>
 
         <a
@@ -228,8 +307,15 @@ const entryId =
         </a>
       </div>
 
-      {loading ? <p style={{ marginTop: 12 }}>Loading…</p> : null}
+      {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+
+      {!draftLocked ? (
+        <p style={{ marginTop: 8, opacity: 0.8, fontWeight: 700 }}>
+          Other members&apos; picks are hidden until draft lock
+          {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
+        </p>
+      ) : null}
 
       {!loading && !msg ? (
         <>
@@ -276,24 +362,38 @@ const entryId =
                   alignItems: "center",
                 }}
               >
-<div style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-  {p.logo_url ? (
-    <img
-      src={p.logo_url}
-      alt={p.team_name}
-      width={18}
-      height={18}
-      style={{ objectFit: "contain", flexShrink: 0 }}
-    />
-  ) : (
-    <span style={{ width: 18, height: 18, flexShrink: 0 }} />
-  )}
+                <div
+                  style={{
+                    fontWeight: 800,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    minWidth: 0,
+                  }}
+                >
+                  {p.logo_url ? (
+                    <img
+                      src={p.logo_url}
+                      alt={p.team_name}
+                      width={18}
+                      height={18}
+                      style={{ objectFit: "contain", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  )}
 
-  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-    {p.team_name}
-  </span>
-</div>
-                
+                  <span
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {p.team_name}
+                  </span>
+                </div>
+
                 <div>{p.seed}</div>
                 <div>{p.cost}</div>
                 <div>{p.round_reached}</div>
@@ -303,11 +403,9 @@ const entryId =
               </div>
             ))}
 
-            {picks.length === 0 && (
-              <div style={{ padding: "12px 12px" }}>
-                No picks saved yet.
-              </div>
-            )}
+            {picks.length === 0 ? (
+              <div style={{ padding: "12px 12px" }}>No picks saved yet.</div>
+            ) : null}
           </div>
         </>
       ) : null}

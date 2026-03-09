@@ -65,6 +65,9 @@ export default function BracketPage() {
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(
     new Set(),
   );
+  const [myEntryId, setMyEntryId] = useState<string | null>(null);
+  const [draftLocked, setDraftLocked] = useState(false);
+  const [lockTime, setLockTime] = useState<string | null>(null);
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -143,11 +146,49 @@ export default function BracketPage() {
       setMsg("");
 
       const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) {
+      const user = authData.user;
+      if (!user) {
         setMsg("Please log in first.");
         setLoading(false);
         return;
       }
+
+      const { data: mem, error: memErr } = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (memErr) {
+        setMsg(memErr.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!mem) {
+        setMsg("Join this pool to view brackets.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: poolRow, error: poolErr } = await supabase
+        .from("pools")
+        .select("lock_time")
+        .eq("id", poolId)
+        .single();
+
+      if (poolErr) {
+        setMsg(poolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const resolvedLockTime = poolRow?.lock_time ?? null;
+      const isLocked =
+        !!resolvedLockTime && new Date() >= new Date(resolvedLockTime);
+      setLockTime(resolvedLockTime);
+      setDraftLocked(isLocked);
 
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
@@ -189,8 +230,17 @@ export default function BracketPage() {
         display_name: string | null;
       }[];
 
-      const entryIds = basePlayers.map((p) => p.entry_id);
-      const userIds = Array.from(new Set(basePlayers.map((p) => p.user_id)));
+      const myEntry = basePlayers.find((p) => p.user_id === user.id)?.entry_id ?? null;
+      setMyEntryId(myEntry);
+
+      const visiblePlayers = isLocked
+        ? basePlayers
+        : myEntry
+          ? basePlayers.filter((p) => p.entry_id === myEntry)
+          : [];
+
+      const entryIds = visiblePlayers.map((p) => p.entry_id);
+      const userIds = Array.from(new Set(visiblePlayers.map((p) => p.user_id)));
 
       let entryNameById = new Map<string, string | null>();
       if (entryIds.length > 0) {
@@ -247,7 +297,7 @@ export default function BracketPage() {
         );
       }
 
-      const opts: PlayerOption[] = basePlayers.map((p) => {
+      const opts: PlayerOption[] = visiblePlayers.map((p) => {
         const profile = profileByUser.get(p.user_id);
         return {
           entry_id: p.entry_id,
@@ -261,8 +311,15 @@ export default function BracketPage() {
         };
       });
 
+      if (!isLocked && entryId && entryId !== myEntry) {
+        setMsg("Drafts are private until lock. You can only view your bracket right now.");
+      }
+
       setPlayers(opts);
-      setSelectedEntryId(entryId ?? opts[0]?.entry_id ?? "");
+      const requestedEntry = entryId && opts.some((p) => p.entry_id === entryId)
+        ? entryId
+        : null;
+      setSelectedEntryId(requestedEntry ?? myEntry ?? opts[0]?.entry_id ?? "");
       setLoading(false);
     };
 
@@ -273,6 +330,11 @@ export default function BracketPage() {
     const loadHighlights = async () => {
       setHighlightTeamIds(new Set());
       if (!selectedEntryId) return;
+
+      if (!draftLocked && myEntryId && selectedEntryId !== myEntryId) {
+        setMsg("Drafts are private until lock. You can only view your bracket right now.");
+        return;
+      }
 
       const { data, error } = await supabase
         .from("entry_picks")
@@ -290,7 +352,7 @@ export default function BracketPage() {
     };
 
     void loadHighlights();
-  }, [selectedEntryId]);
+  }, [draftLocked, myEntryId, selectedEntryId]);
 
   useEffect(() => {
     if (!fitMode || loading) return;
@@ -587,7 +649,7 @@ export default function BracketPage() {
         </div>
       </div>
 
-      {entryId ? (
+      {selectedEntryId ? (
         <div
           style={{
             marginTop: 12,
@@ -604,7 +666,7 @@ export default function BracketPage() {
             marginInline: "auto",
           }}
         >
-          <div>Viewing a player’s bracket (highlighting their teams)</div>
+          <div>Viewing a player&apos;s bracket (highlighting their teams)</div>
           <Link
             href={`/pool/${poolId}/bracket`}
             style={{
@@ -624,6 +686,21 @@ export default function BracketPage() {
       {msg ? (
         <p style={{ marginTop: 12, maxWidth: 1800, marginInline: "auto" }}>
           {msg}
+        </p>
+      ) : null}
+
+      {!draftLocked ? (
+        <p
+          style={{
+            marginTop: 12,
+            maxWidth: 1800,
+            marginInline: "auto",
+            opacity: 0.8,
+            fontWeight: 700,
+          }}
+        >
+          Other members&apos; brackets stay hidden until draft lock
+          {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
         </p>
       ) : null}
 
@@ -740,6 +817,7 @@ export default function BracketPage() {
         <select
           value={selectedEntryId}
           onChange={(e) => setSelectedEntryId(e.target.value)}
+          disabled={players.length <= 1}
           style={{ padding: "8px 10px", borderRadius: 10 }}
         >
           {players.length === 0 ? (

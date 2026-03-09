@@ -101,6 +101,8 @@ export default function LeaderboardPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState("");
   const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [draftLocked, setDraftLocked] = useState(false);
+  const [lockTime, setLockTime] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -113,7 +115,45 @@ export default function LeaderboardPage() {
         setLoading(false);
         return;
       }
-      setMyUserId(authData.user.id);
+      const user = authData.user;
+      setMyUserId(user.id);
+
+      const { data: memberRow, error: memberErr } = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (memberErr) {
+        setMsg(memberErr.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!memberRow) {
+        setMsg("Join this pool to view the leaderboard.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: poolRow, error: poolErr } = await supabase
+        .from("pools")
+        .select("lock_time")
+        .eq("id", poolId)
+        .single();
+
+      if (poolErr) {
+        setMsg(poolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const resolvedLockTime = poolRow?.lock_time ?? null;
+      const isLocked =
+        !!resolvedLockTime && new Date() >= new Date(resolvedLockTime);
+      setLockTime(resolvedLockTime);
+      setDraftLocked(isLocked);
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
@@ -164,7 +204,11 @@ export default function LeaderboardPage() {
         fullNameByUser = new Map(
           (
             (profileRows as
-              | { user_id: string; display_name: string | null; full_name: string | null }[]
+              | {
+                  user_id: string;
+                  display_name: string | null;
+                  full_name: string | null;
+                }[]
               | null) ?? []
           ).map((row) => [row.user_id, row.full_name ?? row.display_name]),
         );
@@ -203,7 +247,7 @@ export default function LeaderboardPage() {
       );
 
       let picksByEntry = new Map<string, string[]>();
-      if (entryIds.length > 0) {
+      if (isLocked && entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
           .select("entry_id,team_id")
@@ -258,7 +302,7 @@ export default function LeaderboardPage() {
       setLoading(false);
     };
 
-    load();
+    void load();
   }, [poolId]);
 
   return (
@@ -295,7 +339,7 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {loading ? <p style={{ marginTop: 12 }}>Loading…</p> : null}
+      {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
       {!loading && !msg ? (
@@ -307,6 +351,20 @@ export default function LeaderboardPage() {
             overflow: "hidden",
           }}
         >
+          {!draftLocked ? (
+            <div
+              style={{
+                padding: "10px 12px",
+                fontWeight: 700,
+                background: "var(--highlight)",
+                borderBottom: "1px solid var(--highlight-border)",
+              }}
+            >
+              Other brackets are hidden until draft lock
+              {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
+            </div>
+          ) : null}
+
           <div
             style={{
               display: "grid",
@@ -322,57 +380,86 @@ export default function LeaderboardPage() {
             <div style={{ textAlign: "right" }}>Score</div>
           </div>
 
-          {rows.map((r) => (
-            <div
-              key={r.entry_id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "80px 1fr 140px",
-                padding: "10px 12px",
-                borderBottom: "1px solid var(--border-color)",
-                alignItems: "center",
-                background:
-                  r.user_id === myUserId
-                    ? "var(--surface-elevated)"
-                    : "transparent",
-              }}
-            >
-              <div style={{ fontWeight: 900 }}>{r.rank}</div>
-              <div style={{ fontWeight: 800 }}>
-                <div>
-                  <a
-                    href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                    style={{ textDecoration: "none", display: "inline-block" }}
-                  >
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        color: "var(--foreground)",
-                        fontSize: 17,
-                      }}
-                    >
-                      {r.rank === 1 ? "🏆 " : ""}
-                      {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
-                      {r.user_id === myUserId ? " (You)" : ""}
-                    </div>
-                    <div
-                      style={{
-                        color: "var(--foreground)",
-                        opacity: 0.72,
-                        fontSize: 13,
-                        marginTop: 2,
-                      }}
-                    >
-                      {r.full_name ?? "Unnamed player"}
-                    </div>
-                  </a>
+          {rows.map((r) => {
+            const canOpenBracket = draftLocked || r.user_id === myUserId;
+
+            return (
+              <div
+                key={r.entry_id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "80px 1fr 140px",
+                  padding: "10px 12px",
+                  borderBottom: "1px solid var(--border-color)",
+                  alignItems: "center",
+                  background:
+                    r.user_id === myUserId
+                      ? "var(--surface-elevated)"
+                      : "transparent",
+                }}
+              >
+                <div style={{ fontWeight: 900 }}>{r.rank}</div>
+                <div style={{ fontWeight: 800 }}>
+                  <div>
+                    {canOpenBracket ? (
+                      <a
+                        href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                        style={{ textDecoration: "none", display: "inline-block" }}
+                      >
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            color: "var(--foreground)",
+                            fontSize: 17,
+                          }}
+                        >
+                          {r.rank === 1 ? "#1 " : ""}
+                          {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                          {r.user_id === myUserId ? " (You)" : ""}
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--foreground)",
+                            opacity: 0.72,
+                            fontSize: 13,
+                            marginTop: 2,
+                          }}
+                        >
+                          {r.full_name ?? "Unnamed player"}
+                        </div>
+                      </a>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            color: "var(--foreground)",
+                            fontSize: 17,
+                          }}
+                        >
+                          {r.rank === 1 ? "#1 " : ""}
+                          {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                        </div>
+                        <div
+                          style={{
+                            color: "var(--foreground)",
+                            opacity: 0.72,
+                            fontSize: 13,
+                            marginTop: 2,
+                          }}
+                        >
+                          Hidden until lock
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", fontWeight: 900 }}>
+                  {r.total_score}
                 </div>
               </div>
-              <div style={{ textAlign: "right", fontWeight: 900 }}>
-                {r.total_score}
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {rows.length === 0 ? (
             <div style={{ padding: "12px 12px" }}>
