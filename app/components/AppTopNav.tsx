@@ -22,6 +22,7 @@ export default function AppTopNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
+  const [homeHref, setHomeHref] = useState("/");
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
 
@@ -35,6 +36,7 @@ export default function AppTopNav() {
       const supabase = getSupabaseClient();
       if (!supabase) {
         setUserId(null);
+        setHomeHref("/");
         return;
       }
 
@@ -43,12 +45,26 @@ export default function AppTopNav() {
 
       if (!user) {
         setUserId(null);
+        setHomeHref("/");
         setActivePoolId(null);
         setActivePool(null);
         return;
       }
 
       setUserId(user.id);
+
+      const { data: homeMembership } = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (homeMembership?.pool_id) {
+        setHomeHref(`/pool/${homeMembership.pool_id}`);
+      } else {
+        setHomeHref("/");
+      }
 
       const { data: memberships } = await supabase
         .from("pool_members")
@@ -126,7 +142,7 @@ export default function AppTopNav() {
           pointerEvents: "auto",
         }}
       >
-        <Link href="/" style={pillStyle}>Home</Link>
+        <Link href={homeHref} style={pillStyle}>Home</Link>
         <Link href="/how-it-works" style={pillStyle}>How it works</Link>
         <Link href="/pools" style={pillStyle}>My Pools</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Draft</Link> : null}
