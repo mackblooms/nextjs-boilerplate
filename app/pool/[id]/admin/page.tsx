@@ -57,6 +57,7 @@ export default function AdminPage() {
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
   const [poolNameDrafts, setPoolNameDrafts] = useState<Record<string, string>>({});
+  const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
@@ -424,10 +425,15 @@ export default function AdminPage() {
     setLoading(true);
 
     try {
+      const season = Number(syncSeason);
+      if (!Number.isFinite(season) || season < 2000 || season > 2100) {
+        throw new Error("Enter a valid season year (e.g., 2025).");
+      }
+
       const res = await fetch("/api/admin/full-sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ poolId }),
+        body: JSON.stringify({ poolId, season }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -435,10 +441,16 @@ export default function AdminPage() {
         throw new Error(json?.error ?? "Full sync failed");
       }
 
+      const passCount = Number(json?.passCount ?? 1);
+      const linkedTotal = Number(json?.totals?.linked ?? json?.bracket?.linked ?? 0);
+      const updatedTotal = Number(json?.totals?.updatedWinners ?? json?.scores?.updatedGames ?? 0);
+      const finalsSeen = Number(json?.scores?.finalsSeen ?? 0);
+      const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
+
       setMsg(
-        `Full Sync complete | import: ${json?.import?.note ?? "ok"} | linked: ${
-          json?.link?.linked ?? "n/a"
-        } | updated winners: ${json?.scores?.updatedGames ?? "n/a"}`
+        `Full Sync complete (season ${season}, passes ${passCount}) | linked: ${linkedTotal} ` +
+          `(unmatched on last pass: ${skippedNoMap}) | updated winners: ${updatedTotal} ` +
+          `(finals seen on last pass: ${finalsSeen})`
       );
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : "Unknown error");
@@ -479,6 +491,28 @@ export default function AdminPage() {
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <label htmlFor="sync-season" style={{ fontWeight: 800, fontSize: 13 }}>
+              Season
+            </label>
+            <input
+              id="sync-season"
+              type="number"
+              min={2000}
+              max={2100}
+              step={1}
+              value={syncSeason}
+              onChange={(e) => setSyncSeason(e.target.value)}
+              style={{
+                width: 92,
+                padding: "8px 9px",
+                borderRadius: 8,
+                border: "1px solid #ccc",
+                fontWeight: 700,
+              }}
+            />
+          </div>
+
           <a
             href={`/pool/${poolId}`}
             style={{
@@ -519,33 +553,7 @@ export default function AdminPage() {
           </button>
 
           <button
-            onClick={async () => {
-              setMsg("");
-              setLoading(true);
-              try {
-                const bracketRes = await fetch("/api/admin/sync-bracket", {
-                  method: "POST",
-                });
-                const bracketJson = await bracketRes.json().catch(() => ({}));
-                if (!bracketRes.ok) throw new Error(bracketJson?.error ?? "Bracket sync failed");
-
-                const scoresRes = await fetch("/api/admin/sync-scores", {
-                  method: "POST",
-                });
-                const scoresJson = await scoresRes.json().catch(() => ({}));
-                if (!scoresRes.ok) throw new Error(scoresJson?.error ?? "Score sync failed");
-
-                setMsg(
-                  `Bracket linked: ${bracketJson.linked ?? 0} ` +
-                    `(already linked: ${bracketJson.alreadyLinked ?? 0}, skipped: ${bracketJson.skippedNoMap ?? 0}). ` +
-                    `Scores updated: ${scoresJson.updatedGames ?? 0} (finals seen: ${scoresJson.finalsSeen ?? 0}).`
-                );
-              } catch (e: unknown) {
-                setMsg(e instanceof Error ? e.message : "Unknown error");
-              } finally {
-                setLoading(false);
-              }
-            }}
+            onClick={fullSync}
             style={{
               padding: "10px 12px",
               borderRadius: 10,

@@ -4,7 +4,7 @@ async function callJson(url: string, options: RequestInit) {
   const res = await fetch(url, { ...options, cache: "no-store" });
   const text = await res.text();
 
-  let json: any = null;
+  let json: unknown = null;
   try {
     json = text ? JSON.parse(text) : null;
   } catch {}
@@ -18,34 +18,107 @@ async function callJson(url: string, options: RequestInit) {
   return json;
 }
 
+function toSeason(value: unknown): number | null {
+  if (value == null) return null;
+  const n = Number(String(value).trim());
+  if (!Number.isFinite(n)) return null;
+  const year = Math.trunc(n);
+  if (year < 2000 || year > 2100) return null;
+  return year;
+}
+
+function asObject(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function countField(value: unknown, field: string): number {
+  const obj = asObject(value);
+  const n = Number(obj[field]);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export async function POST(req: Request) {
   try {
     const origin = new URL(req.url).origin;
+    const querySeason = toSeason(new URL(req.url).searchParams.get("season"));
 
-    // 1) Import schedule
-    const importRes = await callJson(`${origin}/api/admin/import-schedule`, {
-      method: "POST",
-    });
+    let bodySeason: number | null = null;
+    if (req.method === "POST") {
+      try {
+        const body = await req.json();
+        bodySeason = toSeason(body?.season);
+      } catch {
+        // Allow empty body.
+      }
+    }
 
-    // 2) Link games
-    const linkRes = await callJson(`${origin}/api/admin/link-games`, {
-      method: "POST",
-    });
+    const season = bodySeason ?? querySeason;
+    const syncBody = season ? JSON.stringify({ season }) : "{}";
 
-    // 3) Sync scores
-    const scoresRes = await callJson(`${origin}/api/admin/sync-scores`, {
-      method: "POST",
-    });
+    const passSummaries: Array<{
+      pass: number;
+      linked: number;
+      alreadyLinked: number;
+      skippedNoMap: number;
+      updatedWinners: number;
+      finalsSeen: number;
+    }> = [];
+
+    let bracketRes: unknown = null;
+    let scoresRes: unknown = null;
+    let totalLinked = 0;
+    let totalUpdatedWinners = 0;
+
+    const MAX_PASSES = 8;
+    for (let pass = 1; pass <= MAX_PASSES; pass++) {
+      bracketRes = await callJson(`${origin}/api/admin/sync-bracket`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: syncBody,
+      });
+
+      scoresRes = await callJson(`${origin}/api/admin/sync-scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: syncBody,
+      });
+
+      const linked = countField(bracketRes, "linked");
+      const alreadyLinked = countField(bracketRes, "alreadyLinked");
+      const skippedNoMap = countField(bracketRes, "skippedNoMap");
+      const updatedWinners = countField(scoresRes, "updatedGames");
+      const finalsSeen = countField(scoresRes, "finalsSeen");
+
+      passSummaries.push({
+        pass,
+        linked,
+        alreadyLinked,
+        skippedNoMap,
+        updatedWinners,
+        finalsSeen,
+      });
+
+      totalLinked += linked;
+      totalUpdatedWinners += updatedWinners;
+
+      if (linked === 0 && updatedWinners === 0) break;
+    }
 
     return NextResponse.json({
       ok: true,
-      import: importRes,
-      link: linkRes,
+      season: season ?? null,
+      bracket: bracketRes,
       scores: scoresRes,
+      passCount: passSummaries.length,
+      passes: passSummaries,
+      totals: {
+        linked: totalLinked,
+        updatedWinners: totalUpdatedWinners,
+      },
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json(
-      { ok: false, error: e?.message ?? "Unknown error" },
+      { ok: false, error: e instanceof Error ? e.message : "Unknown error" },
       { status: 500 }
     );
   }

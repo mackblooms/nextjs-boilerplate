@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
-const DEFAULT_SEASON = 2026;
+const DEFAULT_SEASON = new Date().getUTCFullYear();
 
 type SportsGame = {
   GameID?: number;
@@ -47,6 +47,33 @@ async function fetchJsonOrEmpty(url: string) {
 
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
 
+function toSeason(value: unknown): number | null {
+  if (value == null) return null;
+  const n = Number(String(value).trim());
+  if (!Number.isFinite(n)) return null;
+  const year = Math.trunc(n);
+  if (year < 2000 || year > 2100) return null;
+  return year;
+}
+
+async function parseSeason(req: Request): Promise<number> {
+  const url = new URL(req.url);
+  const querySeason = toSeason(url.searchParams.get("season"));
+  if (querySeason) return querySeason;
+
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      const bodySeason = toSeason(body?.season);
+      if (bodySeason) return bodySeason;
+    } catch {
+      // Allow empty or invalid JSON bodies and fall back to default.
+    }
+  }
+
+  return DEFAULT_SEASON;
+}
+
 function bracketToRegion(bracket: unknown): "East" | "West" | "South" | "Midwest" | null {
   const b = norm(bracket);
   if (b.includes("east")) return "East";
@@ -61,12 +88,15 @@ function roundToCode(roundValue: unknown): "R64" | "R32" | "S16" | "E8" | "F4" |
   const asNum = Number(roundValue);
 
   if (!Number.isNaN(asNum)) {
-    if (asNum === 1) return "R64";
-    if (asNum === 2) return "R32";
-    if (asNum === 3) return "S16";
-    if (asNum === 4) return "E8";
-    if (asNum === 5) return "F4";
-    if (asNum === 6) return "CHIP";
+    // SportsData tournament feeds vary:
+    // - Some use 1..6
+    // - Some use 2,4,6,8,10,12
+    if (asNum === 1 || asNum === 2) return "R64";
+    if (asNum === 3 || asNum === 4) return "R32";
+    if (asNum === 5 || asNum === 6) return "S16";
+    if (asNum === 7 || asNum === 8) return "E8";
+    if (asNum === 9 || asNum === 10) return "F4";
+    if (asNum === 11 || asNum === 12) return "CHIP";
   }
 
   if (roundText.includes("64")) return "R64";
@@ -79,13 +109,55 @@ function roundToCode(roundValue: unknown): "R64" | "R32" | "S16" | "E8" | "F4" |
   return null;
 }
 
-function readSlot(g: SportsGame): number | null {
-  const candidates = [g.Slot, g.slot, g.TournamentDisplayOrder, g.BracketPosition];
+function mapDisplayOrderToSlot(
+  roundCode: "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP",
+  displayOrder: unknown,
+  bracketValue: unknown
+): number | null {
+  const d = Number(displayOrder);
+  if (!Number.isFinite(d) || d <= 0) return null;
+
+  if (roundCode === "R64") {
+    // NCAA tournament feed often encodes first round as:
+    // 2,4,6,8,10,12,10,11 within a region.
+    if (d === 2) return 1;
+    if (d === 4) return 2;
+    if (d === 6) return 3;
+    if (d === 8) return 4;
+    if (d === 12) return 6;
+    if (d === 11) return 8;
+    // d=10 maps to two slots (commonly 5 and 7), so treat as ambiguous here.
+    return null;
+  }
+
+  if (roundCode === "R32" || roundCode === "S16" || roundCode === "E8") {
+    return d % 2 === 0 ? d / 2 : null;
+  }
+
+  if (roundCode === "F4") {
+    const b = norm(bracketValue);
+    if (b.includes("south") && b.includes("west")) return 1;
+    if (b.includes("east") && b.includes("midwest")) return 2;
+    return null;
+  }
+
+  if (roundCode === "CHIP") {
+    if (d === 1 || d === 2) return 1;
+  }
+
+  return null;
+}
+
+function readSlot(
+  g: SportsGame,
+  roundCode: "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP"
+): number | null {
+  const candidates = [g.Slot, g.slot, g.BracketPosition];
   for (const candidate of candidates) {
     const n = Number(candidate);
     if (Number.isFinite(n) && n > 0) return n;
   }
-  return null;
+  return mapDisplayOrderToSlot(roundCode, g.TournamentDisplayOrder, g.Bracket ?? g.bracket);
 }
 
 function getSportsGameId(g: SportsGame): number | null {
@@ -93,10 +165,8 @@ function getSportsGameId(g: SportsGame): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-async function runSyncBracket() {
+async function runSyncBracket(season: number) {
   if (!KEY) throw new Error("Missing SportsData key. Set SPORTS_DATA_IO_KEY or SPORTSDATAIO_KEY.");
-
-  const season = DEFAULT_SEASON;
   const url = `${BASE}/v3/cbb/scores/json/Tournament/${season}?key=${encodeURIComponent(KEY)}`;
   const resp = await fetchJsonOrEmpty(url);
 
@@ -168,7 +238,7 @@ async function runSyncBracket() {
     const gameId = getSportsGameId(g);
     const roundCode = roundToCode(g.Round ?? g.round);
     const region = bracketToRegion(g.Bracket ?? g.bracket);
-    const slot = readSlot(g);
+    const slot = roundCode ? readSlot(g, roundCode) : null;
 
     if (!gameId || !roundCode) {
       skippedNoMap++;
@@ -270,9 +340,10 @@ async function runSyncBracket() {
   };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const result = await runSyncBracket();
+    const season = await parseSeason(req);
+    const result = await runSyncBracket(season);
     return NextResponse.json({ ok: true, ...result });
   } catch (e: unknown) {
     return NextResponse.json(
@@ -282,6 +353,6 @@ export async function GET() {
   }
 }
 
-export async function POST() {
-  return GET();
+export async function POST(req: Request) {
+  return GET(req);
 }
