@@ -320,6 +320,9 @@ async function runSyncBracket(season: number) {
 
   const supabaseAdmin = getSupabaseAdmin();
   const scheduleColumnsAvailable = await hasScheduleColumns(supabaseAdmin);
+  const gameSelectCols = scheduleColumnsAvailable
+    ? "id,sportsdata_game_id,status,start_time,game_date"
+    : "id,sportsdata_game_id";
 
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
@@ -332,6 +335,19 @@ async function runSyncBracket(season: number) {
     localTeamBySports.set(Number(t.sportsdata_team_id), String(t.id));
   }
 
+  const { data: existingLinkedRows, error: existingLinkedErr } = await supabaseAdmin
+    .from("games")
+    .select("id,sportsdata_game_id")
+    .not("sportsdata_game_id", "is", null);
+  if (existingLinkedErr) throw existingLinkedErr;
+
+  const sportsGameOwner = new Map<number, string>();
+  for (const row of existingLinkedRows ?? []) {
+    const sportsId = Number(row.sportsdata_game_id);
+    if (!Number.isFinite(sportsId)) continue;
+    sportsGameOwner.set(sportsId, String(row.id));
+  }
+
   let linked = 0;
   let alreadyLinked = 0;
   let skippedNoMap = 0;
@@ -340,6 +356,7 @@ async function runSyncBracket(season: number) {
   let matchedByTeams = 0;
   let matchedByPlaceholder = 0;
   let scheduleUpdated = 0;
+  let skippedDuplicateSportsId = 0;
   const nowIso = new Date().toISOString();
   const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
 
@@ -368,7 +385,7 @@ async function runSyncBracket(season: number) {
     if (slot) {
       let slotQuery = supabaseAdmin
         .from("games")
-        .select("id,sportsdata_game_id,status,start_time,game_date")
+        .select(gameSelectCols)
         .eq("round", roundCode)
         .eq("slot", slot)
         .limit(2);
@@ -400,7 +417,7 @@ async function runSyncBracket(season: number) {
       if (homeLocal && awayLocal) {
         let teamQuery = supabaseAdmin
           .from("games")
-          .select("id,sportsdata_game_id,status,start_time,game_date")
+          .select(gameSelectCols)
           .eq("round", roundCode)
           .or(
             `and(team1_id.eq.${homeLocal},team2_id.eq.${awayLocal}),and(team1_id.eq.${awayLocal},team2_id.eq.${homeLocal})`
@@ -429,6 +446,12 @@ async function runSyncBracket(season: number) {
       continue;
     }
 
+    const existingOwner = sportsGameOwner.get(gameId);
+    if (existingOwner && existingOwner !== ourGame.id) {
+      skippedDuplicateSportsId++;
+      continue;
+    }
+
     const needsLink = ourGame.sportsdata_game_id !== gameId;
     const needsScheduleUpdate = scheduleColumnsAvailable;
 
@@ -453,8 +476,16 @@ async function runSyncBracket(season: number) {
       .eq("id", ourGame.id);
 
     if (updErr) throw updErr;
-    if (needsLink) linked++;
-    else alreadyLinked++;
+    if (needsLink) {
+      if (ourGame.sportsdata_game_id != null) {
+        sportsGameOwner.delete(Number(ourGame.sportsdata_game_id));
+      }
+      sportsGameOwner.set(gameId, ourGame.id);
+      ourGame.sportsdata_game_id = gameId;
+      linked++;
+    } else {
+      alreadyLinked++;
+    }
     if (scheduleColumnsAvailable) scheduleUpdated++;
   }
 
@@ -471,6 +502,7 @@ async function runSyncBracket(season: number) {
     matchedByTeams,
     scheduleUpdated,
     scheduleColumnsAvailable,
+    skippedDuplicateSportsId,
     skippedNoMap,
     skippedAmbiguous,
     sampleGame: gamesArray[0] ?? null,

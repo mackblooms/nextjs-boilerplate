@@ -447,10 +447,12 @@ export default function AdminPage() {
       const finalsSeen = Number(json?.scores?.finalsSeen ?? 0);
       const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
       const scheduleUpdated = Number(json?.bracket?.scheduleUpdated ?? 0);
+      const skippedDuplicateSportsId = Number(json?.bracket?.skippedDuplicateSportsId ?? 0);
 
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}) | linked: ${linkedTotal} ` +
-          `(unmatched on last pass: ${skippedNoMap}) | times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
+          `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids: ${skippedDuplicateSportsId}) | ` +
+          `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );
     } catch (e: unknown) {
