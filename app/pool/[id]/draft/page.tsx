@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   BracketBoard,
@@ -48,6 +48,11 @@ export default function DraftPage() {
   const [joinPassword, setJoinPassword] = useState("");
   const [joining, setJoining] = useState(false);
   const [showBracketModal, setShowBracketModal] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [fitMode, setFitMode] = useState(true);
+
+  const bracketViewportRef = useRef<HTMLDivElement | null>(null);
+  const bracketContentRef = useRef<HTMLDivElement | null>(null);
 
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
@@ -96,6 +101,15 @@ export default function DraftPage() {
       })),
     [teams],
   );
+
+  const applyFitScale = useCallback(() => {
+    const viewport = bracketViewportRef.current;
+    const content = bracketContentRef.current;
+    if (!viewport || !content) return;
+
+    const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
+    setScale(Math.max(0.35, next));
+  }, []);
 
   const isMissingEntryNameError = (message?: string) => {
     if (!message) return false;
@@ -319,7 +333,19 @@ export default function DraftPage() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [showBracketModal]);
+  }, [applyFitScale, showBracketModal]);
+
+  useEffect(() => {
+    if (!showBracketModal || !fitMode) return;
+
+    const runFit = () => {
+      window.requestAnimationFrame(applyFitScale);
+    };
+
+    runFit();
+    window.addEventListener("resize", runFit);
+    return () => window.removeEventListener("resize", runFit);
+  }, [applyFitScale, fitMode, showBracketModal]);
 
   async function joinPool() {
     setMsg("");
@@ -516,6 +542,21 @@ export default function DraftPage() {
     setSaving(false);
   }
 
+  const setFit = () => {
+    setFitMode(true);
+    window.requestAnimationFrame(applyFitScale);
+  };
+
+  const set100 = () => {
+    setFitMode(false);
+    setScale(1);
+  };
+
+  const openBracketModal = () => {
+    setFitMode(true);
+    setShowBracketModal(true);
+  };
+
   if (loading) {
     return (
       <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
@@ -549,7 +590,7 @@ export default function DraftPage() {
         {isMember ? (
           <button
             type="button"
-            onClick={() => setShowBracketModal(true)}
+            onClick={openBracketModal}
             style={{
               padding: "10px 12px",
               border: "1px solid var(--border-color)",
@@ -856,33 +897,91 @@ export default function DraftPage() {
               <div style={{ fontWeight: 900, fontSize: 18 }}>
                 Bracket Preview
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontSize: 12, opacity: 0.75 }}>
-                  Your selected teams are highlighted in yellow.
-                </div>
+              <button
+                type="button"
+                onClick={() => setShowBracketModal(false)}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface)",
+                  padding: "8px 10px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              style={{
+                padding: "10px 12px",
+                borderBottom: "1px solid var(--border-color)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ fontSize: 12, opacity: 0.75 }}>
+                Your selected teams are highlighted in yellow.
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <div style={{ fontWeight: 900, fontSize: 12 }}>View:</div>
                 <button
                   type="button"
-                  onClick={() => setShowBracketModal(false)}
+                  onClick={setFit}
                   style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface)",
                     padding: "8px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: fitMode ? "var(--surface-elevated)" : "var(--surface)",
                     fontWeight: 900,
                     cursor: "pointer",
                   }}
                 >
-                  Close
+                  Fit
                 </button>
+                <button
+                  type="button"
+                  onClick={set100}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background:
+                      !fitMode && scale === 1
+                        ? "var(--surface-elevated)"
+                        : "var(--surface)",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  100%
+                </button>
+                <div style={{ fontSize: 12, opacity: 0.75 }}>
+                  Zoom: <b>{Math.round(scale * 100)}%</b>
+                </div>
               </div>
             </div>
 
-            <div style={{ padding: 12, overflow: "auto" }}>
-              <BracketBoard
-                teams={bracketTeams}
-                games={games}
-                highlightTeamIds={selected}
-              />
+            <div ref={bracketViewportRef} style={{ padding: 12, overflow: "auto" }}>
+              <div
+                ref={bracketContentRef}
+                style={{
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top left",
+                  width: "max-content",
+                  margin: "0 auto",
+                }}
+              >
+                <BracketBoard
+                  teams={bracketTeams}
+                  games={games}
+                  highlightTeamIds={selected}
+                />
+              </div>
             </div>
           </div>
         </div>
