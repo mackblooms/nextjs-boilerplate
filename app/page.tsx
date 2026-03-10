@@ -13,6 +13,12 @@ type LiveScoreGame = {
   state: LiveScoreState;
   detail: string;
   startTime: string | null;
+  awayTeamId: string | null;
+  homeTeamId: string | null;
+  awayTeamName: string;
+  homeTeamName: string;
+  awayLogoUrl: string | null;
+  homeLogoUrl: string | null;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -26,8 +32,11 @@ type LiveScoresResponse = {
 };
 
 type EspnTeam = {
+  id?: string | number;
   displayName?: string;
   abbreviation?: string;
+  logos?: Array<{ href?: string }>;
+  logo?: string;
 };
 
 type EspnCompetitor = {
@@ -85,16 +94,30 @@ const scoreRowStyle = {
   gap: 4,
 };
 
-function formatTipoff(startTime: string | null) {
-  if (!startTime) return "Scheduled";
+const LANDING_LOOKBACK_DAYS = 1;
+const LANDING_LOOKAHEAD_DAYS = 0;
+
+function formatGameDateTimeET(startTime: string | null) {
+  if (!startTime) return "Time TBD (ET)";
   const d = new Date(startTime);
-  if (Number.isNaN(d.getTime())) return "Scheduled";
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  if (Number.isNaN(d.getTime())) return "Time TBD (ET)";
+
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+
+  return `${formatted} ET`;
 }
 
 function statusLabel(game: LiveScoreGame) {
-  if (game.state === "UPCOMING") return formatTipoff(game.startTime);
-  return game.detail;
+  const when = formatGameDateTimeET(game.startTime);
+  if (game.state === "UPCOMING") return when;
+  return `${when} • ${game.detail}`;
 }
 
 function yyyymmdd(date: Date) {
@@ -123,22 +146,62 @@ function toScore(raw: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function toLogoUrl(c: EspnCompetitor | undefined): string | null {
+  const fromPayload = c?.team?.logo?.trim() || c?.team?.logos?.[0]?.href?.trim() || null;
+  if (fromPayload) {
+    return fromPayload.replace(/^http:\/\//i, "https://");
+  }
+
+  const teamId = c?.team?.id ? String(c.team.id) : null;
+  if (!teamId) return null;
+  return `https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`;
+}
+
+function etDayKey(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
+}
+
+function etDayKeyFromIso(startTime: string | null) {
+  if (!startTime) return null;
+  const d = new Date(startTime);
+  if (Number.isNaN(d.getTime())) return null;
+  return etDayKey(d);
+}
+
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const competitors = event.competitions?.[0]?.competitors ?? [];
   const home = competitors.find((c) => c.homeAway === "home");
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
 
-  const awayName = away.team?.abbreviation?.trim() || away.team?.displayName?.trim() || "AWAY";
-  const homeName = home.team?.abbreviation?.trim() || home.team?.displayName?.trim() || "HOME";
+  const awayDisplayName = away.team?.displayName?.trim() || away.team?.abbreviation?.trim() || "Away";
+  const homeDisplayName = home.team?.displayName?.trim() || home.team?.abbreviation?.trim() || "Home";
+  const awayLabel = away.team?.abbreviation?.trim() || awayDisplayName;
+  const homeLabel = home.team?.abbreviation?.trim() || homeDisplayName;
 
   return {
-    id: event.id ?? `${event.date ?? "game"}-${awayName}-${homeName}`,
+    id: event.id ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
     state: toState(event.status?.type?.state, event.status?.type?.completed),
     detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
     startTime: event.date ?? null,
-    awayTeam: awayName,
-    homeTeam: homeName,
+    awayTeamId: away.team?.id ? String(away.team.id) : null,
+    homeTeamId: home.team?.id ? String(home.team.id) : null,
+    awayTeamName: awayDisplayName,
+    homeTeamName: homeDisplayName,
+    awayLogoUrl: toLogoUrl(away),
+    homeLogoUrl: toLogoUrl(home),
+    awayTeam: awayLabel,
+    homeTeam: homeLabel,
     awayScore: toScore(away.score),
     homeScore: toScore(home.score),
   };
@@ -158,8 +221,15 @@ function sortScores(a: LiveScoreGame, b: LiveScoreGame) {
   return ta - tb;
 }
 
-async function fetchEspnDirectScores(): Promise<LiveScoreGame[]> {
-  const dateKeys = [yyyymmdd(shiftDate(-1)), yyyymmdd(shiftDate(0)), yyyymmdd(shiftDate(1))];
+async function fetchEspnDirectScores(
+  lookbackDays: number,
+  lookaheadDays: number
+): Promise<LiveScoreGame[]> {
+  const dateKeys: string[] = [];
+  for (let day = -lookbackDays; day <= lookaheadDays; day++) {
+    dateKeys.push(yyyymmdd(shiftDate(day)));
+  }
+
   const payloads = await Promise.all(
     dateKeys.map(async (dateKey) => {
       const url =
@@ -185,7 +255,7 @@ async function fetchEspnDirectScores(): Promise<LiveScoreGame[]> {
     }
   }
 
-  return out.sort(sortScores).slice(0, 18);
+  return out.sort(sortScores);
 }
 
 function ScorePanel({
@@ -193,11 +263,13 @@ function ScorePanel({
   games,
   loading,
   error,
+  emptyMessage,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
+  emptyMessage: string;
 }) {
   return (
     <aside style={scorePanelStyle}>
@@ -205,18 +277,54 @@ function ScorePanel({
       {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
       {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>No games found right now.</div>
+        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
       ) : null}
       {!loading &&
         !error &&
         games.map((game) => (
           <article key={game.id} style={scoreRowStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span style={{ fontWeight: 700 }}>{game.awayTeam}</span>
+              <span
+                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                title={game.awayTeamName}
+              >
+                {game.awayLogoUrl ? (
+                  <img
+                    src={game.awayLogoUrl}
+                    alt={game.awayTeamName}
+                    width={20}
+                    height={20}
+                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : (
+                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                )}
+                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {game.awayTeam}
+                </span>
+              </span>
               <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span style={{ fontWeight: 700 }}>{game.homeTeam}</span>
+              <span
+                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                title={game.homeTeamName}
+              >
+                {game.homeLogoUrl ? (
+                  <img
+                    src={game.homeLogoUrl}
+                    alt={game.homeTeamName}
+                    width={20}
+                    height={20}
+                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : (
+                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                )}
+                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {game.homeTeam}
+                </span>
+              </span>
               <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
             </div>
             <div style={{ fontSize: 12, opacity: 0.8 }}>{statusLabel(game)}</div>
@@ -267,11 +375,16 @@ function HomeContent() {
 
     const loadScores = async () => {
       try {
+        const lookbackDays = LANDING_LOOKBACK_DAYS;
+        const lookaheadDays = LANDING_LOOKAHEAD_DAYS;
         let nextScores: LiveScoreGame[] = [];
         let apiError: string | null = null;
 
         try {
-          const res = await fetch("/api/scores/live", { cache: "no-store" });
+          const res = await fetch(
+            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+            { cache: "no-store" }
+          );
           const payload = (await res.json()) as LiveScoresResponse;
           if (!res.ok || !payload.ok) {
             throw new Error(payload.error ?? `Score fetch failed (${res.status})`);
@@ -279,7 +392,7 @@ function HomeContent() {
           nextScores = payload.games ?? [];
         } catch (e: unknown) {
           apiError = e instanceof Error ? e.message : "Unknown API error";
-          nextScores = await fetchEspnDirectScores();
+          nextScores = await fetchEspnDirectScores(lookbackDays, lookaheadDays);
         }
 
         if (!canceled) {
@@ -305,11 +418,18 @@ function HomeContent() {
     };
   }, []);
 
+  const todayEt = useMemo(() => etDayKey(new Date()), []);
+  const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
+
   const liveAndUpcoming = useMemo(
-    () => scores.filter((g) => g.state !== "FINAL").slice(0, 6),
-    [scores]
+    () =>
+      scores.filter((g) => g.state !== "FINAL" && etDayKeyFromIso(g.startTime) === todayEt),
+    [scores, todayEt]
   );
-  const finals = useMemo(() => scores.filter((g) => g.state === "FINAL").slice(0, 6), [scores]);
+  const finals = useMemo(
+    () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === yesterdayEt),
+    [scores, yesterdayEt]
+  );
 
   return (
     <main
@@ -322,10 +442,11 @@ function HomeContent() {
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
-            title="Live / Upcoming"
-            games={liveAndUpcoming}
+            title="Recent Finals"
+            games={finals}
             loading={scoresLoading}
             error={scoresError}
+            emptyMessage="No finals from yesterday's slate."
           />
         </div>
 
@@ -382,7 +503,13 @@ function HomeContent() {
         </section>
 
         <div className="home-scores-right">
-          <ScorePanel title="Recent Finals" games={finals} loading={scoresLoading} error={scoresError} />
+          <ScorePanel
+            title="Live / Upcoming"
+            games={liveAndUpcoming}
+            loading={scoresLoading}
+            error={scoresError}
+            emptyMessage="No live or upcoming games for today."
+          />
         </div>
       </div>
     </main>
@@ -400,7 +527,13 @@ function HomeFallback() {
     >
       <div className="home-layout">
         <div className="home-scores-left">
-          <ScorePanel title="Live / Upcoming" games={[]} loading error={null} />
+          <ScorePanel
+            title="Recent Finals"
+            games={[]}
+            loading
+            error={null}
+            emptyMessage="No finals from yesterday's slate."
+          />
         </div>
 
         <section
@@ -450,7 +583,13 @@ function HomeFallback() {
         </section>
 
         <div className="home-scores-right">
-          <ScorePanel title="Recent Finals" games={[]} loading error={null} />
+          <ScorePanel
+            title="Live / Upcoming"
+            games={[]}
+            loading
+            error={null}
+            emptyMessage="No live or upcoming games for today."
+          />
         </div>
       </div>
     </main>

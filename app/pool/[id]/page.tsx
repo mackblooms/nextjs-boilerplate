@@ -202,8 +202,12 @@ function statusLabel(game: LiveScoreGame) {
   return `${when} • ${game.detail}`;
 }
 
-async function fetchEspnDirectScores(): Promise<LiveScoreGame[]> {
-  const dateKeys = [yyyymmdd(shiftDate(-1)), yyyymmdd(shiftDate(0)), yyyymmdd(shiftDate(1))];
+async function fetchEspnDirectScores(lookbackDays: number, lookaheadDays: number): Promise<LiveScoreGame[]> {
+  const dateKeys: string[] = [];
+  for (let day = -lookbackDays; day <= lookaheadDays; day++) {
+    dateKeys.push(yyyymmdd(shiftDate(day)));
+  }
+
   const payloads = await Promise.all(
     dateKeys.map(async (dateKey) => {
       const url =
@@ -481,11 +485,16 @@ export default function PoolPage() {
 
     const loadScores = async () => {
       try {
+        const lookbackDays = 2;
+        const lookaheadDays = 2;
         let nextScores: LiveScoreGame[] = [];
         let apiError: string | null = null;
 
         try {
-          const res = await fetch("/api/scores/live", { cache: "no-store" });
+          const res = await fetch(
+            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+            { cache: "no-store" }
+          );
           const payload = (await res.json()) as LiveScoresResponse;
           if (!res.ok || !payload.ok) {
             throw new Error(payload.error ?? `Score fetch failed (${res.status})`);
@@ -493,7 +502,7 @@ export default function PoolPage() {
           nextScores = payload.games ?? [];
         } catch (e: unknown) {
           apiError = e instanceof Error ? e.message : "Unknown API error";
-          nextScores = await fetchEspnDirectScores();
+          nextScores = await fetchEspnDirectScores(lookbackDays, lookaheadDays);
         }
 
         if (!canceled) {

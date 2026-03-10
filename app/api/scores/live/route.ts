@@ -69,6 +69,20 @@ function shiftDate(days: number) {
   return d;
 }
 
+function toBoundedInt(
+  raw: string | null,
+  fallback: number,
+  min: number,
+  max: number
+) {
+  if (raw == null) return fallback;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  const whole = Math.trunc(n);
+  if (whole < min || whole > max) return fallback;
+  return whole;
+}
+
 function toLabel(c: EspnCompetitor | undefined, fallback: string) {
   return c?.team?.abbreviation?.trim() || c?.team?.displayName?.trim() || fallback;
 }
@@ -144,15 +158,22 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const dateKeys = [yyyymmdd(shiftDate(-1)), yyyymmdd(shiftDate(0)), yyyymmdd(shiftDate(1))];
+    const url = new URL(req.url);
+    const lookbackDays = toBoundedInt(url.searchParams.get("lookbackDays"), 1, 0, 7);
+    const lookaheadDays = toBoundedInt(url.searchParams.get("lookaheadDays"), 1, 0, 7);
+
+    const dateKeys: string[] = [];
+    for (let day = -lookbackDays; day <= lookaheadDays; day++) {
+      dateKeys.push(yyyymmdd(shiftDate(day)));
+    }
 
     const responses = await Promise.all(
       dateKeys.map(async (dateKey) => {
-        const url =
+        const endpoint =
           `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}`;
-        const res = await fetch(url, { cache: "no-store" });
+        const res = await fetch(endpoint, { cache: "no-store" });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`ESPN error ${res.status} (${dateKey}): ${text}`);
@@ -180,10 +201,15 @@ export async function GET() {
     const rows = rawEvents
       .map(normalizeEvent)
       .filter((row): row is LiveScoreRow => row !== null)
-      .sort(sortScores)
-      .slice(0, 18);
+      .sort(sortScores);
 
-    return NextResponse.json({ ok: true, updatedAt: new Date().toISOString(), games: rows });
+    return NextResponse.json({
+      ok: true,
+      updatedAt: new Date().toISOString(),
+      lookbackDays,
+      lookaheadDays,
+      games: rows,
+    });
   } catch (err: unknown) {
     return NextResponse.json(
       {
