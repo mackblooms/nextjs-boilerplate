@@ -49,6 +49,7 @@ type EspnTeam = {
   displayName?: string;
   abbreviation?: string;
   logos?: Array<{ href?: string }>;
+  logo?: string;
 };
 
 type EspnCompetitor = {
@@ -126,6 +127,17 @@ function teamNameVariants(name: string) {
   return variants;
 }
 
+function toLogoUrl(c: EspnCompetitor | undefined): string | null {
+  const fromPayload = c?.team?.logo?.trim() || c?.team?.logos?.[0]?.href?.trim() || null;
+  if (fromPayload) {
+    return fromPayload.replace(/^http:\/\//i, "https://");
+  }
+
+  const teamId = c?.team?.id ? String(c.team.id) : null;
+  if (!teamId) return null;
+  return `https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`;
+}
+
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const competitors = event.competitions?.[0]?.competitors ?? [];
   const home = competitors.find((c) => c.homeAway === "home");
@@ -146,8 +158,8 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
     homeTeamId: home.team?.id ? String(home.team.id) : null,
     awayTeamName: awayDisplayName,
     homeTeamName: homeDisplayName,
-    awayLogoUrl: away.team?.logos?.[0]?.href?.trim() || null,
-    homeLogoUrl: home.team?.logos?.[0]?.href?.trim() || null,
+    awayLogoUrl: toLogoUrl(away),
+    homeLogoUrl: toLogoUrl(home),
     awayTeam: awayLabel,
     homeTeam: homeLabel,
     awayScore: toScore(away.score),
