@@ -50,6 +50,9 @@ export default function AdminPage() {
 
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  const [syncingLogos, setSyncingLogos] = useState(false);
+  const [fullSyncing, setFullSyncing] = useState(false);
+  const [syncingGames, setSyncingGames] = useState(false);
 
   const [games, setGames] = useState<GameRow[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -66,7 +69,9 @@ export default function AdminPage() {
   const [poolPasswords, setPoolPasswords] = useState<Record<string, string | null>>({});
   const [showPoolPasswords, setShowPoolPasswords] = useState<Record<string, boolean>>({});
   const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
+  const [syncDate, setSyncDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(true);
+  const [poolSearch, setPoolSearch] = useState("");
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
@@ -85,6 +90,39 @@ export default function AdminPage() {
     for (const r of REGIONS) out[r].sort((a, b) => a.slot - b.slot);
     return out;
   }, [games]);
+
+  const filteredAdminPools = useMemo(() => {
+    const needle = poolSearch.trim().toLowerCase();
+    if (!needle) return adminPools;
+    return adminPools.filter((pool) => pool.name.toLowerCase().includes(needle));
+  }, [adminPools, poolSearch]);
+
+  const msgTone = useMemo<"success" | "error" | "info">(() => {
+    const lower = msg.toLowerCase();
+    if (!lower) return "info";
+    if (
+      lower.includes("failed") ||
+      lower.includes("error") ||
+      lower.includes("not logged in") ||
+      lower.includes("not authorized") ||
+      lower.includes("could not") ||
+      lower.includes("missing")
+    ) {
+      return "error";
+    }
+
+    if (
+      lower.includes("updated") ||
+      lower.includes("complete") ||
+      lower.includes("removed") ||
+      lower.includes("deleted") ||
+      lower.includes("saved")
+    ) {
+      return "success";
+    }
+
+    return "info";
+  }, [msg]);
 
   const loadPoolPasswords = useCallback(async (targetPoolIds: string[]) => {
     if (targetPoolIds.length === 0) {
@@ -517,14 +555,34 @@ export default function AdminPage() {
     setMsg("Winner updated.");
   }
 
+  function toSportsDataDate(dateValue: string) {
+    const match = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) {
+      throw new Error("Enter a valid sync date.");
+    }
+
+    const [, year, month, day] = match;
+    const monthIndex = Number(month) - 1;
+    const monthCodes = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    const monthCode = monthCodes[monthIndex];
+
+    if (!monthCode) {
+      throw new Error("Enter a valid sync date.");
+    }
+
+    return `${year}-${monthCode}-${day}`;
+  }
+
   async function syncLogos() {
     setMsg("Syncing logos...");
+    setSyncingLogos(true);
 
     const { data: authData, error: authErr } = await supabase.auth.getUser();
     const userId = authData?.user?.id;
 
     if (authErr || !userId) {
       setMsg("Not logged in (could not read user).");
+      setSyncingLogos(false);
       return;
     }
 
@@ -549,12 +607,49 @@ export default function AdminPage() {
       );
     } catch (e: unknown) {
       setMsg(`Sync failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setSyncingLogos(false);
+    }
+  }
+
+  async function syncGamesByDate() {
+    setMsg("Syncing SportsDataIO games...");
+    setSyncingGames(true);
+
+    try {
+      const sportsDataDate = toSportsDataDate(syncDate);
+
+      const res = await fetch("/api/admin/sync-games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: sportsDataDate }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error ?? "Sync games failed");
+      }
+
+      const fetched = Number(json?.fetched ?? 0);
+      const linked = Number(json?.linked ?? 0);
+      const winnersSet = Number(json?.winnersSet ?? 0);
+      const skippedNoMatch = Number(json?.skippedNoMatch ?? 0);
+      const skippedTieOrNoScore = Number(json?.skippedTieOrNoScore ?? 0);
+
+      setMsg(
+        `Sync Games complete (${sportsDataDate}) | fetched: ${fetched}, linked: ${linked}, winners set: ${winnersSet}, ` +
+          `skipped (no match): ${skippedNoMatch}, skipped (tie/no score): ${skippedTieOrNoScore}`
+      );
+    } catch (e: unknown) {
+      setMsg(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setSyncingGames(false);
     }
   }
 
   async function fullSync() {
     setMsg("");
-    setLoading(true);
+    setFullSyncing(true);
 
     try {
       const season = Number(syncSeason);
@@ -595,7 +690,7 @@ export default function AdminPage() {
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : "Unknown error");
     } finally {
-      setLoading(false);
+      setFullSyncing(false);
     }
   }
 
@@ -618,19 +713,25 @@ export default function AdminPage() {
   }
 
   return (
-    <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
+    <main style={{ maxWidth: 1200, margin: "36px auto", padding: 16 }}>
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: "grid",
           gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
+          border: "1px solid var(--border-color)",
+          borderRadius: 12,
+          padding: 12,
+          background: "var(--surface)",
         }}
       >
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
+        <div style={{ display: "grid", gap: 4 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Commissioner Admin</h1>
+          <p style={{ margin: 0, opacity: 0.8 }}>
+            Manage members, pool settings, and bracket sync operations from one place.
+          </p>
+        </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <label htmlFor="sync-season" style={{ fontWeight: 800, fontSize: 13 }}>
               Season
@@ -647,11 +748,32 @@ export default function AdminPage() {
                 width: 92,
                 padding: "8px 9px",
                 borderRadius: 8,
-                border: "1px solid #ccc",
+                border: "1px solid var(--border-color)",
                 fontWeight: 700,
+                background: "var(--surface)",
               }}
             />
           </div>
+
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <label htmlFor="sync-date" style={{ fontWeight: 800, fontSize: 13 }}>
+              Sync date
+            </label>
+            <input
+              id="sync-date"
+              type="date"
+              value={syncDate}
+              onChange={(e) => setSyncDate(e.target.value)}
+              style={{
+                padding: "8px 9px",
+                borderRadius: 8,
+                border: "1px solid var(--border-color)",
+                fontWeight: 700,
+                background: "var(--surface)",
+              }}
+            />
+          </div>
+
           <label
             htmlFor="sportsdata-only-mode"
             style={{
@@ -660,10 +782,10 @@ export default function AdminPage() {
               alignItems: "center",
               fontWeight: 800,
               fontSize: 13,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 8,
               padding: "7px 9px",
-              background: "#fff",
+              background: "var(--surface-muted)",
               whiteSpace: "nowrap",
             }}
             title="When on, Round of 64 team slots are cleared before applying SportsData teams."
@@ -681,10 +803,11 @@ export default function AdminPage() {
             href={`/pool/${poolId}`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
+              background: "var(--surface)",
             }}
           >
             Back to Pool
@@ -692,51 +815,61 @@ export default function AdminPage() {
 
           <button
             onClick={syncLogos}
+            disabled={syncingLogos || fullSyncing || syncingGames}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               fontWeight: 900,
-              cursor: "pointer",
+              cursor: syncingLogos ? "not-allowed" : "pointer",
+              background: "var(--surface)",
+              opacity: syncingLogos ? 0.75 : 1,
             }}
           >
-            Sync Logos
+            {syncingLogos ? "Syncing Logos..." : "Sync Logos"}
           </button>
 
           <button
             onClick={fullSync}
+            disabled={fullSyncing || syncingLogos || syncingGames}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               fontWeight: 900,
-              cursor: "pointer",
+              cursor: fullSyncing ? "not-allowed" : "pointer",
+              background: "var(--surface)",
+              opacity: fullSyncing ? 0.75 : 1,
             }}
           >
-            Full Sync
+            {fullSyncing ? "Running Full Sync..." : "Full Sync"}
           </button>
 
           <button
-            onClick={fullSync}
+            onClick={syncGamesByDate}
+            disabled={syncingGames || fullSyncing || syncingLogos}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               fontWeight: 900,
-              cursor: "pointer",
+              cursor: syncingGames ? "not-allowed" : "pointer",
+              background: "var(--surface)",
+              opacity: syncingGames ? 0.75 : 1,
             }}
           >
-            Sync Games (SportsDataIO)
+            {syncingGames ? "Syncing Games..." : "Sync Games (SportsDataIO)"}
           </button>
 
           <a
             href={`/pool/${poolId}/bracket`}
             style={{
               padding: "10px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
+              background: "var(--surface)",
             }}
           >
             Bracket
@@ -744,16 +877,37 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {msg ? (
+        <p
+          role="status"
+          aria-live="polite"
+          style={{
+            marginTop: 12,
+            border: "1px solid var(--border-color)",
+            borderRadius: 10,
+            padding: "10px 12px",
+            background:
+              msgTone === "success"
+                ? "var(--success-bg)"
+                : msgTone === "error"
+                  ? "var(--danger-bg)"
+                  : "var(--surface-muted)",
+            fontWeight: 700,
+          }}
+        >
+          {msg}
+        </p>
+      ) : null}
 
       <section
         style={{
           marginTop: 16,
-          border: "1px solid #ddd",
+          border: "1px solid var(--border-color)",
           borderRadius: 12,
           padding: 12,
           display: "grid",
           gap: 8,
+          background: "var(--surface)",
         }}
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Pool members</h2>
@@ -773,9 +927,10 @@ export default function AdminPage() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   gap: 12,
-                  border: "1px solid #eee",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 10,
                   padding: "10px 12px",
+                  background: "var(--surface-muted)",
                 }}
               >
                 <div style={{ fontWeight: 800 }}>
@@ -789,7 +944,7 @@ export default function AdminPage() {
                     padding: "8px 10px",
                     borderRadius: 8,
                     border: "1px solid #d33",
-                    background: isCreator ? "#f5f5f5" : "#fff",
+                    background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
                     color: isCreator ? "#888" : "#a00",
                     fontWeight: 800,
                     cursor: isCreator ? "not-allowed" : "pointer",
@@ -808,11 +963,12 @@ export default function AdminPage() {
       <section
         style={{
           marginTop: 16,
-          border: "1px solid #ddd",
+          border: "1px solid var(--border-color)",
           borderRadius: 12,
           padding: 12,
           display: "grid",
           gap: 10,
+          background: "var(--surface)",
         }}
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools on the site</h2>
@@ -821,10 +977,38 @@ export default function AdminPage() {
           record so it no longer appears for players.
         </p>
 
+        {adminPools.length > 0 ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <label htmlFor="pool-search" style={{ fontSize: 13, fontWeight: 800 }}>
+              Filter pools
+            </label>
+            <input
+              id="pool-search"
+              type="text"
+              value={poolSearch}
+              onChange={(e) => setPoolSearch(e.target.value)}
+              placeholder="Search by pool name"
+              style={{
+                maxWidth: 360,
+                padding: "9px 10px",
+                borderRadius: 8,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+              }}
+            />
+            <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
+              Showing {filteredAdminPools.length} of {adminPools.length} pools
+            </p>
+          </div>
+        ) : null}
+
         {adminPools.length === 0 ? <p style={{ margin: 0 }}>No active pools found.</p> : null}
+        {adminPools.length > 0 && filteredAdminPools.length === 0 ? (
+          <p style={{ margin: 0 }}>No pools match your filter.</p>
+        ) : null}
 
         <div style={{ display: "grid", gap: 12 }}>
-          {adminPools.map((pool) => {
+          {filteredAdminPools.map((pool) => {
             const poolMembers = membersByPool[pool.id] ?? [];
             const storedPassword = poolPasswords[pool.id] ?? null;
             const isPasswordVisible = showPoolPasswords[pool.id] ?? false;
@@ -837,11 +1021,12 @@ export default function AdminPage() {
               <div
                 key={pool.id}
                 style={{
-                  border: "1px solid #eee",
+                  border: "1px solid var(--border-color)",
                   borderRadius: 12,
                   padding: 12,
                   display: "grid",
                   gap: 10,
+                  background: "var(--surface-muted)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
@@ -861,8 +1046,9 @@ export default function AdminPage() {
                         style={{
                           padding: "7px 9px",
                           borderRadius: 8,
-                          border: "1px solid #ccc",
+                          border: "1px solid var(--border-color)",
                           minWidth: 230,
+                          background: "var(--surface)",
                         }}
                       />
                       <button
@@ -871,8 +1057,8 @@ export default function AdminPage() {
                         style={{
                           padding: "8px 10px",
                           borderRadius: 8,
-                          border: "1px solid #999",
-                          background: "#fff",
+                          border: "1px solid var(--border-color)",
+                          background: "var(--surface)",
                           fontWeight: 700,
                           cursor: "pointer",
                         }}
@@ -890,9 +1076,9 @@ export default function AdminPage() {
                         style={{
                           padding: "7px 9px",
                           borderRadius: 8,
-                          border: "1px solid #ccc",
+                          border: "1px solid var(--border-color)",
                           minWidth: 320,
-                          background: "#fafafa",
+                          background: "var(--surface-elevated)",
                         }}
                       />
                       <button
@@ -906,8 +1092,8 @@ export default function AdminPage() {
                         style={{
                           padding: "8px 10px",
                           borderRadius: 8,
-                          border: "1px solid #999",
-                          background: canTogglePassword ? "#fff" : "#f3f3f3",
+                          border: "1px solid var(--border-color)",
+                          background: canTogglePassword ? "var(--surface)" : "var(--surface-elevated)",
                           color: canTogglePassword ? "#111" : "#888",
                           fontWeight: 700,
                           cursor: canTogglePassword ? "pointer" : "not-allowed",
@@ -931,8 +1117,9 @@ export default function AdminPage() {
                         style={{
                           padding: "7px 9px",
                           borderRadius: 8,
-                          border: "1px solid #ccc",
+                          border: "1px solid var(--border-color)",
                           minWidth: 230,
+                          background: "var(--surface)",
                         }}
                       />
                       <button
@@ -941,8 +1128,8 @@ export default function AdminPage() {
                         style={{
                           padding: "8px 10px",
                           borderRadius: 8,
-                          border: "1px solid #999",
-                          background: "#fff",
+                          border: "1px solid var(--border-color)",
+                          background: "var(--surface)",
                           fontWeight: 700,
                           cursor: "pointer",
                         }}
@@ -957,9 +1144,10 @@ export default function AdminPage() {
                       style={{
                         padding: "8px 10px",
                         borderRadius: 8,
-                        border: "1px solid #ccc",
+                        border: "1px solid var(--border-color)",
                         textDecoration: "none",
                         fontWeight: 800,
+                        background: "var(--surface)",
                       }}
                     >
                       Open admin
@@ -971,7 +1159,7 @@ export default function AdminPage() {
                         padding: "8px 10px",
                         borderRadius: 8,
                         border: "1px solid #d33",
-                        background: "#fff",
+                        background: "var(--surface)",
                         color: "#a00",
                         fontWeight: 800,
                         cursor: "pointer",
@@ -994,9 +1182,10 @@ export default function AdminPage() {
                           justifyContent: "space-between",
                           alignItems: "center",
                           gap: 12,
-                          border: "1px solid #f0f0f0",
+                          border: "1px solid var(--border-color)",
                           borderRadius: 8,
                           padding: "8px 10px",
+                          background: "var(--surface)",
                         }}
                       >
                         <div style={{ fontWeight: 700 }}>
@@ -1010,7 +1199,7 @@ export default function AdminPage() {
                             padding: "6px 9px",
                             borderRadius: 8,
                             border: "1px solid #d33",
-                            background: isCreator ? "#f5f5f5" : "#fff",
+                            background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
                             color: isCreator ? "#888" : "#a00",
                             fontWeight: 700,
                             cursor: isCreator ? "not-allowed" : "pointer",
@@ -1037,7 +1226,7 @@ export default function AdminPage() {
         style={{
           marginTop: 18,
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
           gap: 14,
         }}
       >
@@ -1045,22 +1234,29 @@ export default function AdminPage() {
           <section
             key={region}
             style={{
-              border: "1px solid #ddd",
+              border: "1px solid var(--border-color)",
               borderRadius: 12,
               padding: 12,
               minWidth: 0,
+              background: "var(--surface)",
             }}
           >
             <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
 
             <div style={{ display: "grid", gap: 10 }}>
+              {(r64ByRegion[region] ?? []).length === 0 ? (
+                <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
+                  No Round of 64 games loaded for this region yet.
+                </p>
+              ) : null}
               {(r64ByRegion[region] ?? []).map((g) => (
                 <div
                   key={g.id}
                   style={{
-                    border: "1px solid #eee",
+                    border: "1px solid var(--border-color)",
                     borderRadius: 12,
                     padding: 10,
+                    background: "var(--surface-muted)",
                   }}
                 >
                   <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>Game {g.slot}</div>
