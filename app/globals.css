@@ -63,3 +63,28 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   padding-top: 110px;
 }
+
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(220px, 280px);
+  align-items: start;
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .home-center {
+    order: 1;
+  }
+
+  .home-scores-left {
+    order: 2;
+  }
+
+  .home-scores-right {
+    order: 3;
+  }
+}
