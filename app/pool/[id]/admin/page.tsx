@@ -705,7 +705,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 1100, margin: "48px auto", padding: 16 }}>
+      <main style={{ maxWidth: 1100, margin: "28px auto", padding: 12 }}>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
         <p style={{ marginTop: 12 }}>Loading...</p>
       </main>
@@ -713,7 +713,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main style={{ maxWidth: 1200, margin: "36px auto", padding: 16 }}>
+    <main style={{ maxWidth: 1200, margin: "28px auto", padding: 12 }}>
       <div
         style={{
           display: "grid",
@@ -731,7 +731,7 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "stretch", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <label htmlFor="sync-season" style={{ fontWeight: 800, fontSize: 13 }}>
               Season
@@ -747,6 +747,7 @@ export default function AdminPage() {
               style={{
                 width: 92,
                 padding: "8px 9px",
+                minHeight: 44,
                 borderRadius: 8,
                 border: "1px solid var(--border-color)",
                 fontWeight: 700,
@@ -766,6 +767,7 @@ export default function AdminPage() {
               onChange={(e) => setSyncDate(e.target.value)}
               style={{
                 padding: "8px 9px",
+                minHeight: 44,
                 borderRadius: 8,
                 border: "1px solid var(--border-color)",
                 fontWeight: 700,
@@ -785,6 +787,7 @@ export default function AdminPage() {
               border: "1px solid var(--border-color)",
               borderRadius: 8,
               padding: "7px 9px",
+              minHeight: 44,
               background: "var(--surface-muted)",
               whiteSpace: "nowrap",
             }}
@@ -803,11 +806,14 @@ export default function AdminPage() {
             href={`/pool/${poolId}`}
             style={{
               padding: "10px 12px",
+              minHeight: 44,
               border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
               background: "var(--surface)",
+              display: "flex",
+              alignItems: "center",
             }}
           >
             Back to Pool
@@ -818,6 +824,7 @@ export default function AdminPage() {
             disabled={syncingLogos || fullSyncing || syncingGames}
             style={{
               padding: "10px 12px",
+              minHeight: 44,
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               fontWeight: 900,
@@ -834,6 +841,7 @@ export default function AdminPage() {
             disabled={fullSyncing || syncingLogos || syncingGames}
             style={{
               padding: "10px 12px",
+              minHeight: 44,
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               fontWeight: 900,
@@ -850,6 +858,7 @@ export default function AdminPage() {
             disabled={syncingGames || fullSyncing || syncingLogos}
             style={{
               padding: "10px 12px",
+              minHeight: 44,
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               fontWeight: 900,
@@ -865,11 +874,14 @@ export default function AdminPage() {
             href={`/pool/${poolId}/bracket`}
             style={{
               padding: "10px 12px",
+              minHeight: 44,
               border: "1px solid var(--border-color)",
               borderRadius: 10,
               textDecoration: "none",
               fontWeight: 900,
               background: "var(--surface)",
+              display: "flex",
+              alignItems: "center",
             }}
           >
             Bracket
@@ -926,6 +938,7 @@ export default function AdminPage() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  flexWrap: "wrap",
                   gap: 12,
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
@@ -933,7 +946,7 @@ export default function AdminPage() {
                   background: "var(--surface-muted)",
                 }}
               >
-                <div style={{ fontWeight: 800 }}>
+                <div style={{ fontWeight: 800, minWidth: 0, flex: "1 1 220px" }}>
                   {label}
                   {isCreator ? " (commissioner)" : ""}
                 </div>
@@ -942,12 +955,14 @@ export default function AdminPage() {
                   onClick={() => removeUserFromPool(poolId, m.user_id)}
                   style={{
                     padding: "8px 10px",
+                    minHeight: 44,
                     borderRadius: 8,
                     border: "1px solid #d33",
                     background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
                     color: isCreator ? "#888" : "#a00",
                     fontWeight: 800,
                     cursor: isCreator ? "not-allowed" : "pointer",
+                    flex: "1 1 190px",
                   }}
                 >
                   {removingMemberKey === memberKey(poolId, m.user_id) ? "Removing..." : "Remove from pool"}
@@ -989,8 +1004,10 @@ export default function AdminPage() {
               onChange={(e) => setPoolSearch(e.target.value)}
               placeholder="Search by pool name"
               style={{
+                width: "100%",
                 maxWidth: 360,
                 padding: "9px 10px",
+                minHeight: 44,
                 borderRadius: 8,
                 border: "1px solid var(--border-color)",
                 background: "var(--surface-muted)",
@@ -1023,14 +1040,22 @@ export default function AdminPage() {
                 style={{
                   border: "1px solid var(--border-color)",
                   borderRadius: 12,
-                  padding: 12,
+                  padding: 10,
                   display: "grid",
                   gap: 10,
                   background: "var(--surface-muted)",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                  <div style={{ display: "grid", gap: 8 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    alignItems: "flex-start",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ display: "grid", gap: 8, minWidth: 0, flex: "1 1 440px" }}>
                     <div style={{ fontWeight: 900 }}>{pool.name}</div>
                     <div style={{ fontSize: 13, opacity: 0.7 }}>Members: {poolMembers.length}</div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1045,9 +1070,11 @@ export default function AdminPage() {
                         placeholder="Pool name"
                         style={{
                           padding: "7px 9px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
-                          minWidth: 230,
+                          minWidth: 0,
+                          flex: "1 1 260px",
                           background: "var(--surface)",
                         }}
                       />
@@ -1056,11 +1083,13 @@ export default function AdminPage() {
                         onClick={() => renamePool(pool.id)}
                         style={{
                           padding: "8px 10px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
                           background: "var(--surface)",
                           fontWeight: 700,
                           cursor: "pointer",
+                          flex: "1 1 150px",
                         }}
                       >
                         {renamingPoolId === pool.id ? "Saving..." : "Save name"}
@@ -1075,9 +1104,11 @@ export default function AdminPage() {
                         placeholder={passwordPlaceholder}
                         style={{
                           padding: "7px 9px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
-                          minWidth: 320,
+                          minWidth: 0,
+                          flex: "1 1 300px",
                           background: "var(--surface-elevated)",
                         }}
                       />
@@ -1091,12 +1122,14 @@ export default function AdminPage() {
                         }
                         style={{
                           padding: "8px 10px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
                           background: canTogglePassword ? "var(--surface)" : "var(--surface-elevated)",
                           color: canTogglePassword ? "#111" : "#888",
                           fontWeight: 700,
                           cursor: canTogglePassword ? "pointer" : "not-allowed",
+                          flex: "1 1 170px",
                         }}
                       >
                         {isPasswordVisible ? "Hide password" : "Show password"}
@@ -1116,9 +1149,11 @@ export default function AdminPage() {
                         minLength={4}
                         style={{
                           padding: "7px 9px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
-                          minWidth: 230,
+                          minWidth: 0,
+                          flex: "1 1 260px",
                           background: "var(--surface)",
                         }}
                       />
@@ -1127,27 +1162,34 @@ export default function AdminPage() {
                         onClick={() => rotatePoolPassword(pool.id)}
                         style={{
                           padding: "8px 10px",
+                          minHeight: 44,
                           borderRadius: 8,
                           border: "1px solid var(--border-color)",
                           background: "var(--surface)",
                           fontWeight: 700,
                           cursor: "pointer",
+                          flex: "1 1 170px",
                         }}
                       >
                         {rotatingPasswordPoolId === pool.id ? "Updating..." : "Update password"}
                       </button>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 240px" }}>
                     <a
                       href={`/pool/${pool.id}/admin`}
                       style={{
                         padding: "8px 10px",
+                        minHeight: 44,
                         borderRadius: 8,
                         border: "1px solid var(--border-color)",
                         textDecoration: "none",
                         fontWeight: 800,
                         background: "var(--surface)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flex: "1 1 140px",
                       }}
                     >
                       Open admin
@@ -1157,12 +1199,14 @@ export default function AdminPage() {
                       onClick={() => deletePool(pool.id)}
                       style={{
                         padding: "8px 10px",
+                        minHeight: 44,
                         borderRadius: 8,
                         border: "1px solid #d33",
                         background: "var(--surface)",
                         color: "#a00",
                         fontWeight: 800,
                         cursor: "pointer",
+                        flex: "1 1 140px",
                       }}
                     >
                       {deletingPoolId === pool.id ? "Deleting..." : "Delete pool"}
@@ -1181,6 +1225,7 @@ export default function AdminPage() {
                           display: "flex",
                           justifyContent: "space-between",
                           alignItems: "center",
+                          flexWrap: "wrap",
                           gap: 12,
                           border: "1px solid var(--border-color)",
                           borderRadius: 8,
@@ -1188,7 +1233,7 @@ export default function AdminPage() {
                           background: "var(--surface)",
                         }}
                       >
-                        <div style={{ fontWeight: 700 }}>
+                        <div style={{ fontWeight: 700, minWidth: 0, flex: "1 1 200px" }}>
                           {label}
                           {isCreator ? " (commissioner)" : ""}
                         </div>
@@ -1197,12 +1242,14 @@ export default function AdminPage() {
                           onClick={() => removeUserFromPool(pool.id, m.user_id)}
                           style={{
                             padding: "6px 9px",
+                            minHeight: 44,
                             borderRadius: 8,
                             border: "1px solid #d33",
                             background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
                             color: isCreator ? "#888" : "#a00",
                             fontWeight: 700,
                             cursor: isCreator ? "not-allowed" : "pointer",
+                            flex: "1 1 120px",
                           }}
                         >
                           {removingMemberKey === memberKey(pool.id, m.user_id) ? "Removing..." : "Remove"}
@@ -1272,6 +1319,7 @@ export default function AdminPage() {
                     style={{
                       marginTop: 10,
                       padding: "6px 8px",
+                      minHeight: 44,
                       borderRadius: 8,
                       width: "100%",
                     }}

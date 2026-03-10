@@ -153,14 +153,14 @@ export default function PoolPage() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main style={{ maxWidth: 900, margin: "36px auto", padding: 16 }}>
+    <main style={{ maxWidth: 900, margin: "28px auto", padding: 12 }}>
       <div
         style={{
           display: "grid",
           gap: 16,
           border: "1px solid var(--border-color)",
           borderRadius: 16,
-          padding: "18px 16px",
+          padding: "16px 12px",
           background: "var(--surface)",
         }}
       >
@@ -241,9 +241,10 @@ export default function PoolPage() {
               value={shareLink}
               readOnly
               style={{
-                flex: "1 1 420px",
-                minWidth: 220,
+                flex: "1 1 260px",
+                minWidth: 0,
                 padding: "10px 12px",
+                minHeight: 44,
                 borderRadius: 10,
                 border: "1px solid var(--border-color)",
                 background: "var(--surface-muted)",
@@ -253,7 +254,9 @@ export default function PoolPage() {
               type="button"
               onClick={copyShareLink}
               style={{
+                flex: "1 1 140px",
                 padding: "10px 12px",
+                minHeight: 44,
                 borderRadius: 10,
                 border: "1px solid var(--border-color)",
                 background: "var(--surface)",
@@ -283,7 +286,7 @@ export default function PoolPage() {
                 ? "This is a private pool. Enter the pool password to join."
                 : "This is a public pool. Join now to make picks and track results."}
             </p>
-            <div style={{ marginTop: 12, width: "min(100%, 420px)" }}>
+            <div style={{ marginTop: 12, width: "100%", maxWidth: 420 }}>
               {poolIsPrivate ? (
                 <input
                   type="password"
@@ -298,6 +301,7 @@ export default function PoolPage() {
                   style={{
                     width: "100%",
                     padding: "12px 14px",
+                    minHeight: 44,
                     borderRadius: 10,
                     border: "1px solid var(--border-color)",
                     marginBottom: 10,
@@ -313,6 +317,7 @@ export default function PoolPage() {
                 style={{
                   width: "100%",
                   padding: "12px 14px",
+                  minHeight: 44,
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
                   background: "var(--surface)",
@@ -344,12 +349,18 @@ export default function PoolPage() {
               <Link
                 href={`/pool/${poolId}/draft`}
                 style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
                   padding: "10px 12px",
+                  minHeight: 44,
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 800,
                   background: "var(--surface)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 Draft
@@ -357,12 +368,18 @@ export default function PoolPage() {
               <Link
                 href={`/pool/${poolId}/bracket`}
                 style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
                   padding: "10px 12px",
+                  minHeight: 44,
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 800,
                   background: "var(--surface)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 Bracket
@@ -370,12 +387,18 @@ export default function PoolPage() {
               <Link
                 href={`/pool/${poolId}/leaderboard`}
                 style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
                   padding: "10px 12px",
+                  minHeight: 44,
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
                   textDecoration: "none",
                   fontWeight: 800,
                   background: "var(--surface)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 Leaderboard
