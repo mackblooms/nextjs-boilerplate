@@ -172,7 +172,7 @@ export async function GET(req: Request) {
     const responses = await Promise.all(
       dateKeys.map(async (dateKey) => {
         const endpoint =
-          `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}`;
+          `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}&groups=50&limit=500`;
         const res = await fetch(endpoint, { cache: "no-store" });
         if (!res.ok) {
           const text = await res.text();

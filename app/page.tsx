@@ -233,7 +233,7 @@ async function fetchEspnDirectScores(
   const payloads = await Promise.all(
     dateKeys.map(async (dateKey) => {
       const url =
-        `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}`;
+        `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}&groups=50&limit=500`;
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) {
         throw new Error(`ESPN fetch failed (${res.status})`);
