@@ -36,3 +36,36 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 .
 Codex edit test
+
+## Scoring Balance Simulator
+
+Use this to tune seed value balance before changing live scoring.
+
+```bash
+npm run sim:balance
+```
+
+The simulator reads:
+
+- `scripts/scoring-balance-config.json`
+
+You can also pass a custom config path:
+
+```bash
+node scripts/scoring-balance-sim.js ./path/to/config.json
+```
+
+Main knobs to tune:
+
+- `upsetBonusPerSeedDiff`
+- `historicBonusBySeed`
+- `costBySeed`
+- `seedMultiplierStep`
+- `historicalWinProbBySeed`
+
+The output includes:
+
+- Per-seed R64 win payout and payout-to-cost ratio
+- Per-seed expected value (base only and with R64 bonus layer)
+- Top seeds by EV per cost
+- A portfolio check for the 14/15/16 package under a 100 budget
