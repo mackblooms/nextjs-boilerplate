@@ -4,6 +4,7 @@ type EspnTeam = {
   id?: string | number;
   displayName?: string;
   abbreviation?: string;
+  logos?: Array<{ href?: string }>;
 };
 
 type EspnCompetitor = {
@@ -46,6 +47,8 @@ type LiveScoreRow = {
   homeTeamId: string | null;
   awayTeamName: string;
   homeTeamName: string;
+  awayLogoUrl: string | null;
+  homeLogoUrl: string | null;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -120,6 +123,8 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
     homeTeamId: home.team?.id ? String(home.team.id) : null,
     awayTeamName: awayName,
     homeTeamName: homeName,
+    awayLogoUrl: away.team?.logos?.[0]?.href?.trim() || null,
+    homeLogoUrl: home.team?.logos?.[0]?.href?.trim() || null,
     awayTeam: awayLabel,
     homeTeam: homeLabel,
     awayScore: toScore(away.score),

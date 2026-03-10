@@ -30,6 +30,8 @@ type LiveScoreGame = {
   homeTeamId: string | null;
   awayTeamName: string;
   homeTeamName: string;
+  awayLogoUrl: string | null;
+  homeLogoUrl: string | null;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -46,6 +48,7 @@ type EspnTeam = {
   id?: string | number;
   displayName?: string;
   abbreviation?: string;
+  logos?: Array<{ href?: string }>;
 };
 
 type EspnCompetitor = {
@@ -143,6 +146,8 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
     homeTeamId: home.team?.id ? String(home.team.id) : null,
     awayTeamName: awayDisplayName,
     homeTeamName: homeDisplayName,
+    awayLogoUrl: away.team?.logos?.[0]?.href?.trim() || null,
+    homeLogoUrl: home.team?.logos?.[0]?.href?.trim() || null,
     awayTeam: awayLabel,
     homeTeam: homeLabel,
     awayScore: toScore(away.score),
@@ -164,16 +169,25 @@ function sortScores(a: LiveScoreGame, b: LiveScoreGame) {
   return ta - tb;
 }
 
-function formatTipoff(startTime: string | null) {
-  if (!startTime) return "Scheduled";
+function formatGameDateTimeET(startTime: string | null) {
+  if (!startTime) return "Time TBD (ET)";
   const d = new Date(startTime);
-  if (Number.isNaN(d.getTime())) return "Scheduled";
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  if (Number.isNaN(d.getTime())) return "Time TBD (ET)";
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+  return `${formatted} ET`;
 }
 
 function statusLabel(game: LiveScoreGame) {
-  if (game.state === "UPCOMING") return formatTipoff(game.startTime);
-  return game.detail;
+  const when = formatGameDateTimeET(game.startTime);
+  if (game.state === "UPCOMING") return when;
+  return `${when} • ${game.detail}`;
 }
 
 async function fetchEspnDirectScores(): Promise<LiveScoreGame[]> {
@@ -251,11 +265,47 @@ function ScoreSidebar({
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span style={{ fontWeight: 700 }}>{game.awayTeam}</span>
+              <span
+                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                title={game.awayTeamName}
+              >
+                {game.awayLogoUrl ? (
+                  <img
+                    src={game.awayLogoUrl}
+                    alt={game.awayTeamName}
+                    width={20}
+                    height={20}
+                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : (
+                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                )}
+                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {game.awayTeam}
+                </span>
+              </span>
               <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span style={{ fontWeight: 700 }}>{game.homeTeam}</span>
+              <span
+                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                title={game.homeTeamName}
+              >
+                {game.homeLogoUrl ? (
+                  <img
+                    src={game.homeLogoUrl}
+                    alt={game.homeTeamName}
+                    width={20}
+                    height={20}
+                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : (
+                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                )}
+                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {game.homeTeam}
+                </span>
+              </span>
               <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
             </div>
             <div style={{ fontSize: 12, opacity: 0.8 }}>{statusLabel(game)}</div>
