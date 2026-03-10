@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
+  const isHidden = useAutoHideOnScroll();
 
   useEffect(() => {
     const loadDestination = async () => {
@@ -62,6 +64,10 @@ export default function HomeButton() {
         fontWeight: 500,
         lineHeight: 1,
         textTransform: "lowercase",
+        transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+        opacity: isHidden ? 0 : 1,
+        transition: "transform 180ms ease, opacity 180ms ease",
+        pointerEvents: isHidden ? "none" : "auto",
       }}
     >
       bracketball

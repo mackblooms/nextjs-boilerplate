@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Theme = "light" | "dark";
 
@@ -32,6 +33,7 @@ function getSupabaseClient() {
 export default function ThemeSwitch() {
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const [isAuthed, setIsAuthed] = useState(false);
+  const isHidden = useAutoHideOnScroll();
   const isDark = theme === "dark";
 
   useEffect(() => {
@@ -83,6 +85,10 @@ export default function ThemeSwitch() {
         cursor: "pointer",
         zIndex: 50,
         padding: 0,
+        transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+        opacity: isHidden ? 0 : 1,
+        transition: "transform 180ms ease, opacity 180ms ease",
+        pointerEvents: isHidden ? "none" : "auto",
       }}
     >
       <span
