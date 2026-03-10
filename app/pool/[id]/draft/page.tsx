@@ -2,12 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import {
+  BracketBoard,
+  type BracketBoardGame,
+  type BracketBoardTeam,
+} from "../../../components/BracketBoard";
 import { supabase } from "../../../../lib/supabaseClient";
 
 type Team = {
   id: string;
   name: string;
   seed: number;
+  seed_in_region: number | null;
   cost: number;
   logo_url?: string | null;
 };
@@ -29,6 +35,7 @@ export default function DraftPage() {
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [games, setGames] = useState<BracketBoardGame[]>([]);
 
   const [entryId, setEntryId] = useState<string | null>(null);
   const [entryName, setEntryName] = useState("");
@@ -40,6 +47,7 @@ export default function DraftPage() {
   const [poolIsPrivate, setPoolIsPrivate] = useState(true);
   const [joinPassword, setJoinPassword] = useState("");
   const [joining, setJoining] = useState(false);
+  const [showBracketModal, setShowBracketModal] = useState(false);
 
   const selectedTeams = useMemo(() => {
     const map = new Map(teams.map((t) => [t.id, t]));
@@ -77,6 +85,17 @@ export default function DraftPage() {
       return a.name.localeCompare(b.name);
     });
   }, [teams]);
+
+  const bracketTeams = useMemo<BracketBoardTeam[]>(
+    () =>
+      teams.map((t) => ({
+        id: t.id,
+        name: t.name,
+        seed_in_region: t.seed_in_region ?? t.seed,
+        logo_url: t.logo_url ?? null,
+      })),
+    [teams],
+  );
 
   const isMissingEntryNameError = (message?: string) => {
     if (!message) return false;
@@ -204,21 +223,23 @@ export default function DraftPage() {
 
       setIsMember(!!mem);
 
-      // Teams
-      const { data: r64Games, error: r64Err } = await supabase
+      const { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("team1_id,team2_id")
-        .eq("round", "R64");
+        .select("id,round,region,slot,start_time,game_date,team1_id,team2_id,winner_team_id");
 
-      if (r64Err) {
-        setMsg(r64Err.message);
+      if (gameErr) {
+        setMsg(gameErr.message);
         setLoading(false);
         return;
       }
 
+      const loadedGames = (gameRows ?? []) as BracketBoardGame[];
+      setGames(loadedGames);
+
       const r64TeamIds = Array.from(
         new Set(
-          (r64Games ?? [])
+          loadedGames
+            .filter((g) => g.round === "R64")
             .flatMap((g) => [g.team1_id, g.team2_id])
             .filter((id): id is string => !!id),
         ),
@@ -226,7 +247,7 @@ export default function DraftPage() {
 
       let teamsQuery = supabase
         .from("teams")
-        .select("id,name,seed,cost,logo_url");
+        .select("id,name,seed,seed_in_region,cost,logo_url");
       if (r64TeamIds.length > 0) teamsQuery = teamsQuery.in("id", r64TeamIds);
 
       const { data: teamRows, error: teamErr } = await teamsQuery;
@@ -281,6 +302,17 @@ export default function DraftPage() {
 
     load();
   }, [poolId, ensureEntry]);
+
+  useEffect(() => {
+    if (!showBracketModal) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowBracketModal(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showBracketModal]);
 
   async function joinPool() {
     setMsg("");
@@ -507,32 +539,22 @@ export default function DraftPage() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href={`/pool/${poolId}`}
+        {isMember ? (
+          <button
+            type="button"
+            onClick={() => setShowBracketModal(true)}
             style={{
               padding: "10px 12px",
               border: "1px solid var(--border-color)",
               borderRadius: 10,
-              textDecoration: "none",
+              background: "var(--surface)",
               fontWeight: 900,
+              cursor: "pointer",
             }}
           >
-            Back to Pool
-          </a>
-          <a
-            href={`/pool/${poolId}/leaderboard`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Leaderboard
-          </a>
-        </div>
+            View Bracket
+          </button>
+        ) : null}
       </div>
 
       {!isMember ? (
@@ -783,6 +805,81 @@ export default function DraftPage() {
           ) : null}
         </aside>
       </div>
+
+      {showBracketModal ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Bracket preview"
+          onClick={() => setShowBracketModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            zIndex: 60,
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(96vw, 1900px)",
+              maxHeight: "92vh",
+              borderRadius: 14,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              display: "grid",
+              gridTemplateRows: "auto 1fr",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: 12,
+                borderBottom: "1px solid var(--border-color)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ fontWeight: 900, fontSize: 18 }}>
+                Bracket Preview
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ fontSize: 12, opacity: 0.75 }}>
+                  Your selected teams are highlighted in yellow.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBracketModal(false)}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    background: "var(--surface)",
+                    padding: "8px 10px",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: 12, overflow: "auto" }}>
+              <BracketBoard
+                teams={bracketTeams}
+                games={games}
+                highlightTeamIds={selected}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
