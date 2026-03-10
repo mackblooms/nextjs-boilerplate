@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 type Pool = { id: string; name: string; created_by: string };
 
@@ -21,10 +21,12 @@ function getSupabaseClient() {
 export default function AppTopNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const lastScrollYRef = useRef(0);
   const [userId, setUserId] = useState<string | null>(null);
   const [homeHref, setHomeHref] = useState("/");
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
+  const [isHidden, setIsHidden] = useState(false);
 
   const poolIdFromPath = useMemo(() => {
     const match = pathname.match(/^\/pool\/([^/]+)/);
@@ -93,6 +95,37 @@ export default function AppTopNav() {
     load();
   }, [poolIdFromPath]);
 
+  useEffect(() => {
+    const SCROLL_DELTA = 8;
+    const SHOW_AT_TOP = 64;
+    const HIDE_AFTER = 120;
+
+    lastScrollYRef.current = window.scrollY;
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const lastY = lastScrollYRef.current;
+      const diff = currentY - lastY;
+
+      if (currentY <= SHOW_AT_TOP) {
+        setIsHidden(false);
+        lastScrollYRef.current = currentY;
+        return;
+      }
+
+      if (currentY > HIDE_AFTER && diff > SCROLL_DELTA) {
+        setIsHidden(true);
+      } else if (diff < -SCROLL_DELTA) {
+        setIsHidden(false);
+      }
+
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   async function signOut() {
     const supabase = getSupabaseClient();
     if (supabase) {
@@ -126,6 +159,9 @@ export default function AppTopNav() {
         justifyContent: "center",
         padding: "8px 16px",
         pointerEvents: "none",
+        transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+        opacity: isHidden ? 0 : 1,
+        transition: "transform 180ms ease, opacity 180ms ease",
       }}
     >
       <div
