@@ -311,32 +311,6 @@ export default function LeaderboardPage() {
         style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
       >
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Leaderboard</h1>
-        <div style={{ display: "flex", gap: 10 }}>
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Back to Pool
-          </a>
-          <a
-            href={`/pool/${poolId}/draft`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Draft
-          </a>
-        </div>
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}

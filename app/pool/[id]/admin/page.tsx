@@ -802,23 +802,6 @@ export default function AdminPage() {
             SportsData-only mode
           </label>
 
-          <a
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              minHeight: 44,
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-              background: "var(--surface)",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            Back to Pool
-          </a>
-
           <button
             onClick={syncLogos}
             disabled={syncingLogos || fullSyncing || syncingGames}

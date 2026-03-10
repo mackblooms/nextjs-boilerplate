@@ -292,19 +292,6 @@ export default function PicksPage() {
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>
           {displayName}&apos;s Picks
         </h1>
-
-        <a
-          href={`/pool/${poolId}/leaderboard`}
-          style={{
-            padding: "10px 12px",
-            border: "1px solid #ccc",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 900,
-          }}
-        >
-          Back to Leaderboard
-        </a>
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}

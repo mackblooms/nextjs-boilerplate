@@ -700,32 +700,6 @@ export default function BracketPage() {
         }}
       >
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <Link
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Back to Pool
-          </Link>
-          <Link
-            href={`/pool/${poolId}/leaderboard`}
-            style={{
-              padding: "10px 12px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-            }}
-          >
-            Leaderboard
-          </Link>
-        </div>
       </div>
 
       {selectedEntryId ? (
