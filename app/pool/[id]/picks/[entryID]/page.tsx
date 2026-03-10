@@ -21,9 +21,9 @@ const BASE_POINTS_BY_ROUND: Record<string, number> = {
 };
 
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
-  14: 144,
-  15: 240,
-  16: 336,
+  14: 24,
+  15: 40,
+  16: 56,
 };
 
 function seedMultiplier(seed: number | null | undefined): number {
@@ -58,7 +58,7 @@ function scoreTeamWins(
     const upsetBonus =
       !winnerSeed || !opponentSeed
         ? 0
-        : Math.max(0, 12 * (winnerSeed - opponentSeed));
+        : Math.max(0, 4 * (winnerSeed - opponentSeed));
 
     let historicBonus = 0;
     if (

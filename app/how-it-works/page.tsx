@@ -40,7 +40,7 @@ export default function HowItWorksPage() {
       <section style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>🔥 Upset Bonus</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-          Upset Bonus = <b>12 × (Team Seed − Opponent Seed)</b>, minimum 0.
+          Upset Bonus = <b>4 × (Team Seed − Opponent Seed)</b>, minimum 0.
         </p>
       </section>
 
@@ -55,9 +55,19 @@ export default function HowItWorksPage() {
       <section style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>🏆 Historic Upset Bonus</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-          <li>14-seed first Round of 64 win: <b>+144</b></li>
-          <li>15-seed first Round of 64 win: <b>+240</b></li>
-          <li>16-seed first Round of 64 win: <b>+336</b></li>
+          <li>14-seed first Round of 64 win: <b>+24</b></li>
+          <li>15-seed first Round of 64 win: <b>+40</b></li>
+          <li>16-seed first Round of 64 win: <b>+56</b></li>
+        </ul>
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>Draft Caps</h2>
+        <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
+          <li>Max 2 one-seeds</li>
+          <li>Max 2 two-seeds</li>
+          <li>Max 4 combined one-seeds + two-seeds</li>
+          <li>Max 6 combined seeds 14-16</li>
         </ul>
       </section>
 

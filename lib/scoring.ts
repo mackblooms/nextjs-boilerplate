@@ -15,9 +15,9 @@ const BASE_POINTS_BY_ROUND: Record<string, number> = {
 };
 
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
-  14: 144,
-  15: 240,
-  16: 336,
+  14: 24,
+  15: 40,
+  16: 56,
 };
 
 export function seedMultiplier(seed: number | null | undefined): number {
@@ -27,7 +27,7 @@ export function seedMultiplier(seed: number | null | undefined): number {
 
 function calcUpsetBonus(teamSeed: number | null | undefined, opponentSeed: number | null | undefined): number {
   if (!teamSeed || !opponentSeed) return 0;
-  return Math.max(0, 12 * (teamSeed - opponentSeed));
+  return Math.max(0, 4 * (teamSeed - opponentSeed));
 }
 
 export function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {

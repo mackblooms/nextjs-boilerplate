@@ -25,6 +25,7 @@ const BUDGET = 100;
 const MAX_1 = 2;
 const MAX_2 = 2;
 const MAX_12 = 4;
+const MAX_141516 = 6;
 
 export default function DraftPage() {
   const params = useParams<{ id: string }>();
@@ -77,12 +78,17 @@ export default function DraftPage() {
     [selectedTeams],
   );
   const count12 = count1 + count2;
+  const count141516 = useMemo(
+    () => selectedTeams.filter((t) => t.seed >= 14 && t.seed <= 16).length,
+    [selectedTeams],
+  );
 
   const isValid =
     totalCost <= BUDGET &&
     count1 <= MAX_1 &&
     count2 <= MAX_2 &&
-    count12 <= MAX_12;
+    count12 <= MAX_12 &&
+    count141516 <= MAX_141516;
 
   const sortedTeams = useMemo(() => {
     return [...teams].sort((a, b) => {
@@ -445,8 +451,15 @@ export default function DraftPage() {
     const cost = arr.reduce((s, t) => s + t.cost, 0);
     const c1 = arr.filter((t) => t.seed === 1).length;
     const c2 = arr.filter((t) => t.seed === 2).length;
+    const c141516 = arr.filter((t) => t.seed >= 14 && t.seed <= 16).length;
 
-    if (cost > BUDGET || c1 > MAX_1 || c2 > MAX_2 || c1 + c2 > MAX_12) {
+    if (
+      cost > BUDGET ||
+      c1 > MAX_1 ||
+      c2 > MAX_2 ||
+      c1 + c2 > MAX_12 ||
+      c141516 > MAX_141516
+    ) {
       const t = map.get(teamId);
       setMsg(
         `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`,
@@ -583,7 +596,7 @@ export default function DraftPage() {
           </h1>
           <div style={{ fontSize: 14, opacity: 0.85 }}>
             Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2}{" "}
-            two-seeds, max {MAX_12} combined
+            two-seeds, max {MAX_12} combined, max {MAX_141516} seeds 14-16
           </div>
         </div>
 
@@ -790,6 +803,13 @@ export default function DraftPage() {
               <span>1+2 combined</span>
               <b>
                 {count12}/{MAX_12}
+              </b>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>14-16 seeds</span>
+              <b>
+                {count141516}/{MAX_141516}
               </b>
             </div>
           </div>
