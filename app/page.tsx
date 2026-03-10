@@ -25,6 +25,36 @@ type LiveScoresResponse = {
   error?: string;
 };
 
+type EspnTeam = {
+  displayName?: string;
+  abbreviation?: string;
+};
+
+type EspnCompetitor = {
+  homeAway?: "home" | "away";
+  score?: string;
+  team?: EspnTeam;
+};
+
+type EspnEvent = {
+  id?: string;
+  date?: string;
+  status?: {
+    type?: {
+      state?: string;
+      completed?: boolean;
+      shortDetail?: string;
+    };
+  };
+  competitions?: Array<{
+    competitors?: EspnCompetitor[];
+  }>;
+};
+
+type EspnScoreboard = {
+  events?: EspnEvent[];
+};
+
 const buttonStyle = {
   display: "inline-block",
   padding: "12px 16px",
@@ -65,6 +95,97 @@ function formatTipoff(startTime: string | null) {
 function statusLabel(game: LiveScoreGame) {
   if (game.state === "UPCOMING") return formatTipoff(game.startTime);
   return game.detail;
+}
+
+function yyyymmdd(date: Date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+}
+
+function shiftDate(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function toState(rawState: string | undefined, completed: boolean | undefined): LiveScoreState {
+  const state = rawState?.toLowerCase();
+  if (state === "in") return "LIVE";
+  if (state === "post" || completed) return "FINAL";
+  return "UPCOMING";
+}
+
+function toScore(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
+  const competitors = event.competitions?.[0]?.competitors ?? [];
+  const home = competitors.find((c) => c.homeAway === "home");
+  const away = competitors.find((c) => c.homeAway === "away");
+  if (!home || !away) return null;
+
+  const awayName = away.team?.abbreviation?.trim() || away.team?.displayName?.trim() || "AWAY";
+  const homeName = home.team?.abbreviation?.trim() || home.team?.displayName?.trim() || "HOME";
+
+  return {
+    id: event.id ?? `${event.date ?? "game"}-${awayName}-${homeName}`,
+    state: toState(event.status?.type?.state, event.status?.type?.completed),
+    detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
+    startTime: event.date ?? null,
+    awayTeam: awayName,
+    homeTeam: homeName,
+    awayScore: toScore(away.score),
+    homeScore: toScore(home.score),
+  };
+}
+
+function sortScores(a: LiveScoreGame, b: LiveScoreGame) {
+  const rank = (state: LiveScoreState) =>
+    state === "LIVE" ? 0 : state === "UPCOMING" ? 1 : 2;
+
+  const rankDiff = rank(a.state) - rank(b.state);
+  if (rankDiff !== 0) return rankDiff;
+
+  const ta = a.startTime ? Date.parse(a.startTime) : Number.POSITIVE_INFINITY;
+  const tb = b.startTime ? Date.parse(b.startTime) : Number.POSITIVE_INFINITY;
+
+  if (a.state === "FINAL") return tb - ta;
+  return ta - tb;
+}
+
+async function fetchEspnDirectScores(): Promise<LiveScoreGame[]> {
+  const dateKeys = [yyyymmdd(shiftDate(-1)), yyyymmdd(shiftDate(0)), yyyymmdd(shiftDate(1))];
+  const payloads = await Promise.all(
+    dateKeys.map(async (dateKey) => {
+      const url =
+        `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`ESPN fetch failed (${res.status})`);
+      }
+      return (await res.json()) as EspnScoreboard;
+    })
+  );
+
+  const out: LiveScoreGame[] = [];
+  const seen = new Set<string>();
+
+  for (const payload of payloads) {
+    for (const event of payload.events ?? []) {
+      const game = normalizeEspnEvent(event);
+      if (!game) continue;
+      if (seen.has(game.id)) continue;
+      seen.add(game.id);
+      out.push(game);
+    }
+  }
+
+  return out.sort(sortScores).slice(0, 18);
 }
 
 function ScorePanel({
@@ -146,15 +267,24 @@ function HomeContent() {
 
     const loadScores = async () => {
       try {
-        const res = await fetch("/api/scores/live", { cache: "no-store" });
-        const payload = (await res.json()) as LiveScoresResponse;
-        if (!res.ok || !payload.ok) {
-          throw new Error(payload.error ?? `Score fetch failed (${res.status})`);
+        let nextScores: LiveScoreGame[] = [];
+        let apiError: string | null = null;
+
+        try {
+          const res = await fetch("/api/scores/live", { cache: "no-store" });
+          const payload = (await res.json()) as LiveScoresResponse;
+          if (!res.ok || !payload.ok) {
+            throw new Error(payload.error ?? `Score fetch failed (${res.status})`);
+          }
+          nextScores = payload.games ?? [];
+        } catch (e: unknown) {
+          apiError = e instanceof Error ? e.message : "Unknown API error";
+          nextScores = await fetchEspnDirectScores();
         }
 
         if (!canceled) {
-          setScores(payload.games ?? []);
-          setScoresError(null);
+          setScores(nextScores);
+          setScoresError(nextScores.length === 0 && apiError ? `Live feed issue: ${apiError}` : null);
         }
       } catch (e: unknown) {
         if (!canceled) {
