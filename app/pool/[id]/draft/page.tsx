@@ -305,13 +305,20 @@ export default function DraftPage() {
 
   useEffect(() => {
     if (!showBracketModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setShowBracketModal(false);
       }
     };
+
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [showBracketModal]);
 
   async function joinPool() {
@@ -815,8 +822,8 @@ export default function DraftPage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0, 0, 0, 0.45)",
-            zIndex: 60,
+            background: "var(--surface)",
+            zIndex: 2000,
             display: "grid",
             placeItems: "center",
             padding: 16,
