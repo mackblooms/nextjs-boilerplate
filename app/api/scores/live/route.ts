@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 type EspnTeam = {
+  id?: string | number;
   displayName?: string;
   abbreviation?: string;
 };
@@ -41,6 +42,10 @@ type LiveScoreRow = {
   state: LiveScoreState;
   detail: string;
   startTime: string | null;
+  awayTeamId: string | null;
+  homeTeamId: string | null;
+  awayTeamName: string;
+  homeTeamName: string;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -60,12 +65,12 @@ function shiftDate(days: number) {
   return d;
 }
 
-function toName(c: EspnCompetitor | undefined, fallback: string) {
-  return (
-    c?.team?.abbreviation?.trim() ||
-    c?.team?.displayName?.trim() ||
-    fallback
-  );
+function toLabel(c: EspnCompetitor | undefined, fallback: string) {
+  return c?.team?.abbreviation?.trim() || c?.team?.displayName?.trim() || fallback;
+}
+
+function toDisplayName(c: EspnCompetitor | undefined, fallback: string) {
+  return c?.team?.displayName?.trim() || c?.team?.abbreviation?.trim() || fallback;
 }
 
 function toScore(raw: string | undefined): number | null {
@@ -101,14 +106,22 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   const home = competitors.find((c) => c.homeAway === "home");
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
+  const awayLabel = toLabel(away, "AWAY");
+  const homeLabel = toLabel(home, "HOME");
+  const awayName = toDisplayName(away, awayLabel);
+  const homeName = toDisplayName(home, homeLabel);
 
   return {
-    id: event.id ?? `${event.date ?? "game"}-${toName(away, "AWAY")}-${toName(home, "HOME")}`,
+    id: event.id ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
     state: toState(event.status),
     detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
     startTime: event.date ?? null,
-    awayTeam: toName(away, "AWAY"),
-    homeTeam: toName(home, "HOME"),
+    awayTeamId: away.team?.id ? String(away.team.id) : null,
+    homeTeamId: home.team?.id ? String(home.team.id) : null,
+    awayTeamName: awayName,
+    homeTeamName: homeName,
+    awayTeam: awayLabel,
+    homeTeam: homeLabel,
     awayScore: toScore(away.score),
     homeScore: toScore(home.score),
   };

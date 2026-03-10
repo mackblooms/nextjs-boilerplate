@@ -26,6 +26,10 @@ type LiveScoreGame = {
   state: LiveScoreState;
   detail: string;
   startTime: string | null;
+  awayTeamId: string | null;
+  homeTeamId: string | null;
+  awayTeamName: string;
+  homeTeamName: string;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -39,6 +43,7 @@ type LiveScoresResponse = {
 };
 
 type EspnTeam = {
+  id?: string | number;
   displayName?: string;
   abbreviation?: string;
 };
@@ -94,22 +99,52 @@ function toScore(raw: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function normalizeTeamKey(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[']/g, "")
+    .replace(/[.]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function teamNameVariants(name: string) {
+  const base = normalizeTeamKey(name);
+  const variants = new Set<string>([base]);
+
+  if (base.includes(" state")) {
+    variants.add(base.replace(/\bstate\b/g, "st"));
+  }
+  if (base.includes(" st")) {
+    variants.add(base.replace(/\bst\b/g, "state"));
+  }
+
+  return variants;
+}
+
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const competitors = event.competitions?.[0]?.competitors ?? [];
   const home = competitors.find((c) => c.homeAway === "home");
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
 
-  const awayName = away.team?.abbreviation?.trim() || away.team?.displayName?.trim() || "AWAY";
-  const homeName = home.team?.abbreviation?.trim() || home.team?.displayName?.trim() || "HOME";
+  const awayDisplayName = away.team?.displayName?.trim() || away.team?.abbreviation?.trim() || "Away";
+  const homeDisplayName = home.team?.displayName?.trim() || home.team?.abbreviation?.trim() || "Home";
+  const awayLabel = away.team?.abbreviation?.trim() || awayDisplayName;
+  const homeLabel = home.team?.abbreviation?.trim() || homeDisplayName;
 
   return {
-    id: event.id ?? `${event.date ?? "game"}-${awayName}-${homeName}`,
+    id: event.id ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
     state: toLiveState(event.status?.type?.state, event.status?.type?.completed),
     detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
     startTime: event.date ?? null,
-    awayTeam: awayName,
-    homeTeam: homeName,
+    awayTeamId: away.team?.id ? String(away.team.id) : null,
+    homeTeamId: home.team?.id ? String(home.team.id) : null,
+    awayTeamName: awayDisplayName,
+    homeTeamName: homeDisplayName,
+    awayTeam: awayLabel,
+    homeTeam: homeLabel,
     awayScore: toScore(away.score),
     homeScore: toScore(home.score),
   };
@@ -175,11 +210,13 @@ function ScoreSidebar({
   games,
   loading,
   error,
+  emptyMessage,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
+  emptyMessage: string;
 }) {
   return (
     <aside
@@ -197,7 +234,7 @@ function ScoreSidebar({
       {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
       {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>No games found right now.</div>
+        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
       ) : null}
       {!loading &&
         !error &&
@@ -247,11 +284,16 @@ export default function PoolPage() {
   const [scores, setScores] = useState<LiveScoreGame[]>([]);
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoresError, setScoresError] = useState<string | null>(null);
+  const [draftedEspnIds, setDraftedEspnIds] = useState<string[]>([]);
+  const [draftedTeamKeys, setDraftedTeamKeys] = useState<string[]>([]);
+  const [draftedTeamCount, setDraftedTeamCount] = useState(0);
+  const [draftedLoaded, setDraftedLoaded] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setStatus(null);
+      setDraftedLoaded(false);
 
       const { data: poolData, error: poolErr } = await supabase
         .from("pools")
@@ -272,6 +314,10 @@ export default function PoolPage() {
 
       if (!user) {
         setIsMember(false);
+        setDraftedEspnIds([]);
+        setDraftedTeamKeys([]);
+        setDraftedTeamCount(0);
+        setDraftedLoaded(true);
         setLoading(false);
         return;
       }
@@ -284,6 +330,77 @@ export default function PoolPage() {
         .maybeSingle();
 
       setIsMember(!!memberRow);
+
+      const { data: entryRows } = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id)
+        .limit(1);
+
+      const entryId = (entryRows?.[0]?.id as string | undefined) ?? null;
+      if (!entryId) {
+        setDraftedEspnIds([]);
+        setDraftedTeamKeys([]);
+        setDraftedTeamCount(0);
+        setDraftedLoaded(true);
+        setLoading(false);
+        return;
+      }
+
+      const { data: pickRows } = await supabase
+        .from("entry_picks")
+        .select("team_id")
+        .eq("entry_id", entryId);
+
+      const pickedTeamIds = Array.from(
+        new Set(((pickRows ?? []) as Array<{ team_id: string }>).map((p) => p.team_id).filter(Boolean))
+      );
+
+      if (pickedTeamIds.length === 0) {
+        setDraftedEspnIds([]);
+        setDraftedTeamKeys([]);
+        setDraftedTeamCount(0);
+        setDraftedLoaded(true);
+        setLoading(false);
+        return;
+      }
+
+      let teamRows:
+        | Array<{ id: string; name: string; espn_team_id?: string | number | null }>
+        | null = null;
+      const { data: teamRowsWithEspn, error: teamErrWithEspn } = await supabase
+        .from("teams")
+        .select("id,name,espn_team_id")
+        .in("id", pickedTeamIds);
+
+      if (teamErrWithEspn && teamErrWithEspn.message.includes("espn_team_id")) {
+        const { data: teamRowsBasic } = await supabase
+          .from("teams")
+          .select("id,name")
+          .in("id", pickedTeamIds);
+        teamRows = (teamRowsBasic ?? []) as Array<{ id: string; name: string }>;
+      } else {
+        teamRows = (teamRowsWithEspn ?? []) as Array<{
+          id: string;
+          name: string;
+          espn_team_id?: string | number | null;
+        }>;
+      }
+
+      const espnIdSet = new Set<string>();
+      const keySet = new Set<string>();
+      for (const row of teamRows ?? []) {
+        if (row.espn_team_id != null) espnIdSet.add(String(row.espn_team_id));
+        for (const variant of teamNameVariants(String(row.name ?? ""))) {
+          if (variant) keySet.add(variant);
+        }
+      }
+
+      setDraftedEspnIds(Array.from(espnIdSet));
+      setDraftedTeamKeys(Array.from(keySet));
+      setDraftedTeamCount(pickedTeamIds.length);
+      setDraftedLoaded(true);
       setLoading(false);
     };
 
@@ -399,11 +516,34 @@ export default function PoolPage() {
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
   const joinDisabled = joining || (poolIsPrivate && joinPassword.trim().length === 0);
-  const liveAndUpcoming = useMemo(
-    () => scores.filter((g) => g.state !== "FINAL").slice(0, 6),
-    [scores]
+  const draftedEspnIdSet = useMemo(() => new Set(draftedEspnIds), [draftedEspnIds]);
+  const draftedKeySet = useMemo(() => new Set(draftedTeamKeys), [draftedTeamKeys]);
+  const draftedTeamScores = useMemo(
+    () =>
+      scores.filter((g) => {
+        if (g.awayTeamId && draftedEspnIdSet.has(g.awayTeamId)) return true;
+        if (g.homeTeamId && draftedEspnIdSet.has(g.homeTeamId)) return true;
+
+        const awayKey = normalizeTeamKey(g.awayTeamName || g.awayTeam);
+        const homeKey = normalizeTeamKey(g.homeTeamName || g.homeTeam);
+        return draftedKeySet.has(awayKey) || draftedKeySet.has(homeKey);
+      }),
+    [scores, draftedEspnIdSet, draftedKeySet]
   );
-  const finals = useMemo(() => scores.filter((g) => g.state === "FINAL").slice(0, 6), [scores]);
+  const liveAndUpcoming = useMemo(
+    () => draftedTeamScores.filter((g) => g.state !== "FINAL").slice(0, 6),
+    [draftedTeamScores]
+  );
+  const finals = useMemo(
+    () => draftedTeamScores.filter((g) => g.state === "FINAL").slice(0, 6),
+    [draftedTeamScores]
+  );
+  const scoreEmptyMessage = useMemo(() => {
+    if (!draftedLoaded) return "Loading your drafted teams...";
+    if (isMember !== true) return "Join this pool to see your drafted-team scores.";
+    if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
+    return "No games for your drafted teams right now.";
+  }, [draftedLoaded, isMember, draftedTeamCount]);
 
   const statusStyle =
     status?.tone === "success"
@@ -417,10 +557,11 @@ export default function PoolPage() {
       <div className="pool-hero-layout">
         <div className="pool-scores-left">
           <ScoreSidebar
-            title="Live / Upcoming"
-            games={liveAndUpcoming}
-            loading={scoresLoading}
+            title="Recent Finals"
+            games={finals}
+            loading={scoresLoading || !draftedLoaded}
             error={scoresError}
+            emptyMessage={scoreEmptyMessage}
           />
         </div>
 
@@ -700,10 +841,11 @@ export default function PoolPage() {
 
         <div className="pool-scores-right">
           <ScoreSidebar
-            title="Recent Finals"
-            games={finals}
-            loading={scoresLoading}
+            title="Live / Upcoming"
+            games={liveAndUpcoming}
+            loading={scoresLoading || !draftedLoaded}
             error={scoresError}
+            emptyMessage={scoreEmptyMessage}
           />
         </div>
       </div>
