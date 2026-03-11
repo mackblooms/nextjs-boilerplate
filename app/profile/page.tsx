@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { withAvatarFallback } from "../../lib/avatar";
 
 type ProfileRow = {
   display_name: string | null;
@@ -46,6 +47,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
   const [isEditing, setIsEditing] = useState(onboarding);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -58,6 +62,7 @@ export default function ProfilePage() {
         setLoading(false);
         return;
       }
+      setUserId(authData.user.id);
 
       const selectedColumns = [
         "display_name",
@@ -122,7 +127,7 @@ export default function ProfilePage() {
         setFullName(row.display_name);
       }
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
-      if (row?.avatar_url) setAvatarUrl(row.avatar_url);
+      setAvatarUrl(withAvatarFallback(authData.user.id, row?.avatar_url));
       if (row?.bio) setBio(row.bio);
 
       setLoading(false);
@@ -130,6 +135,59 @@ export default function ProfilePage() {
 
     load();
   }, [onboarding]);
+
+  async function uploadAvatar(file: File) {
+    setUploadingAvatar(true);
+    setMsg("");
+
+    try {
+      if (!file.type.startsWith("image/")) {
+        setMsg("Please choose an image file.");
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) {
+        setMsg("Please log in first.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.set("avatar", file);
+
+      const res = await fetch("/api/profile/avatar", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
+
+      const body = (await res.json().catch(() => ({}))) as {
+        avatarUrl?: string;
+        error?: string;
+      };
+
+      if (!res.ok || !body.avatarUrl) {
+        setMsg(body.error ?? "Failed to upload avatar.");
+        return;
+      }
+
+      setAvatarUrl(body.avatarUrl);
+      setMsg("Profile picture selected. Click Save to confirm.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function onAvatarFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    await uploadAvatar(file);
+    e.target.value = "";
+  }
 
   async function save() {
     setMsg("");
@@ -163,7 +221,7 @@ export default function ProfilePage() {
       display_name: bracketName,
       full_name: legalName,
       favorite_team: team,
-      avatar_url: avatarUrl.trim() || null,
+      avatar_url: withAvatarFallback(authData.user.id, avatarUrl),
       bio: bio.trim() || null,
     };
 
@@ -194,6 +252,10 @@ export default function ProfilePage() {
     setMsg("Saved!");
   }
 
+  const resolvedAvatarUrl = userId
+    ? withAvatarFallback(userId, avatarUrl)
+    : avatarUrl.trim();
+
   return (
     <main style={{ maxWidth: 560, margin: "64px auto", padding: 16 }}>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
@@ -206,10 +268,95 @@ export default function ProfilePage() {
         </p>
       ) : null}
 
-      {loading ? <p>Loading…</p> : null}
+      {loading ? <p>Loading...</p> : null}
 
       {!loading && isEditing ? (
         <>
+          <div style={{ display: "grid", placeItems: "center", marginBottom: 14 }}>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              style={{
+                width: 112,
+                height: 112,
+                borderRadius: 9999,
+                border: "1px solid var(--border-color)",
+                overflow: "hidden",
+                position: "relative",
+                padding: 0,
+                cursor: "pointer",
+                background: "var(--surface-muted)",
+              }}
+            >
+              {resolvedAvatarUrl ? (
+                <img
+                  src={resolvedAvatarUrl}
+                  alt={fullName || displayName || "Profile"}
+                  width={112}
+                  height={112}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "grid",
+                    placeItems: "center",
+                    fontWeight: 900,
+                    fontSize: 30,
+                  }}
+                >
+                  {(fullName || displayName || "P").slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "grid",
+                  placeItems: "center",
+                  background: "rgba(0,0,0,0.42)",
+                  color: "#fff",
+                  fontWeight: 900,
+                  fontSize: 14,
+                }}
+              >
+                {uploadingAvatar ? "Uploading..." : "Edit"}
+              </span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={onAvatarFileChange}
+              style={{ display: "none" }}
+            />
+            <p style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+              Tap the profile circle to upload from this device.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (!userId) return;
+                setAvatarUrl(withAvatarFallback(userId, null));
+              }}
+              style={{
+                marginTop: 4,
+                fontSize: 12,
+                border: "1px solid var(--border-color)",
+                borderRadius: 999,
+                background: "transparent",
+                padding: "4px 10px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Use random avatar
+            </button>
+          </div>
+
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
             Bracket nickname
           </label>
@@ -259,22 +406,6 @@ export default function ProfilePage() {
           />
 
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Profile picture URL
-          </label>
-          <input
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://..."
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          />
-
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
             Bio (optional)
           </label>
           <textarea
@@ -295,12 +426,14 @@ export default function ProfilePage() {
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button
               onClick={save}
+              disabled={uploadingAvatar}
               style={{
                 padding: "12px 14px",
                 borderRadius: 8,
                 border: "none",
                 cursor: "pointer",
                 fontWeight: 800,
+                opacity: uploadingAvatar ? 0.65 : 1,
               }}
             >
               {onboarding ? "Save and continue" : "Save"}
@@ -345,9 +478,9 @@ export default function ProfilePage() {
               marginBottom: 12,
             }}
           >
-            {avatarUrl ? (
+            {resolvedAvatarUrl ? (
               <img
-                src={avatarUrl}
+                src={resolvedAvatarUrl}
                 alt={fullName || displayName || "Profile"}
                 width={72}
                 height={72}

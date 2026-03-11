@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import { withAvatarFallback } from "../../../../lib/avatar";
 
 type ScoringGame = {
   round: string;
@@ -86,12 +87,27 @@ type Row = {
   display_name: string | null;
   entry_name: string | null;
   full_name: string | null;
+  avatar_url: string;
   total_score: number;
   rank: number;
 };
 
 type TeamSeedRow = { id: string; seed_in_region: number | null };
 type PickRow = { entry_id: string; team_id: string };
+type ProfileLookupRow = {
+  user_id: string;
+  display_name: string | null;
+  full_name: string | null;
+  avatar_url?: string | null;
+};
+
+function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
+  return Boolean(
+    error?.code === "PGRST204" &&
+      error.message?.includes("profiles") &&
+      error.message.includes("avatar_url"),
+  );
+}
 
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
@@ -168,7 +184,7 @@ export default function LeaderboardPage() {
 
       const baseRows = (data ?? []) as Omit<
         Row,
-        "total_score" | "rank" | "full_name" | "entry_name"
+        "total_score" | "rank" | "full_name" | "entry_name" | "avatar_url"
       >[];
       const entryIds = baseRows.map((r) => r.entry_id);
 
@@ -188,29 +204,53 @@ export default function LeaderboardPage() {
       }
 
       const userIds = Array.from(new Set(baseRows.map((r) => r.user_id)));
-      let fullNameByUser = new Map<string, string | null>();
+      let profileByUser = new Map<
+        string,
+        { full_name: string | null; avatar_url: string | null }
+      >();
       if (userIds.length > 0) {
-        const { data: profileRows, error: profilesErr } = await supabase
-          .from("profiles")
-          .select("user_id,display_name,full_name")
-          .in("user_id", userIds);
+        let profileRows: ProfileLookupRow[] = [];
 
-        if (profilesErr) {
+        while (true) {
+          const { data, error: profilesErr } = await supabase
+            .from("profiles")
+            .select("user_id,display_name,full_name,avatar_url")
+            .in("user_id", userIds);
+
+          if (!profilesErr) {
+            profileRows = (data as ProfileLookupRow[] | null) ?? [];
+            break;
+          }
+
+          if (isMissingAvatarColumnError(profilesErr)) {
+            const fallback = await supabase
+              .from("profiles")
+              .select("user_id,display_name,full_name")
+              .in("user_id", userIds);
+
+            if (fallback.error) {
+              setMsg(fallback.error.message);
+              setLoading(false);
+              return;
+            }
+
+            profileRows = (fallback.data as ProfileLookupRow[] | null) ?? [];
+            break;
+          }
+
           setMsg(profilesErr.message);
           setLoading(false);
           return;
         }
 
-        fullNameByUser = new Map(
-          (
-            (profileRows as
-              | {
-                  user_id: string;
-                  display_name: string | null;
-                  full_name: string | null;
-                }[]
-              | null) ?? []
-          ).map((row) => [row.user_id, row.full_name ?? row.display_name]),
+        profileByUser = new Map(
+          profileRows.map((row) => [
+            row.user_id,
+            {
+              full_name: row.full_name ?? row.display_name,
+              avatar_url: row.avatar_url ?? null,
+            },
+          ]),
         );
       }
 
@@ -277,7 +317,11 @@ export default function LeaderboardPage() {
           return {
             ...r,
             entry_name: entryNameById.get(r.entry_id) ?? null,
-            full_name: fullNameByUser.get(r.user_id) ?? null,
+            full_name: profileByUser.get(r.user_id)?.full_name ?? null,
+            avatar_url: withAvatarFallback(
+              r.user_id,
+              profileByUser.get(r.user_id)?.avatar_url ?? null,
+            ),
             total_score: totalScore,
           };
         })
@@ -374,56 +418,70 @@ export default function LeaderboardPage() {
               >
                 <div style={{ fontWeight: 900 }}>{r.rank}</div>
                 <div style={{ fontWeight: 800 }}>
-                  <div>
-                    {canOpenBracket ? (
-                      <a
-                        href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                        style={{ textDecoration: "none", display: "inline-block" }}
-                      >
-                        <div
-                          style={{
-                            fontWeight: 800,
-                            color: "var(--foreground)",
-                            fontSize: 17,
-                          }}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <img
+                      src={r.avatar_url}
+                      alt={r.full_name ?? r.display_name ?? "Player"}
+                      width={36}
+                      height={36}
+                      style={{
+                        borderRadius: 9999,
+                        objectFit: "cover",
+                        border: "1px solid var(--border-color)",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div>
+                      {canOpenBracket ? (
+                        <a
+                          href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                          style={{ textDecoration: "none", display: "inline-block" }}
                         >
-                          {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
-                          {r.user_id === myUserId ? " (You)" : ""}
-                        </div>
-                        <div
-                          style={{
-                            color: "var(--foreground)",
-                            opacity: 0.72,
-                            fontSize: 13,
-                            marginTop: 2,
-                          }}
-                        >
-                          {r.full_name ?? "Unnamed player"}
-                        </div>
-                      </a>
-                    ) : (
-                      <>
-                        <div
-                          style={{
-                            fontWeight: 800,
-                            color: "var(--foreground)",
-                            fontSize: 17,
-                          }}
-                        >
-                          {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
-                        </div>
-                        <div
-                          style={{
-                            color: "var(--foreground)",
-                            opacity: 0.72,
-                            fontSize: 13,
-                            marginTop: 2,
-                          }}
-                        >
-                          Hidden until lock
-                        </div>
-                      </>
-                    )}
+                          <div
+                            style={{
+                              fontWeight: 800,
+                              color: "var(--foreground)",
+                              fontSize: 17,
+                            }}
+                          >
+                            {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                            {r.user_id === myUserId ? " (You)" : ""}
+                          </div>
+                          <div
+                            style={{
+                              color: "var(--foreground)",
+                              opacity: 0.72,
+                              fontSize: 13,
+                              marginTop: 2,
+                            }}
+                          >
+                            {r.full_name ?? "Unnamed player"}
+                          </div>
+                        </a>
+                      ) : (
+                        <>
+                          <div
+                            style={{
+                              fontWeight: 800,
+                              color: "var(--foreground)",
+                              fontSize: 17,
+                            }}
+                          >
+                            {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                          </div>
+                          <div
+                            style={{
+                              color: "var(--foreground)",
+                              opacity: 0.72,
+                              fontSize: 13,
+                              marginTop: 2,
+                            }}
+                          >
+                            Hidden until lock
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div style={{ textAlign: "right", fontWeight: 900 }}>
