@@ -202,6 +202,27 @@ function statusLabel(game: LiveScoreGame) {
   return `${when} • ${game.detail}`;
 }
 
+function etDayKey(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
+}
+
+function etDayKeyFromIso(startTime: string | null) {
+  if (!startTime) return null;
+  const d = new Date(startTime);
+  if (Number.isNaN(d.getTime())) return null;
+  return etDayKey(d);
+}
+
 async function fetchEspnDirectScores(lookbackDays: number, lookaheadDays: number): Promise<LiveScoreGame[]> {
   const dateKeys: string[] = [];
   for (let day = -lookbackDays; day <= lookaheadDays; day++) {
@@ -601,19 +622,33 @@ export default function PoolPage() {
       }),
     [scores, draftedEspnIdSet, draftedKeySet]
   );
-  const liveAndUpcoming = useMemo(
-    () => draftedTeamScores.filter((g) => g.state !== "FINAL").slice(0, 6),
-    [draftedTeamScores]
+  const todayEt = useMemo(() => etDayKey(new Date()), []);
+  const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
+  const yesterdayFinals = useMemo(
+    () =>
+      draftedTeamScores
+        .filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === yesterdayEt)
+        .slice(0, 6),
+    [draftedTeamScores, yesterdayEt]
   );
-  const finals = useMemo(
-    () => draftedTeamScores.filter((g) => g.state === "FINAL").slice(0, 6),
-    [draftedTeamScores]
+  const todaysFinals = useMemo(
+    () =>
+      draftedTeamScores
+        .filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === todayEt)
+        .slice(0, 6),
+    [draftedTeamScores, todayEt]
   );
-  const scoreEmptyMessage = useMemo(() => {
+  const yesterdayFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
     if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
-    return "No games for your drafted teams right now.";
+    return "No finals from yesterday for your drafted teams.";
+  }, [draftedLoaded, isMember, draftedTeamCount]);
+  const todaysFinalsEmptyMessage = useMemo(() => {
+    if (!draftedLoaded) return "Loading your drafted teams...";
+    if (isMember !== true) return "Join this pool to see your drafted-team scores.";
+    if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
+    return "No finals from today for your drafted teams yet.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
 
   const statusStyle =
@@ -628,11 +663,11 @@ export default function PoolPage() {
       <div className="pool-hero-layout">
         <div className="pool-scores-left">
           <ScoreSidebar
-            title="Recent Finals"
-            games={finals}
+            title="Yesterday's Finals"
+            games={yesterdayFinals}
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
-            emptyMessage={scoreEmptyMessage}
+            emptyMessage={yesterdayFinalsEmptyMessage}
           />
         </div>
 
@@ -912,11 +947,11 @@ export default function PoolPage() {
 
         <div className="pool-scores-right">
           <ScoreSidebar
-            title="Live / Upcoming"
-            games={liveAndUpcoming}
+            title="Today's Finals"
+            games={todaysFinals}
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
-            emptyMessage={scoreEmptyMessage}
+            emptyMessage={todaysFinalsEmptyMessage}
           />
         </div>
       </div>

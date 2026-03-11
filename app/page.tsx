@@ -421,14 +421,13 @@ function HomeContent() {
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
 
-  const liveAndUpcoming = useMemo(
-    () =>
-      scores.filter((g) => g.state !== "FINAL" && etDayKeyFromIso(g.startTime) === todayEt),
-    [scores, todayEt]
-  );
-  const finals = useMemo(
+  const yesterdayFinals = useMemo(
     () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === yesterdayEt),
     [scores, yesterdayEt]
+  );
+  const todaysFinals = useMemo(
+    () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === todayEt),
+    [scores, todayEt]
   );
 
   return (
@@ -442,8 +441,8 @@ function HomeContent() {
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
-            title="Recent Finals"
-            games={finals}
+            title="Yesterday's Finals"
+            games={yesterdayFinals}
             loading={scoresLoading}
             error={scoresError}
             emptyMessage="No finals from yesterday's slate."
@@ -504,11 +503,11 @@ function HomeContent() {
 
         <div className="home-scores-right">
           <ScorePanel
-            title="Live / Upcoming"
-            games={liveAndUpcoming}
+            title="Today's Finals"
+            games={todaysFinals}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage="No live or upcoming games for today."
+            emptyMessage="No finals from today's slate yet."
           />
         </div>
       </div>
@@ -528,7 +527,7 @@ function HomeFallback() {
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
-            title="Recent Finals"
+            title="Yesterday's Finals"
             games={[]}
             loading
             error={null}
@@ -584,11 +583,11 @@ function HomeFallback() {
 
         <div className="home-scores-right">
           <ScorePanel
-            title="Live / Upcoming"
+            title="Today's Finals"
             games={[]}
             loading
             error={null}
-            emptyMessage="No live or upcoming games for today."
+            emptyMessage="No finals from today's slate yet."
           />
         </div>
       </div>
