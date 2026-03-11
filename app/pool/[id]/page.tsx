@@ -624,12 +624,16 @@ export default function PoolPage() {
   );
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
-  const yesterdayFinals = useMemo(
+  const recentFinals = useMemo(
     () =>
       draftedTeamScores
-        .filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === yesterdayEt)
+        .filter((g) => {
+          if (g.state !== "FINAL") return false;
+          const gameDay = etDayKeyFromIso(g.startTime);
+          return gameDay === yesterdayEt || gameDay === todayEt;
+        })
         .slice(0, 6),
-    [draftedTeamScores, yesterdayEt]
+    [draftedTeamScores, yesterdayEt, todayEt]
   );
   const todaysFinals = useMemo(
     () =>
@@ -638,11 +642,11 @@ export default function PoolPage() {
         .slice(0, 6),
     [draftedTeamScores, todayEt]
   );
-  const yesterdayFinalsEmptyMessage = useMemo(() => {
+  const recentFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
     if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
-    return "No finals from yesterday for your drafted teams.";
+    return "No final scores from today or yesterday for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
   const todaysFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
@@ -663,11 +667,11 @@ export default function PoolPage() {
       <div className="pool-hero-layout">
         <div className="pool-scores-left">
           <ScoreSidebar
-            title="Yesterday's Finals"
-            games={yesterdayFinals}
+            title="Recent Finals"
+            games={recentFinals}
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
-            emptyMessage={yesterdayFinalsEmptyMessage}
+            emptyMessage={recentFinalsEmptyMessage}
           />
         </div>
 

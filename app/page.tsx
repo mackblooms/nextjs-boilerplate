@@ -421,9 +421,14 @@ function HomeContent() {
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
 
-  const yesterdayFinals = useMemo(
-    () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === yesterdayEt),
-    [scores, yesterdayEt]
+  const recentFinals = useMemo(
+    () =>
+      scores.filter((g) => {
+        if (g.state !== "FINAL") return false;
+        const gameDay = etDayKeyFromIso(g.startTime);
+        return gameDay === yesterdayEt || gameDay === todayEt;
+      }),
+    [scores, yesterdayEt, todayEt]
   );
   const todaysFinals = useMemo(
     () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === todayEt),
@@ -441,11 +446,11 @@ function HomeContent() {
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
-            title="Yesterday's Finals"
-            games={yesterdayFinals}
+            title="Recent Finals"
+            games={recentFinals}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage="No finals from yesterday's slate."
+            emptyMessage="No final scores from today or yesterday."
           />
         </div>
 
@@ -527,11 +532,11 @@ function HomeFallback() {
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
-            title="Yesterday's Finals"
+            title="Recent Finals"
             games={[]}
             loading
             error={null}
-            emptyMessage="No finals from yesterday's slate."
+            emptyMessage="No final scores from today or yesterday."
           />
         </div>
 
