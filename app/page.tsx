@@ -95,7 +95,7 @@ const scoreRowStyle = {
 };
 
 const LANDING_LOOKBACK_DAYS = 1;
-const LANDING_LOOKAHEAD_DAYS = 0;
+const LANDING_LOOKAHEAD_DAYS = 1;
 
 function formatGameDateTimeET(startTime: string | null) {
   if (!startTime) return "Time TBD (ET)";
@@ -420,6 +420,7 @@ function HomeContent() {
 
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
+  const tomorrowEt = useMemo(() => etDayKey(shiftDate(1)), []);
 
   const recentFinals = useMemo(
     () =>
@@ -430,9 +431,15 @@ function HomeContent() {
       }),
     [scores, yesterdayEt, todayEt]
   );
-  const todaysFinals = useMemo(
-    () => scores.filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === todayEt),
-    [scores, todayEt]
+  const liveAndUpcoming = useMemo(
+    () =>
+      scores.filter((g) => {
+        const gameDay = etDayKeyFromIso(g.startTime);
+        const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
+        const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
+        return isLiveToday || isUpcomingTomorrow;
+      }),
+    [scores, todayEt, tomorrowEt]
   );
 
   return (
@@ -508,11 +515,11 @@ function HomeContent() {
 
         <div className="home-scores-right">
           <ScorePanel
-            title="Today's Finals"
-            games={todaysFinals}
+            title="Live / Upcoming"
+            games={liveAndUpcoming}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage="No finals from today's slate yet."
+            emptyMessage="No live games today or upcoming games tomorrow."
           />
         </div>
       </div>
@@ -588,11 +595,11 @@ function HomeFallback() {
 
         <div className="home-scores-right">
           <ScorePanel
-            title="Today's Finals"
+            title="Live / Upcoming"
             games={[]}
             loading
             error={null}
-            emptyMessage="No finals from today's slate yet."
+            emptyMessage="No live games today or upcoming games tomorrow."
           />
         </div>
       </div>

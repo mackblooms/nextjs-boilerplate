@@ -624,6 +624,7 @@ export default function PoolPage() {
   );
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
+  const tomorrowEt = useMemo(() => etDayKey(shiftDate(1)), []);
   const recentFinals = useMemo(
     () =>
       draftedTeamScores
@@ -635,12 +636,17 @@ export default function PoolPage() {
         .slice(0, 6),
     [draftedTeamScores, yesterdayEt, todayEt]
   );
-  const todaysFinals = useMemo(
+  const liveAndUpcoming = useMemo(
     () =>
       draftedTeamScores
-        .filter((g) => g.state === "FINAL" && etDayKeyFromIso(g.startTime) === todayEt)
+        .filter((g) => {
+          const gameDay = etDayKeyFromIso(g.startTime);
+          const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
+          const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
+          return isLiveToday || isUpcomingTomorrow;
+        })
         .slice(0, 6),
-    [draftedTeamScores, todayEt]
+    [draftedTeamScores, todayEt, tomorrowEt]
   );
   const recentFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
@@ -648,11 +654,11 @@ export default function PoolPage() {
     if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
     return "No final scores from today or yesterday for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
-  const todaysFinalsEmptyMessage = useMemo(() => {
+  const liveAndUpcomingEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
     if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
-    return "No finals from today for your drafted teams yet.";
+    return "No live games today or upcoming games tomorrow for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
 
   const statusStyle =
@@ -951,11 +957,11 @@ export default function PoolPage() {
 
         <div className="pool-scores-right">
           <ScoreSidebar
-            title="Today's Finals"
-            games={todaysFinals}
+            title="Live / Upcoming"
+            games={liveAndUpcoming}
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
-            emptyMessage={todaysFinalsEmptyMessage}
+            emptyMessage={liveAndUpcomingEmptyMessage}
           />
         </div>
       </div>
