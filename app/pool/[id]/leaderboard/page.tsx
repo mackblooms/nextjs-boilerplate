@@ -387,7 +387,6 @@ export default function LeaderboardPage() {
                             fontSize: 17,
                           }}
                         >
-                          {r.rank === 1 ? "#1 " : ""}
                           {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
                           {r.user_id === myUserId ? " (You)" : ""}
                         </div>
@@ -411,7 +410,6 @@ export default function LeaderboardPage() {
                             fontSize: 17,
                           }}
                         >
-                          {r.rank === 1 ? "#1 " : ""}
                           {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
                         </div>
                         <div
