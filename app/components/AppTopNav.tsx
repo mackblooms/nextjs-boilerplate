@@ -63,7 +63,7 @@ export default function AppTopNav() {
         .maybeSingle();
 
       if (homeMembership?.pool_id) {
-        setHomeHref(`/pool/${homeMembership.pool_id}/leaderboard`);
+        setHomeHref(`/pool/${homeMembership.pool_id}`);
       } else {
         setHomeHref("/");
       }

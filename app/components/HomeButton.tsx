@@ -36,7 +36,7 @@ export default function HomeButton() {
         .maybeSingle();
 
       if (membership?.pool_id) {
-        setHref(`/pool/${membership.pool_id}/leaderboard`);
+        setHref(`/pool/${membership.pool_id}`);
         return;
       }
 

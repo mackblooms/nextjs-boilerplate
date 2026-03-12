@@ -103,7 +103,7 @@ export default function NewPoolPage() {
       poolId: body.poolId,
     });
 
-    router.push(`/pool/${body.poolId}/leaderboard`);
+    router.push(`/pool/${body.poolId}`);
   }
 
   return (
