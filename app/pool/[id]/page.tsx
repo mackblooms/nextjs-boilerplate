@@ -550,6 +550,8 @@ export default function PoolPage() {
     };
   }, []);
 
+  const poolIsPrivate = (pool?.is_private ?? true) !== false;
+
   async function joinPool() {
     setStatus(null);
     setJoining(true);
@@ -573,7 +575,6 @@ export default function PoolPage() {
       return;
     }
 
-    const poolIsPrivate = (pool?.is_private ?? true) !== false;
     if (poolIsPrivate && !joinPassword.trim()) {
       setStatus({ tone: "error", text: "Enter this pool's password." });
       trackEvent({
@@ -632,7 +633,6 @@ export default function PoolPage() {
     }
   }
 
-  const poolIsPrivate = (pool?.is_private ?? true) !== false;
   const joinDisabled = joining || (poolIsPrivate && joinPassword.trim().length === 0);
   const draftedEspnIdSet = useMemo(() => new Set(draftedEspnIds), [draftedEspnIds]);
   const draftedKeySet = useMemo(() => new Set(draftedTeamKeys), [draftedTeamKeys]);
