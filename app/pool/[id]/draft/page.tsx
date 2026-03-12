@@ -8,6 +8,7 @@ import {
   type BracketBoardTeam,
 } from "../../../components/BracketBoard";
 import { supabase } from "../../../../lib/supabaseClient";
+import { trackEvent } from "@/lib/analytics";
 
 type Team = {
   id: string;
@@ -356,17 +357,32 @@ export default function DraftPage() {
   async function joinPool() {
     setMsg("");
     setJoining(true);
+    trackEvent({
+      eventName: "pool_join_attempt",
+      poolId,
+      metadata: { location: "draft_page", is_private: poolIsPrivate },
+    });
 
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
     if (!session) {
       setMsg("Please log in first.");
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "draft_page", reason: "not_authenticated" },
+      });
       setJoining(false);
       return;
     }
 
     if (poolIsPrivate && !joinPassword.trim()) {
       setMsg("Enter this pool's password.");
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "draft_page", reason: "missing_password" },
+      });
       setJoining(false);
       return;
     }
@@ -387,6 +403,11 @@ export default function DraftPage() {
 
     if (!res.ok) {
       setMsg(body.error ?? "Failed to join pool.");
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "draft_page", reason: body.error ?? "api_error" },
+      });
       setJoining(false);
       return;
     }
@@ -425,6 +446,11 @@ export default function DraftPage() {
 
     setSelected(new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)));
     setMsg("Joined pool. You can draft now.");
+    trackEvent({
+      eventName: "pool_join_success",
+      poolId,
+      metadata: { location: "draft_page", is_private: poolIsPrivate },
+    });
     setJoining(false);
   }
 
@@ -472,10 +498,26 @@ export default function DraftPage() {
 
   async function savePicks() {
     setMsg("");
+    trackEvent({
+      eventName: "draft_save_attempt",
+      poolId,
+      entryId,
+      metadata: {
+        selected_count: selected.size,
+        total_cost: totalCost,
+        is_valid: isValid,
+      },
+    });
 
     let resolvedEntryId = entryId;
     if (!isMember) {
       setMsg("Join the pool before drafting.");
+      trackEvent({
+        eventName: "draft_save_failure",
+        poolId,
+        entryId,
+        metadata: { reason: "not_member" },
+      });
       return;
     }
 
@@ -484,12 +526,24 @@ export default function DraftPage() {
       const user = authData.user;
       if (!user) {
         setMsg("Please log in first.");
+        trackEvent({
+          eventName: "draft_save_failure",
+          poolId,
+          entryId,
+          metadata: { reason: "not_authenticated" },
+        });
         return;
       }
 
       const { entry, error: entryErr } = await ensureEntry(user.id);
       if (entryErr || !entry) {
         setMsg(entryErr ?? "Entry not ready yet. Refresh and try again.");
+        trackEvent({
+          eventName: "draft_save_failure",
+          poolId,
+          entryId,
+          metadata: { reason: entryErr ?? "entry_unavailable" },
+        });
         return;
       }
 
@@ -502,10 +556,22 @@ export default function DraftPage() {
 
     if (locked) {
       setMsg("Draft is locked.");
+      trackEvent({
+        eventName: "draft_save_failure",
+        poolId,
+        entryId: resolvedEntryId,
+        metadata: { reason: "draft_locked" },
+      });
       return;
     }
     if (!isValid) {
       setMsg("Draft is not valid (budget/caps). Fix issues before saving.");
+      trackEvent({
+        eventName: "draft_save_failure",
+        poolId,
+        entryId: resolvedEntryId,
+        metadata: { reason: "invalid_draft" },
+      });
       return;
     }
 
@@ -521,6 +587,12 @@ export default function DraftPage() {
 
       if (entryUpdateErr && !isMissingEntryNameError(entryUpdateErr.message)) {
         setMsg(entryUpdateErr.message);
+        trackEvent({
+          eventName: "draft_save_failure",
+          poolId,
+          entryId: resolvedEntryId,
+          metadata: { reason: entryUpdateErr.message },
+        });
         setSaving(false);
         return;
       }
@@ -533,6 +605,12 @@ export default function DraftPage() {
 
     if (delErr) {
       setMsg(delErr.message);
+      trackEvent({
+        eventName: "draft_save_failure",
+        poolId,
+        entryId: resolvedEntryId,
+        metadata: { reason: delErr.message },
+      });
       setSaving(false);
       return;
     }
@@ -546,12 +624,27 @@ export default function DraftPage() {
       const { error: insErr } = await supabase.from("entry_picks").insert(rows);
       if (insErr) {
         setMsg(insErr.message);
+        trackEvent({
+          eventName: "draft_save_failure",
+          poolId,
+          entryId: resolvedEntryId,
+          metadata: { reason: insErr.message },
+        });
         setSaving(false);
         return;
       }
     }
 
     setMsg("Saved!");
+    trackEvent({
+      eventName: "draft_save_success",
+      poolId,
+      entryId: resolvedEntryId,
+      metadata: {
+        selected_count: selected.size,
+        total_cost: totalCost,
+      },
+    });
     setSaving(false);
   }
 

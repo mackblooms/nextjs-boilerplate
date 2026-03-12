@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
+import { trackEvent } from "@/lib/analytics";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -501,13 +502,40 @@ function HomeContent() {
               justifyContent: "center",
             }}
           >
-            <Link href="/how-it-works" style={buttonStyle}>
+            <Link
+              href="/how-it-works"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId) },
+                })
+              }
+            >
               How it works
             </Link>
-            <Link href="/pools/new" style={buttonStyle}>
+            <Link
+              href="/pools/new"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "create_pool", has_invite: Boolean(invitePoolId) },
+                })
+              }
+            >
               Create a pool
             </Link>
-            <Link href={loginHref} style={buttonStyle}>
+            <Link
+              href={loginHref}
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId) },
+                })
+              }
+            >
               Login / Sign up
             </Link>
           </div>
@@ -581,13 +609,40 @@ function HomeFallback() {
               justifyContent: "center",
             }}
           >
-            <Link href="/how-it-works" style={buttonStyle}>
+            <Link
+              href="/how-it-works"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: false },
+                })
+              }
+            >
               How it works
             </Link>
-            <Link href="/pools/new" style={buttonStyle}>
+            <Link
+              href="/pools/new"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "create_pool", has_invite: false },
+                })
+              }
+            >
               Create a pool
             </Link>
-            <Link href="/login" style={buttonStyle}>
+            <Link
+              href="/login"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "login_signup", has_invite: false },
+                })
+              }
+            >
               Login / Sign up
             </Link>
           </div>

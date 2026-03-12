@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
+import { trackEvent } from "@/lib/analytics";
 
 export default function NewPoolPage() {
   const router = useRouter();
@@ -21,6 +22,10 @@ export default function NewPoolPage() {
     const session = sessionData.session;
     if (!session) {
       setMsg("Please log in first.");
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: "not_authenticated" },
+      });
       setSaving(false);
       return;
     }
@@ -28,21 +33,40 @@ export default function NewPoolPage() {
     const poolName = name.trim();
     const poolPassword = password.trim();
     const confirmation = confirmPassword.trim();
+    trackEvent({
+      eventName: "pool_create_attempt",
+      metadata: {
+        has_pool_name: Boolean(poolName),
+        password_length: poolPassword.length,
+      },
+    });
 
     if (!poolName) {
       setMsg("Enter a pool name.");
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: "missing_pool_name" },
+      });
       setSaving(false);
       return;
     }
 
     if (poolPassword.length < 4) {
       setMsg("Enter a pool password with at least 4 characters.");
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: "short_password" },
+      });
       setSaving(false);
       return;
     }
 
     if (poolPassword !== confirmation) {
       setMsg("Pool passwords do not match.");
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: "password_mismatch" },
+      });
       setSaving(false);
       return;
     }
@@ -66,9 +90,18 @@ export default function NewPoolPage() {
 
     if (!res.ok || !body.poolId) {
       setMsg(body.error ?? "Failed to create pool.");
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: body.error ?? "api_error" },
+      });
       setSaving(false);
       return;
     }
+
+    trackEvent({
+      eventName: "pool_create_success",
+      poolId: body.poolId,
+    });
 
     router.push(`/pool/${body.poolId}`);
   }

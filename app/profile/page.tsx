@@ -4,6 +4,7 @@ import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { withAvatarFallback } from "../../lib/avatar";
+import { trackEvent } from "@/lib/analytics";
 
 type ProfileRow = {
   display_name: string | null;
@@ -192,8 +193,20 @@ export default function ProfilePage() {
   async function save() {
     setMsg("");
     const { data: authData } = await supabase.auth.getUser();
+    trackEvent({
+      eventName: "profile_save_attempt",
+      userId: authData.user?.id ?? null,
+      metadata: {
+        onboarding,
+      },
+    });
+
     if (!authData.user) {
       setMsg("Please log in first.");
+      trackEvent({
+        eventName: "profile_save_failure",
+        metadata: { reason: "not_authenticated", onboarding },
+      });
       return;
     }
 
@@ -203,16 +216,31 @@ export default function ProfilePage() {
 
     if (!bracketName) {
       setMsg("Please enter a bracket nickname.");
+      trackEvent({
+        eventName: "profile_save_failure",
+        userId: authData.user.id,
+        metadata: { reason: "missing_display_name", onboarding },
+      });
       return;
     }
 
     if (!legalName || legalName.split(/\s+/).length < 2) {
       setMsg("Please enter your full name (first and last).");
+      trackEvent({
+        eventName: "profile_save_failure",
+        userId: authData.user.id,
+        metadata: { reason: "invalid_full_name", onboarding },
+      });
       return;
     }
 
     if (!team) {
       setMsg("Please add your favorite college team.");
+      trackEvent({
+        eventName: "profile_save_failure",
+        userId: authData.user.id,
+        metadata: { reason: "missing_favorite_team", onboarding },
+      });
       return;
     }
 
@@ -235,6 +263,11 @@ export default function ProfilePage() {
       const missingColumn = getMissingProfilesColumn(error);
       if (!missingColumn || !(missingColumn in payload)) {
         setMsg(error.message);
+        trackEvent({
+          eventName: "profile_save_failure",
+          userId: authData.user.id,
+          metadata: { reason: error.message, onboarding },
+        });
         return;
       }
 
@@ -242,6 +275,11 @@ export default function ProfilePage() {
     }
 
     setHasProfile(true);
+    trackEvent({
+      eventName: "profile_save_success",
+      userId: authData.user.id,
+      metadata: { onboarding },
+    });
 
     if (onboarding) {
       router.replace(nextPath.startsWith("/") ? nextPath : "/pools");

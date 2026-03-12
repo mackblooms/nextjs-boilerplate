@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
+import { trackEvent } from "@/lib/analytics";
 
 type Pool = {
   id: string;
@@ -552,12 +553,22 @@ export default function PoolPage() {
   async function joinPool() {
     setStatus(null);
     setJoining(true);
+    trackEvent({
+      eventName: "pool_join_attempt",
+      poolId,
+      metadata: { location: "pool_page", is_private: poolIsPrivate },
+    });
 
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
 
     if (!session) {
       setStatus({ tone: "error", text: "Please log in first." });
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "pool_page", reason: "not_authenticated" },
+      });
       setJoining(false);
       return;
     }
@@ -565,6 +576,11 @@ export default function PoolPage() {
     const poolIsPrivate = (pool?.is_private ?? true) !== false;
     if (poolIsPrivate && !joinPassword.trim()) {
       setStatus({ tone: "error", text: "Enter this pool's password." });
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "pool_page", reason: "missing_password" },
+      });
       setJoining(false);
       return;
     }
@@ -585,6 +601,11 @@ export default function PoolPage() {
 
     if (!res.ok) {
       setStatus({ tone: "error", text: body.error ?? "Failed to join pool." });
+      trackEvent({
+        eventName: "pool_join_failure",
+        poolId,
+        metadata: { location: "pool_page", reason: body.error ?? "api_error" },
+      });
       setJoining(false);
       return;
     }
@@ -592,6 +613,11 @@ export default function PoolPage() {
     setIsMember(true);
     setJoinPassword("");
     setStatus({ tone: "success", text: "Joined! You can now access Draft, Bracket, and Leaderboard." });
+    trackEvent({
+      eventName: "pool_join_success",
+      poolId,
+      metadata: { location: "pool_page", is_private: poolIsPrivate },
+    });
     setJoining(false);
   }
 
