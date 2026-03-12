@@ -149,7 +149,7 @@ export default function AppTopNav() {
       >
         <Link href={homeHref} style={pillStyle}>Home</Link>
         <Link href="/how-it-works" style={pillStyle}>How it works</Link>
-        <Link href="/pools" style={pillStyle}>Pools</Link>
+        <Link href="/pools" style={pillStyle}>Join a Pool</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Draft</Link> : null}
         {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} style={pillStyle}>Bracket</Link> : null}
         {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} style={pillStyle}>Leaderboard</Link> : null}
