@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../../lib/poolInvite";
+import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../../lib/accountPassword";
 
 export default function LoginResetPasswordPage() {
   const router = useRouter();
@@ -102,6 +103,13 @@ export default function LoginResetPasswordPage() {
     router.replace(`/login?${loginParams.toString()}`);
   }
 
+  function onGeneratePassword() {
+    const suggestedPassword = generateStrongPassword();
+    setPassword(suggestedPassword);
+    setConfirmPassword(suggestedPassword);
+    setMsg("Strong password generated. You can use it as-is.");
+  }
+
   return (
     <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Reset password</h1>
@@ -114,7 +122,8 @@ export default function LoginResetPasswordPage() {
             placeholder="New password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
+            autoComplete="new-password"
             required
             style={{
               width: "100%",
@@ -130,7 +139,8 @@ export default function LoginResetPasswordPage() {
             placeholder="Confirm new password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
+            autoComplete="new-password"
             required
             style={{
               width: "100%",
@@ -140,6 +150,24 @@ export default function LoginResetPasswordPage() {
               marginBottom: 12,
             }}
           />
+
+          <button
+            type="button"
+            onClick={onGeneratePassword}
+            disabled={saving}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: 600,
+              background: "transparent",
+              marginBottom: 12,
+            }}
+          >
+            Generate strong password
+          </button>
 
           <button
             type="submit"

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -34,6 +35,13 @@ export default function ResetPasswordPage() {
     router.replace("/login");
   }
 
+  function onGeneratePassword() {
+    const suggestedPassword = generateStrongPassword();
+    setPassword(suggestedPassword);
+    setConfirmPassword(suggestedPassword);
+    setMsg("Strong password generated. You can use it as-is.");
+  }
+
   return (
     <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Reset password</h1>
@@ -45,7 +53,8 @@ export default function ResetPasswordPage() {
           placeholder="New password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          minLength={6}
+          minLength={PASSWORD_MIN_LENGTH}
+          autoComplete="new-password"
           required
           style={{
             width: "100%",
@@ -61,7 +70,8 @@ export default function ResetPasswordPage() {
           placeholder="Confirm new password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          minLength={6}
+          minLength={PASSWORD_MIN_LENGTH}
+          autoComplete="new-password"
           required
           style={{
             width: "100%",
@@ -71,6 +81,24 @@ export default function ResetPasswordPage() {
             marginBottom: 12,
           }}
         />
+
+        <button
+          type="button"
+          onClick={onGeneratePassword}
+          disabled={saving}
+          style={{
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid var(--border-color)",
+            cursor: "pointer",
+            fontWeight: 600,
+            background: "transparent",
+            marginBottom: 12,
+          }}
+        >
+          Generate strong password
+        </button>
 
         <button
           type="submit"

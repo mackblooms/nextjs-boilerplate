@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
+import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -156,6 +157,14 @@ export default function LoginClient() {
     window.location.href = profileSetupNext;
   }
 
+  function onGeneratePassword() {
+    const suggestedPassword = generateStrongPassword();
+    setPassword(suggestedPassword);
+    setConfirmPassword(suggestedPassword);
+    setStatus("idle");
+    setMsg("Strong password generated. You can use it as-is.");
+  }
+
   return (
     <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
@@ -206,6 +215,7 @@ export default function LoginClient() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
           required
           style={{
             width: "100%",
@@ -222,7 +232,8 @@ export default function LoginClient() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={PASSWORD_MIN_LENGTH}
+          autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
           style={{
             width: "100%",
             padding: "12px 14px",
@@ -239,7 +250,8 @@ export default function LoginClient() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
+            autoComplete="new-password"
             style={{
               width: "100%",
               padding: "12px 14px",
@@ -248,6 +260,26 @@ export default function LoginClient() {
               marginBottom: 12,
             }}
           />
+        ) : null}
+
+        {mode === "sign-up" ? (
+          <button
+            type="button"
+            onClick={onGeneratePassword}
+            disabled={status === "sending"}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: 8,
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: 600,
+              background: "transparent",
+              marginBottom: 12,
+            }}
+          >
+            Generate strong password
+          </button>
         ) : null}
 
         <button
