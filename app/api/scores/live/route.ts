@@ -41,6 +41,7 @@ type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
 type LiveScoreRow = {
   id: string;
+  boxScoreUrl: string | null;
   state: LiveScoreState;
   detail: string;
   startTime: string | null;
@@ -140,8 +141,14 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   const awayName = toDisplayName(away, awayLabel);
   const homeName = toDisplayName(home, homeLabel);
 
+  const eventId = event.id?.trim() || null;
+  const boxScoreUrl = eventId && /^\d+$/.test(eventId)
+    ? `https://www.espn.com/mens-college-basketball/boxscore/_/gameId/${eventId}`
+    : null;
+
   return {
-    id: event.id ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
+    id: eventId ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
+    boxScoreUrl,
     state: toState(event.status),
     detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
     startTime: event.date ?? null,

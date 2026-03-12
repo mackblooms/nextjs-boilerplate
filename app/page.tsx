@@ -11,6 +11,7 @@ type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
 type LiveScoreGame = {
   id: string;
+  boxScoreUrl: string | null;
   state: LiveScoreState;
   detail: string;
   startTime: string | null;
@@ -190,8 +191,14 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const awayLabel = away.team?.abbreviation?.trim() || awayDisplayName;
   const homeLabel = home.team?.abbreviation?.trim() || homeDisplayName;
 
+  const eventId = event.id?.trim() || null;
+  const boxScoreUrl = eventId && /^\d+$/.test(eventId)
+    ? `https://www.espn.com/mens-college-basketball/boxscore/_/gameId/${eventId}`
+    : null;
+
   return {
-    id: event.id ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
+    id: eventId ?? `${event.date ?? "game"}-${awayLabel}-${homeLabel}`,
+    boxScoreUrl,
     state: toState(event.status?.type?.state, event.status?.type?.completed),
     detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
     startTime: event.date ?? null,
@@ -282,55 +289,75 @@ function ScorePanel({
       ) : null}
       {!loading &&
         !error &&
-        games.map((game) => (
-          <article key={game.id} style={scoreRowStyle}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span
-                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
-                title={game.awayTeamName}
-              >
-                {game.awayLogoUrl ? (
-                  <img
-                    src={game.awayLogoUrl}
-                    alt={game.awayTeamName}
-                    width={20}
-                    height={20}
-                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                  />
-                ) : (
-                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                )}
-                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {game.awayTeam}
+        games.map((game) => {
+          const row = (
+            <article style={scoreRowStyle}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span
+                  style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                  title={game.awayTeamName}
+                >
+                  {game.awayLogoUrl ? (
+                    <img
+                      src={game.awayLogoUrl}
+                      alt={game.awayTeamName}
+                      width={20}
+                      height={20}
+                      style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                  )}
+                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {game.awayTeam}
+                  </span>
                 </span>
-              </span>
-              <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-              <span
-                style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
-                title={game.homeTeamName}
-              >
-                {game.homeLogoUrl ? (
-                  <img
-                    src={game.homeLogoUrl}
-                    alt={game.homeTeamName}
-                    width={20}
-                    height={20}
-                    style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                  />
-                ) : (
-                  <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                )}
-                <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {game.homeTeam}
+                <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span
+                  style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
+                  title={game.homeTeamName}
+                >
+                  {game.homeLogoUrl ? (
+                    <img
+                      src={game.homeLogoUrl}
+                      alt={game.homeTeamName}
+                      width={20}
+                      height={20}
+                      style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
+                  )}
+                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {game.homeTeam}
+                  </span>
                 </span>
-              </span>
-              <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>{statusLabel(game)}</div>
-          </article>
-        ))}
+                <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>{statusLabel(game)}</div>
+              {game.boxScoreUrl ? (
+                <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>View box score</div>
+              ) : null}
+            </article>
+          );
+
+          if (!game.boxScoreUrl) return <div key={game.id}>{row}</div>;
+
+          return (
+            <a
+              key={game.id}
+              href={game.boxScoreUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              style={{ textDecoration: "none", color: "inherit" }}
+              aria-label={`View box score for ${game.awayTeamName} at ${game.homeTeamName}`}
+            >
+              {row}
+            </a>
+          );
+        })}
     </aside>
   );
 }
