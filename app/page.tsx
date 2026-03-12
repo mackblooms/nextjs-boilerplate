@@ -542,18 +542,6 @@ function HomeContent() {
               How it works
             </Link>
             <Link
-              href="/pools/new"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "create_pool", has_invite: Boolean(invitePoolId) },
-                })
-              }
-            >
-              Create a pool
-            </Link>
-            <Link
               href={loginHref}
               style={buttonStyle}
               onClick={() =>
@@ -647,18 +635,6 @@ function HomeFallback() {
               }
             >
               How it works
-            </Link>
-            <Link
-              href="/pools/new"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "create_pool", has_invite: false },
-                })
-              }
-            >
-              Create a pool
             </Link>
             <Link
               href="/login"
