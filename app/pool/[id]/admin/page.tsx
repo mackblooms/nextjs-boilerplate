@@ -24,11 +24,40 @@ type GameRow = {
 type PoolMemberRow = {
   user_id: string;
   display_name: string | null;
+  full_name: string | null;
 };
 
-type PoolMemberWithPoolRow = PoolMemberRow & {
+type PoolMemberWithPoolRow = {
   pool_id: string;
+  user_id: string;
+  display_name: string | null;
 };
+
+type ProfileNameRow = {
+  user_id: string;
+  full_name: string | null;
+};
+
+function memberPrimaryLabel(member: PoolMemberRow) {
+  const realName = member.full_name?.trim();
+  if (realName) return realName;
+
+  const nickname = member.display_name?.trim();
+  if (nickname) return nickname;
+
+  return member.user_id.slice(0, 8);
+}
+
+function memberSecondaryLabel(member: PoolMemberRow) {
+  const realName = member.full_name?.trim();
+  const nickname = member.display_name?.trim();
+  if (!nickname || nickname === realName) return null;
+  return `Nickname: ${nickname}`;
+}
+
+function sortMembersByLabel(a: PoolMemberRow, b: PoolMemberRow) {
+  return memberPrimaryLabel(a).localeCompare(memberPrimaryLabel(b));
+}
 
 type AdminPoolRow = {
   id: string;
@@ -251,7 +280,10 @@ export default function AdminPage() {
         setLoading(false);
         return;
       }
-      setMembers((memberRows ?? []) as PoolMemberRow[]);
+      const baseMembers = ((memberRows ?? []) as Omit<PoolMemberRow, "full_name">[]).map((row) => ({
+        ...row,
+        full_name: null,
+      }));
 
       const { data: allPoolRows, error: allPoolErr } = await supabase
         .from("pools")
@@ -270,9 +302,10 @@ export default function AdminPage() {
       setPoolPasswordDrafts(Object.fromEntries(pools.map((pool) => [pool.id, ""])));
       await loadPoolPasswords(pools.map((pool) => pool.id));
 
+      let allMembersRows: PoolMemberWithPoolRow[] = [];
       if (pools.length > 0) {
         const ids = pools.map((p) => p.id);
-        const { data: allMembersRows, error: allMembersErr } = await supabase
+        const { data, error: allMembersErr } = await supabase
           .from("pool_leaderboard")
           .select("pool_id,user_id,display_name")
           .in("pool_id", ids)
@@ -284,13 +317,50 @@ export default function AdminPage() {
           return;
         }
 
+        allMembersRows = (data ?? []) as PoolMemberWithPoolRow[];
+      }
+
+      const allUserIds = Array.from(
+        new Set([
+          ...baseMembers.map((row) => row.user_id),
+          ...allMembersRows.map((row) => row.user_id),
+        ])
+      );
+
+      let fullNameByUser = new Map<string, string | null>();
+      if (allUserIds.length > 0) {
+        const { data: profileRows, error: profileErr } = await supabase
+          .from("profiles")
+          .select("user_id,full_name")
+          .in("user_id", allUserIds);
+
+        if (!profileErr) {
+          fullNameByUser = new Map(
+            ((profileRows ?? []) as ProfileNameRow[]).map((row) => [row.user_id, row.full_name ?? null])
+          );
+        }
+      }
+
+      const membersWithNames = baseMembers
+        .map((row) => ({
+          ...row,
+          full_name: fullNameByUser.get(row.user_id) ?? null,
+        }))
+        .sort(sortMembersByLabel);
+      setMembers(membersWithNames);
+
+      if (pools.length > 0) {
         const grouped: Record<string, PoolMemberRow[]> = {};
-        for (const row of (allMembersRows ?? []) as PoolMemberWithPoolRow[]) {
+        for (const row of allMembersRows) {
           if (!grouped[row.pool_id]) grouped[row.pool_id] = [];
           grouped[row.pool_id].push({
             user_id: row.user_id,
             display_name: row.display_name,
+            full_name: fullNameByUser.get(row.user_id) ?? null,
           });
+        }
+        for (const id of Object.keys(grouped)) {
+          grouped[id].sort(sortMembersByLabel);
         }
         setMembersByPool(grouped);
       } else {
@@ -907,13 +977,15 @@ export default function AdminPage() {
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Pool members</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          Remove users from this pool if they have not paid. This removes their membership and picks.
+          Real names are shown first, with bracket nicknames below when available. Removing a user deletes their
+          membership and picks.
         </p>
 
         <div style={{ display: "grid", gap: 8 }}>
           {members.map((m) => {
             const isCreator = m.user_id === creatorId;
-            const label = m.display_name ?? m.user_id.slice(0, 8);
+            const primaryLabel = memberPrimaryLabel(m);
+            const secondaryLabel = memberSecondaryLabel(m);
             return (
               <div
                 key={m.user_id}
@@ -929,9 +1001,12 @@ export default function AdminPage() {
                   background: "var(--surface-muted)",
                 }}
               >
-                <div style={{ fontWeight: 800, minWidth: 0, flex: "1 1 220px" }}>
-                  {label}
-                  {isCreator ? " (commissioner)" : ""}
+                <div style={{ minWidth: 0, flex: "1 1 220px", display: "grid", gap: 2 }}>
+                  <div style={{ fontWeight: 800 }}>
+                    {primaryLabel}
+                    {isCreator ? " (commissioner)" : ""}
+                  </div>
+                  {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
                 </div>
                 <button
                   disabled={isCreator || removingMemberKey === memberKey(poolId, m.user_id)}
@@ -1200,7 +1275,8 @@ export default function AdminPage() {
                 <div style={{ display: "grid", gap: 8 }}>
                   {poolMembers.map((m) => {
                     const isCreator = m.user_id === pool.created_by;
-                    const label = m.display_name ?? m.user_id.slice(0, 8);
+                    const primaryLabel = memberPrimaryLabel(m);
+                    const secondaryLabel = memberSecondaryLabel(m);
                     return (
                       <div
                         key={`${pool.id}-${m.user_id}`}
@@ -1216,9 +1292,12 @@ export default function AdminPage() {
                           background: "var(--surface)",
                         }}
                       >
-                        <div style={{ fontWeight: 700, minWidth: 0, flex: "1 1 200px" }}>
-                          {label}
-                          {isCreator ? " (commissioner)" : ""}
+                        <div style={{ minWidth: 0, flex: "1 1 200px", display: "grid", gap: 2 }}>
+                          <div style={{ fontWeight: 700 }}>
+                            {primaryLabel}
+                            {isCreator ? " (commissioner)" : ""}
+                          </div>
+                          {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
                         </div>
                         <button
                           disabled={isCreator || removingMemberKey === memberKey(pool.id, m.user_id)}
