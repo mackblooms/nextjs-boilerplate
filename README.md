@@ -69,3 +69,25 @@ The output includes:
 - Per-seed expected value (base only and with R64 bonus layer)
 - Top seeds by EV per cost
 - A portfolio check for the 14/15/16 package under a 100 budget
+
+## Mobile App (Capacitor)
+
+This repo includes iOS/Android Capacitor shells for App Store / Play Store distribution.
+
+Core commands:
+
+```bash
+npm run mobile:doctor
+npm run mobile:sync
+npm run mobile:open:ios
+npm run mobile:open:android
+```
+
+Set production URL before sync (PowerShell):
+
+```powershell
+$env:CAPACITOR_APP_URL = "https://your-production-domain.com"
+npm run mobile:sync
+```
+
+Full guide: `docs/mobile-app-store-guide.md`

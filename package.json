@@ -7,13 +7,23 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sim:balance": "node scripts/scoring-balance-sim.js"
+    "sim:balance": "node scripts/scoring-balance-sim.js",
+    "mobile:prepare-web": "node scripts/mobile-prepare-web.mjs",
+    "mobile:sync": "npm run mobile:prepare-web && npx cap sync",
+    "mobile:copy": "npm run mobile:prepare-web && npx cap copy",
+    "mobile:doctor": "npx cap doctor",
+    "mobile:open:ios": "npx cap open ios",
+    "mobile:open:android": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/ios": "^8.2.0",
+    "@supabase/supabase-js": "^2.45.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "@supabase/supabase-js": "^2.45.0"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
