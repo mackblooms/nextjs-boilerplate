@@ -535,7 +535,7 @@ export default function LeaderboardPage() {
                       </span>
                     ) : (
                       <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
-                        0
+                        -
                       </span>
                     )
                   ) : null}
