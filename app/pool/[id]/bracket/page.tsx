@@ -236,9 +236,11 @@ export default function BracketPage() {
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
-      let { data: teamRows, error: teamErr } = await supabase
+      const teamQuery = await supabase
         .from("teams")
         .select("id,name,region,seed_in_region,logo_url,espn_team_id");
+      let teamRows = (teamQuery.data ?? []) as Team[];
+      let teamErr = teamQuery.error;
 
       if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
         const fallback = await supabase
