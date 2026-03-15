@@ -72,6 +72,11 @@ type MatchedLiveGame = {
   team2Score: number | null;
 };
 
+type UpsetSnapshot = {
+  underdogLead: number;
+  detail: string;
+};
+
 type RoundKey = "R64" | "R32" | "S16" | "E8";
 
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
@@ -95,6 +100,88 @@ function pairKey(a: string, b: string) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
+function parseSecondHalfMinutesRemaining(detail: string | null | undefined): number | null {
+  if (!detail) return null;
+  const match = detail.match(/2nd(?:\s*half)?[^0-9]*(\d{1,2}):(\d{2})/i);
+  if (!match) return null;
+
+  const minutes = Number(match[1]);
+  const seconds = Number(match[2]);
+  if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
+  if (minutes < 0 || seconds < 0 || seconds >= 60) return null;
+
+  return minutes + seconds / 60;
+}
+
+function getUpsetSnapshot(
+  game: Game,
+  live: MatchedLiveGame | undefined,
+  teamById: Map<string, Team>,
+): UpsetSnapshot | null {
+  if (!live || !game.team1_id || !game.team2_id) return null;
+  if (typeof live.team1Score !== "number" || typeof live.team2Score !== "number") {
+    return null;
+  }
+
+  const team1Seed = teamById.get(game.team1_id)?.seed_in_region;
+  const team2Seed = teamById.get(game.team2_id)?.seed_in_region;
+  if (typeof team1Seed !== "number" || typeof team2Seed !== "number") return null;
+  if (team1Seed === team2Seed) return null;
+
+  const underdogLead =
+    team1Seed > team2Seed
+      ? live.team1Score - live.team2Score
+      : live.team2Score - live.team1Score;
+
+  return { underdogLead, detail: live.detail };
+}
+
+function matchLiveScoresToGames(
+  games: Game[],
+  liveScores: LiveScoreGame[],
+  espnTeamIdByLocalId: Map<string, string>,
+): Map<string, MatchedLiveGame> {
+  const liveByTeamPair = new Map<string, LiveScoreGame>();
+  for (const live of liveScores) {
+    if (!live.awayTeamId || !live.homeTeamId) continue;
+    const key = pairKey(live.awayTeamId, live.homeTeamId);
+    const existing = liveByTeamPair.get(key);
+    if (!existing || toLiveStateRank(live.state) > toLiveStateRank(existing.state)) {
+      liveByTeamPair.set(key, live);
+    }
+  }
+
+  const out = new Map<string, MatchedLiveGame>();
+  for (const g of games) {
+    if (!g.team1_id || !g.team2_id) continue;
+    const team1EspnId = espnTeamIdByLocalId.get(g.team1_id);
+    const team2EspnId = espnTeamIdByLocalId.get(g.team2_id);
+    if (!team1EspnId || !team2EspnId) continue;
+
+    const live = liveByTeamPair.get(pairKey(team1EspnId, team2EspnId));
+    if (!live) continue;
+
+    if (live.awayTeamId === team1EspnId) {
+      out.set(g.id, {
+        detail: live.detail,
+        team1Score: live.awayScore,
+        team2Score: live.homeScore,
+      });
+      continue;
+    }
+
+    if (live.homeTeamId === team1EspnId) {
+      out.set(g.id, {
+        detail: live.detail,
+        team1Score: live.homeScore,
+        team2Score: live.awayScore,
+      });
+    }
+  }
+
+  return out;
+}
+
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -114,6 +201,7 @@ export default function BracketPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
+  const [maxUpsetLeadByGameId, setMaxUpsetLeadByGameId] = useState<Record<string, number>>({});
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -426,6 +514,17 @@ export default function BracketPage() {
     void loadHighlights();
   }, [draftLocked, myEntryId, selectedEntryId]);
 
+  const espnTeamIdByLocalId = useMemo(() => {
+    const out = new Map<string, string>();
+    for (const t of teams) {
+      if (t.espn_team_id == null) continue;
+      const value = String(t.espn_team_id).trim();
+      if (!value) continue;
+      out.set(t.id, value);
+    }
+    return out;
+  }, [teams]);
+
   useEffect(() => {
     let canceled = false;
 
@@ -441,7 +540,33 @@ export default function BracketPage() {
         if (!res.ok || !payload.ok) return;
 
         if (!canceled) {
-          setLiveScores(payload.games ?? []);
+          const nextScores = payload.games ?? [];
+          setLiveScores(nextScores);
+
+          const nextLiveByGameId = matchLiveScoresToGames(
+            games,
+            nextScores,
+            espnTeamIdByLocalId,
+          );
+
+          setMaxUpsetLeadByGameId((prev) => {
+            const validGameIds = new Set(games.map((g) => g.id));
+            const next: Record<string, number> = {};
+
+            for (const [gameId, lead] of Object.entries(prev)) {
+              if (validGameIds.has(gameId)) {
+                next[gameId] = lead;
+              }
+            }
+
+            for (const g of games) {
+              const snapshot = getUpsetSnapshot(g, nextLiveByGameId.get(g.id), teamById);
+              if (!snapshot || snapshot.underdogLead <= 0) continue;
+              next[g.id] = Math.max(next[g.id] ?? 0, snapshot.underdogLead);
+            }
+
+            return next;
+          });
         }
       } catch {
         if (!canceled) {
@@ -457,7 +582,7 @@ export default function BracketPage() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [espnTeamIdByLocalId, games, teamById]);
 
   useEffect(() => {
     if (!fitMode || loading) return;
@@ -490,57 +615,8 @@ export default function BracketPage() {
     setScale(1);
   };
 
-  const espnTeamIdByLocalId = useMemo(() => {
-    const out = new Map<string, string>();
-    for (const t of teams) {
-      if (t.espn_team_id == null) continue;
-      const value = String(t.espn_team_id).trim();
-      if (!value) continue;
-      out.set(t.id, value);
-    }
-    return out;
-  }, [teams]);
-
   const liveByGameId = useMemo(() => {
-    const liveByTeamPair = new Map<string, LiveScoreGame>();
-    for (const live of liveScores) {
-      if (!live.awayTeamId || !live.homeTeamId) continue;
-      const key = pairKey(live.awayTeamId, live.homeTeamId);
-      const existing = liveByTeamPair.get(key);
-      if (!existing || toLiveStateRank(live.state) > toLiveStateRank(existing.state)) {
-        liveByTeamPair.set(key, live);
-      }
-    }
-
-    const out = new Map<string, MatchedLiveGame>();
-    for (const g of games) {
-      if (!g.team1_id || !g.team2_id) continue;
-      const team1EspnId = espnTeamIdByLocalId.get(g.team1_id);
-      const team2EspnId = espnTeamIdByLocalId.get(g.team2_id);
-      if (!team1EspnId || !team2EspnId) continue;
-
-      const live = liveByTeamPair.get(pairKey(team1EspnId, team2EspnId));
-      if (!live) continue;
-
-      if (live.awayTeamId === team1EspnId) {
-        out.set(g.id, {
-          detail: live.detail,
-          team1Score: live.awayScore,
-          team2Score: live.homeScore,
-        });
-        continue;
-      }
-
-      if (live.homeTeamId === team1EspnId) {
-        out.set(g.id, {
-          detail: live.detail,
-          team1Score: live.homeScore,
-          team2Score: live.awayScore,
-        });
-      }
-    }
-
-    return out;
+    return matchLiveScoresToGames(games, liveScores, espnTeamIdByLocalId);
   }, [espnTeamIdByLocalId, games, liveScores]);
 
   const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
@@ -587,6 +663,32 @@ export default function BracketPage() {
     return formatGameTimeEst(g);
   }, [formatGameTimeEst, liveByGameId]);
 
+  const upsetWatchGameIds = useMemo(() => {
+    const out = new Set<string>();
+
+    for (const g of games) {
+      const snapshot = getUpsetSnapshot(g, liveByGameId.get(g.id), teamById);
+      if (!snapshot) continue;
+
+      const minutesRemaining = parseSecondHalfMinutesRemaining(snapshot.detail);
+      const isLateSecondHalfLead =
+        snapshot.underdogLead > 0 &&
+        minutesRemaining !== null &&
+        minutesRemaining < 10;
+      const hasFifteenPointLead =
+        Math.max(
+          maxUpsetLeadByGameId[g.id] ?? 0,
+          snapshot.underdogLead > 0 ? snapshot.underdogLead : 0,
+        ) >= 15;
+
+      if (isLateSecondHalfLead || hasFifteenPointLead) {
+        out.add(g.id);
+      }
+    }
+
+    return out;
+  }, [games, liveByGameId, maxUpsetLeadByGameId, teamById]);
+
   const selectedPlayer = useMemo(
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
@@ -594,6 +696,9 @@ export default function BracketPage() {
   const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
   const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
   const championshipLive = championship ? liveByGameId.get(championship.id) : undefined;
+  const finalFourTopUpset = finalFour[0] ? upsetWatchGameIds.has(finalFour[0].id) : false;
+  const finalFourBottomUpset = finalFour[1] ? upsetWatchGameIds.has(finalFour[1].id) : false;
+  const championshipUpset = championship ? upsetWatchGameIds.has(championship.id) : false;
 
   const renderTeam = (
     teamId: string | null,
@@ -687,14 +792,22 @@ export default function BracketPage() {
     );
   };
 
-  const renderGameBox = (children: ReactNode, meta?: string | null) => (
+  const renderGameBox = (
+    children: ReactNode,
+    meta?: string | null,
+    upsetWatch = false,
+  ) => (
     <div
       style={{
-        border: "1px solid var(--border-color)",
+        border: upsetWatch
+          ? "2px solid #d97706"
+          : "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 6,
         background: "var(--surface)",
-        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+        boxShadow: upsetWatch
+          ? "0 0 0 2px rgba(217,119,6,0.16)"
+          : "0 1px 0 rgba(0,0,0,0.03)",
         height: "100%",
         overflow: "hidden",
         display: "flex",
@@ -729,14 +842,19 @@ export default function BracketPage() {
     teamId: string | null,
     winnerId: string | null,
     score?: number | null,
+    upsetWatch = false,
   ) => (
     <div
       style={{
-        border: "1px solid var(--border-color)",
+        border: upsetWatch
+          ? "2px solid #d97706"
+          : "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 6,
         background: "var(--surface)",
-        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+        boxShadow: upsetWatch
+          ? "0 0 0 2px rgba(217,119,6,0.16)"
+          : "0 1px 0 rgba(0,0,0,0.03)",
       }}
     >
       {renderTeam(teamId, winnerId, score)}
@@ -776,6 +894,7 @@ export default function BracketPage() {
                       {renderTeam(g.team2_id, g.winner_team_id, live?.team2Score)}
                     </>,
                     meta,
+                    upsetWatchGameIds.has(g.id),
                   )}
                 </div>
               );
@@ -1191,6 +1310,7 @@ export default function BracketPage() {
                       finalFour[0]?.team1_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
                       finalFourTopLive?.team1Score,
+                      finalFourTopUpset,
                     )}
                   </div>
                   <div style={{ gridColumn: 3, gridRow: 1 }}>
@@ -1198,6 +1318,7 @@ export default function BracketPage() {
                       finalFour[0]?.team2_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
                       finalFourTopLive?.team2Score,
+                      finalFourTopUpset,
                     )}
                   </div>
                   <div style={{ gridColumn: 1, gridRow: 3 }}>
@@ -1205,6 +1326,7 @@ export default function BracketPage() {
                       finalFour[1]?.team1_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
                       finalFourBottomLive?.team1Score,
+                      finalFourBottomUpset,
                     )}
                   </div>
                   <div style={{ gridColumn: 3, gridRow: 3 }}>
@@ -1212,6 +1334,7 @@ export default function BracketPage() {
                       finalFour[1]?.team2_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
                       finalFourBottomLive?.team2Score,
+                      finalFourBottomUpset,
                     )}
                   </div>
 
@@ -1249,6 +1372,7 @@ export default function BracketPage() {
                         )}
                       </>,
                       formatGameMeta(championship),
+                      championshipUpset,
                     )}
                   </div>
                 </div>
