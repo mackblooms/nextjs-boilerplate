@@ -19,6 +19,7 @@ type Team = {
   seed_in_region: number | null;
   region: string | null;
   logo_url?: string | null;
+  espn_team_id?: string | number | null;
 };
 
 type Game = {
@@ -45,6 +46,32 @@ type PlayerOption = {
   bio: string | null;
 };
 
+type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
+
+type LiveScoreGame = {
+  id: string;
+  boxScoreUrl: string | null;
+  state: LiveScoreState;
+  detail: string;
+  startTime: string | null;
+  awayTeamId: string | null;
+  homeTeamId: string | null;
+  awayScore: number | null;
+  homeScore: number | null;
+};
+
+type LiveScoresResponse = {
+  ok: boolean;
+  games?: LiveScoreGame[];
+  error?: string;
+};
+
+type MatchedLiveGame = {
+  detail: string;
+  team1Score: number | null;
+  team2Score: number | null;
+};
+
 type RoundKey = "R64" | "R32" | "S16" | "E8";
 
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
@@ -56,6 +83,16 @@ const isRegion = (value: string | null): value is Region =>
 function isMissingColumnError(message: string) {
   const msg = message.toLowerCase();
   return msg.includes("column") && msg.includes("does not exist");
+}
+
+function toLiveStateRank(state: LiveScoreState) {
+  if (state === "LIVE") return 2;
+  if (state === "UPCOMING") return 1;
+  return 0;
+}
+
+function pairKey(a: string, b: string) {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
 export default function BracketPage() {
@@ -76,6 +113,7 @@ export default function BracketPage() {
   const [myEntryId, setMyEntryId] = useState<string | null>(null);
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
+  const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -198,9 +236,20 @@ export default function BracketPage() {
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
-      const { data: teamRows, error: teamErr } = await supabase
+      let { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,name,region,seed_in_region,logo_url");
+        .select("id,name,region,seed_in_region,logo_url,espn_team_id");
+
+      if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
+        const fallback = await supabase
+          .from("teams")
+          .select("id,name,region,seed_in_region,logo_url");
+        teamRows = (fallback.data ?? []).map((row) => ({
+          ...row,
+          espn_team_id: null,
+        })) as Team[];
+        teamErr = fallback.error;
+      }
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -376,6 +425,39 @@ export default function BracketPage() {
   }, [draftLocked, myEntryId, selectedEntryId]);
 
   useEffect(() => {
+    let canceled = false;
+
+    const loadLiveScores = async () => {
+      try {
+        const lookbackDays = 2;
+        const lookaheadDays = 2;
+        const res = await fetch(
+          `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+          { cache: "no-store" },
+        );
+        const payload = (await res.json()) as LiveScoresResponse;
+        if (!res.ok || !payload.ok) return;
+
+        if (!canceled) {
+          setLiveScores(payload.games ?? []);
+        }
+      } catch {
+        if (!canceled) {
+          setLiveScores([]);
+        }
+      }
+    };
+
+    void loadLiveScores();
+    const interval = window.setInterval(loadLiveScores, 45_000);
+
+    return () => {
+      canceled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!fitMode || loading) return;
 
     const runFit = () => {
@@ -405,6 +487,59 @@ export default function BracketPage() {
     setFitMode(false);
     setScale(1);
   };
+
+  const espnTeamIdByLocalId = useMemo(() => {
+    const out = new Map<string, string>();
+    for (const t of teams) {
+      if (t.espn_team_id == null) continue;
+      const value = String(t.espn_team_id).trim();
+      if (!value) continue;
+      out.set(t.id, value);
+    }
+    return out;
+  }, [teams]);
+
+  const liveByGameId = useMemo(() => {
+    const liveByTeamPair = new Map<string, LiveScoreGame>();
+    for (const live of liveScores) {
+      if (!live.awayTeamId || !live.homeTeamId) continue;
+      const key = pairKey(live.awayTeamId, live.homeTeamId);
+      const existing = liveByTeamPair.get(key);
+      if (!existing || toLiveStateRank(live.state) > toLiveStateRank(existing.state)) {
+        liveByTeamPair.set(key, live);
+      }
+    }
+
+    const out = new Map<string, MatchedLiveGame>();
+    for (const g of games) {
+      if (!g.team1_id || !g.team2_id) continue;
+      const team1EspnId = espnTeamIdByLocalId.get(g.team1_id);
+      const team2EspnId = espnTeamIdByLocalId.get(g.team2_id);
+      if (!team1EspnId || !team2EspnId) continue;
+
+      const live = liveByTeamPair.get(pairKey(team1EspnId, team2EspnId));
+      if (!live) continue;
+
+      if (live.awayTeamId === team1EspnId) {
+        out.set(g.id, {
+          detail: live.detail,
+          team1Score: live.awayScore,
+          team2Score: live.homeScore,
+        });
+        continue;
+      }
+
+      if (live.homeTeamId === team1EspnId) {
+        out.set(g.id, {
+          detail: live.detail,
+          team1Score: live.homeScore,
+          team2Score: live.awayScore,
+        });
+      }
+    }
+
+    return out;
+  }, [espnTeamIdByLocalId, games, liveScores]);
 
   const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
     if (!g) return null;
@@ -443,12 +578,26 @@ export default function BracketPage() {
     return null;
   }, []);
 
+  const formatGameMeta = useCallback((g: Game | null | undefined): string | null => {
+    if (!g) return null;
+    const live = liveByGameId.get(g.id);
+    if (live?.detail) return live.detail;
+    return formatGameTimeEst(g);
+  }, [formatGameTimeEst, liveByGameId]);
+
   const selectedPlayer = useMemo(
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
   );
+  const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
+  const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
+  const championshipLive = championship ? liveByGameId.get(championship.id) : undefined;
 
-  const renderTeam = (teamId: string | null, winnerId: string | null) => {
+  const renderTeam = (
+    teamId: string | null,
+    winnerId: string | null,
+    score?: number | null,
+  ) => {
     if (!teamId) {
       return (
         <span
@@ -464,7 +613,7 @@ export default function BracketPage() {
           }}
         >
           <span>TBD</span>
-          <span />
+          <span>{score === undefined ? "" : (score ?? "-")}</span>
         </span>
       );
     }
@@ -522,13 +671,15 @@ export default function BracketPage() {
           style={{
             opacity: 0.75,
             flexShrink: 0,
-            width: 22,
+            width: 40,
             textAlign: "right",
             whiteSpace: "nowrap",
             lineHeight: "18px",
           }}
         >
-          {t?.seed_in_region ?? ""}
+          {score === undefined
+            ? (t?.seed_in_region ?? "")
+            : (score ?? "-")}
         </span>
       </span>
     );
@@ -575,6 +726,7 @@ export default function BracketPage() {
   const renderSingleTeamBox = (
     teamId: string | null,
     winnerId: string | null,
+    score?: number | null,
   ) => (
     <div
       style={{
@@ -585,7 +737,7 @@ export default function BracketPage() {
         boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
       }}
     >
-      {renderTeam(teamId, winnerId)}
+      {renderTeam(teamId, winnerId, score)}
     </div>
   );
 
@@ -609,7 +761,8 @@ export default function BracketPage() {
           >
             {gamesForRound.map((g) => {
               const start = rowStartFor(roundKey, g.slot);
-              const meta = formatGameTimeEst(g);
+              const live = liveByGameId.get(g.id);
+              const meta = formatGameMeta(g);
               return (
                 <div
                   key={g.id}
@@ -617,8 +770,8 @@ export default function BracketPage() {
                 >
                   {renderGameBox(
                     <>
-                      {renderTeam(g.team1_id, g.winner_team_id)}
-                      {renderTeam(g.team2_id, g.winner_team_id)}
+                      {renderTeam(g.team1_id, g.winner_team_id, live?.team1Score)}
+                      {renderTeam(g.team2_id, g.winner_team_id, live?.team2Score)}
                     </>,
                     meta,
                   )}
@@ -1035,24 +1188,28 @@ export default function BracketPage() {
                     {renderSingleTeamBox(
                       finalFour[0]?.team1_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
+                      finalFourTopLive?.team1Score,
                     )}
                   </div>
                   <div style={{ gridColumn: 3, gridRow: 1 }}>
                     {renderSingleTeamBox(
                       finalFour[0]?.team2_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
+                      finalFourTopLive?.team2Score,
                     )}
                   </div>
                   <div style={{ gridColumn: 1, gridRow: 3 }}>
                     {renderSingleTeamBox(
                       finalFour[1]?.team1_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
+                      finalFourBottomLive?.team1Score,
                     )}
                   </div>
                   <div style={{ gridColumn: 3, gridRow: 3 }}>
                     {renderSingleTeamBox(
                       finalFour[1]?.team2_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
+                      finalFourBottomLive?.team2Score,
                     )}
                   </div>
 
@@ -1081,13 +1238,15 @@ export default function BracketPage() {
                         {renderTeam(
                           championship?.team1_id ?? null,
                           championship?.winner_team_id ?? null,
+                          championshipLive?.team1Score,
                         )}
                         {renderTeam(
                           championship?.team2_id ?? null,
                           championship?.winner_team_id ?? null,
+                          championshipLive?.team2Score,
                         )}
                       </>,
-                      formatGameTimeEst(championship),
+                      formatGameMeta(championship),
                     )}
                   </div>
                 </div>
