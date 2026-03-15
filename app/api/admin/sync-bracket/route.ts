@@ -30,6 +30,11 @@ type SportsGame = {
   AwayTeamID?: number | null;
 };
 
+type SportsTeamMeta = {
+  name: string | null;
+  logoUrl: string | null;
+};
+
 type LocalGameRow = {
   id: string;
   sportsdata_game_id: number | null;
@@ -239,6 +244,74 @@ function toSeed(value: unknown): number | null {
   return n;
 }
 
+function toText(value: unknown): string | null {
+  if (value == null) return null;
+  const s = String(value).trim();
+  return s.length > 0 ? s : null;
+}
+
+function readSportsTeamId(row: unknown): number | null {
+  if (!row || typeof row !== "object") return null;
+  const r = row as Record<string, unknown>;
+  const n = Number(r.TeamID ?? r.TeamId ?? r.teamId ?? r.SportsDataId ?? r.SportsDataID);
+  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : null;
+}
+
+function readSportsTeamName(row: unknown): string | null {
+  if (!row || typeof row !== "object") return null;
+  const r = row as Record<string, unknown>;
+  return (
+    toText(r.School) ??
+    toText(r.Name) ??
+    toText(r.Team) ??
+    toText(r.City) ??
+    toText(r.Key) ??
+    null
+  );
+}
+
+function readSportsTeamLogo(row: unknown): string | null {
+  if (!row || typeof row !== "object") return null;
+  const r = row as Record<string, unknown>;
+  return (
+    toText(r.WikipediaLogoUrl) ??
+    toText(r.LogoUrl) ??
+    toText(r.TeamLogoUrl) ??
+    toText(r.logo_url) ??
+    toText(r.logoUrl) ??
+    null
+  );
+}
+
+async function fetchSportsTeamMeta(): Promise<Map<number, SportsTeamMeta>> {
+  const out = new Map<number, SportsTeamMeta>();
+  if (!KEY) return out;
+
+  const url = `${BASE}/v3/cbb/scores/json/teams?key=${encodeURIComponent(KEY)}`;
+  const resp = await fetchJsonOrEmpty(url);
+  if (!resp.ok || !resp.json) return out;
+
+  const raw = resp.json as unknown;
+  const rows: unknown[] = Array.isArray(raw)
+    ? raw
+    : Array.isArray((raw as { Teams?: unknown[] })?.Teams)
+    ? ((raw as { Teams: unknown[] }).Teams as unknown[])
+    : Array.isArray((raw as { teams?: unknown[] })?.teams)
+    ? ((raw as { teams: unknown[] }).teams as unknown[])
+    : [];
+
+  for (const row of rows) {
+    const id = readSportsTeamId(row);
+    if (!id) continue;
+    out.set(id, {
+      name: readSportsTeamName(row),
+      logoUrl: readSportsTeamLogo(row),
+    });
+  }
+
+  return out;
+}
+
 function costForSeed(seed: number | null): number | null {
   if (!seed) return null;
   const map: Record<number, number> = {
@@ -380,27 +453,40 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     ? "id,sportsdata_game_id,team1_id,team2_id,status,start_time,game_date"
     : "id,sportsdata_game_id,team1_id,team2_id";
 
-  const sportsTeams = new Map<number, { name: string | null; seed: number | null; region: "East" | "West" | "South" | "Midwest" | null }>();
+  const sportsTeamMeta = await fetchSportsTeamMeta();
+  const sportsTeams = new Map<
+    number,
+    {
+      name: string | null;
+      seed: number | null;
+      region: "East" | "West" | "South" | "Midwest" | null;
+      logoUrl: string | null;
+    }
+  >();
   for (const g of gamesArray) {
     const region = bracketToRegion(g.Bracket ?? g.bracket);
 
     const homeId = toInt(g.HomeTeamID);
     if (homeId) {
       const existing = sportsTeams.get(homeId);
+      const meta = sportsTeamMeta.get(homeId);
       sportsTeams.set(homeId, {
-        name: existing?.name ?? toIso(g.HomeTeam),
+        name: existing?.name ?? meta?.name ?? toIso(g.HomeTeam),
         seed: existing?.seed ?? toSeed(g.HomeTeamSeed),
         region: existing?.region ?? region,
+        logoUrl: existing?.logoUrl ?? meta?.logoUrl ?? null,
       });
     }
 
     const awayId = toInt(g.AwayTeamID);
     if (awayId) {
       const existing = sportsTeams.get(awayId);
+      const meta = sportsTeamMeta.get(awayId);
       sportsTeams.set(awayId, {
-        name: existing?.name ?? toIso(g.AwayTeam),
+        name: existing?.name ?? meta?.name ?? toIso(g.AwayTeam),
         seed: existing?.seed ?? toSeed(g.AwayTeamSeed),
         region: existing?.region ?? region,
+        logoUrl: existing?.logoUrl ?? meta?.logoUrl ?? null,
       });
     }
   }
@@ -414,7 +500,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   if (sportsTeamIds.length > 0) {
     const { data: existingTeams, error: existingTeamsErr } = await supabaseAdmin
       .from("teams")
-      .select("id,sportsdata_team_id,name,seed,seed_in_region,region,cost")
+      .select("id,sportsdata_team_id,name,seed,seed_in_region,region,cost,logo_url")
       .in("sportsdata_team_id", sportsTeamIds);
     if (existingTeamsErr) throw existingTeamsErr;
 
@@ -436,6 +522,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
           seed_in_region: incomingSeed,
           region: incoming.region,
           cost: incomingCost,
+          logo_url: incoming.logoUrl,
         });
         if (insErr) throw insErr;
         teamsCreated++;
@@ -457,6 +544,9 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       }
       if (incoming.region && incoming.region !== existing.region) updates.region = incoming.region;
       if (incomingCost != null && incomingCost !== Number(existing.cost ?? NaN)) updates.cost = incomingCost;
+      if (incoming.logoUrl && incoming.logoUrl !== String(existing.logo_url ?? "")) {
+        updates.logo_url = incoming.logoUrl;
+      }
 
       if (Object.keys(updates).length > 0) {
         const { error: updErr } = await supabaseAdmin

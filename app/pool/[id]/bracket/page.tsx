@@ -726,6 +726,8 @@ export default function BracketPage() {
     }
 
     const t = teamById.get(teamId);
+    const espnId = t?.espn_team_id ? String(t.espn_team_id).trim() : "";
+    const logoSrc = t?.logo_url || (espnId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png` : null);
     const isHighlighted = highlightTeamIds.has(teamId);
     const isWinner = winnerId === teamId;
 
@@ -752,10 +754,10 @@ export default function BracketPage() {
             minWidth: 0,
           }}
         >
-          {t?.logo_url ? (
+          {logoSrc ? (
             <Image
-              src={t.logo_url}
-              alt={t.name ?? "Team"}
+              src={logoSrc}
+              alt={t?.name ?? "Team"}
               width={18}
               height={18}
               style={{ objectFit: "contain", flexShrink: 0 }}
