@@ -90,10 +90,15 @@ type Row = {
   avatar_url: string;
   total_score: number;
   rank: number;
+  rank_delta: number | null;
 };
 
 type TeamSeedRow = { id: string; seed_in_region: number | null };
 type PickRow = { entry_id: string; team_id: string };
+type ScoringGameWithDate = ScoringGame & {
+  game_date: string | null;
+  start_time: string | null;
+};
 type ProfileLookupRow = {
   user_id: string;
   display_name: string | null;
@@ -107,6 +112,61 @@ function isMissingAvatarColumnError(error: { message?: string; code?: string } |
       error.message?.includes("profiles") &&
       error.message.includes("avatar_url"),
   );
+}
+
+function isMissingColumnError(error: { code?: string } | null) {
+  return Boolean(error?.code === "PGRST204");
+}
+
+function etDayKey(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
+}
+
+function gameDayKey(game: { game_date: string | null; start_time: string | null }) {
+  if (game.game_date) {
+    const day = game.game_date.slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(day)) return day;
+  }
+
+  if (!game.start_time) return null;
+  const d = new Date(game.start_time);
+  if (Number.isNaN(d.getTime())) return null;
+  return etDayKey(d);
+}
+
+function rankRows<
+  T extends {
+    total_score: number;
+    entry_name: string | null;
+    display_name: string | null;
+  },
+>(rows: T[]) {
+  const sorted = [...rows].sort(
+    (a, b) =>
+      b.total_score - a.total_score ||
+      (a.entry_name ?? a.display_name ?? "").localeCompare(
+        b.entry_name ?? b.display_name ?? "",
+      ),
+  );
+
+  let prevScore: number | null = null;
+  let prevRank = 0;
+  return sorted.map((row, idx) => {
+    const rank = prevScore === row.total_score ? prevRank : idx + 1;
+    prevScore = row.total_score;
+    prevRank = rank;
+    return { ...row, rank };
+  });
 }
 
 export default function LeaderboardPage() {
@@ -184,7 +244,7 @@ export default function LeaderboardPage() {
 
       const baseRows = (data ?? []) as Omit<
         Row,
-        "total_score" | "rank" | "full_name" | "entry_name" | "avatar_url"
+        "total_score" | "rank" | "rank_delta" | "full_name" | "entry_name" | "avatar_url"
       >[];
       const entryIds = baseRows.map((r) => r.entry_id);
 
@@ -271,20 +331,36 @@ export default function LeaderboardPage() {
         ]),
       );
 
-      const { data: gameRows, error: gameErr } = await supabase
+      let gameRows: ScoringGameWithDate[] = [];
+      const gameQuery = await supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id");
+        .select("round,team1_id,team2_id,winner_team_id,game_date,start_time");
 
-      if (gameErr) {
-        setMsg(gameErr.message);
+      if (!gameQuery.error) {
+        gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];
+      } else if (isMissingColumnError(gameQuery.error)) {
+        const fallback = await supabase
+          .from("games")
+          .select("round,team1_id,team2_id,winner_team_id");
+
+        if (fallback.error) {
+          setMsg(fallback.error.message);
+          setLoading(false);
+          return;
+        }
+
+        gameRows = (((fallback.data as ScoringGame[] | null) ?? []).map((row) => ({
+          ...row,
+          game_date: null,
+          start_time: null,
+        })));
+      } else {
+        setMsg(gameQuery.error.message);
         setLoading(false);
         return;
       }
 
-      const teamScores = scoreTeamWins(
-        (gameRows ?? []) as ScoringGame[],
-        teamSeedById,
-      );
+      const teamScores = scoreTeamWins(gameRows, teamSeedById);
 
       let picksByEntry = new Map<string, string[]>();
       if (isLocked && entryIds.length > 0) {
@@ -323,23 +399,53 @@ export default function LeaderboardPage() {
               profileByUser.get(r.user_id)?.avatar_url ?? null,
             ),
             total_score: totalScore,
+            rank_delta: null,
           };
-        })
-        .sort(
-          (a, b) =>
-            b.total_score - a.total_score ||
-            (a.entry_name ?? a.display_name ?? "").localeCompare(
-              b.entry_name ?? b.display_name ?? "",
-            ),
-        );
+      });
 
-      let prevScore: number | null = null;
-      let prevRank = 0;
-      const ranked: Row[] = computed.map((r, idx) => {
-        const rank = prevScore === r.total_score ? prevRank : idx + 1;
-        prevScore = r.total_score;
-        prevRank = rank;
-        return { ...r, rank };
+      const rankedNow = rankRows(computed);
+      const todayEt = etDayKey(new Date());
+
+      let missingGameDays = false;
+      const priorGames: ScoringGame[] = [];
+      for (const game of gameRows) {
+        if (!game.winner_team_id) continue;
+        const day = gameDayKey(game);
+        if (!day) {
+          missingGameDays = true;
+          break;
+        }
+        if (day < todayEt) {
+          priorGames.push(game);
+        }
+      }
+
+      const priorRankByEntry = new Map<string, number>();
+      if (!missingGameDays) {
+        const priorTeamScores = scoreTeamWins(priorGames, teamSeedById);
+        const priorComputed = baseRows.map((r) => {
+          const teamIds = picksByEntry.get(r.entry_id) ?? [];
+          const totalScore = teamIds.reduce(
+            (sum, teamId) => sum + (priorTeamScores.get(teamId) ?? 0),
+            0,
+          );
+          return {
+            entry_id: r.entry_id,
+            display_name: r.display_name,
+            entry_name: entryNameById.get(r.entry_id) ?? null,
+            total_score: totalScore,
+          };
+        });
+
+        for (const row of rankRows(priorComputed)) {
+          priorRankByEntry.set(row.entry_id, row.rank);
+        }
+      }
+
+      const ranked: Row[] = rankedNow.map((row) => {
+        const priorRank = priorRankByEntry.get(row.entry_id);
+        const rank_delta = priorRank != null ? priorRank - row.rank : null;
+        return { ...row, rank_delta };
       });
 
       setRows(ranked);
@@ -416,7 +522,24 @@ export default function LeaderboardPage() {
                       : "transparent",
                 }}
               >
-                <div style={{ fontWeight: 900 }}>{r.rank}</div>
+                <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span>{r.rank}</span>
+                  {r.rank_delta != null ? (
+                    r.rank_delta > 0 ? (
+                      <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
+                        ↑ {r.rank_delta}
+                      </span>
+                    ) : r.rank_delta < 0 ? (
+                      <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
+                        ↓ {Math.abs(r.rank_delta)}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
+                        0
+                      </span>
+                    )
+                  ) : null}
+                </div>
                 <div style={{ fontWeight: 800 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <img
