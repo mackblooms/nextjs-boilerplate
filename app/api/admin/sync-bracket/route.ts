@@ -233,6 +233,12 @@ function toInt(value: unknown): number | null {
   return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
+function toSeed(value: unknown): number | null {
+  const n = toInt(value);
+  if (!n || n < 1 || n > 16) return null;
+  return n;
+}
+
 function costForSeed(seed: number | null): number | null {
   if (!seed) return null;
   const map: Record<number, number> = {
@@ -383,7 +389,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const existing = sportsTeams.get(homeId);
       sportsTeams.set(homeId, {
         name: existing?.name ?? toIso(g.HomeTeam),
-        seed: existing?.seed ?? toInt(g.HomeTeamSeed),
+        seed: existing?.seed ?? toSeed(g.HomeTeamSeed),
         region: existing?.region ?? region,
       });
     }
@@ -393,7 +399,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const existing = sportsTeams.get(awayId);
       sportsTeams.set(awayId, {
         name: existing?.name ?? toIso(g.AwayTeam),
-        seed: existing?.seed ?? toInt(g.AwayTeamSeed),
+        seed: existing?.seed ?? toSeed(g.AwayTeamSeed),
         region: existing?.region ?? region,
       });
     }
@@ -437,9 +443,16 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       }
 
       const updates: Record<string, unknown> = {};
+      const existingSeed = toSeed(existing.seed);
+      const existingSeedInRegion = toSeed(existing.seed_in_region);
+
       if (incoming.name && incoming.name !== existing.name) updates.name = incoming.name;
-      if (incomingSeed != null && incomingSeed !== Number(existing.seed ?? NaN)) updates.seed = incomingSeed;
-      if (incomingSeed != null && incomingSeed !== Number(existing.seed_in_region ?? NaN)) {
+      if (incomingSeed != null && incomingSeed !== existingSeed) updates.seed = incomingSeed;
+      if (incomingSeed != null && incomingSeed !== existingSeedInRegion) {
+        updates.seed_in_region = incomingSeed;
+      }
+      if (existing.seed != null && existingSeed == null) updates.seed = incomingSeed;
+      if (existing.seed_in_region != null && existingSeedInRegion == null) {
         updates.seed_in_region = incomingSeed;
       }
       if (incoming.region && incoming.region !== existing.region) updates.region = incoming.region;
