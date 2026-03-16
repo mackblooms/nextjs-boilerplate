@@ -761,6 +761,9 @@ export default function AdminPage() {
       const firstFourPlaceholdersCreated = Number(json?.bracket?.firstFourPlaceholdersCreated ?? 0);
       const firstFourSlotsFilled = Number(json?.bracket?.firstFourSlotsFilled ?? 0);
       const playInAnchorsApplied = Number(json?.bracket?.playInAnchorsApplied ?? 0);
+      const canonicalR64SlotsApplied = Number(json?.bracket?.canonicalR64SlotsApplied ?? 0);
+      const canonicalTeamsCreated = Number(json?.bracket?.canonicalTeamsCreated ?? 0);
+      const canonicalTeamsUpdated = Number(json?.bracket?.canonicalTeamsUpdated ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
       const r64Backfilled = Number(json?.bracket?.r64Backfilled ?? 0);
@@ -773,6 +776,7 @@ export default function AdminPage() {
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids skipped/reassigned: ${skippedDuplicateSportsId}/${reassignedDuplicateSportsId}) | ` +
           `teams created/updated: ${teamsCreated}/${teamsUpdated}, espn fallback (matchups/teams/game updates): ${espnFallbackMatchups}/${espnFallbackTeamsCreated + espnFallbackTeamsUpdated}/${espnFallbackGameTeamsUpdated}, ` +
           `first four placeholders created/filled: ${firstFourPlaceholdersCreated}/${firstFourSlotsFilled}, play-in anchors applied: ${playInAnchorsApplied}, ` +
+          `canonical 2026 slots/teams (applied/created/updated): ${canonicalR64SlotsApplied}/${canonicalTeamsCreated}/${canonicalTeamsUpdated}, ` +
           `seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +

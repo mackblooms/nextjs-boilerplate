@@ -384,6 +384,23 @@ function toSchoolName(value: unknown): string | null {
   return override ?? text;
 }
 
+function canonicalSchoolKey(value: string): string {
+  return normName(value.replace(/\([^)]*\)/g, " ").replace(/\//g, " "));
+}
+
+function nameLooksLikeCanonical(existingName: string, canonicalName: string): boolean {
+  const existing = canonicalSchoolKey(existingName);
+  const canonical = canonicalSchoolKey(canonicalName);
+  if (!existing || !canonical) return false;
+  if (existing === canonical) return true;
+  if (existing.startsWith(`${canonical} `)) return true;
+  if (canonical.startsWith(`${existing} `)) return true;
+  const canonicalBase = canonical.replace(/\b(fl|oh|nc|n c)\b/g, " ").replace(/\s+/g, " ").trim();
+  if (canonicalBase && existing.startsWith(`${canonicalBase} `)) return true;
+  if (canonicalBase && existing === canonicalBase) return true;
+  return false;
+}
+
 type PlayInAnchor = {
   favoriteSchool: string;
   placeholderName: string;
@@ -397,7 +414,7 @@ const PLAY_IN_ANCHORS: PlayInAnchor[] = [
   {
     favoriteSchool: "Florida",
     placeholderName: "Lehigh/PVAMU",
-    region: "East",
+    region: "South",
     slot: 1,
     favoriteSeed: 1,
     underdogSeed: 16,
@@ -421,11 +438,57 @@ const PLAY_IN_ANCHORS: PlayInAnchor[] = [
   {
     favoriteSchool: "Tennessee",
     placeholderName: "SMU/Miami OH",
-    region: "South",
+    region: "Midwest",
     slot: 5,
     favoriteSeed: 6,
     underdogSeed: 11,
   },
+];
+
+type CanonicalSlotTeam = { name: string; seed: number };
+type CanonicalR64Slot = {
+  region: RegionName;
+  slot: number;
+  favorite: CanonicalSlotTeam;
+  underdog: CanonicalSlotTeam;
+};
+
+const NCAA_2026_CANONICAL_R64: CanonicalR64Slot[] = [
+  { region: "East", slot: 1, favorite: { name: "Duke", seed: 1 }, underdog: { name: "Siena", seed: 16 } },
+  { region: "East", slot: 2, favorite: { name: "Ohio State", seed: 8 }, underdog: { name: "TCU", seed: 9 } },
+  { region: "East", slot: 3, favorite: { name: "St. John's", seed: 5 }, underdog: { name: "Northern Iowa", seed: 12 } },
+  { region: "East", slot: 4, favorite: { name: "Kansas", seed: 4 }, underdog: { name: "Cal Baptist", seed: 13 } },
+  { region: "East", slot: 5, favorite: { name: "Louisville", seed: 6 }, underdog: { name: "South Florida", seed: 11 } },
+  { region: "East", slot: 6, favorite: { name: "Michigan State", seed: 3 }, underdog: { name: "North Dakota State", seed: 14 } },
+  { region: "East", slot: 7, favorite: { name: "UCLA", seed: 7 }, underdog: { name: "UCF", seed: 10 } },
+  { region: "East", slot: 8, favorite: { name: "UConn", seed: 2 }, underdog: { name: "Furman", seed: 15 } },
+
+  { region: "West", slot: 1, favorite: { name: "Arizona", seed: 1 }, underdog: { name: "Long Island", seed: 16 } },
+  { region: "West", slot: 2, favorite: { name: "Villanova", seed: 8 }, underdog: { name: "Utah State", seed: 9 } },
+  { region: "West", slot: 3, favorite: { name: "Wisconsin", seed: 5 }, underdog: { name: "High Point", seed: 12 } },
+  { region: "West", slot: 4, favorite: { name: "Arkansas", seed: 4 }, underdog: { name: "Hawaii", seed: 13 } },
+  { region: "West", slot: 5, favorite: { name: "BYU", seed: 6 }, underdog: { name: "NC State/Texas", seed: 11 } },
+  { region: "West", slot: 6, favorite: { name: "Gonzaga", seed: 3 }, underdog: { name: "Kennesaw State", seed: 14 } },
+  { region: "West", slot: 7, favorite: { name: "Miami (FL)", seed: 7 }, underdog: { name: "Missouri", seed: 10 } },
+  { region: "West", slot: 8, favorite: { name: "Purdue", seed: 2 }, underdog: { name: "Queens (N.C.)", seed: 15 } },
+
+  { region: "South", slot: 1, favorite: { name: "Florida", seed: 1 }, underdog: { name: "Lehigh/PVAMU", seed: 16 } },
+  { region: "South", slot: 2, favorite: { name: "Clemson", seed: 8 }, underdog: { name: "Iowa", seed: 9 } },
+  { region: "South", slot: 3, favorite: { name: "Vanderbilt", seed: 5 }, underdog: { name: "McNeese", seed: 12 } },
+  { region: "South", slot: 4, favorite: { name: "Nebraska", seed: 4 }, underdog: { name: "Troy", seed: 13 } },
+  { region: "South", slot: 5, favorite: { name: "North Carolina", seed: 6 }, underdog: { name: "VCU", seed: 11 } },
+  { region: "South", slot: 6, favorite: { name: "Illinois", seed: 3 }, underdog: { name: "Penn", seed: 14 } },
+  { region: "South", slot: 7, favorite: { name: "Saint Mary's", seed: 7 }, underdog: { name: "Texas A&M", seed: 10 } },
+  { region: "South", slot: 8, favorite: { name: "Houston", seed: 2 }, underdog: { name: "Idaho", seed: 15 } },
+
+  { region: "Midwest", slot: 1, favorite: { name: "Michigan", seed: 1 }, underdog: { name: "Howard/UMBC", seed: 16 } },
+  { region: "Midwest", slot: 2, favorite: { name: "Georgia", seed: 8 }, underdog: { name: "Saint Louis", seed: 9 } },
+  { region: "Midwest", slot: 3, favorite: { name: "Texas Tech", seed: 5 }, underdog: { name: "Akron", seed: 12 } },
+  { region: "Midwest", slot: 4, favorite: { name: "Alabama", seed: 4 }, underdog: { name: "Hofstra", seed: 13 } },
+  { region: "Midwest", slot: 5, favorite: { name: "Tennessee", seed: 6 }, underdog: { name: "SMU/Miami OH", seed: 11 } },
+  { region: "Midwest", slot: 6, favorite: { name: "Virginia", seed: 3 }, underdog: { name: "Wright State", seed: 14 } },
+  { region: "Midwest", slot: 7, favorite: { name: "Kentucky", seed: 7 }, underdog: { name: "Santa Clara", seed: 10 } },
+  { region: "Midwest", slot: 8, favorite: { name: "Iowa State", seed: 2 }, underdog: { name: "Tennessee State", seed: 15 } },
 ];
 
 function slotForSeedPair(seedA: number | null, seedB: number | null): number | null {
@@ -958,6 +1021,9 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let firstFourPlaceholdersCreated = 0;
   let firstFourSlotsFilled = 0;
   let playInAnchorsApplied = 0;
+  let canonicalR64SlotsApplied = 0;
+  let canonicalTeamsCreated = 0;
+  let canonicalTeamsUpdated = 0;
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   const nowIso = new Date().toISOString();
@@ -1555,6 +1621,142 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     }
   }
 
+  if (!sportsDataOnly && season === 2026) {
+    const { data: r64Rows, error: r64RowsErr } = await supabaseAdmin
+      .from("games")
+      .select("id,region,slot,team1_id,team2_id")
+      .eq("round", "R64");
+    if (r64RowsErr) throw r64RowsErr;
+
+    const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,name,region,seed,seed_in_region,cost");
+    if (allTeamsErr) throw allTeamsErr;
+
+    const r64ByKey = new Map<string, Record<string, unknown>>();
+    for (const row of r64Rows ?? []) {
+      if (!isRegionName(row.region)) continue;
+      const slot = Number(row.slot);
+      if (!Number.isFinite(slot) || slot < 1 || slot > 8) continue;
+      r64ByKey.set(`${row.region}:${Math.trunc(slot)}`, row as unknown as Record<string, unknown>);
+    }
+
+    const teamRows = (allTeams ?? []) as TeamIdentityRow[];
+    const byExact = new Map<string, TeamIdentityRow>();
+    for (const t of teamRows) {
+      const key = (toText(t.name) ?? "").toLowerCase();
+      if (key && !byExact.has(key)) byExact.set(key, t);
+    }
+
+    const claimedTeamIds = new Set<string>();
+
+    const resolveCanonicalTeam = async (
+      team: CanonicalSlotTeam,
+      region: RegionName
+    ): Promise<string> => {
+      const exactKey = team.name.toLowerCase();
+      let chosen: TeamIdentityRow | null = byExact.get(exactKey) ?? null;
+
+      if (!chosen) {
+        chosen =
+          teamRows.find((t) => !claimedTeamIds.has(String(t.id)) && !!t.name && nameLooksLikeCanonical(t.name, team.name)) ??
+          null;
+      }
+
+      if (!chosen) {
+        chosen =
+          teamRows.find(
+            (t) =>
+              !claimedTeamIds.has(String(t.id)) &&
+              isRegionName(t.region) &&
+              t.region === region &&
+              (toSeed(t.seed_in_region) ?? toSeed(t.seed)) === team.seed
+          ) ?? null;
+      }
+
+      if (!chosen) {
+        const { data: inserted, error: insertErr } = await supabaseAdmin
+          .from("teams")
+          .insert({
+            name: team.name,
+            region,
+            seed: team.seed,
+            seed_in_region: team.seed,
+            cost: costForSeed(team.seed),
+          })
+          .select("id,name,region,seed,seed_in_region,cost")
+          .single();
+        if (insertErr) throw insertErr;
+        chosen = inserted as unknown as TeamIdentityRow;
+        teamRows.push(chosen);
+        byExact.set((toText(chosen.name) ?? "").toLowerCase(), chosen);
+        canonicalTeamsCreated++;
+      }
+
+      const chosenId = String(chosen.id);
+      claimedTeamIds.add(chosenId);
+
+      const updates: Record<string, unknown> = {};
+      if (chosen.name !== team.name) {
+        const existingByName = byExact.get(team.name.toLowerCase());
+        if (!existingByName || String(existingByName.id) === chosenId) updates.name = team.name;
+      }
+      if ((toSeed(chosen.seed_in_region) ?? toSeed(chosen.seed)) !== team.seed) updates.seed = team.seed;
+      if (toSeed(chosen.seed_in_region) !== team.seed) updates.seed_in_region = team.seed;
+      if (chosen.region !== region) updates.region = region;
+      if (toInt(chosen.cost) !== costForSeed(team.seed)) updates.cost = costForSeed(team.seed);
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updErr } = await supabaseAdmin
+          .from("teams")
+          .update(updates)
+          .eq("id", chosenId);
+        if (updErr) throw updErr;
+        canonicalTeamsUpdated++;
+
+        chosen = { ...chosen, ...updates } as TeamIdentityRow;
+      }
+
+      const canonicalKey = team.name.toLowerCase();
+      byExact.set(canonicalKey, chosen);
+      return chosenId;
+    };
+
+    for (const slotDef of NCAA_2026_CANONICAL_R64) {
+      const row = r64ByKey.get(`${slotDef.region}:${slotDef.slot}`);
+      if (!row) continue;
+
+      const underdogId = await resolveCanonicalTeam(slotDef.underdog, slotDef.region);
+      const favoriteId = await resolveCanonicalTeam(slotDef.favorite, slotDef.region);
+
+      await supabaseAdmin
+        .from("games")
+        .update({ team1_id: null, last_synced_at: nowIso })
+        .eq("round", "R64")
+        .neq("id", String(row.id))
+        .eq("team1_id", underdogId);
+      await supabaseAdmin
+        .from("games")
+        .update({ team2_id: null, last_synced_at: nowIso })
+        .eq("round", "R64")
+        .neq("id", String(row.id))
+        .eq("team2_id", favoriteId);
+
+      if (row.team1_id !== underdogId || row.team2_id !== favoriteId) {
+        const { error: setGameErr } = await supabaseAdmin
+          .from("games")
+          .update({
+            team1_id: underdogId,
+            team2_id: favoriteId,
+            last_synced_at: nowIso,
+          })
+          .eq("id", String(row.id));
+        if (setGameErr) throw setGameErr;
+        canonicalR64SlotsApplied++;
+      }
+    }
+  }
+
   if (!sportsDataOnly) {
     const { data: emptyR64Games, error: emptyR64Err } = await supabaseAdmin
       .from("games")
@@ -1729,6 +1931,9 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     firstFourPlaceholdersCreated,
     firstFourSlotsFilled,
     playInAnchorsApplied,
+    canonicalR64SlotsApplied,
+    canonicalTeamsCreated,
+    canonicalTeamsUpdated,
     normalizedSeedTeams,
     gameTeamsUpdated,
     r64Backfilled,
