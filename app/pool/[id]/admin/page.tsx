@@ -48,8 +48,11 @@ function memberPrimaryLabel(member: PoolMemberRow) {
   return member.user_id.slice(0, 8);
 }
 
-function memberSecondaryLabel(_member: PoolMemberRow) {
-  return null;
+function memberSecondaryLabel(member: PoolMemberRow) {
+  const realName = member.full_name?.trim();
+  const nickname = member.display_name?.trim();
+  if (!nickname || nickname === realName) return null;
+  return `Nickname: ${nickname}`;
 }
 
 function sortMembersByLabel(a: PoolMemberRow, b: PoolMemberRow) {
@@ -82,7 +85,6 @@ export default function AdminPage() {
 
   const [games, setGames] = useState<GameRow[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [members, setMembers] = useState<PoolMemberRow[]>([]);
   const [adminPools, setAdminPools] = useState<AdminPoolRow[]>([]);
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
@@ -98,6 +100,8 @@ export default function AdminPage() {
   const [syncDate, setSyncDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(false);
   const [poolSearch, setPoolSearch] = useState("");
+  const [activePoolModalId, setActivePoolModalId] = useState<string | null>(null);
+  const [winnersModalOpen, setWinnersModalOpen] = useState(false);
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
 
@@ -122,6 +126,16 @@ export default function AdminPage() {
     if (!needle) return adminPools;
     return adminPools.filter((pool) => pool.name.toLowerCase().includes(needle));
   }, [adminPools, poolSearch]);
+
+  const activePoolModal = useMemo(() => {
+    if (!activePoolModalId) return null;
+    return adminPools.find((pool) => pool.id === activePoolModalId) ?? null;
+  }, [activePoolModalId, adminPools]);
+
+  const activePoolModalMembers = useMemo(() => {
+    if (!activePoolModal) return [];
+    return membersByPool[activePoolModal.id] ?? [];
+  }, [activePoolModal, membersByPool]);
 
   const msgTone = useMemo<"success" | "error" | "info">(() => {
     const lower = msg.toLowerCase();
@@ -149,6 +163,24 @@ export default function AdminPage() {
 
     return "info";
   }, [msg]);
+
+  useEffect(() => {
+    if (!activePoolModalId) return;
+    if (adminPools.some((pool) => pool.id === activePoolModalId)) return;
+    setActivePoolModalId(null);
+  }, [activePoolModalId, adminPools]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (activePoolModalId) setActivePoolModalId(null);
+      if (winnersModalOpen) setWinnersModalOpen(false);
+    };
+
+    if (!activePoolModalId && !winnersModalOpen) return;
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activePoolModalId, winnersModalOpen]);
 
   const loadPoolPasswords = useCallback(async (targetPoolIds: string[]) => {
     if (targetPoolIds.length === 0) {
@@ -266,22 +298,6 @@ export default function AdminPage() {
       }
       setGames((gameRows ?? []) as GameRow[]);
 
-      const { data: memberRows, error: memberErr } = await supabase
-        .from("pool_leaderboard")
-        .select("user_id,display_name")
-        .eq("pool_id", poolId)
-        .order("display_name", { ascending: true });
-
-      if (memberErr) {
-        setMsg(memberErr.message);
-        setLoading(false);
-        return;
-      }
-      const baseMembers = ((memberRows ?? []) as Omit<PoolMemberRow, "full_name">[]).map((row) => ({
-        ...row,
-        full_name: null,
-      }));
-
       const { data: allPoolRows, error: allPoolErr } = await supabase
         .from("pools")
         .select("id,name,created_by")
@@ -318,10 +334,7 @@ export default function AdminPage() {
       }
 
       const allUserIds = Array.from(
-        new Set([
-          ...baseMembers.map((row) => row.user_id),
-          ...allMembersRows.map((row) => row.user_id),
-        ])
+        new Set(allMembersRows.map((row) => row.user_id))
       );
 
       let fullNameByUser = new Map<string, string | null>();
@@ -337,14 +350,6 @@ export default function AdminPage() {
           );
         }
       }
-
-      const membersWithNames = baseMembers
-        .map((row) => ({
-          ...row,
-          full_name: fullNameByUser.get(row.user_id) ?? null,
-        }))
-        .sort(sortMembersByLabel);
-      setMembers(membersWithNames);
 
       if (pools.length > 0) {
         const grouped: Record<string, PoolMemberRow[]> = {};
@@ -401,10 +406,6 @@ export default function AdminPage() {
       if (!res.ok) {
         setMsg(`Remove failed: ${json.error ?? "Unknown error"}`);
         return;
-      }
-
-      if (targetPoolId === poolId) {
-        setMembers((prev) => prev.filter((m) => m.user_id !== targetUserId));
       }
 
       setMembersByPool((prev) => {
@@ -491,7 +492,7 @@ export default function AdminPage() {
         return next;
       });
 
-      if (targetPoolId === poolId) setMembers([]);
+      if (activePoolModalId === targetPoolId) setActivePoolModalId(null);
 
       setMsg("Pool deleted successfully. This pool and all associated data have been removed.");
 
@@ -620,24 +621,6 @@ export default function AdminPage() {
 
     setGames((prev) => prev.map((g) => (g.id === gameId ? { ...g, winner_team_id: winnerTeamId } : g)));
     setMsg("Winner updated.");
-  }
-
-  function toSportsDataDate(dateValue: string) {
-    const match = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) {
-      throw new Error("Enter a valid sync date.");
-    }
-
-    const [, year, month, day] = match;
-    const monthIndex = Number(month) - 1;
-    const monthCodes = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    const monthCode = monthCodes[monthIndex];
-
-    if (!monthCode) {
-      throw new Error("Enter a valid sync date.");
-    }
-
-    return `${year}-${monthCode}-${day}`;
   }
 
   async function syncLogos() {
@@ -816,6 +799,16 @@ export default function AdminPage() {
       </main>
     );
   }
+
+  const activePoolPassword = activePoolModal ? (poolPasswords[activePoolModal.id] ?? null) : null;
+  const activePoolPasswordVisible = activePoolModal ? (showPoolPasswords[activePoolModal.id] ?? false) : false;
+  const activePoolCanTogglePassword = activePoolPassword !== null;
+  const activePoolPasswordPlaceholder =
+    !activePoolModal
+      ? ""
+      : activePoolModal.created_by === creatorId
+        ? "No stored password yet. Update password once to reveal it here."
+        : "Only this pool's creator can view its password.";
 
   return (
     <main style={{ maxWidth: 1200, margin: "28px auto", padding: 12 }}>
@@ -1006,82 +999,13 @@ export default function AdminPage() {
           borderRadius: 12,
           padding: 12,
           display: "grid",
-          gap: 8,
-          background: "var(--surface)",
-        }}
-      >
-        <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Pool members</h2>
-        <p style={{ margin: 0, opacity: 0.8 }}>
-          Full names are shown for members. Removing a user deletes their membership and picks.
-        </p>
-
-        <div style={{ display: "grid", gap: 8 }}>
-          {members.map((m) => {
-            const isCreator = m.user_id === creatorId;
-            const primaryLabel = memberPrimaryLabel(m);
-            const secondaryLabel = memberSecondaryLabel(m);
-            return (
-              <div
-                key={m.user_id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: 12,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  background: "var(--surface-muted)",
-                }}
-              >
-                <div style={{ minWidth: 0, flex: "1 1 220px", display: "grid", gap: 2 }}>
-                  <div style={{ fontWeight: 800 }}>
-                    {primaryLabel}
-                    {isCreator ? " (commissioner)" : ""}
-                  </div>
-                  {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
-                </div>
-                <button
-                  disabled={isCreator || removingMemberKey === memberKey(poolId, m.user_id)}
-                  onClick={() => removeUserFromPool(poolId, m.user_id)}
-                  style={{
-                    padding: "8px 10px",
-                    minHeight: 44,
-                    borderRadius: 8,
-                    border: "1px solid #d33",
-                    background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
-                    color: isCreator ? "#888" : "#a00",
-                    fontWeight: 800,
-                    cursor: isCreator ? "not-allowed" : "pointer",
-                    flex: "1 1 190px",
-                  }}
-                >
-                  {removingMemberKey === memberKey(poolId, m.user_id) ? "Removing..." : "Remove from pool"}
-                </button>
-              </div>
-            );
-          })}
-
-          {members.length === 0 ? <p style={{ margin: 0 }}>No members found.</p> : null}
-        </div>
-      </section>
-
-      <section
-        style={{
-          marginTop: 16,
-          border: "1px solid var(--border-color)",
-          borderRadius: 12,
-          padding: 12,
-          display: "grid",
           gap: 10,
           background: "var(--surface)",
         }}
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>All active pools on the site</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          See every active pool across all players. Deleting a pool removes members, entries, picks, and the pool
-          record so it no longer appears for players.
+          See every active pool across all players. Open a pool for full controls, or delete from this list.
         </p>
 
         {adminPools.length > 0 ? (
@@ -1119,13 +1043,6 @@ export default function AdminPage() {
         <div style={{ display: "grid", gap: 12 }}>
           {filteredAdminPools.map((pool) => {
             const poolMembers = membersByPool[pool.id] ?? [];
-            const storedPassword = poolPasswords[pool.id] ?? null;
-            const isPasswordVisible = showPoolPasswords[pool.id] ?? false;
-            const canTogglePassword = storedPassword !== null;
-            const passwordPlaceholder =
-              pool.created_by === creatorId
-                ? "No stored password yet. Update password once to reveal it here."
-                : "Only this pool's creator can view its password.";
             return (
               <div
                 key={pool.id}
@@ -1133,227 +1050,51 @@ export default function AdminPage() {
                   border: "1px solid var(--border-color)",
                   borderRadius: 12,
                   padding: 10,
-                  display: "grid",
-                  gap: 10,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  flexWrap: "wrap",
                   background: "var(--surface-muted)",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    alignItems: "flex-start",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div style={{ display: "grid", gap: 8, minWidth: 0, flex: "1 1 440px" }}>
-                    <div style={{ fontWeight: 900 }}>{pool.name}</div>
-                    <div style={{ fontSize: 13, opacity: 0.7 }}>Members: {poolMembers.length}</div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <input
-                        value={poolNameDrafts[pool.id] ?? ""}
-                        onChange={(e) =>
-                          setPoolNameDrafts((prev) => ({
-                            ...prev,
-                            [pool.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Pool name"
-                        style={{
-                          padding: "7px 9px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          minWidth: 0,
-                          flex: "1 1 260px",
-                          background: "var(--surface)",
-                        }}
-                      />
-                      <button
-                        disabled={renamingPoolId === pool.id}
-                        onClick={() => renamePool(pool.id)}
-                        style={{
-                          padding: "8px 10px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          background: "var(--surface)",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          flex: "1 1 150px",
-                        }}
-                      >
-                        {renamingPoolId === pool.id ? "Saving..." : "Save name"}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 12, opacity: 0.75, width: "100%" }}>Current pool password</div>
-                      <input
-                        type={isPasswordVisible ? "text" : "password"}
-                        value={storedPassword ?? ""}
-                        readOnly
-                        placeholder={passwordPlaceholder}
-                        style={{
-                          padding: "7px 9px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          minWidth: 0,
-                          flex: "1 1 300px",
-                          background: "var(--surface-elevated)",
-                        }}
-                      />
-                      <button
-                        disabled={!canTogglePassword}
-                        onClick={() =>
-                          setShowPoolPasswords((prev) => ({
-                            ...prev,
-                            [pool.id]: !isPasswordVisible,
-                          }))
-                        }
-                        style={{
-                          padding: "8px 10px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          background: canTogglePassword ? "var(--surface)" : "var(--surface-elevated)",
-                          color: canTogglePassword ? "#111" : "#888",
-                          fontWeight: 700,
-                          cursor: canTogglePassword ? "pointer" : "not-allowed",
-                          flex: "1 1 170px",
-                        }}
-                      >
-                        {isPasswordVisible ? "Hide password" : "Show password"}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <input
-                        type="password"
-                        value={poolPasswordDrafts[pool.id] ?? ""}
-                        onChange={(e) =>
-                          setPoolPasswordDrafts((prev) => ({
-                            ...prev,
-                            [pool.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="New pool password"
-                        minLength={4}
-                        style={{
-                          padding: "7px 9px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          minWidth: 0,
-                          flex: "1 1 260px",
-                          background: "var(--surface)",
-                        }}
-                      />
-                      <button
-                        disabled={rotatingPasswordPoolId === pool.id}
-                        onClick={() => rotatePoolPassword(pool.id)}
-                        style={{
-                          padding: "8px 10px",
-                          minHeight: 44,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          background: "var(--surface)",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          flex: "1 1 170px",
-                        }}
-                      >
-                        {rotatingPasswordPoolId === pool.id ? "Updating..." : "Update password"}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 240px" }}>
-                    <a
-                      href={`/pool/${pool.id}/admin`}
-                      style={{
-                        padding: "8px 10px",
-                        minHeight: 44,
-                        borderRadius: 8,
-                        border: "1px solid var(--border-color)",
-                        textDecoration: "none",
-                        fontWeight: 800,
-                        background: "var(--surface)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flex: "1 1 140px",
-                      }}
-                    >
-                      Open admin
-                    </a>
-                    <button
-                      disabled={deletingPoolId === pool.id}
-                      onClick={() => deletePool(pool.id)}
-                      style={{
-                        padding: "8px 10px",
-                        minHeight: 44,
-                        borderRadius: 8,
-                        border: "1px solid #d33",
-                        background: "var(--surface)",
-                        color: "#a00",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        flex: "1 1 140px",
-                      }}
-                    >
-                      {deletingPoolId === pool.id ? "Deleting..." : "Delete pool"}
-                    </button>
-                  </div>
+                <div style={{ display: "grid", gap: 4, minWidth: 0, flex: "1 1 320px" }}>
+                  <div style={{ fontWeight: 900 }}>{pool.name}</div>
+                  <div style={{ fontSize: 13, opacity: 0.72 }}>Members: {poolMembers.length}</div>
                 </div>
-
-                <div style={{ display: "grid", gap: 8 }}>
-                  {poolMembers.map((m) => {
-                    const isCreator = m.user_id === pool.created_by;
-                    const primaryLabel = memberPrimaryLabel(m);
-                    const secondaryLabel = memberSecondaryLabel(m);
-                    return (
-                      <div
-                        key={`${pool.id}-${m.user_id}`}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                          gap: 12,
-                          border: "1px solid var(--border-color)",
-                          borderRadius: 8,
-                          padding: "8px 10px",
-                          background: "var(--surface)",
-                        }}
-                      >
-                        <div style={{ minWidth: 0, flex: "1 1 200px", display: "grid", gap: 2 }}>
-                          <div style={{ fontWeight: 700 }}>
-                            {primaryLabel}
-                            {isCreator ? " (commissioner)" : ""}
-                          </div>
-                          {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
-                        </div>
-                        <button
-                          disabled={isCreator || removingMemberKey === memberKey(pool.id, m.user_id)}
-                          onClick={() => removeUserFromPool(pool.id, m.user_id)}
-                          style={{
-                            padding: "6px 9px",
-                            minHeight: 44,
-                            borderRadius: 8,
-                            border: "1px solid #d33",
-                            background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
-                            color: isCreator ? "#888" : "#a00",
-                            fontWeight: 700,
-                            cursor: isCreator ? "not-allowed" : "pointer",
-                            flex: "1 1 120px",
-                          }}
-                        >
-                          {removingMemberKey === memberKey(pool.id, m.user_id) ? "Removing..." : "Remove"}
-                        </button>
-                      </div>
-                    );
-                  })}
-                  {poolMembers.length === 0 ? <p style={{ margin: 0 }}>No members found in this pool.</p> : null}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 240px", justifyContent: "end" }}>
+                  <button
+                    onClick={() => setActivePoolModalId(pool.id)}
+                    style={{
+                      padding: "8px 10px",
+                      minHeight: 44,
+                      borderRadius: 8,
+                      border: "1px solid var(--border-color)",
+                      fontWeight: 800,
+                      background: "var(--surface)",
+                      cursor: "pointer",
+                      flex: "1 1 140px",
+                    }}
+                  >
+                    Open admin
+                  </button>
+                  <button
+                    disabled={deletingPoolId === pool.id}
+                    onClick={() => deletePool(pool.id)}
+                    style={{
+                      padding: "8px 10px",
+                      minHeight: 44,
+                      borderRadius: 8,
+                      border: "1px solid #d33",
+                      background: "var(--surface)",
+                      color: "#a00",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      flex: "1 1 140px",
+                    }}
+                  >
+                    {deletingPoolId === pool.id ? "Deleting..." : "Delete pool"}
+                  </button>
                 </div>
               </div>
             );
@@ -1361,75 +1102,388 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <p style={{ marginTop: 12, opacity: 0.8 }}>
-        Set winners for Round of 64 games. Winners will auto-advance to the next round.
-      </p>
-
-      <div
+      <section
         style={{
-          marginTop: 18,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-          gap: 14,
+          marginTop: 16,
+          border: "1px solid var(--border-color)",
+          borderRadius: 12,
+          padding: 12,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+          background: "var(--surface)",
         }}
       >
-        {REGIONS.map((region) => (
+        <div style={{ display: "grid", gap: 4, minWidth: 0, flex: "1 1 360px" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Set winners (manual override)</h2>
+          <p style={{ margin: 0, opacity: 0.8 }}>
+            Scores sync should auto-advance winners. Open this only if you need to correct matchups manually.
+          </p>
+        </div>
+        <button
+          onClick={() => setWinnersModalOpen(true)}
+          style={{
+            padding: "10px 12px",
+            minHeight: 44,
+            borderRadius: 10,
+            border: "1px solid var(--border-color)",
+            fontWeight: 800,
+            background: "var(--surface)",
+            cursor: "pointer",
+            flex: "1 1 180px",
+          }}
+        >
+          Set winners
+        </button>
+      </section>
+
+      {activePoolModal ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActivePoolModalId(null);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            zIndex: 60,
+            padding: 16,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
           <section
-            key={region}
             style={{
+              width: "min(980px, 100%)",
+              maxHeight: "92vh",
+              overflowY: "auto",
               border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              minWidth: 0,
+              borderRadius: 14,
+              padding: 14,
               background: "var(--surface)",
+              display: "grid",
+              gap: 12,
             }}
           >
-            <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 10 }}>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>{activePoolModal.name}</h2>
+                <p style={{ margin: "4px 0 0", opacity: 0.75 }}>Members: {activePoolModalMembers.length}</p>
+              </div>
+              <button
+                onClick={() => setActivePoolModalId(null)}
+                style={{
+                  padding: "7px 10px",
+                  minHeight: 44,
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
 
             <div style={{ display: "grid", gap: 10 }}>
-              {(r64ByRegion[region] ?? []).length === 0 ? (
-                <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
-                  No Round of 64 games loaded for this region yet.
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  value={poolNameDrafts[activePoolModal.id] ?? ""}
+                  onChange={(e) =>
+                    setPoolNameDrafts((prev) => ({
+                      ...prev,
+                      [activePoolModal.id]: e.target.value,
+                    }))
+                  }
+                  placeholder="Pool name"
+                  style={{
+                    padding: "7px 9px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    minWidth: 0,
+                    flex: "1 1 260px",
+                    background: "var(--surface-muted)",
+                  }}
+                />
+                <button
+                  disabled={renamingPoolId === activePoolModal.id}
+                  onClick={() => renamePool(activePoolModal.id)}
+                  style={{
+                    padding: "8px 10px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    flex: "1 1 150px",
+                  }}
+                >
+                  {renamingPoolId === activePoolModal.id ? "Saving..." : "Save name"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type={activePoolPasswordVisible ? "text" : "password"}
+                  value={activePoolPassword ?? ""}
+                  readOnly
+                  placeholder={activePoolPasswordPlaceholder}
+                  style={{
+                    padding: "7px 9px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    minWidth: 0,
+                    flex: "1 1 300px",
+                    background: "var(--surface-elevated)",
+                  }}
+                />
+                <button
+                  disabled={!activePoolCanTogglePassword}
+                  onClick={() =>
+                    setShowPoolPasswords((prev) => ({
+                      ...prev,
+                      [activePoolModal.id]: !activePoolPasswordVisible,
+                    }))
+                  }
+                  style={{
+                    padding: "8px 10px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    background: activePoolCanTogglePassword ? "var(--surface)" : "var(--surface-elevated)",
+                    color: activePoolCanTogglePassword ? "#111" : "#888",
+                    fontWeight: 700,
+                    cursor: activePoolCanTogglePassword ? "pointer" : "not-allowed",
+                    flex: "1 1 170px",
+                  }}
+                >
+                  {activePoolPasswordVisible ? "Hide password" : "Show password"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type="password"
+                  value={poolPasswordDrafts[activePoolModal.id] ?? ""}
+                  onChange={(e) =>
+                    setPoolPasswordDrafts((prev) => ({
+                      ...prev,
+                      [activePoolModal.id]: e.target.value,
+                    }))
+                  }
+                  placeholder="New pool password"
+                  minLength={4}
+                  style={{
+                    padding: "7px 9px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    minWidth: 0,
+                    flex: "1 1 260px",
+                    background: "var(--surface-muted)",
+                  }}
+                />
+                <button
+                  disabled={rotatingPasswordPoolId === activePoolModal.id}
+                  onClick={() => rotatePoolPassword(activePoolModal.id)}
+                  style={{
+                    padding: "8px 10px",
+                    minHeight: 44,
+                    borderRadius: 8,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    flex: "1 1 170px",
+                  }}
+                >
+                  {rotatingPasswordPoolId === activePoolModal.id ? "Updating..." : "Update password"}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Pool members</h3>
+              {activePoolModalMembers.map((m) => {
+                const isCreator = m.user_id === activePoolModal.created_by;
+                const primaryLabel = memberPrimaryLabel(m);
+                const secondaryLabel = memberSecondaryLabel(m);
+                return (
+                  <div
+                    key={`${activePoolModal.id}-${m.user_id}`}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 12,
+                      border: "1px solid var(--border-color)",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                      background: "var(--surface-muted)",
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 200px", display: "grid", gap: 2 }}>
+                      <div style={{ fontWeight: 700 }}>
+                        {primaryLabel}
+                        {isCreator ? " (commissioner)" : ""}
+                      </div>
+                      {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
+                    </div>
+                    <button
+                      disabled={isCreator || removingMemberKey === memberKey(activePoolModal.id, m.user_id)}
+                      onClick={() => removeUserFromPool(activePoolModal.id, m.user_id)}
+                      style={{
+                        padding: "6px 9px",
+                        minHeight: 44,
+                        borderRadius: 8,
+                        border: "1px solid #d33",
+                        background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
+                        color: isCreator ? "#888" : "#a00",
+                        fontWeight: 700,
+                        cursor: isCreator ? "not-allowed" : "pointer",
+                        flex: "1 1 120px",
+                      }}
+                    >
+                      {removingMemberKey === memberKey(activePoolModal.id, m.user_id) ? "Removing..." : "Remove"}
+                    </button>
+                  </div>
+                );
+              })}
+              {activePoolModalMembers.length === 0 ? <p style={{ margin: 0 }}>No members found in this pool.</p> : null}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {winnersModalOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setWinnersModalOpen(false);
+          }}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            zIndex: 60,
+            padding: 16,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          <section
+            style={{
+              width: "min(1120px, 100%)",
+              maxHeight: "92vh",
+              overflowY: "auto",
+              border: "1px solid var(--border-color)",
+              borderRadius: 14,
+              padding: 14,
+              background: "var(--surface)",
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 10 }}>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Set winners</h2>
+                <p style={{ margin: "4px 0 0", opacity: 0.75 }}>
+                  Manual override only. Each winner change saves immediately.
                 </p>
-              ) : null}
-              {(r64ByRegion[region] ?? []).map((g) => (
-                <div
-                  key={g.id}
+              </div>
+              <button
+                onClick={() => setWinnersModalOpen(false)}
+                style={{
+                  padding: "7px 10px",
+                  minHeight: 44,
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {REGIONS.map((region) => (
+                <section
+                  key={region}
                   style={{
                     border: "1px solid var(--border-color)",
                     borderRadius: 12,
-                    padding: 10,
+                    padding: 12,
+                    minWidth: 0,
                     background: "var(--surface-muted)",
                   }}
                 >
-                  <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>Game {g.slot}</div>
+                  <div style={{ fontWeight: 900, marginBottom: 10 }}>{region}</div>
 
-                  <div style={{ display: "grid", gap: 8 }}>
-                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team1_id)}</div>
-                    <div style={{ fontWeight: 800 }}>{teamLabel(g.team2_id)}</div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {(r64ByRegion[region] ?? []).length === 0 ? (
+                      <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
+                        No Round of 64 games loaded for this region yet.
+                      </p>
+                    ) : null}
+                    {(r64ByRegion[region] ?? []).map((g) => (
+                      <div
+                        key={g.id}
+                        style={{
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 12,
+                          padding: 10,
+                          background: "var(--surface)",
+                        }}
+                      >
+                        <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>Game {g.slot}</div>
+
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={{ fontWeight: 800 }}>{teamLabel(g.team1_id)}</div>
+                          <div style={{ fontWeight: 800 }}>{teamLabel(g.team2_id)}</div>
+                        </div>
+
+                        <select
+                          value={g.winner_team_id ?? ""}
+                          onChange={(e) => setWinner(g.id, e.target.value || null)}
+                          style={{
+                            marginTop: 10,
+                            padding: "6px 8px",
+                            minHeight: 44,
+                            borderRadius: 8,
+                            width: "100%",
+                          }}
+                        >
+                          <option value="">-- Select Winner --</option>
+                          {g.team1_id ? <option value={g.team1_id}>{teamLabel(g.team1_id)}</option> : null}
+                          {g.team2_id ? <option value={g.team2_id}>{teamLabel(g.team2_id)}</option> : null}
+                        </select>
+                      </div>
+                    ))}
                   </div>
-
-                  <select
-                    value={g.winner_team_id ?? ""}
-                    onChange={(e) => setWinner(g.id, e.target.value || null)}
-                    style={{
-                      marginTop: 10,
-                      padding: "6px 8px",
-                      minHeight: 44,
-                      borderRadius: 8,
-                      width: "100%",
-                    }}
-                  >
-                    <option value="">-- Select Winner --</option>
-                    {g.team1_id ? <option value={g.team1_id}>{teamLabel(g.team1_id)}</option> : null}
-                    {g.team2_id ? <option value={g.team2_id}>{teamLabel(g.team2_id)}</option> : null}
-                  </select>
-                </div>
+                </section>
               ))}
             </div>
           </section>
-        ))}
-      </div>
+        </div>
+      ) : null}
     </main>
   );
 }
