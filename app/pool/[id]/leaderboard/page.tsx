@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
-import { isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 
 type ScoringGame = {
   round: string;
@@ -485,7 +485,7 @@ export default function LeaderboardPage() {
               }}
             >
               Other brackets are hidden until draft lock
-              {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
+              {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
             </div>
           ) : null}
 

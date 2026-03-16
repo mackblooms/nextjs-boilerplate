@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../../lib/supabaseClient";
-import { isDraftLocked, resolveDraftLockTime } from "../../../../../lib/draftLock";
+import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../../lib/draftLock";
 
 type ScoringGame = {
   round: string;
@@ -300,7 +300,7 @@ export default function PicksPage() {
       {!draftLocked ? (
         <p style={{ marginTop: 8, opacity: 0.8, fontWeight: 700 }}>
           Other members&apos; picks are hidden until draft lock
-          {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
+          {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
         </p>
       ) : null}
 

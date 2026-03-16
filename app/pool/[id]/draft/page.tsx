@@ -8,7 +8,7 @@ import {
   type BracketBoardTeam,
 } from "../../../components/BracketBoard";
 import { supabase } from "../../../../lib/supabaseClient";
-import { isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 import { trackEvent } from "@/lib/analytics";
 
 type Team = {
@@ -1057,7 +1057,7 @@ export default function DraftPage() {
 
             {lockTime && (
               <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
-                Locks: {new Date(lockTime).toLocaleString()}
+                Locks: {formatDraftLockTimeET(lockTime)}
               </div>
             )}
           </div>

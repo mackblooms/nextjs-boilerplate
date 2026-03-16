@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
-import { isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 
 type Team = {
   id: string;
@@ -1109,7 +1109,7 @@ export default function BracketPage() {
           }}
         >
           Other members&apos; brackets stay hidden until draft lock
-          {lockTime ? ` (${new Date(lockTime).toLocaleString()})` : ""}.
+          {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
         </p>
       ) : null}
 

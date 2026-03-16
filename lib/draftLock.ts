@@ -16,12 +16,31 @@ export function resolveDraftLockTime(poolLockTime: string | null | undefined): s
   const poolLock = parseTimestamp(poolLockTime);
   if (!poolLock) return official.toISOString();
 
-  const earliest = poolLock.getTime() < official.getTime() ? poolLock : official;
-  return earliest.toISOString();
+  // Never allow a stale earlier timestamp (for example, old 8:00 AM seeds) to
+  // override the official first-tip lock time.
+  const effective = poolLock.getTime() > official.getTime() ? poolLock : official;
+  return effective.toISOString();
 }
 
 export function isDraftLocked(poolLockTime: string | null | undefined, now: Date = new Date()): boolean {
   const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime));
   if (!resolved) return false;
   return now.getTime() >= resolved.getTime();
+}
+
+export function formatDraftLockTimeET(poolLockTime: string | null | undefined): string {
+  const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime));
+  if (!resolved) return "TBD (ET)";
+
+  return (
+    resolved.toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }) + " ET"
+  );
 }
