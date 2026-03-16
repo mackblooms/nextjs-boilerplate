@@ -335,12 +335,53 @@ function costForSeed(seed: number | null): number | null {
   return map[seed] ?? null;
 }
 
+function expectedSeedsForR64Slot(slot: number): [number, number] | null {
+  const map: Record<number, [number, number]> = {
+    1: [1, 16],
+    2: [8, 9],
+    3: [5, 12],
+    4: [4, 13],
+    5: [6, 11],
+    6: [3, 14],
+    7: [7, 10],
+    8: [2, 15],
+  };
+  return map[slot] ?? null;
+}
+
 type RoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
 type FallbackRoundSlot = {
   roundCode: RoundCode;
   slot: number;
   region: "East" | "West" | "South" | "Midwest";
 };
+type SportsTeamAggregate = {
+  name: string | null;
+  seed: number | null;
+  region: "East" | "West" | "South" | "Midwest" | null;
+  logoUrl: string | null;
+  seedPriority: number;
+  regionPriority: number;
+};
+
+function roundPriority(roundCode: RoundCode | null): number {
+  switch (roundCode) {
+    case "R64":
+      return 6;
+    case "R32":
+      return 5;
+    case "S16":
+      return 4;
+    case "E8":
+      return 3;
+    case "F4":
+      return 2;
+    case "CHIP":
+      return 1;
+    default:
+      return 0;
+  }
+}
 
 function buildPlaceholderFallbackMap(games: SportsGame[]) {
   const byRegion = new Map<"East" | "West" | "South" | "Midwest", SportsGame[]>();
@@ -453,28 +494,48 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     ? "id,sportsdata_game_id,team1_id,team2_id,status,start_time,game_date"
     : "id,sportsdata_game_id,team1_id,team2_id";
 
+  const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
   const sportsTeamMeta = await fetchSportsTeamMeta();
-  const sportsTeams = new Map<
-    number,
-    {
-      name: string | null;
-      seed: number | null;
-      region: "East" | "West" | "South" | "Midwest" | null;
-      logoUrl: string | null;
-    }
-  >();
+  const sportsTeams = new Map<number, SportsTeamAggregate>();
   for (const g of gamesArray) {
-    const region = bracketToRegion(g.Bracket ?? g.bracket);
+    const gameId = getSportsGameId(g);
+    let roundCode = roundToCode(g.Round ?? g.round);
+    let region = bracketToRegion(g.Bracket ?? g.bracket);
+
+    if (gameId && !roundCode) {
+      const fallback = placeholderFallback.get(gameId);
+      if (fallback) {
+        roundCode = fallback.roundCode;
+        region = region ?? fallback.region;
+      }
+    }
+
+    const priority = roundPriority(roundCode);
 
     const homeId = toInt(g.HomeTeamID);
     if (homeId) {
       const existing = sportsTeams.get(homeId);
       const meta = sportsTeamMeta.get(homeId);
+      const incomingSeed = roundCode === "R64" ? toSeed(g.HomeTeamSeed) : null;
       sportsTeams.set(homeId, {
         name: existing?.name ?? meta?.name ?? toIso(g.HomeTeam),
-        seed: existing?.seed ?? toSeed(g.HomeTeamSeed),
-        region: existing?.region ?? region,
+        seed:
+          incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
+            ? incomingSeed
+            : (existing?.seed ?? null),
+        region:
+          region && priority >= (existing?.regionPriority ?? 0)
+            ? region
+            : (existing?.region ?? null),
         logoUrl: existing?.logoUrl ?? meta?.logoUrl ?? null,
+        seedPriority:
+          incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
+            ? priority
+            : (existing?.seedPriority ?? 0),
+        regionPriority:
+          region && priority >= (existing?.regionPriority ?? 0)
+            ? priority
+            : (existing?.regionPriority ?? 0),
       });
     }
 
@@ -482,11 +543,26 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     if (awayId) {
       const existing = sportsTeams.get(awayId);
       const meta = sportsTeamMeta.get(awayId);
+      const incomingSeed = roundCode === "R64" ? toSeed(g.AwayTeamSeed) : null;
       sportsTeams.set(awayId, {
         name: existing?.name ?? meta?.name ?? toIso(g.AwayTeam),
-        seed: existing?.seed ?? toSeed(g.AwayTeamSeed),
-        region: existing?.region ?? region,
+        seed:
+          incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
+            ? incomingSeed
+            : (existing?.seed ?? null),
+        region:
+          region && priority >= (existing?.regionPriority ?? 0)
+            ? region
+            : (existing?.region ?? null),
         logoUrl: existing?.logoUrl ?? meta?.logoUrl ?? null,
+        seedPriority:
+          incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
+            ? priority
+            : (existing?.seedPriority ?? 0),
+        regionPriority:
+          region && priority >= (existing?.regionPriority ?? 0)
+            ? priority
+            : (existing?.regionPriority ?? 0),
       });
     }
   }
@@ -592,9 +668,11 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let scheduleUpdated = 0;
   let skippedDuplicateSportsId = 0;
   let gameTeamsUpdated = 0;
+  let normalizedSeedTeams = 0;
   const nowIso = new Date().toISOString();
-  const placeholderFallback = buildPlaceholderFallbackMap(gamesArray);
   let clearedR64Teams = 0;
+  let teamsWithoutSeed = 0;
+  let teamsWithoutLogo = 0;
 
   if (sportsDataOnly) {
     const { data: r64Rows, error: r64SelErr } = await supabaseAdmin
@@ -764,6 +842,100 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     }
   }
 
+  const { data: r64Games, error: r64GamesErr } = await supabaseAdmin
+    .from("games")
+    .select("slot,team1_id,team2_id")
+    .eq("round", "R64")
+    .not("team1_id", "is", null)
+    .not("team2_id", "is", null);
+  if (r64GamesErr) throw r64GamesErr;
+
+  const r64TeamIds = Array.from(
+    new Set(
+      (r64Games ?? []).flatMap((g) => [String(g.team1_id ?? ""), String(g.team2_id ?? "")]).filter(Boolean)
+    )
+  );
+
+  if (r64TeamIds.length > 0) {
+    const { data: r64Teams, error: r64TeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,seed,seed_in_region,cost")
+      .in("id", r64TeamIds);
+    if (r64TeamsErr) throw r64TeamsErr;
+
+    const teamById = new Map<string, { id: string; seed: number | null; seed_in_region: number | null; cost: number | null }>();
+    for (const row of r64Teams ?? []) {
+      teamById.set(String(row.id), {
+        id: String(row.id),
+        seed: toSeed(row.seed),
+        seed_in_region: toSeed(row.seed_in_region),
+        cost: row.cost == null ? null : toInt(row.cost),
+      });
+    }
+
+    for (const g of r64Games ?? []) {
+      const team1Id = String(g.team1_id ?? "");
+      const team2Id = String(g.team2_id ?? "");
+      if (!team1Id || !team2Id) continue;
+
+      const pair = expectedSeedsForR64Slot(Number(g.slot));
+      if (!pair) continue;
+
+      const team1 = teamById.get(team1Id);
+      const team2 = teamById.get(team2Id);
+      if (!team1 || !team2) continue;
+
+      const s1 = team1.seed_in_region ?? team1.seed;
+      const s2 = team2.seed_in_region ?? team2.seed;
+
+      const diffA = Math.abs((s1 ?? pair[0]) - pair[0]) + Math.abs((s2 ?? pair[1]) - pair[1]);
+      const diffB = Math.abs((s1 ?? pair[1]) - pair[1]) + Math.abs((s2 ?? pair[0]) - pair[0]);
+
+      const target1 = diffB < diffA ? pair[1] : pair[0];
+      const target2 = diffB < diffA ? pair[0] : pair[1];
+
+      const nextCost1 = costForSeed(target1);
+      const nextCost2 = costForSeed(target2);
+
+      if (team1.seed !== target1 || team1.seed_in_region !== target1 || team1.cost !== nextCost1) {
+        const { error: updTeam1Err } = await supabaseAdmin
+          .from("teams")
+          .update({
+            seed: target1,
+            seed_in_region: target1,
+            cost: nextCost1,
+          })
+          .eq("id", team1Id);
+        if (updTeam1Err) throw updTeam1Err;
+        team1.seed = target1;
+        team1.seed_in_region = target1;
+        team1.cost = nextCost1;
+        normalizedSeedTeams++;
+      }
+
+      if (team2.seed !== target2 || team2.seed_in_region !== target2 || team2.cost !== nextCost2) {
+        const { error: updTeam2Err } = await supabaseAdmin
+          .from("teams")
+          .update({
+            seed: target2,
+            seed_in_region: target2,
+            cost: nextCost2,
+          })
+          .eq("id", team2Id);
+        if (updTeam2Err) throw updTeam2Err;
+        team2.seed = target2;
+        team2.seed_in_region = target2;
+        team2.cost = nextCost2;
+        normalizedSeedTeams++;
+      }
+    }
+  }
+
+  for (const incoming of sportsTeams.values()) {
+    if (incoming.seed == null) teamsWithoutSeed++;
+    if (!incoming.logoUrl) teamsWithoutLogo++;
+  }
+
   return {
     season,
     url,
@@ -780,7 +952,10 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     teamsSeenInPayload: sportsTeamIds.length,
     teamsCreated,
     teamsUpdated,
+    normalizedSeedTeams,
     gameTeamsUpdated,
+    teamsWithoutSeed,
+    teamsWithoutLogo,
     sportsDataOnly,
     clearedR64Teams,
     skippedDuplicateSportsId,

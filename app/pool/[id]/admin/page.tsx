@@ -683,16 +683,19 @@ export default function AdminPage() {
   }
 
   async function syncGamesByDate() {
-    setMsg("Syncing SportsDataIO games...");
+    setMsg("Syncing SportsDataIO game results...");
     setSyncingGames(true);
 
     try {
-      const sportsDataDate = toSportsDataDate(syncDate);
+      const season = Number(syncSeason);
+      if (!Number.isFinite(season) || season < 2000 || season > 2100) {
+        throw new Error("Enter a valid season year (e.g., 2026).");
+      }
 
-      const res = await fetch("/api/admin/sync-games", {
+      const res = await fetch("/api/admin/sync-scores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: sportsDataDate }),
+        body: JSON.stringify({ season }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -700,15 +703,18 @@ export default function AdminPage() {
         throw new Error(json?.error ?? "Sync games failed");
       }
 
-      const fetched = Number(json?.fetched ?? 0);
-      const linked = Number(json?.linked ?? 0);
-      const winnersSet = Number(json?.winnersSet ?? 0);
-      const skippedNoMatch = Number(json?.skippedNoMatch ?? 0);
-      const skippedTieOrNoScore = Number(json?.skippedTieOrNoScore ?? 0);
+      const finalsSeen = Number(json?.finalsSeen ?? 0);
+      const updatedGames = Number(json?.updatedGames ?? 0);
+      const alreadySet = Number(json?.alreadySet ?? 0);
+      const skippedUnlinked = Number(json?.skippedUnlinked ?? 0);
+      const skippedNoTeamMap = Number(json?.skippedNoTeamMap ?? 0);
+      const skippedTie = Number(json?.skippedTie ?? 0);
+      const mode = String(json?.mode ?? "tournament");
 
       setMsg(
-        `Sync Games complete (${sportsDataDate}) | fetched: ${fetched}, linked: ${linked}, winners set: ${winnersSet}, ` +
-          `skipped (no match): ${skippedNoMatch}, skipped (tie/no score): ${skippedTieOrNoScore}`
+        `Sync Games complete (${mode === "tournament" ? `season ${season}` : "daily"}) | finals seen: ${finalsSeen}, ` +
+          `winners updated: ${updatedGames}, already set: ${alreadySet}, skipped (unlinked): ${skippedUnlinked}, ` +
+          `skipped (no team map): ${skippedNoTeamMap}, skipped (tie): ${skippedTie}`
       );
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : "Unknown error");
@@ -747,13 +753,17 @@ export default function AdminPage() {
       const skippedDuplicateSportsId = Number(json?.bracket?.skippedDuplicateSportsId ?? 0);
       const teamsCreated = Number(json?.bracket?.teamsCreated ?? 0);
       const teamsUpdated = Number(json?.bracket?.teamsUpdated ?? 0);
+      const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
+      const teamsWithoutSeed = Number(json?.bracket?.teamsWithoutSeed ?? 0);
+      const teamsWithoutLogo = Number(json?.bracket?.teamsWithoutLogo ?? 0);
       const clearedR64Teams = Number(json?.totals?.clearedR64Teams ?? json?.bracket?.clearedR64Teams ?? 0);
 
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}, sportsdata-only: ${sportsDataOnlyMode ? "on" : "off"}) | linked: ${linkedTotal} ` +
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids: ${skippedDuplicateSportsId}) | ` +
-          `teams created/updated: ${teamsCreated}/${teamsUpdated}, game teams updated: ${gameTeamsUpdated}, r64 cleared: ${clearedR64Teams} | ` +
+          `teams created/updated: ${teamsCreated}/${teamsUpdated}, seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 cleared: ${clearedR64Teams}, ` +
+          `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );
