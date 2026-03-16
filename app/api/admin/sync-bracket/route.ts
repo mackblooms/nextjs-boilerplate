@@ -375,6 +375,13 @@ const SCHOOL_NAME_OVERRIDES: Record<string, string> = {
   "ohio state buckeyes": "Ohio State",
   "northern iowa panthers": "Northern Iowa",
   "furman paladins": "Furman",
+  "miami hurricanes": "Miami (FL)",
+  miami: "Miami (FL)",
+  "miami redhawks": "Miami (OH)",
+  "miami oh": "Miami (OH)",
+  "miami ohio": "Miami (OH)",
+  "miami oh redhawks": "Miami (OH)",
+  "miami ohio redhawks": "Miami (OH)",
 };
 
 function toSchoolName(value: unknown): string | null {
@@ -385,19 +392,29 @@ function toSchoolName(value: unknown): string | null {
 }
 
 function canonicalSchoolKey(value: string): string {
-  return normName(value.replace(/\([^)]*\)/g, " ").replace(/\//g, " "));
+  return normName(value.replace(/[()]/g, " ").replace(/\//g, " "));
+}
+
+function miamiCampusKey(value: string): "fl" | "oh" | null {
+  const n = canonicalSchoolKey(value);
+  if (!n.includes("miami")) return null;
+  if (/\bfl(orida)?\b/.test(n)) return "fl";
+  if (/\boh(io)?\b/.test(n)) return "oh";
+  return null;
 }
 
 function nameLooksLikeCanonical(existingName: string, canonicalName: string): boolean {
   const existing = canonicalSchoolKey(existingName);
   const canonical = canonicalSchoolKey(canonicalName);
   if (!existing || !canonical) return false;
+
+  const existingMiami = miamiCampusKey(existingName);
+  const canonicalMiami = miamiCampusKey(canonicalName);
+  if (existingMiami && canonicalMiami && existingMiami !== canonicalMiami) return false;
+
   if (existing === canonical) return true;
   if (existing.startsWith(`${canonical} `)) return true;
   if (canonical.startsWith(`${existing} `)) return true;
-  const canonicalBase = canonical.replace(/\b(fl|oh|nc|n c)\b/g, " ").replace(/\s+/g, " ").trim();
-  if (canonicalBase && existing.startsWith(`${canonicalBase} `)) return true;
-  if (canonicalBase && existing === canonicalBase) return true;
   return false;
 }
 
@@ -1026,6 +1043,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let canonicalTeamsUpdated = 0;
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
+  let r64SeedOrderFixed = 0;
   const nowIso = new Date().toISOString();
   let clearedR64Teams = 0;
   let teamsWithoutSeed = 0;
@@ -1161,8 +1179,24 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     const homeLocal = localTeamBySports.get(Number(g.HomeTeamID));
     const awayLocal = localTeamBySports.get(Number(g.AwayTeamID));
     const hasGameTeams = !!homeLocal && !!awayLocal;
-    const nextTeam1 = hasGameTeams ? awayLocal : null;
-    const nextTeam2 = hasGameTeams ? homeLocal : null;
+    let nextTeam1: string | null = null;
+    let nextTeam2: string | null = null;
+    if (hasGameTeams) {
+      const homeSeed = toSeed(g.HomeTeamSeed);
+      const awaySeed = toSeed(g.AwayTeamSeed);
+      if (roundCode === "R64" && homeSeed != null && awaySeed != null) {
+        if (homeSeed <= awaySeed) {
+          nextTeam1 = homeLocal;
+          nextTeam2 = awayLocal;
+        } else {
+          nextTeam1 = awayLocal;
+          nextTeam2 = homeLocal;
+        }
+      } else {
+        nextTeam1 = awayLocal;
+        nextTeam2 = homeLocal;
+      }
+    }
     const needsGameTeamsUpdate =
       hasGameTeams &&
       (ourGame.team1_id !== nextTeam1 || ourGame.team2_id !== nextTeam2);
@@ -1376,8 +1410,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         const nextGameDate = matchup.startTime ? matchup.startTime.slice(0, 10) : null;
         const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
 
-        if (row.team1_id !== underdogLocal) updatePayload.team1_id = underdogLocal;
-        if (row.team2_id !== favoriteLocal) updatePayload.team2_id = favoriteLocal;
+        if (row.team1_id !== favoriteLocal) updatePayload.team1_id = favoriteLocal;
+        if (row.team2_id !== underdogLocal) updatePayload.team2_id = underdogLocal;
         if (scheduleColumnsAvailable) {
           if (matchup.status && matchup.status !== toText(row.status)) updatePayload.status = matchup.status;
           if (matchup.startTime && matchup.startTime !== toText(row.start_time)) updatePayload.start_time = matchup.startTime;
@@ -1484,10 +1518,10 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
       if (!row.team1_id) {
-        updatePayload.team1_id = await ensurePlaceholderTeam(region, pair[1]);
+        updatePayload.team1_id = await ensurePlaceholderTeam(region, pair[0]);
       }
       if (!row.team2_id) {
-        updatePayload.team2_id = await ensurePlaceholderTeam(region, pair[0]);
+        updatePayload.team2_id = await ensurePlaceholderTeam(region, pair[1]);
       }
 
       if (Object.keys(updatePayload).length > 1) {
@@ -1594,7 +1628,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         })
         .eq("round", "R64")
         .neq("id", String(targetGame.id))
-        .eq("team1_id", placeholderId);
+        .eq("team1_id", favoriteId);
 
       await supabaseAdmin
         .from("games")
@@ -1604,14 +1638,14 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         })
         .eq("round", "R64")
         .neq("id", String(targetGame.id))
-        .eq("team2_id", favoriteId);
+        .eq("team2_id", placeholderId);
 
-      if (targetGame.team1_id !== placeholderId || targetGame.team2_id !== favoriteId) {
+      if (targetGame.team1_id !== favoriteId || targetGame.team2_id !== placeholderId) {
         const { error: targetUpdErr } = await supabaseAdmin
           .from("games")
           .update({
-            team1_id: placeholderId,
-            team2_id: favoriteId,
+            team1_id: favoriteId,
+            team2_id: placeholderId,
             last_synced_at: nowIso,
           })
           .eq("id", String(targetGame.id));
@@ -1726,28 +1760,28 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const row = r64ByKey.get(`${slotDef.region}:${slotDef.slot}`);
       if (!row) continue;
 
-      const underdogId = await resolveCanonicalTeam(slotDef.underdog, slotDef.region);
       const favoriteId = await resolveCanonicalTeam(slotDef.favorite, slotDef.region);
+      const underdogId = await resolveCanonicalTeam(slotDef.underdog, slotDef.region);
 
       await supabaseAdmin
         .from("games")
         .update({ team1_id: null, last_synced_at: nowIso })
         .eq("round", "R64")
         .neq("id", String(row.id))
-        .eq("team1_id", underdogId);
+        .eq("team1_id", favoriteId);
       await supabaseAdmin
         .from("games")
         .update({ team2_id: null, last_synced_at: nowIso })
         .eq("round", "R64")
         .neq("id", String(row.id))
-        .eq("team2_id", favoriteId);
+        .eq("team2_id", underdogId);
 
-      if (row.team1_id !== underdogId || row.team2_id !== favoriteId) {
+      if (row.team1_id !== favoriteId || row.team2_id !== underdogId) {
         const { error: setGameErr } = await supabaseAdmin
           .from("games")
           .update({
-            team1_id: underdogId,
-            team2_id: favoriteId,
+            team1_id: favoriteId,
+            team2_id: underdogId,
             last_synced_at: nowIso,
           })
           .eq("id", String(row.id));
@@ -1791,8 +1825,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         const underdog = byRegionSeed.get(`${g.region}:${pair[1]}`) ?? null;
         if (!favorite || !underdog) continue;
 
-        const nextTeam1 = g.team1_id ?? underdog;
-        const nextTeam2 = g.team2_id ?? favorite;
+        const nextTeam1 = g.team1_id ?? favorite;
+        const nextTeam2 = g.team2_id ?? underdog;
         if (nextTeam1 === g.team1_id && nextTeam2 === g.team2_id) continue;
 
         const { error: fillErr } = await supabaseAdmin
@@ -1852,19 +1886,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const team2 = teamById.get(team2Id);
       if (!team1 || !team2) continue;
 
-      const s1 = team1.seed_in_region ?? team1.seed;
-      const s2 = team2.seed_in_region ?? team2.seed;
-
-      let target1 = pair[1];
-      let target2 = pair[0];
-      if (s1 != null && s2 != null) {
-        const diffA = Math.abs(s1 - pair[1]) + Math.abs(s2 - pair[0]);
-        const diffB = Math.abs(s1 - pair[0]) + Math.abs(s2 - pair[1]);
-        if (diffB < diffA) {
-          target1 = pair[0];
-          target2 = pair[1];
-        }
-      }
+      const target1 = pair[0];
+      const target2 = pair[1];
 
       const nextCost1 = costForSeed(target1);
       const nextCost2 = costForSeed(target2);
@@ -1903,6 +1926,57 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     }
   }
 
+  const { data: r64OrderGames, error: r64OrderGamesErr } = await supabaseAdmin
+    .from("games")
+    .select("id,team1_id,team2_id")
+    .eq("round", "R64")
+    .not("team1_id", "is", null)
+    .not("team2_id", "is", null);
+  if (r64OrderGamesErr) throw r64OrderGamesErr;
+
+  const orderTeamIds = Array.from(
+    new Set(
+      (r64OrderGames ?? [])
+        .flatMap((g) => [String(g.team1_id ?? ""), String(g.team2_id ?? "")])
+        .filter(Boolean)
+    )
+  );
+
+  if (orderTeamIds.length > 0) {
+    const { data: orderTeams, error: orderTeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,seed,seed_in_region")
+      .in("id", orderTeamIds);
+    if (orderTeamsErr) throw orderTeamsErr;
+
+    const orderSeedById = new Map<string, number>();
+    for (const team of orderTeams ?? []) {
+      const seed = toSeed(team.seed_in_region) ?? toSeed(team.seed);
+      if (seed != null) orderSeedById.set(String(team.id), seed);
+    }
+
+    for (const g of r64OrderGames ?? []) {
+      const team1Id = String(g.team1_id ?? "");
+      const team2Id = String(g.team2_id ?? "");
+      if (!team1Id || !team2Id) continue;
+      const s1 = orderSeedById.get(team1Id);
+      const s2 = orderSeedById.get(team2Id);
+      if (s1 == null || s2 == null) continue;
+      if (s1 <= s2) continue;
+
+      const { error: swapErr } = await supabaseAdmin
+        .from("games")
+        .update({
+          team1_id: team2Id,
+          team2_id: team1Id,
+          last_synced_at: nowIso,
+        })
+        .eq("id", String(g.id));
+      if (swapErr) throw swapErr;
+      r64SeedOrderFixed++;
+    }
+  }
+
   for (const incoming of sportsTeams.values()) {
     if (incoming.seed == null) teamsWithoutSeed++;
     if (!incoming.logoUrl) teamsWithoutLogo++;
@@ -1935,6 +2009,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     canonicalTeamsCreated,
     canonicalTeamsUpdated,
     normalizedSeedTeams,
+    r64SeedOrderFixed,
     gameTeamsUpdated,
     r64Backfilled,
     teamsWithoutSeed,

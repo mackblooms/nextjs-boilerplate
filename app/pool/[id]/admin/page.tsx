@@ -765,6 +765,7 @@ export default function AdminPage() {
       const canonicalTeamsCreated = Number(json?.bracket?.canonicalTeamsCreated ?? 0);
       const canonicalTeamsUpdated = Number(json?.bracket?.canonicalTeamsUpdated ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
+      const r64SeedOrderFixed = Number(json?.bracket?.r64SeedOrderFixed ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
       const r64Backfilled = Number(json?.bracket?.r64Backfilled ?? 0);
       const teamsWithoutSeed = Number(json?.bracket?.teamsWithoutSeed ?? 0);
@@ -777,7 +778,7 @@ export default function AdminPage() {
           `teams created/updated: ${teamsCreated}/${teamsUpdated}, espn fallback (matchups/teams/game updates): ${espnFallbackMatchups}/${espnFallbackTeamsCreated + espnFallbackTeamsUpdated}/${espnFallbackGameTeamsUpdated}, ` +
           `first four placeholders created/filled: ${firstFourPlaceholdersCreated}/${firstFourSlotsFilled}, play-in anchors applied: ${playInAnchorsApplied}, ` +
           `canonical 2026 slots/teams (applied/created/updated): ${canonicalR64SlotsApplied}/${canonicalTeamsCreated}/${canonicalTeamsUpdated}, ` +
-          `seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
+          `seeds normalized: ${normalizedSeedTeams}, r64 seed-order fixed: ${r64SeedOrderFixed}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
