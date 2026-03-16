@@ -1,4 +1,6 @@
 -- Reusable user-owned drafts that can be applied to different pools.
+create extension if not exists pgcrypto;
+
 create table if not exists public.saved_drafts (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
