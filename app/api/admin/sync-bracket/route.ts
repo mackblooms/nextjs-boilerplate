@@ -88,6 +88,11 @@ function isMissingColumnError(message: string): boolean {
   return msg.includes("column") && msg.includes("does not exist");
 }
 
+function isTeamsNameUniqueViolation(error: unknown): boolean {
+  const msg = describeError(error).toLowerCase();
+  return msg.includes("teams_name_key") || (msg.includes("duplicate key value") && msg.includes("key (name)="));
+}
+
 function toSeason(value: unknown): number | null {
   if (value == null) return null;
   const n = Number(String(value).trim());
@@ -766,12 +771,24 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     }
 
     for (const [sportsId, incoming] of sportsTeams.entries()) {
-      const existing = existingBySportsId.get(sportsId);
+      let existing = existingBySportsId.get(sportsId);
       const incomingSeed = incoming.seed;
       const incomingCost = costForSeed(incomingSeed);
 
+      if (!existing && incoming.name) {
+        const { data: byExactName, error: byExactNameErr } = await supabaseAdmin
+          .from("teams")
+          .select("id,sportsdata_team_id,name,seed,seed_in_region,region,cost,logo_url")
+          .eq("name", incoming.name)
+          .maybeSingle();
+        if (byExactNameErr) throw byExactNameErr;
+        if (byExactName) {
+          existing = byExactName as unknown as Record<string, unknown>;
+        }
+      }
+
       if (!existing) {
-        const { error: insErr } = await supabaseAdmin.from("teams").insert({
+        const insertPayload = {
           sportsdata_team_id: sportsId,
           name: incoming.name ?? `Team ${sportsId}`,
           seed: incomingSeed,
@@ -779,17 +796,42 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
           region: incoming.region,
           cost: incomingCost,
           logo_url: incoming.logoUrl,
-        });
-        if (insErr) throw insErr;
-        teamsCreated++;
-        continue;
+        };
+
+        const { error: insErr } = await supabaseAdmin.from("teams").insert(insertPayload);
+        if (insErr) {
+          if (!isTeamsNameUniqueViolation(insErr) || !incoming.name) throw insErr;
+
+          const { data: fallbackByName, error: fallbackByNameErr } = await supabaseAdmin
+            .from("teams")
+            .select("id,sportsdata_team_id,name,seed,seed_in_region,region,cost,logo_url")
+            .eq("name", incoming.name)
+            .maybeSingle();
+          if (fallbackByNameErr) throw fallbackByNameErr;
+          if (!fallbackByName) throw insErr;
+          existing = fallbackByName as unknown as Record<string, unknown>;
+        } else {
+          teamsCreated++;
+          continue;
+        }
       }
 
       const updates: Record<string, unknown> = {};
       const existingSeed = toSeed(existing.seed);
       const existingSeedInRegion = toSeed(existing.seed_in_region);
 
-      if (incoming.name && incoming.name !== existing.name) updates.name = incoming.name;
+      if (Number(existing.sportsdata_team_id ?? NaN) !== sportsId) updates.sportsdata_team_id = sportsId;
+      if (incoming.name && incoming.name !== existing.name) {
+        const { data: takenNameRow, error: takenNameErr } = await supabaseAdmin
+          .from("teams")
+          .select("id")
+          .eq("name", incoming.name)
+          .maybeSingle();
+        if (takenNameErr) throw takenNameErr;
+        if (!takenNameRow || String(takenNameRow.id) === String(existing.id)) {
+          updates.name = incoming.name;
+        }
+      }
       if (incomingSeed != null && incomingSeed !== existingSeed) updates.seed = incomingSeed;
       if (incomingSeed != null && incomingSeed !== existingSeedInRegion) {
         updates.seed_in_region = incomingSeed;
@@ -1059,11 +1101,16 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       const byEspn = new Map<number, Record<string, unknown>>();
       const byName = new Map<string, Record<string, unknown>>();
+      const byExactName = new Map<string, Record<string, unknown>>();
       for (const row of allTeams ?? []) {
         const espnId = Number((row as Record<string, unknown>).espn_team_id);
         if (Number.isFinite(espnId) && espnId > 0) byEspn.set(espnId, row as unknown as Record<string, unknown>);
         const key = normName((row as Record<string, unknown>).name);
         if (key && !byName.has(key)) byName.set(key, row as unknown as Record<string, unknown>);
+        const exact = toText((row as Record<string, unknown>).name);
+        if (exact && !byExactName.has(exact.toLowerCase())) {
+          byExactName.set(exact.toLowerCase(), row as unknown as Record<string, unknown>);
+        }
       }
 
       const localIdByEspn = new Map<number, string>();
@@ -1071,32 +1118,87 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       for (const matchup of espnMatchups) {
         for (const side of [matchup.favorite, matchup.underdog]) {
           const espnId = side.espnTeamId;
-          const existing = byEspn.get(espnId) ?? byName.get(normName(side.name)) ?? null;
+          const existing =
+            byEspn.get(espnId) ??
+            byExactName.get(side.name.toLowerCase()) ??
+            byName.get(normName(side.name)) ??
+            null;
           const incomingSeed = side.seed;
           const incomingCost = costForSeed(incomingSeed);
 
           if (!existing) {
+            const insertPayload = {
+              name: side.name,
+              espn_team_id: espnId,
+              seed: incomingSeed,
+              seed_in_region: incomingSeed,
+              region: matchup.region,
+              cost: incomingCost,
+              logo_url: side.logoUrl,
+            };
+
             const { data: inserted, error: insErr } = await supabaseAdmin
               .from("teams")
-              .insert({
-                name: side.name,
-                espn_team_id: espnId,
-                seed: incomingSeed,
-                seed_in_region: incomingSeed,
-                region: matchup.region,
-                cost: incomingCost,
-                logo_url: side.logoUrl,
-              })
+              .insert(insertPayload)
               .select("id")
               .single();
-            if (insErr) throw insErr;
-            localIdByEspn.set(espnId, String(inserted.id));
-            espnFallbackTeamsCreated++;
+            if (insErr) {
+              if (!isTeamsNameUniqueViolation(insErr)) throw insErr;
+
+              const { data: fallbackByName, error: fallbackByNameErr } = await supabaseAdmin
+                .from("teams")
+                .select("id,name,espn_team_id,seed,seed_in_region,region,cost,logo_url")
+                .eq("name", side.name)
+                .maybeSingle();
+              if (fallbackByNameErr) throw fallbackByNameErr;
+              if (!fallbackByName) throw insErr;
+
+              const updates: Record<string, unknown> = {};
+              if (espnId !== Number(fallbackByName.espn_team_id ?? NaN)) updates.espn_team_id = espnId;
+              if (incomingSeed != null && incomingSeed !== toSeed(fallbackByName.seed)) updates.seed = incomingSeed;
+              if (incomingSeed != null && incomingSeed !== toSeed(fallbackByName.seed_in_region)) {
+                updates.seed_in_region = incomingSeed;
+              }
+              if (matchup.region && matchup.region !== fallbackByName.region) updates.region = matchup.region;
+              if (incomingCost != null && incomingCost !== toInt(fallbackByName.cost)) updates.cost = incomingCost;
+              if (side.logoUrl && side.logoUrl !== toText(fallbackByName.logo_url)) updates.logo_url = side.logoUrl;
+
+              if (Object.keys(updates).length > 0) {
+                const { error: fallbackUpdErr } = await supabaseAdmin
+                  .from("teams")
+                  .update(updates)
+                  .eq("id", String(fallbackByName.id));
+                if (fallbackUpdErr) throw fallbackUpdErr;
+                espnFallbackTeamsUpdated++;
+              }
+
+              localIdByEspn.set(espnId, String(fallbackByName.id));
+              const merged = { ...(fallbackByName as Record<string, unknown>), ...updates, id: String(fallbackByName.id) };
+              byEspn.set(espnId, merged);
+              const mergedName = toText((merged as Record<string, unknown>).name);
+              if (mergedName) {
+                byName.set(normName(mergedName), merged);
+                byExactName.set(mergedName.toLowerCase(), merged);
+              }
+            } else {
+              const insertedId = String(inserted.id);
+              localIdByEspn.set(espnId, insertedId);
+              espnFallbackTeamsCreated++;
+              const insertedRow: Record<string, unknown> = { ...insertPayload, id: insertedId };
+              byEspn.set(espnId, insertedRow);
+              byName.set(normName(side.name), insertedRow);
+              byExactName.set(side.name.toLowerCase(), insertedRow);
+            }
             continue;
           }
 
           const updates: Record<string, unknown> = {};
-          if (side.name && side.name !== existing.name) updates.name = side.name;
+          if (side.name && side.name !== existing.name) {
+            const exact = byExactName.get(side.name.toLowerCase());
+            if (!exact || String(exact.id) === String(existing.id)) {
+              updates.name = side.name;
+            }
+          }
           if (incomingSeed != null && incomingSeed !== toSeed(existing.seed)) updates.seed = incomingSeed;
           if (incomingSeed != null && incomingSeed !== toSeed(existing.seed_in_region)) {
             updates.seed_in_region = incomingSeed;
@@ -1113,7 +1215,13 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
           }
 
           localIdByEspn.set(espnId, String(existing.id));
-          byEspn.set(espnId, { ...existing, ...updates, id: String(existing.id) });
+          const merged = { ...existing, ...updates, id: String(existing.id) };
+          byEspn.set(espnId, merged);
+          const mergedName = toText((merged as Record<string, unknown>).name);
+          if (mergedName) {
+            byName.set(normName(mergedName), merged);
+            byExactName.set(mergedName.toLowerCase(), merged);
+          }
         }
       }
 
@@ -1364,11 +1472,16 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const s1 = team1.seed_in_region ?? team1.seed;
       const s2 = team2.seed_in_region ?? team2.seed;
 
-      const diffA = Math.abs((s1 ?? pair[0]) - pair[0]) + Math.abs((s2 ?? pair[1]) - pair[1]);
-      const diffB = Math.abs((s1 ?? pair[1]) - pair[1]) + Math.abs((s2 ?? pair[0]) - pair[0]);
-
-      const target1 = diffB < diffA ? pair[1] : pair[0];
-      const target2 = diffB < diffA ? pair[0] : pair[1];
+      let target1 = pair[1];
+      let target2 = pair[0];
+      if (s1 != null && s2 != null) {
+        const diffA = Math.abs(s1 - pair[1]) + Math.abs(s2 - pair[0]);
+        const diffB = Math.abs(s1 - pair[0]) + Math.abs(s2 - pair[1]);
+        if (diffB < diffA) {
+          target1 = pair[0];
+          target2 = pair[1];
+        }
+      }
 
       const nextCost1 = costForSeed(target1);
       const nextCost2 = costForSeed(target2);
