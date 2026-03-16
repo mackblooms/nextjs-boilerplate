@@ -286,7 +286,15 @@ export default function DraftDetailPage() {
           gap: 10,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
           <div style={{ display: "grid", gap: 6 }}>
             <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>{draftName || "Draft"}</h1>
             <p style={{ margin: 0, opacity: 0.8 }}>
@@ -297,6 +305,8 @@ export default function DraftDetailPage() {
             <Link
               href="/drafts"
               style={{
+                display: "inline-flex",
+                alignItems: "center",
                 padding: "10px 12px",
                 borderRadius: 10,
                 border: "1px solid var(--border-color)",
@@ -310,6 +320,8 @@ export default function DraftDetailPage() {
             <Link
               href="/pools"
               style={{
+                display: "inline-flex",
+                alignItems: "center",
                 padding: "10px 12px",
                 borderRadius: 10,
                 border: "1px solid var(--border-color)",
