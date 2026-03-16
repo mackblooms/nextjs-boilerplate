@@ -27,6 +27,26 @@ type CreateArchiveRequest = {
   force?: boolean;
 };
 
+function isMissingPoolArchivesTableError(error: { code?: string; message?: string } | null | undefined) {
+  if (!error) return false;
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    error.code === "42P01" ||
+    message.includes("could not find the table 'public.pool_archives'") ||
+    (error.code === "PGRST205" && message.includes("pool_archives"))
+  );
+}
+
+function poolArchivesMigrationErrorResponse() {
+  return NextResponse.json(
+    {
+      error:
+        "Pool archives are not migrated yet. Run db/migrations/20260316_pool_archives.sql in Supabase SQL Editor, then refresh this page.",
+    },
+    { status: 503 },
+  );
+}
+
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
@@ -106,6 +126,10 @@ async function maybeAutoArchiveCurrentSeason(poolId: string) {
     .eq("season", currentSeason)
     .maybeSingle();
 
+  if (isMissingPoolArchivesTableError(existingErr)) {
+    return;
+  }
+
   if (existingErr || existingRow) {
     return;
   }
@@ -146,6 +170,9 @@ export async function GET(req: Request) {
         .maybeSingle();
 
       if (error) {
+        if (isMissingPoolArchivesTableError(error)) {
+          return poolArchivesMigrationErrorResponse();
+        }
         return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
@@ -178,6 +205,9 @@ export async function GET(req: Request) {
       .order("season", { ascending: false });
 
     if (error) {
+      if (isMissingPoolArchivesTableError(error)) {
+        return poolArchivesMigrationErrorResponse();
+      }
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
@@ -187,6 +217,13 @@ export async function GET(req: Request) {
       seasons: ((data ?? []) as ArchiveListRow[]),
     });
   } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      isMissingPoolArchivesTableError(error as { code?: string; message?: string })
+    ) {
+      return poolArchivesMigrationErrorResponse();
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error." },
       { status: 500 },
@@ -238,6 +275,13 @@ export async function POST(req: Request) {
       entry_count: snapshot.entries.length,
     });
   } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      isMissingPoolArchivesTableError(error as { code?: string; message?: string })
+    ) {
+      return poolArchivesMigrationErrorResponse();
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error." },
       { status: 500 },
