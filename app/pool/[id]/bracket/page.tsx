@@ -12,6 +12,7 @@ import {
 } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import { isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 
 type Team = {
   id: string;
@@ -374,9 +375,8 @@ export default function BracketPage() {
         return;
       }
 
-      const resolvedLockTime = poolRow?.lock_time ?? null;
-      const isLocked =
-        !!resolvedLockTime && new Date() >= new Date(resolvedLockTime);
+      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
+      const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
+import { OFFICIAL_DRAFT_LOCK_ISO } from "@/lib/draftLock";
 
 type CreatePoolRequest = {
   name?: string;
@@ -60,6 +61,7 @@ export async function POST(req: Request) {
         name: poolName,
         created_by: authData.user.id,
         is_private: true,
+        lock_time: OFFICIAL_DRAFT_LOCK_ISO,
         join_password_hash: joinPasswordHash,
         join_password_ciphertext: joinPasswordCiphertext,
       })

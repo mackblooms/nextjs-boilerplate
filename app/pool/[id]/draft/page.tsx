@@ -8,6 +8,7 @@ import {
   type BracketBoardTeam,
 } from "../../../components/BracketBoard";
 import { supabase } from "../../../../lib/supabaseClient";
+import { isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 import { trackEvent } from "@/lib/analytics";
 
 type Team = {
@@ -221,13 +222,9 @@ export default function DraftPage() {
         return;
       }
 
-      if (poolRow?.lock_time) {
-        setLockTime(poolRow.lock_time);
-        const lock = new Date(poolRow.lock_time);
-        setLocked(new Date() > lock);
-      } else {
-        setLocked(false);
-      }
+      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
+      setLockTime(resolvedLockTime);
+      setLocked(isDraftLocked(poolRow?.lock_time ?? null));
 
       setPoolIsPrivate((poolRow?.is_private ?? true) !== false);
 
