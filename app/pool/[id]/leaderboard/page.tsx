@@ -107,6 +107,49 @@ type ProfileLookupRow = {
   avatar_url?: string | null;
 };
 
+type ArchiveSeasonRow = {
+  season: number;
+  created_at: string;
+  updated_at: string;
+};
+
+type ArchivedTeam = {
+  team_id: string;
+  team_name: string;
+  seed: number | null;
+  cost: number | null;
+  logo_url: string | null;
+  round_reached: string | null;
+  total_team_score: number;
+};
+
+type ArchivedEntry = {
+  entry_id: string;
+  user_id: string;
+  display_name: string | null;
+  full_name: string | null;
+  avatar_url: string;
+  entry_name: string | null;
+  total_score: number;
+  rank: number;
+  drafted_teams: ArchivedTeam[];
+};
+
+type ArchiveSnapshot = {
+  version: 1;
+  season: number;
+  captured_at: string;
+  entries: ArchivedEntry[];
+};
+
+type ArchiveDetail = {
+  season: number;
+  created_at: string;
+  updated_at: string;
+  snapshot: ArchiveSnapshot;
+  my_entry: ArchivedEntry | null;
+};
+
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
     error?.code === "PGRST204" &&
@@ -170,6 +213,31 @@ function rankRows<
   });
 }
 
+function apiErrorMessage(payload: unknown, fallback: string) {
+  if (payload && typeof payload === "object") {
+    const error = (payload as { error?: unknown }).error;
+    if (typeof error === "string" && error.trim()) return error;
+  }
+  return fallback;
+}
+
+function formatArchiveRound(round: string | null) {
+  if (!round) return "Did not make tournament";
+  if (round === "R64") return "Round of 64";
+  if (round === "R32") return "Round of 32";
+  if (round === "S16") return "Sweet 16";
+  if (round === "E8") return "Elite 8";
+  if (round === "F4") return "Final Four";
+  if (round === "CHIP") return "Championship";
+  return round;
+}
+
+function formatWhen(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString();
+}
+
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -181,6 +249,163 @@ export default function LeaderboardPage() {
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
+  const [isPoolOwner, setIsPoolOwner] = useState(false);
+
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [archiveDetailLoading, setArchiveDetailLoading] = useState(false);
+  const [archiveSaving, setArchiveSaving] = useState(false);
+  const [archiveMsg, setArchiveMsg] = useState("");
+  const [archiveSaveMsg, setArchiveSaveMsg] = useState("");
+  const [archiveYears, setArchiveYears] = useState<ArchiveSeasonRow[]>([]);
+  const [archiveSeason, setArchiveSeason] = useState<number | null>(null);
+  const [archiveDetail, setArchiveDetail] = useState<ArchiveDetail | null>(null);
+
+  const currentSeason = new Date().getUTCFullYear();
+
+  async function getAccessToken() {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  }
+
+  async function loadArchiveSeason(season: number) {
+    const token = await getAccessToken();
+    if (!token) {
+      setArchiveMsg("Session expired. Log in again.");
+      return;
+    }
+
+    setArchiveDetailLoading(true);
+    setArchiveMsg("");
+
+    try {
+      const res = await fetch(
+        `/api/pools/archive?poolId=${encodeURIComponent(poolId)}&season=${season}`,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const payload = (await res.json().catch(() => ({}))) as {
+        archive?: ArchiveDetail | null;
+        isOwner?: boolean;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        throw new Error(apiErrorMessage(payload, "Failed to load archive season."));
+      }
+
+      setIsPoolOwner(Boolean(payload.isOwner));
+      setArchiveSeason(season);
+      setArchiveDetail(payload.archive ?? null);
+      if (!payload.archive) {
+        setArchiveMsg(`No archive found for ${season}.`);
+      }
+    } catch (error: unknown) {
+      setArchiveMsg(error instanceof Error ? error.message : "Failed to load archive season.");
+    } finally {
+      setArchiveDetailLoading(false);
+    }
+  }
+
+  async function openArchive() {
+    const token = await getAccessToken();
+    if (!token) {
+      setArchiveOpen(true);
+      setArchiveMsg("Session expired. Log in again.");
+      return;
+    }
+
+    setArchiveOpen(true);
+    setArchiveLoading(true);
+    setArchiveDetailLoading(false);
+    setArchiveMsg("");
+    setArchiveSaveMsg("");
+
+    try {
+      const res = await fetch(`/api/pools/archive?poolId=${encodeURIComponent(poolId)}`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+
+      const payload = (await res.json().catch(() => ({}))) as {
+        seasons?: ArchiveSeasonRow[];
+        isOwner?: boolean;
+        error?: string;
+      };
+
+      if (!res.ok) {
+        throw new Error(apiErrorMessage(payload, "Failed to load archive years."));
+      }
+
+      const seasons = Array.isArray(payload.seasons) ? payload.seasons : [];
+      setArchiveYears(seasons);
+      setIsPoolOwner(Boolean(payload.isOwner));
+
+      if (seasons.length === 0) {
+        setArchiveSeason(null);
+        setArchiveDetail(null);
+        setArchiveMsg("No archived seasons yet.");
+        return;
+      }
+
+      const preferredSeason =
+        archiveSeason && seasons.some((row) => row.season === archiveSeason)
+          ? archiveSeason
+          : seasons[0].season;
+
+      await loadArchiveSeason(preferredSeason);
+    } catch (error: unknown) {
+      setArchiveMsg(error instanceof Error ? error.message : "Failed to load archive years.");
+    } finally {
+      setArchiveLoading(false);
+    }
+  }
+
+  async function saveCurrentSeasonArchive() {
+    const token = await getAccessToken();
+    if (!token) {
+      setArchiveSaveMsg("Session expired. Log in again.");
+      return;
+    }
+
+    setArchiveSaving(true);
+    setArchiveSaveMsg("");
+
+    try {
+      const res = await fetch("/api/pools/archive", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          poolId,
+          season: currentSeason,
+        }),
+      });
+
+      const payload = (await res.json().catch(() => ({}))) as { error?: string };
+
+      if (!res.ok) {
+        throw new Error(apiErrorMessage(payload, "Failed to save archive snapshot."));
+      }
+
+      setArchiveSaveMsg(`Saved ${currentSeason} archive.`);
+      await openArchive();
+      await loadArchiveSeason(currentSeason);
+    } catch (error: unknown) {
+      setArchiveSaveMsg(
+        error instanceof Error ? error.message : "Failed to save archive snapshot.",
+      );
+    } finally {
+      setArchiveSaving(false);
+    }
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -218,7 +443,7 @@ export default function LeaderboardPage() {
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("name,lock_time")
+        .select("name,lock_time,created_by")
         .eq("id", poolId)
         .single();
 
@@ -233,6 +458,7 @@ export default function LeaderboardPage() {
       setPoolName((poolRow?.name as string | undefined) ?? "");
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
+      setIsPoolOwner(poolRow?.created_by === user.id);
 
       const { data, error } = await supabase
         .from("pool_leaderboard")
@@ -472,158 +698,432 @@ export default function LeaderboardPage() {
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
       {!loading && !msg ? (
-        <div
-          style={{
-            marginTop: 16,
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            overflow: "hidden",
-          }}
-        >
-          {!draftLocked ? (
-            <div
-              style={{
-                padding: "10px 12px",
-                fontWeight: 700,
-                background: "var(--highlight)",
-                borderBottom: "1px solid var(--highlight-border)",
-              }}
-            >
-              Other brackets are hidden until draft lock
-              {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
-            </div>
-          ) : null}
-
+        <>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "80px 1fr 140px",
-              padding: "10px 12px",
-              fontWeight: 900,
-              background: "var(--surface-muted)",
-              borderBottom: "1px solid var(--border-color)",
+              marginTop: 16,
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              overflow: "hidden",
             }}
           >
-            <div>Rank</div>
-            <div>Player</div>
-            <div style={{ textAlign: "right" }}>Score</div>
-          </div>
-
-          {rows.map((r) => {
-            const canOpenBracket = draftLocked || r.user_id === myUserId;
-
-            return (
+            {!draftLocked ? (
               <div
-                key={r.entry_id}
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "80px 1fr 140px",
                   padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  alignItems: "center",
-                  background:
-                    r.user_id === myUserId
-                      ? "var(--surface-elevated)"
-                      : "transparent",
+                  fontWeight: 700,
+                  background: "var(--highlight)",
+                  borderBottom: "1px solid var(--highlight-border)",
                 }}
               >
-                <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span>{r.rank}</span>
-                  {r.rank_delta != null ? (
-                    r.rank_delta > 0 ? (
-                      <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
-                        ↑ {r.rank_delta}
-                      </span>
-                    ) : r.rank_delta < 0 ? (
-                      <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
-                        ↓ {Math.abs(r.rank_delta)}
-                      </span>
-                    ) : (
-                      <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
-                        -
-                      </span>
-                    )
-                  ) : null}
-                </div>
-                <div style={{ fontWeight: 800 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <img
-                      src={r.avatar_url}
-                      alt={r.full_name ?? r.display_name ?? "Player"}
-                      width={36}
-                      height={36}
-                      style={{
-                        borderRadius: 9999,
-                        objectFit: "cover",
-                        border: "1px solid var(--border-color)",
-                        flexShrink: 0,
-                      }}
-                    />
-                    <div>
-                      {canOpenBracket ? (
-                        <a
-                          href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                          style={{ textDecoration: "none", display: "inline-block" }}
-                        >
-                          <div
-                            style={{
-                              fontWeight: 800,
-                              color: "var(--foreground)",
-                              fontSize: 17,
-                            }}
-                          >
-                            {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
-                            {r.user_id === myUserId ? " (You)" : ""}
-                          </div>
-                          <div
-                            style={{
-                              color: "var(--foreground)",
-                              opacity: 0.72,
-                              fontSize: 13,
-                              marginTop: 2,
-                            }}
-                          >
-                            {r.full_name ?? "Unnamed player"}
-                          </div>
-                        </a>
+                Other brackets are hidden until draft lock
+                {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
+              </div>
+            ) : null}
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "80px 1fr 140px",
+                padding: "10px 12px",
+                fontWeight: 900,
+                background: "var(--surface-muted)",
+                borderBottom: "1px solid var(--border-color)",
+              }}
+            >
+              <div>Rank</div>
+              <div>Player</div>
+              <div style={{ textAlign: "right" }}>Score</div>
+            </div>
+
+            {rows.map((r) => {
+              const canOpenBracket = draftLocked || r.user_id === myUserId;
+
+              return (
+                <div
+                  key={r.entry_id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "80px 1fr 140px",
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    alignItems: "center",
+                    background:
+                      r.user_id === myUserId
+                        ? "var(--surface-elevated)"
+                        : "transparent",
+                  }}
+                >
+                  <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>{r.rank}</span>
+                    {r.rank_delta != null ? (
+                      r.rank_delta > 0 ? (
+                        <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
+                          up {r.rank_delta}
+                        </span>
+                      ) : r.rank_delta < 0 ? (
+                        <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
+                          down {Math.abs(r.rank_delta)}
+                        </span>
                       ) : (
-                        <>
-                          <div
-                            style={{
-                              fontWeight: 800,
-                              color: "var(--foreground)",
-                              fontSize: 17,
-                            }}
+                        <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
+                          -
+                        </span>
+                      )
+                    ) : null}
+                  </div>
+                  <div style={{ fontWeight: 800 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <img
+                        src={r.avatar_url}
+                        alt={r.full_name ?? r.display_name ?? "Player"}
+                        width={36}
+                        height={36}
+                        style={{
+                          borderRadius: 9999,
+                          objectFit: "cover",
+                          border: "1px solid var(--border-color)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div>
+                        {canOpenBracket ? (
+                          <a
+                            href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                            style={{ textDecoration: "none", display: "inline-block" }}
                           >
-                            {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
-                          </div>
-                          <div
-                            style={{
-                              color: "var(--foreground)",
-                              opacity: 0.72,
-                              fontSize: 13,
-                              marginTop: 2,
-                            }}
-                          >
-                            Hidden until lock
-                          </div>
-                        </>
-                      )}
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                color: "var(--foreground)",
+                                fontSize: 17,
+                              }}
+                            >
+                              {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                              {r.user_id === myUserId ? " (You)" : ""}
+                            </div>
+                            <div
+                              style={{
+                                color: "var(--foreground)",
+                                opacity: 0.72,
+                                fontSize: 13,
+                                marginTop: 2,
+                              }}
+                            >
+                              {r.full_name ?? "Unnamed player"}
+                            </div>
+                          </a>
+                        ) : (
+                          <>
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                color: "var(--foreground)",
+                                fontSize: 17,
+                              }}
+                            >
+                              {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                            </div>
+                            <div
+                              style={{
+                                color: "var(--foreground)",
+                                opacity: 0.72,
+                                fontSize: 13,
+                                marginTop: 2,
+                              }}
+                            >
+                              Hidden until lock
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div style={{ textAlign: "right", fontWeight: 900 }}>
+                    {r.total_score}
+                  </div>
                 </div>
-                <div style={{ textAlign: "right", fontWeight: 900 }}>
-                  {r.total_score}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {rows.length === 0 ? (
-            <div style={{ padding: "12px 12px" }}>
-              No entries yet. Have friends join and draft.
+            {rows.length === 0 ? (
+              <div style={{ padding: "12px 12px" }}>
+                No entries yet. Have friends join and draft.
+              </div>
+            ) : null}
+          </div>
+
+          <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              onClick={() => {
+                void openArchive();
+              }}
+              style={{
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface)",
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              Archive
+            </button>
+          </div>
+        </>
+      ) : null}
+
+      {archiveOpen ? (
+        <div
+          role="presentation"
+          onClick={() => setArchiveOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 120,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pool archive"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(980px, 100%)",
+              maxHeight: "90vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 16,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
+              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>Pool Archive</h2>
+              <button
+                type="button"
+                onClick={() => setArchiveOpen(false)}
+                style={{
+                  padding: "8px 11px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
             </div>
-          ) : null}
+
+            <p style={{ margin: 0, opacity: 0.8 }}>
+              Open any season to view final standings and your drafted teams/results.
+            </p>
+
+            {isPoolOwner ? (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void saveCurrentSeasonArchive();
+                  }}
+                  disabled={archiveSaving}
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 800,
+                    cursor: archiveSaving ? "default" : "pointer",
+                    opacity: archiveSaving ? 0.65 : 1,
+                  }}
+                >
+                  {archiveSaving ? "Saving..." : `Save ${currentSeason} Final Snapshot`}
+                </button>
+                {archiveSaveMsg ? <span style={{ fontWeight: 700 }}>{archiveSaveMsg}</span> : null}
+              </div>
+            ) : null}
+
+            {archiveLoading ? <p style={{ margin: 0 }}>Loading archive years...</p> : null}
+            {archiveMsg ? <p style={{ margin: 0 }}>{archiveMsg}</p> : null}
+
+            {archiveYears.length > 0 ? (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {archiveYears.map((seasonRow) => (
+                  <button
+                    key={seasonRow.season}
+                    type="button"
+                    onClick={() => {
+                      void loadArchiveSeason(seasonRow.season);
+                    }}
+                    style={{
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background:
+                        archiveSeason === seasonRow.season
+                          ? "var(--surface-elevated)"
+                          : "var(--surface)",
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {seasonRow.season}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {archiveDetailLoading ? <p style={{ margin: 0 }}>Loading season results...</p> : null}
+
+            {archiveDetail ? (
+              <section
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    background: "var(--surface-muted)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ fontWeight: 900 }}>
+                    {archiveDetail.season} Final Standings
+                  </div>
+                  <div style={{ opacity: 0.75, fontSize: 13 }}>
+                    Captured: {formatWhen(archiveDetail.updated_at)}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "80px 1fr 130px",
+                    padding: "9px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    fontWeight: 900,
+                  }}
+                >
+                  <div>Rank</div>
+                  <div>Player</div>
+                  <div style={{ textAlign: "right" }}>Score</div>
+                </div>
+
+                {archiveDetail.snapshot.entries.map((entry) => (
+                  <div
+                    key={entry.entry_id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "80px 1fr 130px",
+                      padding: "10px 12px",
+                      borderBottom: "1px solid var(--border-color)",
+                      alignItems: "center",
+                      background:
+                        myUserId && entry.user_id === myUserId
+                          ? "var(--surface-elevated)"
+                          : "transparent",
+                    }}
+                  >
+                    <div style={{ fontWeight: 900 }}>{entry.rank}</div>
+                    <div style={{ fontWeight: 800 }}>
+                      {entry.entry_name ?? entry.full_name ?? entry.display_name ?? entry.user_id.slice(0, 8)}
+                      {myUserId && entry.user_id === myUserId ? " (You)" : ""}
+                    </div>
+                    <div style={{ textAlign: "right", fontWeight: 900 }}>{entry.total_score}</div>
+                  </div>
+                ))}
+
+                {archiveDetail.snapshot.entries.length === 0 ? (
+                  <div style={{ padding: "12px" }}>No archived entries for this season.</div>
+                ) : null}
+              </section>
+            ) : null}
+
+            {archiveDetail?.my_entry ? (
+              <section
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    background: "var(--surface-muted)",
+                    fontWeight: 900,
+                  }}
+                >
+                  Your Drafted Teams - {archiveDetail.season}
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "80px 1fr 170px 120px",
+                    padding: "9px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    fontWeight: 900,
+                  }}
+                >
+                  <div>Seed</div>
+                  <div>Team</div>
+                  <div>Result</div>
+                  <div style={{ textAlign: "right" }}>Points</div>
+                </div>
+
+                {archiveDetail.my_entry.drafted_teams.map((team) => (
+                  <div
+                    key={team.team_id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "80px 1fr 170px 120px",
+                      padding: "10px 12px",
+                      borderBottom: "1px solid var(--border-color)",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {team.logo_url ? (
+                        <img
+                          src={team.logo_url}
+                          alt=""
+                          width={22}
+                          height={22}
+                          style={{ objectFit: "contain", flexShrink: 0 }}
+                        />
+                      ) : null}
+                      <div style={{ fontWeight: 800 }}>{team.team_name}</div>
+                    </div>
+                    <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>
+                    <div style={{ textAlign: "right", fontWeight: 900 }}>{team.total_team_score}</div>
+                  </div>
+                ))}
+
+                {archiveDetail.my_entry.drafted_teams.length === 0 ? (
+                  <div style={{ padding: "12px" }}>No drafted teams saved for your entry this season.</div>
+                ) : null}
+              </section>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </main>
