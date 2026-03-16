@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
-import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -71,6 +70,11 @@ type TeamLookupRow = {
   id: string;
   name: string;
   espn_team_id?: string | number | null;
+};
+
+type PoolOption = {
+  id: string;
+  name: string;
 };
 
 const buttonStyle = {
@@ -211,6 +215,22 @@ function teamNameVariants(name: string) {
   return variants;
 }
 
+function sortPoolsByName(a: PoolOption, b: PoolOption) {
+  return a.name.localeCompare(b.name);
+}
+
+function isTrackedTeam(
+  gameTeamId: string | null,
+  gameTeamName: string,
+  fallbackLabel: string,
+  trackedEspnSet: Set<string>,
+  trackedKeySet: Set<string>
+) {
+  if (gameTeamId && trackedEspnSet.has(gameTeamId)) return true;
+  const key = normalizeTeamKey(gameTeamName || fallbackLabel);
+  return trackedKeySet.has(key);
+}
+
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const competitors = event.competitions?.[0]?.competitors ?? [];
   const home = competitors.find((c) => c.homeAway === "home");
@@ -303,13 +323,20 @@ function ScorePanel({
   loading,
   error,
   emptyMessage,
+  trackedEspnSet,
+  trackedKeySet,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
   emptyMessage: string;
+  trackedEspnSet?: Set<string>;
+  trackedKeySet?: Set<string>;
 }) {
+  const trackedEspn = trackedEspnSet ?? new Set<string>();
+  const trackedKeys = trackedKeySet ?? new Set<string>();
+
   return (
     <aside style={scorePanelStyle}>
       <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
@@ -321,13 +348,47 @@ function ScorePanel({
       {!loading &&
         !error &&
         games.map((game) => {
+          const awayTracked = isTrackedTeam(
+            game.awayTeamId,
+            game.awayTeamName,
+            game.awayTeam,
+            trackedEspn,
+            trackedKeys
+          );
+          const homeTracked = isTrackedTeam(
+            game.homeTeamId,
+            game.homeTeamName,
+            game.homeTeam,
+            trackedEspn,
+            trackedKeys
+          );
+          const gameHasTrackedTeam = awayTracked || homeTracked;
+
           const row = (
-            <article style={scoreRowStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+            <article
+              style={{
+                ...scoreRowStyle,
+                border: gameHasTrackedTeam
+                  ? "1px solid var(--highlight-border)"
+                  : "1px solid var(--border-color)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  border: awayTracked ? "1px solid var(--highlight-border)" : "1px solid transparent",
+                  borderRadius: 8,
+                  padding: "2px 6px",
+                  background: awayTracked ? "var(--highlight)" : "transparent",
+                }}
+              >
                 <span
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.awayTeamName}
                 >
+                  {awayTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
                   {game.awayLogoUrl ? (
                     <img
                       src={game.awayLogoUrl}
@@ -345,11 +406,22 @@ function ScorePanel({
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  border: homeTracked ? "1px solid var(--highlight-border)" : "1px solid transparent",
+                  borderRadius: 8,
+                  padding: "2px 6px",
+                  background: homeTracked ? "var(--highlight)" : "transparent",
+                }}
+              >
                 <span
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.homeTeamName}
                 >
+                  {homeTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
                   {game.homeLogoUrl ? (
                     <img
                       src={game.homeLogoUrl}
@@ -402,6 +474,9 @@ function HomeContent() {
   const [scoresError, setScoresError] = useState<string | null>(null);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [memberPools, setMemberPools] = useState<PoolOption[]>([]);
+  const [selectedPoolId, setSelectedPoolId] = useState("");
   const [personalizedLoaded, setPersonalizedLoaded] = useState(false);
   const [trackedEspnIds, setTrackedEspnIds] = useState<string[]>([]);
   const [trackedTeamKeys, setTrackedTeamKeys] = useState<string[]>([]);
@@ -438,7 +513,7 @@ function HomeContent() {
   useEffect(() => {
     let canceled = false;
 
-    const loadPersonalizedTeams = async () => {
+    const loadUserPools = async () => {
       setPersonalizedLoaded(false);
 
       const { data: authData } = await supabase.auth.getUser();
@@ -447,6 +522,9 @@ function HomeContent() {
       if (!user) {
         if (!canceled) {
           setIsAuthenticated(false);
+          setUserId(null);
+          setMemberPools([]);
+          setSelectedPoolId("");
           setTrackedEspnIds([]);
           setTrackedTeamKeys([]);
           setTrackedTeamCount(0);
@@ -456,51 +534,113 @@ function HomeContent() {
       }
 
       if (!canceled) setIsAuthenticated(true);
+      if (!canceled) {
+        setUserId(user.id);
+      }
 
-      let teamIds: string[] = [];
+      const memberRes = await supabase
+        .from("pool_members")
+        .select("pool_id")
+        .eq("user_id", user.id);
 
-      const savedDraftRes = await supabase
-        .from("saved_drafts")
+      if (memberRes.error) {
+        if (!canceled) {
+          setMemberPools([]);
+          setSelectedPoolId("");
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
+        }
+        return;
+      }
+
+      const memberPoolIds = Array.from(
+        new Set(((memberRes.data ?? []) as Array<{ pool_id: string }>).map((row) => row.pool_id).filter(Boolean))
+      );
+
+      if (memberPoolIds.length === 0) {
+        if (!canceled) {
+          setMemberPools([]);
+          setSelectedPoolId("");
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
+        }
+        return;
+      }
+
+      const poolsRes = await supabase
+        .from("pools")
+        .select("id,name")
+        .in("id", memberPoolIds)
+        .order("name", { ascending: true });
+
+      const nextPools = ((poolsRes.data ?? []) as PoolOption[]).sort(sortPoolsByName);
+
+      if (!canceled) {
+        setMemberPools(nextPools);
+        setSelectedPoolId((prev) => {
+          if (prev && nextPools.some((pool) => pool.id === prev)) return prev;
+          return nextPools[0]?.id ?? "";
+        });
+      }
+    };
+
+    void loadUserPools();
+
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadPoolTrackedTeams = async () => {
+      if (isAuthenticated !== true || !userId) {
+        return;
+      }
+
+      if (!selectedPoolId) {
+        if (!canceled) {
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
+        }
+        return;
+      }
+
+      setPersonalizedLoaded(false);
+
+      const entryRes = await supabase
+        .from("entries")
         .select("id")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
+        .eq("pool_id", selectedPoolId)
+        .eq("user_id", userId)
         .limit(1);
 
-      if (!savedDraftRes.error && savedDraftRes.data?.[0]?.id) {
-        const draftId = savedDraftRes.data[0].id as string;
-        const savedPickRes = await supabase
-          .from("saved_draft_picks")
-          .select("team_id")
-          .eq("draft_id", draftId);
-        if (!savedPickRes.error) {
-          teamIds = ((savedPickRes.data ?? []) as Array<{ team_id: string }>)
-            .map((row) => row.team_id)
-            .filter(Boolean);
+      const entryId = (entryRes.data?.[0] as { id: string } | undefined)?.id ?? null;
+      if (!entryId) {
+        if (!canceled) {
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
         }
-      } else if (savedDraftRes.error && !isMissingSavedDraftTablesError(savedDraftRes.error.message)) {
-        // Ignore and continue to entry fallback.
+        return;
       }
 
-      if (teamIds.length === 0) {
-        const entryRes = await supabase
-          .from("entries")
-          .select("id")
-          .eq("user_id", user.id)
-          .limit(1);
+      const entryPickRes = await supabase
+        .from("entry_picks")
+        .select("team_id")
+        .eq("entry_id", entryId);
 
-        const entryId = (entryRes.data?.[0] as { id: string } | undefined)?.id ?? null;
-        if (entryId) {
-          const entryPickRes = await supabase
-            .from("entry_picks")
-            .select("team_id")
-            .eq("entry_id", entryId);
-          if (!entryPickRes.error) {
-            teamIds = ((entryPickRes.data ?? []) as Array<{ team_id: string }>)
-              .map((row) => row.team_id)
-              .filter(Boolean);
-          }
-        }
-      }
+      const teamIds = ((entryPickRes.data ?? []) as Array<{ team_id: string }>)
+        .map((row) => row.team_id)
+        .filter(Boolean);
 
       const uniqueTeamIds = Array.from(new Set(teamIds));
       if (uniqueTeamIds.length === 0) {
@@ -549,12 +689,12 @@ function HomeContent() {
       }
     };
 
-    void loadPersonalizedTeams();
+    void loadPoolTrackedTeams();
 
     return () => {
       canceled = true;
     };
-  }, []);
+  }, [isAuthenticated, selectedPoolId, userId]);
 
   useEffect(() => {
     let canceled = false;
@@ -606,19 +746,10 @@ function HomeContent() {
 
   const trackedEspnSet = useMemo(() => new Set(trackedEspnIds), [trackedEspnIds]);
   const trackedKeySet = useMemo(() => new Set(trackedTeamKeys), [trackedTeamKeys]);
-  const visibleScores = useMemo(() => {
-    if (isAuthenticated !== true) return scores;
-    if (trackedEspnSet.size === 0 && trackedKeySet.size === 0) return [];
-
-    return scores.filter((g) => {
-      if (g.awayTeamId && trackedEspnSet.has(g.awayTeamId)) return true;
-      if (g.homeTeamId && trackedEspnSet.has(g.homeTeamId)) return true;
-
-      const awayKey = normalizeTeamKey(g.awayTeamName || g.awayTeam);
-      const homeKey = normalizeTeamKey(g.homeTeamName || g.homeTeam);
-      return trackedKeySet.has(awayKey) || trackedKeySet.has(homeKey);
-    });
-  }, [isAuthenticated, scores, trackedEspnSet, trackedKeySet]);
+  const selectedPoolName = useMemo(
+    () => memberPools.find((pool) => pool.id === selectedPoolId)?.name ?? null,
+    [memberPools, selectedPoolId]
+  );
 
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
@@ -626,37 +757,26 @@ function HomeContent() {
 
   const recentFinals = useMemo(
     () =>
-      visibleScores.filter((g) => {
+      scores.filter((g) => {
         if (g.state !== "FINAL") return false;
         const gameDay = etDayKeyFromIso(g.startTime);
         return gameDay === yesterdayEt || gameDay === todayEt;
       }),
-    [visibleScores, yesterdayEt, todayEt]
+    [scores, yesterdayEt, todayEt]
   );
   const liveAndUpcoming = useMemo(
     () =>
-      visibleScores.filter((g) => {
+      scores.filter((g) => {
         const gameDay = etDayKeyFromIso(g.startTime);
         const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
         const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
         return isLiveToday || isUpcomingTomorrow;
       }),
-    [visibleScores, todayEt, tomorrowEt]
+    [scores, todayEt, tomorrowEt]
   );
 
-  const recentFinalsEmptyMessage = useMemo(() => {
-    if (isAuthenticated !== true) return "No final scores from today or yesterday.";
-    if (!personalizedLoaded) return "Loading your selected teams...";
-    if (trackedTeamCount === 0) return "No selected teams yet. Create or apply a draft.";
-    return "No final scores from today or yesterday for your selected teams.";
-  }, [isAuthenticated, personalizedLoaded, trackedTeamCount]);
-
-  const liveAndUpcomingEmptyMessage = useMemo(() => {
-    if (isAuthenticated !== true) return "No live games today or upcoming games tomorrow.";
-    if (!personalizedLoaded) return "Loading your selected teams...";
-    if (trackedTeamCount === 0) return "No selected teams yet. Create or apply a draft.";
-    return "No live games today or upcoming games tomorrow for your selected teams.";
-  }, [isAuthenticated, personalizedLoaded, trackedTeamCount]);
+  const recentFinalsEmptyMessage = "No final scores from today or yesterday.";
+  const liveAndUpcomingEmptyMessage = "No live games today or upcoming games tomorrow.";
 
   return (
     <main
@@ -671,9 +791,11 @@ function HomeContent() {
           <ScorePanel
             title="Recent Finals"
             games={recentFinals}
-            loading={scoresLoading || (isAuthenticated === true && !personalizedLoaded)}
+            loading={scoresLoading}
             error={scoresError}
             emptyMessage={recentFinalsEmptyMessage}
+            trackedEspnSet={trackedEspnSet}
+            trackedKeySet={trackedKeySet}
           />
         </div>
 
@@ -704,8 +826,56 @@ function HomeContent() {
           </h1>
 
           {isAuthenticated ? (
-            <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
-              Tracking scores for your selected teams.
+            <div
+              style={{
+                margin: 0,
+                fontSize: 16,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>Tracking scores for your selected teams in</span>
+              <select
+                id="home-pool-selector"
+                value={selectedPoolId}
+                onChange={(event) => setSelectedPoolId(event.target.value)}
+                disabled={memberPools.length === 0}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                  fontWeight: 700,
+                  minHeight: 40,
+                }}
+              >
+                {memberPools.length === 0 ? (
+                  <option value="">no joined pools</option>
+                ) : (
+                  memberPools.map((pool) => (
+                    <option key={pool.id} value={pool.id}>
+                      {pool.name}
+                    </option>
+                  ))
+                )}
+              </select>
+              <span>.</span>
+            </div>
+          ) : null}
+
+          {isAuthenticated === true && memberPools.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+              Join a pool to highlight your drafted teams on the scoreboard.
+            </p>
+          ) : null}
+
+          {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+              You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
             </p>
           ) : null}
 
@@ -761,9 +931,11 @@ function HomeContent() {
           <ScorePanel
             title="Live / Upcoming"
             games={liveAndUpcoming}
-            loading={scoresLoading || (isAuthenticated === true && !personalizedLoaded)}
+            loading={scoresLoading}
             error={scoresError}
             emptyMessage={liveAndUpcomingEmptyMessage}
+            trackedEspnSet={trackedEspnSet}
+            trackedKeySet={trackedKeySet}
           />
         </div>
       </div>
