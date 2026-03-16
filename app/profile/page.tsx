@@ -39,7 +39,6 @@ export default function ProfilePage() {
   const onboarding = search?.get("onboarding") === "1";
   const nextPath = search?.get("next") || "/pools";
 
-  const [displayName, setDisplayName] = useState("");
   const [fullName, setFullName] = useState("");
   const [favoriteTeam, setFavoriteTeam] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -111,22 +110,13 @@ export default function ProfilePage() {
         selectedColumns.splice(missingIndex, 1);
       }
 
-      const profileExists =
-        Boolean(row?.display_name) ||
-        Boolean(row?.full_name) ||
-        Boolean(row?.favorite_team) ||
-        Boolean(row?.avatar_url) ||
-        Boolean(row?.bio);
+      const resolvedFullName = row?.full_name?.trim() || row?.display_name?.trim() || "";
+      const profileExists = Boolean(resolvedFullName) && Boolean(row?.favorite_team?.trim());
 
       setHasProfile(profileExists);
       setIsEditing(onboarding ? true : !profileExists);
 
-      if (row?.display_name) setDisplayName(row.display_name);
-      if (row?.full_name) {
-        setFullName(row.full_name);
-      } else if (row?.display_name) {
-        setFullName(row.display_name);
-      }
+      if (resolvedFullName) setFullName(resolvedFullName);
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
       setAvatarUrl(withAvatarFallback(authData.user.id, row?.avatar_url));
       if (row?.bio) setBio(row.bio);
@@ -210,19 +200,8 @@ export default function ProfilePage() {
       return;
     }
 
-    const bracketName = displayName.trim();
     const legalName = fullName.trim();
     const team = favoriteTeam.trim();
-
-    if (!bracketName) {
-      setMsg("Please enter a bracket nickname.");
-      trackEvent({
-        eventName: "profile_save_failure",
-        userId: authData.user.id,
-        metadata: { reason: "missing_display_name", onboarding },
-      });
-      return;
-    }
 
     if (!legalName || legalName.split(/\s+/).length < 2) {
       setMsg("Please enter your full name (first and last).");
@@ -246,7 +225,7 @@ export default function ProfilePage() {
 
     const payload: Record<string, string | null> = {
       user_id: authData.user.id,
-      display_name: bracketName,
+      display_name: legalName,
       full_name: legalName,
       favorite_team: team,
       avatar_url: withAvatarFallback(authData.user.id, avatarUrl),
@@ -330,7 +309,7 @@ export default function ProfilePage() {
               {resolvedAvatarUrl ? (
                 <img
                   src={resolvedAvatarUrl}
-                  alt={fullName || displayName || "Profile"}
+                  alt={fullName || "Profile"}
                   width={112}
                   height={112}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -346,7 +325,7 @@ export default function ProfilePage() {
                     fontSize: 30,
                   }}
                 >
-                  {(fullName || displayName || "P").slice(0, 1).toUpperCase()}
+                  {(fullName || "P").slice(0, 1).toUpperCase()}
                 </div>
               )}
               <span
@@ -396,23 +375,7 @@ export default function ProfilePage() {
           </div>
 
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Bracket nickname
-          </label>
-          <input
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="e.g., CinderellaHunter"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
-          />
-
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Full name (first + last)
+            Full name (first + last, required)
           </label>
           <input
             value={fullName}
@@ -519,7 +482,7 @@ export default function ProfilePage() {
             {resolvedAvatarUrl ? (
               <img
                 src={resolvedAvatarUrl}
-                alt={fullName || displayName || "Profile"}
+                alt={fullName || "Profile"}
                 width={72}
                 height={72}
                 style={{
@@ -542,14 +505,11 @@ export default function ProfilePage() {
                   background: "var(--surface-muted)",
                 }}
               >
-                {(fullName || displayName || "P").slice(0, 1).toUpperCase()}
+                {(fullName || "P").slice(0, 1).toUpperCase()}
               </div>
             )}
             <div>
               <div style={{ fontWeight: 900, fontSize: 22 }}>
-                {displayName || "Bracket nickname"}
-              </div>
-              <div style={{ opacity: 0.75, fontWeight: 700 }}>
                 {fullName || "Full name"}
               </div>
             </div>

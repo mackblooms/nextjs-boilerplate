@@ -48,11 +48,8 @@ function memberPrimaryLabel(member: PoolMemberRow) {
   return member.user_id.slice(0, 8);
 }
 
-function memberSecondaryLabel(member: PoolMemberRow) {
-  const realName = member.full_name?.trim();
-  const nickname = member.display_name?.trim();
-  if (!nickname || nickname === realName) return null;
-  return `Nickname: ${nickname}`;
+function memberSecondaryLabel() {
+  return null;
 }
 
 function sortMembersByLabel(a: PoolMemberRow, b: PoolMemberRow) {
@@ -1015,8 +1012,7 @@ export default function AdminPage() {
       >
         <h2 style={{ fontSize: 20, fontWeight: 900, margin: 0 }}>Pool members</h2>
         <p style={{ margin: 0, opacity: 0.8 }}>
-          Real names are shown first, with bracket nicknames below when available. Removing a user deletes their
-          membership and picks.
+          Full names are shown for members. Removing a user deletes their membership and picks.
         </p>
 
         <div style={{ display: "grid", gap: 8 }}>

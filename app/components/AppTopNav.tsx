@@ -141,7 +141,6 @@ export default function AppTopNav() {
         <Link href="/pools" style={pillStyle}>Pools</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Apply</Link> : null}
         {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} style={pillStyle}>Bracket</Link> : null}
-        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} style={pillStyle}>Leaderboard</Link> : null}
         {activePoolId && activePool?.created_by === userId ? (
           <Link href={`/pool/${activePoolId}/admin`} style={pillStyle}>Admin</Link>
         ) : null}

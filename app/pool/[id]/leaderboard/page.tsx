@@ -177,6 +177,7 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState("");
+  const [poolName, setPoolName] = useState("");
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
@@ -185,6 +186,7 @@ export default function LeaderboardPage() {
     const load = async () => {
       setLoading(true);
       setMsg("");
+      setPoolName("");
 
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
@@ -216,7 +218,7 @@ export default function LeaderboardPage() {
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("lock_time")
+        .select("name,lock_time")
         .eq("id", poolId)
         .single();
 
@@ -228,6 +230,7 @@ export default function LeaderboardPage() {
 
       const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
       const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
+      setPoolName((poolRow?.name as string | undefined) ?? "");
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
@@ -460,7 +463,9 @@ export default function LeaderboardPage() {
       <div
         style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
       >
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Leaderboard</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 900 }}>
+          {poolName ? `Leaderboard - ${poolName}` : "Leaderboard"}
+        </h1>
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
@@ -567,7 +572,7 @@ export default function LeaderboardPage() {
                               fontSize: 17,
                             }}
                           >
-                            {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                            {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
                             {r.user_id === myUserId ? " (You)" : ""}
                           </div>
                           <div
@@ -590,7 +595,7 @@ export default function LeaderboardPage() {
                               fontSize: 17,
                             }}
                           >
-                            {r.entry_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                            {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
                           </div>
                           <div
                             style={{
