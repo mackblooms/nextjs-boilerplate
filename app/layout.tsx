@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
 import ThemeSwitch from "./components/ThemeSwitch";
+import InstructionsModal from "./components/InstructionsModal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
         <HomeButton />
         <ThemeSwitch />
         <AppTopNav />
+        <InstructionsModal />
 
         {children}
       </body>
