@@ -544,11 +544,58 @@ type TeamIdentityRow = {
   name: string | null;
   sportsdata_team_id?: number | null;
   espn_team_id?: number | null;
+  logo_url?: string | null;
   seed?: number | null;
   seed_in_region?: number | null;
   region?: string | null;
   cost?: number | null;
 };
+
+type TeamBrandingOverride = {
+  canonicalName: string;
+  espnTeamId: number;
+  aliases: string[];
+};
+
+const TEAM_BRANDING_OVERRIDES: TeamBrandingOverride[] = [
+  {
+    canonicalName: "Michigan",
+    espnTeamId: 130,
+    aliases: ["michigan", "michigan wolverines"],
+  },
+  {
+    canonicalName: "Michigan State",
+    espnTeamId: 127,
+    aliases: ["michigan state", "michigan state spartans"],
+  },
+  {
+    canonicalName: "Miami (FL)",
+    espnTeamId: 2390,
+    aliases: ["miami", "miami fl", "miami florida", "miami hurricanes", "miami (fl)"],
+  },
+  {
+    canonicalName: "Miami (OH)",
+    espnTeamId: 193,
+    aliases: ["miami oh", "miami ohio", "miami (oh)", "miami redhawks", "miami oh redhawks"],
+  },
+];
+
+const TEAM_BRANDING_BY_ALIAS = (() => {
+  const out = new Map<string, TeamBrandingOverride>();
+  for (const override of TEAM_BRANDING_OVERRIDES) {
+    for (const alias of override.aliases) {
+      out.set(normName(alias), override);
+    }
+    out.set(normName(override.canonicalName), override);
+  }
+  return out;
+})();
+
+function getTeamBrandingOverride(name: unknown): TeamBrandingOverride | null {
+  const n = normName(name);
+  if (!n) return null;
+  return TEAM_BRANDING_BY_ALIAS.get(n) ?? null;
+}
 
 function toDateKeyUtc(date: Date): string {
   const yyyy = date.getUTCFullYear();
@@ -1044,6 +1091,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   let r64SeedOrderFixed = 0;
+  let brandingOverridesApplied = 0;
   const nowIso = new Date().toISOString();
   let clearedR64Teams = 0;
   let teamsWithoutSeed = 0;
@@ -1977,6 +2025,51 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     }
   }
 
+  const { data: brandingTeams, error: brandingTeamsErr } = await supabaseAdmin
+    .from("teams")
+    .select("id,name,espn_team_id,logo_url");
+  if (brandingTeamsErr) throw brandingTeamsErr;
+
+  const teamNameOwner = new Map<string, string>();
+  for (const row of brandingTeams ?? []) {
+    const name = toText(row.name);
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (!teamNameOwner.has(key)) teamNameOwner.set(key, String(row.id));
+  }
+
+  for (const row of brandingTeams ?? []) {
+    const override = getTeamBrandingOverride(row.name);
+    if (!override) continue;
+
+    const expectedLogo = `https://a.espncdn.com/i/teamlogos/ncaa/500/${override.espnTeamId}.png`;
+    const updates: Record<string, unknown> = {};
+
+    if (Number(row.espn_team_id ?? NaN) !== override.espnTeamId) {
+      updates.espn_team_id = override.espnTeamId;
+    }
+    if (toText(row.logo_url) !== expectedLogo) {
+      updates.logo_url = expectedLogo;
+    }
+
+    const currentName = toText(row.name) ?? null;
+    if (currentName && currentName !== override.canonicalName) {
+      const owner = teamNameOwner.get(override.canonicalName.toLowerCase());
+      if (!owner || owner === String(row.id)) {
+        updates.name = override.canonicalName;
+      }
+    }
+
+    if (Object.keys(updates).length === 0) continue;
+
+    const { error: brandUpdErr } = await supabaseAdmin
+      .from("teams")
+      .update(updates)
+      .eq("id", String(row.id));
+    if (brandUpdErr) throw brandUpdErr;
+    brandingOverridesApplied++;
+  }
+
   for (const incoming of sportsTeams.values()) {
     if (incoming.seed == null) teamsWithoutSeed++;
     if (!incoming.logoUrl) teamsWithoutLogo++;
@@ -2010,6 +2103,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     canonicalTeamsUpdated,
     normalizedSeedTeams,
     r64SeedOrderFixed,
+    brandingOverridesApplied,
     gameTeamsUpdated,
     r64Backfilled,
     teamsWithoutSeed,
