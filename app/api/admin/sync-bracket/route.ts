@@ -413,8 +413,23 @@ function nameLooksLikeCanonical(existingName: string, canonicalName: string): bo
   if (existingMiami && canonicalMiami && existingMiami !== canonicalMiami) return false;
 
   if (existing === canonical) return true;
-  if (existing.startsWith(`${canonical} `)) return true;
-  if (canonical.startsWith(`${existing} `)) return true;
+  const canonicalWords = canonical.split(" ").filter(Boolean);
+  const existingWords = existing.split(" ").filter(Boolean);
+  const existingStartsWithCanonical = existing.startsWith(`${canonical} `);
+  const canonicalStartsWithExisting = canonical.startsWith(`${existing} `);
+
+  // Guard against matching schools like "Michigan State" to canonical "Michigan".
+  if (canonicalWords.length === 1 && existingStartsWithCanonical) {
+    const secondWord = existingWords[1] ?? "";
+    if (secondWord === "state" || secondWord === "st") return false;
+  }
+  if (existingWords.length === 1 && canonicalStartsWithExisting) {
+    const secondWord = canonicalWords[1] ?? "";
+    if (secondWord === "state" || secondWord === "st") return false;
+  }
+
+  if (existingStartsWithCanonical) return true;
+  if (canonicalStartsWithExisting) return true;
   return false;
 }
 
@@ -1559,6 +1574,40 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       .or("team1_id.is.null,team2_id.is.null");
     if (sparseR64Err) throw sparseR64Err;
 
+    const { data: seedRows, error: seedRowsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,name,region,seed,seed_in_region,sportsdata_team_id,espn_team_id")
+      .in("region", ["East", "West", "South", "Midwest"]);
+    if (seedRowsErr) throw seedRowsErr;
+
+    const byRegionSeed = new Map<string, string>();
+    for (const row of seedRows ?? []) {
+      if (!isRegionName(row.region)) continue;
+      const seed = toSeed(row.seed_in_region) ?? toSeed(row.seed);
+      if (!seed) continue;
+      const key = `${row.region}:${seed}`;
+
+      const current = byRegionSeed.get(key);
+      if (!current) {
+        byRegionSeed.set(key, String(row.id));
+        continue;
+      }
+
+      const candidateScore =
+        (row.sportsdata_team_id ? 2 : 0) +
+        (row.espn_team_id ? 2 : 0) +
+        (normName(row.name).includes("first four") ? -3 : 0);
+      const currentRow = (seedRows ?? []).find((t) => String(t.id) === current);
+      const currentScore = currentRow
+        ? (currentRow.sportsdata_team_id ? 2 : 0) +
+          (currentRow.espn_team_id ? 2 : 0) +
+          (normName(currentRow.name).includes("first four") ? -3 : 0)
+        : -99;
+      if (candidateScore > currentScore) {
+        byRegionSeed.set(key, String(row.id));
+      }
+    }
+
     for (const row of sparseR64Rows ?? []) {
       const region = row.region;
       if (!isRegionName(region)) continue;
@@ -1568,10 +1617,18 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
       if (!row.team1_id) {
-        updatePayload.team1_id = await ensurePlaceholderTeam(region, pair[0]);
+        const favoriteId = byRegionSeed.get(`${region}:${pair[0]}`) ?? null;
+        if (favoriteId) {
+          updatePayload.team1_id = favoriteId;
+        }
       }
       if (!row.team2_id) {
-        updatePayload.team2_id = await ensurePlaceholderTeam(region, pair[1]);
+        const underdogId = byRegionSeed.get(`${region}:${pair[1]}`) ?? null;
+        if (underdogId) {
+          updatePayload.team2_id = underdogId;
+        } else if (pair[1] === 11 || pair[1] === 16) {
+          updatePayload.team2_id = await ensurePlaceholderTeam(region, pair[1]);
+        }
       }
 
       if (Object.keys(updatePayload).length > 1) {
