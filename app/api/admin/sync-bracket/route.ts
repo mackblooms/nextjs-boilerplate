@@ -1088,6 +1088,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let canonicalR64SlotsApplied = 0;
   let canonicalTeamsCreated = 0;
   let canonicalTeamsUpdated = 0;
+  let canonicalR64RowsCreated = 0;
+  let canonicalR64RowsRelocated = 0;
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   let r64SeedOrderFixed = 0;
@@ -1716,12 +1718,15 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     if (allTeamsErr) throw allTeamsErr;
 
     const r64ByKey = new Map<string, Record<string, unknown>>();
+    const r64ById = new Map<string, Record<string, unknown>>();
     for (const row of r64Rows ?? []) {
+      r64ById.set(String((row as Record<string, unknown>).id), row as unknown as Record<string, unknown>);
       if (!isRegionName(row.region)) continue;
       const slot = Number(row.slot);
       if (!Number.isFinite(slot) || slot < 1 || slot > 8) continue;
       r64ByKey.set(`${row.region}:${Math.trunc(slot)}`, row as unknown as Record<string, unknown>);
     }
+    const claimedR64Ids = new Set<string>();
 
     const teamRows = (allTeams ?? []) as TeamIdentityRow[];
     const byExact = new Map<string, TeamIdentityRow>();
@@ -1805,8 +1810,65 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     };
 
     for (const slotDef of NCAA_2026_CANONICAL_R64) {
-      const row = r64ByKey.get(`${slotDef.region}:${slotDef.slot}`);
-      if (!row) continue;
+      let row = r64ByKey.get(`${slotDef.region}:${slotDef.slot}`) ?? null;
+
+      if (!row) {
+        const relocationCandidate = (r64Rows ?? []).find((candidate) => {
+          const id = String((candidate as Record<string, unknown>).id ?? "");
+          if (!id || claimedR64Ids.has(id)) return false;
+          const candidateSlot = Number((candidate as Record<string, unknown>).slot);
+          if (!Number.isFinite(candidateSlot) || Math.trunc(candidateSlot) !== slotDef.slot) return false;
+          const candidateRegion = (candidate as Record<string, unknown>).region;
+          const hasTeams =
+            !!(candidate as Record<string, unknown>).team1_id ||
+            !!(candidate as Record<string, unknown>).team2_id;
+          if (hasTeams) return false;
+          return !isRegionName(candidateRegion) || candidateRegion !== slotDef.region;
+        }) as Record<string, unknown> | undefined;
+
+        if (relocationCandidate?.id) {
+          const { error: relocateErr } = await supabaseAdmin
+            .from("games")
+            .update({
+              region: slotDef.region,
+              slot: slotDef.slot,
+              last_synced_at: nowIso,
+            })
+            .eq("id", String(relocationCandidate.id));
+          if (relocateErr) throw relocateErr;
+
+          row = {
+            ...relocationCandidate,
+            region: slotDef.region,
+            slot: slotDef.slot,
+          } as Record<string, unknown>;
+          r64ById.set(String(row.id), row);
+          r64ByKey.set(`${slotDef.region}:${slotDef.slot}`, row);
+          canonicalR64RowsRelocated++;
+        } else {
+          const { data: insertedRow, error: insertGameErr } = await supabaseAdmin
+            .from("games")
+            .insert({
+              round: "R64",
+              region: slotDef.region,
+              slot: slotDef.slot,
+              team1_id: null,
+              team2_id: null,
+              winner_team_id: null,
+              last_synced_at: nowIso,
+            })
+            .select("id,region,slot,team1_id,team2_id")
+            .single();
+          if (insertGameErr) throw insertGameErr;
+
+          row = insertedRow as unknown as Record<string, unknown>;
+          r64ById.set(String(row.id), row);
+          r64ByKey.set(`${slotDef.region}:${slotDef.slot}`, row);
+          canonicalR64RowsCreated++;
+        }
+      }
+      if (!row?.id) continue;
+      claimedR64Ids.add(String(row.id));
 
       const favoriteId = await resolveCanonicalTeam(slotDef.favorite, slotDef.region);
       const underdogId = await resolveCanonicalTeam(slotDef.underdog, slotDef.region);
@@ -2101,6 +2163,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     canonicalR64SlotsApplied,
     canonicalTeamsCreated,
     canonicalTeamsUpdated,
+    canonicalR64RowsCreated,
+    canonicalR64RowsRelocated,
     normalizedSeedTeams,
     r64SeedOrderFixed,
     brandingOverridesApplied,

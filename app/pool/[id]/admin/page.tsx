@@ -773,6 +773,8 @@ export default function AdminPage() {
       const canonicalR64SlotsApplied = Number(json?.bracket?.canonicalR64SlotsApplied ?? 0);
       const canonicalTeamsCreated = Number(json?.bracket?.canonicalTeamsCreated ?? 0);
       const canonicalTeamsUpdated = Number(json?.bracket?.canonicalTeamsUpdated ?? 0);
+      const canonicalR64RowsCreated = Number(json?.bracket?.canonicalR64RowsCreated ?? 0);
+      const canonicalR64RowsRelocated = Number(json?.bracket?.canonicalR64RowsRelocated ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const r64SeedOrderFixed = Number(json?.bracket?.r64SeedOrderFixed ?? 0);
       const brandingOverridesApplied = Number(json?.bracket?.brandingOverridesApplied ?? 0);
@@ -787,7 +789,7 @@ export default function AdminPage() {
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids skipped/reassigned: ${skippedDuplicateSportsId}/${reassignedDuplicateSportsId}) | ` +
           `teams created/updated: ${teamsCreated}/${teamsUpdated}, espn fallback (matchups/teams/game updates): ${espnFallbackMatchups}/${espnFallbackTeamsCreated + espnFallbackTeamsUpdated}/${espnFallbackGameTeamsUpdated}, ` +
           `first four placeholders created/filled: ${firstFourPlaceholdersCreated}/${firstFourSlotsFilled}, play-in anchors applied: ${playInAnchorsApplied}, ` +
-          `canonical 2026 slots/teams (applied/created/updated): ${canonicalR64SlotsApplied}/${canonicalTeamsCreated}/${canonicalTeamsUpdated}, ` +
+          `canonical 2026 slots/teams (applied/created/updated): ${canonicalR64SlotsApplied}/${canonicalTeamsCreated}/${canonicalTeamsUpdated}, rows repaired (created/relocated): ${canonicalR64RowsCreated}/${canonicalR64RowsRelocated}, ` +
           `seeds normalized: ${normalizedSeedTeams}, r64 seed-order fixed: ${r64SeedOrderFixed}, branding fixed: ${brandingOverridesApplied}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal}, advanced slots/games: ${advancedSlotsTotal}/${advancedGamesTotal} ` +
