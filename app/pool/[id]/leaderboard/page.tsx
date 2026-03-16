@@ -738,6 +738,9 @@ export default function LeaderboardPage() {
 
             {rows.map((r) => {
               const canOpenBracket = draftLocked || r.user_id === myUserId;
+              const draftLabel = r.entry_name?.trim() || "Unnamed draft";
+              const profileLabel =
+                r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
 
               return (
                 <div
@@ -776,7 +779,7 @@ export default function LeaderboardPage() {
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <img
                         src={r.avatar_url}
-                        alt={r.full_name ?? r.display_name ?? "Player"}
+                        alt={profileLabel}
                         width={36}
                         height={36}
                         style={{
@@ -799,7 +802,7 @@ export default function LeaderboardPage() {
                                 fontSize: 17,
                               }}
                             >
-                              {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                              {draftLabel}
                               {r.user_id === myUserId ? " (You)" : ""}
                             </div>
                             <div
@@ -810,7 +813,7 @@ export default function LeaderboardPage() {
                                 marginTop: 2,
                               }}
                             >
-                              {r.full_name ?? "Unnamed player"}
+                              {profileLabel}
                             </div>
                           </a>
                         ) : (
@@ -822,7 +825,7 @@ export default function LeaderboardPage() {
                                 fontSize: 17,
                               }}
                             >
-                              {r.entry_name ?? r.full_name ?? r.display_name ?? r.user_id.slice(0, 8)}
+                              {draftLabel}
                             </div>
                             <div
                               style={{
@@ -832,7 +835,7 @@ export default function LeaderboardPage() {
                                 marginTop: 2,
                               }}
                             >
-                              Hidden until lock
+                              {profileLabel}
                             </div>
                           </>
                         )}
