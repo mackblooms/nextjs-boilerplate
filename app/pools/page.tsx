@@ -361,7 +361,7 @@ export default function PoolsPage() {
                       <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
                     </div>
                     <Link
-                      href={`/pool/${pool.id}`}
+                      href={`/pool/${pool.id}/leaderboard`}
                       style={{
                         padding: "9px 12px",
                         borderRadius: 10,
@@ -374,7 +374,7 @@ export default function PoolsPage() {
                         alignItems: "center",
                       }}
                     >
-                      Open pool
+                      Leaderboard
                     </Link>
                   </div>
                 </li>

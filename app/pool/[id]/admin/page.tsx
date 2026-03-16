@@ -48,7 +48,7 @@ function memberPrimaryLabel(member: PoolMemberRow) {
   return member.user_id.slice(0, 8);
 }
 
-function memberSecondaryLabel() {
+function memberSecondaryLabel(_member: PoolMemberRow) {
   return null;
 }
 
