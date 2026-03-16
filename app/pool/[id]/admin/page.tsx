@@ -99,7 +99,7 @@ export default function AdminPage() {
   const [showPoolPasswords, setShowPoolPasswords] = useState<Record<string, boolean>>({});
   const [syncSeason, setSyncSeason] = useState(String(new Date().getUTCFullYear()));
   const [syncDate, setSyncDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(true);
+  const [sportsDataOnlyMode, setSportsDataOnlyMode] = useState(false);
   const [poolSearch, setPoolSearch] = useState("");
 
   const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
@@ -751,18 +751,20 @@ export default function AdminPage() {
       const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
       const scheduleUpdated = Number(json?.bracket?.scheduleUpdated ?? 0);
       const skippedDuplicateSportsId = Number(json?.bracket?.skippedDuplicateSportsId ?? 0);
+      const reassignedDuplicateSportsId = Number(json?.bracket?.reassignedDuplicateSportsId ?? 0);
       const teamsCreated = Number(json?.bracket?.teamsCreated ?? 0);
       const teamsUpdated = Number(json?.bracket?.teamsUpdated ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
+      const r64Backfilled = Number(json?.bracket?.r64Backfilled ?? 0);
       const teamsWithoutSeed = Number(json?.bracket?.teamsWithoutSeed ?? 0);
       const teamsWithoutLogo = Number(json?.bracket?.teamsWithoutLogo ?? 0);
       const clearedR64Teams = Number(json?.totals?.clearedR64Teams ?? json?.bracket?.clearedR64Teams ?? 0);
 
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}, sportsdata-only: ${sportsDataOnlyMode ? "on" : "off"}) | linked: ${linkedTotal} ` +
-          `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids: ${skippedDuplicateSportsId}) | ` +
-          `teams created/updated: ${teamsCreated}/${teamsUpdated}, seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 cleared: ${clearedR64Teams}, ` +
+          `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids skipped/reassigned: ${skippedDuplicateSportsId}/${reassignedDuplicateSportsId}) | ` +
+          `teams created/updated: ${teamsCreated}/${teamsUpdated}, seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`

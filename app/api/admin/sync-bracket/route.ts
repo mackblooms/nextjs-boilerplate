@@ -349,6 +349,12 @@ function expectedSeedsForR64Slot(slot: number): [number, number] | null {
   return map[slot] ?? null;
 }
 
+type RegionName = "East" | "West" | "South" | "Midwest";
+
+function isRegionName(value: unknown): value is RegionName {
+  return value === "East" || value === "West" || value === "South" || value === "Midwest";
+}
+
 type RoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
 type FallbackRoundSlot = {
   roundCode: RoundCode;
@@ -667,7 +673,9 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let matchedByPlaceholder = 0;
   let scheduleUpdated = 0;
   let skippedDuplicateSportsId = 0;
+  let reassignedDuplicateSportsId = 0;
   let gameTeamsUpdated = 0;
+  let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   const nowIso = new Date().toISOString();
   let clearedR64Teams = 0;
@@ -784,8 +792,19 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
     const existingOwner = sportsGameOwner.get(gameId);
     if (existingOwner && existingOwner !== ourGame.id) {
-      skippedDuplicateSportsId++;
-      continue;
+      const { error: clearOwnerErr } = await supabaseAdmin
+        .from("games")
+        .update({
+          sportsdata_game_id: null,
+          last_synced_at: nowIso,
+        })
+        .eq("id", existingOwner)
+        .eq("sportsdata_game_id", gameId);
+
+      if (clearOwnerErr) throw clearOwnerErr;
+
+      sportsGameOwner.delete(gameId);
+      reassignedDuplicateSportsId++;
     }
 
     const needsLink = ourGame.sportsdata_game_id !== gameId;
@@ -839,6 +858,58 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       ourGame.team1_id = nextTeam1;
       ourGame.team2_id = nextTeam2;
       gameTeamsUpdated++;
+    }
+  }
+
+  if (!sportsDataOnly) {
+    const { data: emptyR64Games, error: emptyR64Err } = await supabaseAdmin
+      .from("games")
+      .select("id,region,slot,team1_id,team2_id")
+      .eq("round", "R64")
+      .or("team1_id.is.null,team2_id.is.null");
+    if (emptyR64Err) throw emptyR64Err;
+
+    if ((emptyR64Games?.length ?? 0) > 0) {
+      const { data: seedTeams, error: seedTeamsErr } = await supabaseAdmin
+        .from("teams")
+        .select("id,region,seed_in_region,seed")
+        .in("region", ["East", "West", "South", "Midwest"]);
+      if (seedTeamsErr) throw seedTeamsErr;
+
+      const byRegionSeed = new Map<string, string>();
+      const sortedSeedTeams = [...(seedTeams ?? [])].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      for (const t of sortedSeedTeams) {
+        if (!isRegionName(t.region)) continue;
+        const seed = toSeed(t.seed_in_region) ?? toSeed(t.seed);
+        if (!seed) continue;
+        const key = `${t.region}:${seed}`;
+        if (!byRegionSeed.has(key)) byRegionSeed.set(key, String(t.id));
+      }
+
+      for (const g of emptyR64Games ?? []) {
+        if (!isRegionName(g.region)) continue;
+        const pair = expectedSeedsForR64Slot(Number(g.slot));
+        if (!pair) continue;
+
+        const favorite = byRegionSeed.get(`${g.region}:${pair[0]}`) ?? null;
+        const underdog = byRegionSeed.get(`${g.region}:${pair[1]}`) ?? null;
+        if (!favorite || !underdog) continue;
+
+        const nextTeam1 = g.team1_id ?? underdog;
+        const nextTeam2 = g.team2_id ?? favorite;
+        if (nextTeam1 === g.team1_id && nextTeam2 === g.team2_id) continue;
+
+        const { error: fillErr } = await supabaseAdmin
+          .from("games")
+          .update({
+            team1_id: nextTeam1,
+            team2_id: nextTeam2,
+            last_synced_at: nowIso,
+          })
+          .eq("id", String(g.id));
+        if (fillErr) throw fillErr;
+        r64Backfilled++;
+      }
     }
   }
 
@@ -954,11 +1025,13 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     teamsUpdated,
     normalizedSeedTeams,
     gameTeamsUpdated,
+    r64Backfilled,
     teamsWithoutSeed,
     teamsWithoutLogo,
     sportsDataOnly,
     clearedR64Teams,
     skippedDuplicateSportsId,
+    reassignedDuplicateSportsId,
     skippedNoMap,
     skippedAmbiguous,
     sampleGame: gamesArray[0] ?? null,
