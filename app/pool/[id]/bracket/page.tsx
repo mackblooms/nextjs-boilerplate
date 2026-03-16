@@ -1266,7 +1266,7 @@ export default function BracketPage() {
           >
             <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
               {renderRegionBracket("East")}
-              {renderRegionBracket("West")}
+              {renderRegionBracket("South")}
             </div>
 
             <div
@@ -1382,7 +1382,7 @@ export default function BracketPage() {
             </div>
 
             <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-              {renderRegionBracket("South", true)}
+              {renderRegionBracket("West", true)}
               {renderRegionBracket("Midwest", true)}
             </div>
           </div>

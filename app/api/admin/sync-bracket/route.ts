@@ -266,11 +266,11 @@ function readSportsTeamName(row: unknown): string | null {
   if (!row || typeof row !== "object") return null;
   const r = row as Record<string, unknown>;
   return (
-    toText(r.School) ??
-    toText(r.Name) ??
-    toText(r.Team) ??
-    toText(r.City) ??
-    toText(r.Key) ??
+    toSchoolName(r.School) ??
+    toSchoolName(r.Name) ??
+    toSchoolName(r.Team) ??
+    toSchoolName(r.City) ??
+    toSchoolName(r.Key) ??
     null
   );
 }
@@ -368,6 +368,65 @@ function normName(value: unknown): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+const SCHOOL_NAME_OVERRIDES: Record<string, string> = {
+  "siena saints": "Siena",
+  "tcu horned frogs": "TCU",
+  "ohio state buckeyes": "Ohio State",
+  "northern iowa panthers": "Northern Iowa",
+  "furman paladins": "Furman",
+};
+
+function toSchoolName(value: unknown): string | null {
+  const text = toText(value);
+  if (!text) return null;
+  const override = SCHOOL_NAME_OVERRIDES[normName(text)];
+  return override ?? text;
+}
+
+type PlayInAnchor = {
+  favoriteSchool: string;
+  placeholderName: string;
+  region: RegionName;
+  slot: number;
+  favoriteSeed: number;
+  underdogSeed: number;
+};
+
+const PLAY_IN_ANCHORS: PlayInAnchor[] = [
+  {
+    favoriteSchool: "Florida",
+    placeholderName: "Lehigh/PVAMU",
+    region: "East",
+    slot: 1,
+    favoriteSeed: 1,
+    underdogSeed: 16,
+  },
+  {
+    favoriteSchool: "BYU",
+    placeholderName: "NC State/Texas",
+    region: "West",
+    slot: 5,
+    favoriteSeed: 6,
+    underdogSeed: 11,
+  },
+  {
+    favoriteSchool: "Michigan",
+    placeholderName: "Howard/UMBC",
+    region: "Midwest",
+    slot: 1,
+    favoriteSeed: 1,
+    underdogSeed: 16,
+  },
+  {
+    favoriteSchool: "Tennessee",
+    placeholderName: "SMU/Miami OH",
+    region: "South",
+    slot: 5,
+    favoriteSeed: 6,
+    underdogSeed: 11,
+  },
+];
 
 function slotForSeedPair(seedA: number | null, seedB: number | null): number | null {
   if (!seedA || !seedB) return null;
@@ -499,10 +558,11 @@ async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
           toText(team.displayName) ??
           toText(team.name) ??
           `Team ${Math.trunc(teamId)}`;
+        const schoolName = toSchoolName(displayName) ?? displayName;
 
         parsedTeams.push({
           espnTeamId: Math.trunc(teamId),
-          name: displayName,
+          name: schoolName,
           seed,
           logoUrl,
         });
@@ -703,7 +763,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const meta = sportsTeamMeta.get(homeId);
       const incomingSeed = roundCode === "R64" ? toSeed(g.HomeTeamSeed) : null;
       sportsTeams.set(homeId, {
-        name: existing?.name ?? meta?.name ?? toIso(g.HomeTeam),
+        name: existing?.name ?? toSchoolName(meta?.name) ?? toSchoolName(g.HomeTeam),
         seed:
           incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
             ? incomingSeed
@@ -730,7 +790,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       const meta = sportsTeamMeta.get(awayId);
       const incomingSeed = roundCode === "R64" ? toSeed(g.AwayTeamSeed) : null;
       sportsTeams.set(awayId, {
-        name: existing?.name ?? meta?.name ?? toIso(g.AwayTeam),
+        name: existing?.name ?? toSchoolName(meta?.name) ?? toSchoolName(g.AwayTeam),
         seed:
           incomingSeed != null && priority >= (existing?.seedPriority ?? 0)
             ? incomingSeed
@@ -897,6 +957,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let espnFallbackGameTeamsUpdated = 0;
   let firstFourPlaceholdersCreated = 0;
   let firstFourSlotsFilled = 0;
+  let playInAnchorsApplied = 0;
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   const nowIso = new Date().toISOString();
@@ -1375,6 +1436,126 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   }
 
   if (!sportsDataOnly) {
+    const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,name,region,seed,seed_in_region,cost");
+    if (allTeamsErr) throw allTeamsErr;
+
+    const byNorm = new Map<string, Record<string, unknown>>();
+    for (const row of allTeams ?? []) {
+      const key = normName((row as Record<string, unknown>).name);
+      if (key && !byNorm.has(key)) byNorm.set(key, row as unknown as Record<string, unknown>);
+    }
+
+    for (const anchor of PLAY_IN_ANCHORS) {
+      const favorite = byNorm.get(normName(anchor.favoriteSchool)) ?? null;
+      if (!favorite?.id) continue;
+
+      const favoriteId = String(favorite.id);
+      const favoriteUpdates: Record<string, unknown> = {};
+      if (toSchoolName(favorite.name) !== favorite.name) favoriteUpdates.name = toSchoolName(favorite.name);
+      if (toSeed(favorite.seed) !== anchor.favoriteSeed) favoriteUpdates.seed = anchor.favoriteSeed;
+      if (toSeed(favorite.seed_in_region) !== anchor.favoriteSeed) favoriteUpdates.seed_in_region = anchor.favoriteSeed;
+      if (favorite.region !== anchor.region) favoriteUpdates.region = anchor.region;
+      if (toInt(favorite.cost) !== costForSeed(anchor.favoriteSeed)) {
+        favoriteUpdates.cost = costForSeed(anchor.favoriteSeed);
+      }
+      if (Object.keys(favoriteUpdates).length > 0) {
+        const { error: favUpdErr } = await supabaseAdmin
+          .from("teams")
+          .update(favoriteUpdates)
+          .eq("id", favoriteId);
+        if (favUpdErr) throw favUpdErr;
+      }
+
+      const { data: existingPlaceholder, error: placeholderErr } = await supabaseAdmin
+        .from("teams")
+        .select("id,name,region,seed,seed_in_region,cost")
+        .eq("name", anchor.placeholderName)
+        .maybeSingle();
+      if (placeholderErr) throw placeholderErr;
+
+      let placeholderId: string;
+      if (!existingPlaceholder?.id) {
+        const { data: insertedPlaceholder, error: insPlaceholderErr } = await supabaseAdmin
+          .from("teams")
+          .insert({
+            name: anchor.placeholderName,
+            region: anchor.region,
+            seed: anchor.underdogSeed,
+            seed_in_region: anchor.underdogSeed,
+            cost: costForSeed(anchor.underdogSeed),
+          })
+          .select("id")
+          .single();
+        if (insPlaceholderErr) throw insPlaceholderErr;
+        placeholderId = String(insertedPlaceholder.id);
+      } else {
+        placeholderId = String(existingPlaceholder.id);
+        const placeholderUpdates: Record<string, unknown> = {};
+        if (existingPlaceholder.region !== anchor.region) placeholderUpdates.region = anchor.region;
+        if (toSeed(existingPlaceholder.seed) !== anchor.underdogSeed) placeholderUpdates.seed = anchor.underdogSeed;
+        if (toSeed(existingPlaceholder.seed_in_region) !== anchor.underdogSeed) {
+          placeholderUpdates.seed_in_region = anchor.underdogSeed;
+        }
+        if (toInt(existingPlaceholder.cost) !== costForSeed(anchor.underdogSeed)) {
+          placeholderUpdates.cost = costForSeed(anchor.underdogSeed);
+        }
+        if (Object.keys(placeholderUpdates).length > 0) {
+          const { error: updPlaceholderErr } = await supabaseAdmin
+            .from("teams")
+            .update(placeholderUpdates)
+            .eq("id", placeholderId);
+          if (updPlaceholderErr) throw updPlaceholderErr;
+        }
+      }
+
+      const { data: targetGame, error: targetGameErr } = await supabaseAdmin
+        .from("games")
+        .select("id,team1_id,team2_id")
+        .eq("round", "R64")
+        .eq("region", anchor.region)
+        .eq("slot", anchor.slot)
+        .maybeSingle();
+      if (targetGameErr) throw targetGameErr;
+      if (!targetGame?.id) continue;
+
+      await supabaseAdmin
+        .from("games")
+        .update({
+          team1_id: null,
+          last_synced_at: nowIso,
+        })
+        .eq("round", "R64")
+        .neq("id", String(targetGame.id))
+        .eq("team1_id", placeholderId);
+
+      await supabaseAdmin
+        .from("games")
+        .update({
+          team2_id: null,
+          last_synced_at: nowIso,
+        })
+        .eq("round", "R64")
+        .neq("id", String(targetGame.id))
+        .eq("team2_id", favoriteId);
+
+      if (targetGame.team1_id !== placeholderId || targetGame.team2_id !== favoriteId) {
+        const { error: targetUpdErr } = await supabaseAdmin
+          .from("games")
+          .update({
+            team1_id: placeholderId,
+            team2_id: favoriteId,
+            last_synced_at: nowIso,
+          })
+          .eq("id", String(targetGame.id));
+        if (targetUpdErr) throw targetUpdErr;
+        playInAnchorsApplied++;
+      }
+    }
+  }
+
+  if (!sportsDataOnly) {
     const { data: emptyR64Games, error: emptyR64Err } = await supabaseAdmin
       .from("games")
       .select("id,region,slot,team1_id,team2_id")
@@ -1547,6 +1728,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     espnFallbackGameTeamsUpdated,
     firstFourPlaceholdersCreated,
     firstFourSlotsFilled,
+    playInAnchorsApplied,
     normalizedSeedTeams,
     gameTeamsUpdated,
     r64Backfilled,

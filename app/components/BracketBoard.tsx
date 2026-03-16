@@ -374,7 +374,7 @@ export function BracketBoard({
     >
       <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
         {renderRegionBracket("East")}
-        {renderRegionBracket("West")}
+        {renderRegionBracket("South")}
       </div>
 
       <div
@@ -479,7 +479,7 @@ export function BracketBoard({
       </div>
 
       <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-        {renderRegionBracket("South", true)}
+        {renderRegionBracket("West", true)}
         {renderRegionBracket("Midwest", true)}
       </div>
     </div>

@@ -760,6 +760,7 @@ export default function AdminPage() {
       const espnFallbackGameTeamsUpdated = Number(json?.bracket?.espnFallbackGameTeamsUpdated ?? 0);
       const firstFourPlaceholdersCreated = Number(json?.bracket?.firstFourPlaceholdersCreated ?? 0);
       const firstFourSlotsFilled = Number(json?.bracket?.firstFourSlotsFilled ?? 0);
+      const playInAnchorsApplied = Number(json?.bracket?.playInAnchorsApplied ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
       const r64Backfilled = Number(json?.bracket?.r64Backfilled ?? 0);
@@ -771,7 +772,7 @@ export default function AdminPage() {
         `Full Sync complete (season ${season}, passes ${passCount}, sportsdata-only: ${sportsDataOnlyMode ? "on" : "off"}) | linked: ${linkedTotal} ` +
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids skipped/reassigned: ${skippedDuplicateSportsId}/${reassignedDuplicateSportsId}) | ` +
           `teams created/updated: ${teamsCreated}/${teamsUpdated}, espn fallback (matchups/teams/game updates): ${espnFallbackMatchups}/${espnFallbackTeamsCreated + espnFallbackTeamsUpdated}/${espnFallbackGameTeamsUpdated}, ` +
-          `first four placeholders created/filled: ${firstFourPlaceholdersCreated}/${firstFourSlotsFilled}, ` +
+          `first four placeholders created/filled: ${firstFourPlaceholdersCreated}/${firstFourSlotsFilled}, play-in anchors applied: ${playInAnchorsApplied}, ` +
           `seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
