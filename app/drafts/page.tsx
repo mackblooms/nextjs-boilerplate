@@ -23,6 +23,28 @@ function sortDrafts(rows: DraftRow[]) {
   return [...rows].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
 }
 
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
 export default function DraftsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -288,23 +310,42 @@ export default function DraftsPage() {
                     background: "var(--surface)",
                   }}
                 >
-                  Open Draft
+                  Edit
+                </Link>
+                <Link
+                  href="/pools"
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    textDecoration: "none",
+                    fontWeight: 800,
+                    background: "var(--surface)",
+                  }}
+                >
+                  Join Pool(s)
                 </Link>
                 <button
                   type="button"
                   onClick={() => void deleteDraft(draft.id, draft.name)}
                   disabled={deletingDraftId === draft.id}
+                  aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                  title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
                   style={{
-                    padding: "9px 12px",
+                    width: 40,
+                    height: 40,
                     borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--danger-bg)",
-                    fontWeight: 800,
+                    border: "1px solid #dc2626",
+                    background: "rgba(220,38,38,0.12)",
+                    color: "#dc2626",
                     cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
                     opacity: deletingDraftId === draft.id ? 0.7 : 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {deletingDraftId === draft.id ? "Deleting..." : "Delete"}
+                  <TrashIcon />
                 </button>
               </div>
             </article>
