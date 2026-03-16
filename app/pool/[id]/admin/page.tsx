@@ -754,6 +754,10 @@ export default function AdminPage() {
       const reassignedDuplicateSportsId = Number(json?.bracket?.reassignedDuplicateSportsId ?? 0);
       const teamsCreated = Number(json?.bracket?.teamsCreated ?? 0);
       const teamsUpdated = Number(json?.bracket?.teamsUpdated ?? 0);
+      const espnFallbackMatchups = Number(json?.bracket?.espnFallbackMatchups ?? 0);
+      const espnFallbackTeamsCreated = Number(json?.bracket?.espnFallbackTeamsCreated ?? 0);
+      const espnFallbackTeamsUpdated = Number(json?.bracket?.espnFallbackTeamsUpdated ?? 0);
+      const espnFallbackGameTeamsUpdated = Number(json?.bracket?.espnFallbackGameTeamsUpdated ?? 0);
       const normalizedSeedTeams = Number(json?.bracket?.normalizedSeedTeams ?? 0);
       const gameTeamsUpdated = Number(json?.bracket?.gameTeamsUpdated ?? 0);
       const r64Backfilled = Number(json?.bracket?.r64Backfilled ?? 0);
@@ -764,7 +768,8 @@ export default function AdminPage() {
       setMsg(
         `Full Sync complete (season ${season}, passes ${passCount}, sportsdata-only: ${sportsDataOnlyMode ? "on" : "off"}) | linked: ${linkedTotal} ` +
           `(unmatched on last pass: ${skippedNoMap}, duplicate sports ids skipped/reassigned: ${skippedDuplicateSportsId}/${reassignedDuplicateSportsId}) | ` +
-          `teams created/updated: ${teamsCreated}/${teamsUpdated}, seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
+          `teams created/updated: ${teamsCreated}/${teamsUpdated}, espn fallback (matchups/teams/game updates): ${espnFallbackMatchups}/${espnFallbackTeamsCreated + espnFallbackTeamsUpdated}/${espnFallbackGameTeamsUpdated}, ` +
+          `seeds normalized: ${normalizedSeedTeams}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
           `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`

@@ -355,6 +355,153 @@ function isRegionName(value: unknown): value is RegionName {
   return value === "East" || value === "West" || value === "South" || value === "Midwest";
 }
 
+function normName(value: unknown): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[()'.]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slotForSeedPair(seedA: number | null, seedB: number | null): number | null {
+  if (!seedA || !seedB) return null;
+  const low = Math.min(seedA, seedB);
+  const high = Math.max(seedA, seedB);
+  if (low === 1 && high === 16) return 1;
+  if (low === 8 && high === 9) return 2;
+  if (low === 5 && high === 12) return 3;
+  if (low === 4 && high === 13) return 4;
+  if (low === 6 && high === 11) return 5;
+  if (low === 3 && high === 14) return 6;
+  if (low === 7 && high === 10) return 7;
+  if (low === 2 && high === 15) return 8;
+  return null;
+}
+
+type EspnTournamentTeam = {
+  espnTeamId: number;
+  name: string;
+  seed: number | null;
+  logoUrl: string | null;
+};
+
+type EspnR64Matchup = {
+  region: RegionName;
+  slot: number;
+  startTime: string | null;
+  status: string | null;
+  favorite: EspnTournamentTeam;
+  underdog: EspnTournamentTeam;
+};
+
+function toDateKeyUtc(date: Date): string {
+  const yyyy = date.getUTCFullYear();
+  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(date.getUTCDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+}
+
+function parseEspnRegion(note: string): RegionName | null {
+  const m = note.match(/\b(East|West|South|Midwest)\s+Region\b/i);
+  if (!m) return null;
+  const value = `${m[1].charAt(0).toUpperCase()}${m[1].slice(1).toLowerCase()}`;
+  return isRegionName(value) ? value : null;
+}
+
+async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
+  const start = new Date(Date.UTC(season, 2, 15));
+  const end = new Date(Date.UTC(season, 3, 8));
+  const keys: string[] = [];
+  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    keys.push(toDateKeyUtc(d));
+  }
+
+  const out = new Map<string, EspnR64Matchup>();
+
+  for (const key of keys) {
+    const url =
+      `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` +
+      `?dates=${key}&groups=50&limit=500`;
+    const resp = await fetchJsonOrEmpty(url);
+    if (!resp.ok || !resp.json) continue;
+
+    const events = Array.isArray((resp.json as { events?: unknown[] })?.events)
+      ? (((resp.json as { events: unknown[] }).events as unknown[]) ?? [])
+      : [];
+
+    for (const event of events) {
+      const e = (event ?? {}) as Record<string, unknown>;
+      const competitions = Array.isArray(e.competitions) ? (e.competitions as unknown[]) : [];
+      const comp = (competitions[0] ?? {}) as Record<string, unknown>;
+      const notes = Array.isArray(comp.notes) ? (comp.notes as unknown[]) : [];
+      const firstNote = (notes[0] ?? {}) as Record<string, unknown>;
+      const headline = String(firstNote.headline ?? "").trim();
+      if (!headline.toLowerCase().includes("mens basketball championship")) continue;
+      if (!headline.toLowerCase().includes("1st round")) continue;
+
+      const region = parseEspnRegion(headline);
+      if (!region) continue;
+
+      const competitors = Array.isArray(comp.competitors) ? (comp.competitors as unknown[]) : [];
+      if (competitors.length < 2) continue;
+
+      const parsedTeams: EspnTournamentTeam[] = [];
+      for (const competitor of competitors.slice(0, 2)) {
+        const c = (competitor ?? {}) as Record<string, unknown>;
+        const team = ((c.team ?? {}) as Record<string, unknown>);
+        const teamId = Number(team.id);
+        if (!Number.isFinite(teamId) || teamId <= 0) continue;
+
+        const curatedRank = ((c.curatedRank ?? {}) as Record<string, unknown>);
+        const seed = toSeed(curatedRank.current);
+        const logos = Array.isArray(team.logos) ? (team.logos as unknown[]) : [];
+        const firstLogo = (logos[0] ?? {}) as Record<string, unknown>;
+        const logoFromPayload = toText(team.logo) ?? toText(firstLogo.href);
+        const logoUrl =
+          (logoFromPayload && logoFromPayload.replace(/^http:\/\//i, "https://")) ??
+          `https://a.espncdn.com/i/teamlogos/ncaa/500/${Math.trunc(teamId)}.png`;
+
+        const displayName =
+          toText(team.displayName) ??
+          toText(team.shortDisplayName) ??
+          toText(team.name) ??
+          `Team ${Math.trunc(teamId)}`;
+
+        parsedTeams.push({
+          espnTeamId: Math.trunc(teamId),
+          name: displayName,
+          seed,
+          logoUrl,
+        });
+      }
+
+      if (parsedTeams.length !== 2) continue;
+
+      const slot = slotForSeedPair(parsedTeams[0].seed, parsedTeams[1].seed);
+      if (!slot) continue;
+
+      const [first, second] = parsedTeams;
+      const favorite = (first.seed ?? 99) <= (second.seed ?? 99) ? first : second;
+      const underdog = favorite === first ? second : first;
+      const matchup: EspnR64Matchup = {
+        region,
+        slot,
+        startTime: toIso(comp.date),
+        status: toIso(((comp.status ?? {}) as Record<string, unknown>).type
+          ? (((comp.status as Record<string, unknown>).type as Record<string, unknown>).name)
+          : null),
+        favorite,
+        underdog,
+      };
+
+      out.set(`${region}:${slot}`, matchup);
+    }
+  }
+
+  return Array.from(out.values());
+}
+
 type RoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
 type FallbackRoundSlot = {
   roundCode: RoundCode;
@@ -675,6 +822,10 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let skippedDuplicateSportsId = 0;
   let reassignedDuplicateSportsId = 0;
   let gameTeamsUpdated = 0;
+  let espnFallbackMatchups = 0;
+  let espnFallbackTeamsCreated = 0;
+  let espnFallbackTeamsUpdated = 0;
+  let espnFallbackGameTeamsUpdated = 0;
   let r64Backfilled = 0;
   let normalizedSeedTeams = 0;
   const nowIso = new Date().toISOString();
@@ -862,6 +1013,123 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   }
 
   if (!sportsDataOnly) {
+    const espnMatchups = await fetchEspnR64Matchups(season);
+    espnFallbackMatchups = espnMatchups.length;
+
+    if (espnMatchups.length > 0) {
+      const espnIds = Array.from(
+        new Set(
+          espnMatchups.flatMap((m) => [m.favorite.espnTeamId, m.underdog.espnTeamId]).filter((n) => Number.isFinite(n) && n > 0)
+        )
+      );
+
+      const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
+        .from("teams")
+        .select("id,name,espn_team_id,seed,seed_in_region,region,cost,logo_url");
+      if (allTeamsErr) throw allTeamsErr;
+
+      const byEspn = new Map<number, Record<string, unknown>>();
+      const byName = new Map<string, Record<string, unknown>>();
+      for (const row of allTeams ?? []) {
+        const espnId = Number((row as Record<string, unknown>).espn_team_id);
+        if (Number.isFinite(espnId) && espnId > 0) byEspn.set(espnId, row as unknown as Record<string, unknown>);
+        const key = normName((row as Record<string, unknown>).name);
+        if (key && !byName.has(key)) byName.set(key, row as unknown as Record<string, unknown>);
+      }
+
+      const localIdByEspn = new Map<number, string>();
+
+      for (const matchup of espnMatchups) {
+        for (const side of [matchup.favorite, matchup.underdog]) {
+          const espnId = side.espnTeamId;
+          const existing = byEspn.get(espnId) ?? byName.get(normName(side.name)) ?? null;
+          const incomingSeed = side.seed;
+          const incomingCost = costForSeed(incomingSeed);
+
+          if (!existing) {
+            const { data: inserted, error: insErr } = await supabaseAdmin
+              .from("teams")
+              .insert({
+                name: side.name,
+                espn_team_id: espnId,
+                seed: incomingSeed,
+                seed_in_region: incomingSeed,
+                region: matchup.region,
+                cost: incomingCost,
+                logo_url: side.logoUrl,
+              })
+              .select("id")
+              .single();
+            if (insErr) throw insErr;
+            localIdByEspn.set(espnId, String(inserted.id));
+            espnFallbackTeamsCreated++;
+            continue;
+          }
+
+          const updates: Record<string, unknown> = {};
+          if (side.name && side.name !== existing.name) updates.name = side.name;
+          if (incomingSeed != null && incomingSeed !== toSeed(existing.seed)) updates.seed = incomingSeed;
+          if (incomingSeed != null && incomingSeed !== toSeed(existing.seed_in_region)) {
+            updates.seed_in_region = incomingSeed;
+          }
+          if (matchup.region && matchup.region !== existing.region) updates.region = matchup.region;
+          if (incomingCost != null && incomingCost !== toInt(existing.cost)) updates.cost = incomingCost;
+          if (side.logoUrl && side.logoUrl !== toText(existing.logo_url)) updates.logo_url = side.logoUrl;
+          if (espnId !== Number(existing.espn_team_id ?? NaN)) updates.espn_team_id = espnId;
+
+          if (Object.keys(updates).length > 0) {
+            const { error: updErr } = await supabaseAdmin.from("teams").update(updates).eq("id", String(existing.id));
+            if (updErr) throw updErr;
+            espnFallbackTeamsUpdated++;
+          }
+
+          localIdByEspn.set(espnId, String(existing.id));
+          byEspn.set(espnId, { ...existing, ...updates, id: String(existing.id) });
+        }
+      }
+
+      const { data: r64Rows, error: r64RowsErr } = await supabaseAdmin
+        .from("games")
+        .select("id,region,slot,team1_id,team2_id,status,start_time,game_date")
+        .eq("round", "R64");
+      if (r64RowsErr) throw r64RowsErr;
+
+      const r64ByRegionSlot = new Map<string, Record<string, unknown>>();
+      for (const row of r64Rows ?? []) {
+        if (!isRegionName((row as Record<string, unknown>).region)) continue;
+        const slot = Number((row as Record<string, unknown>).slot);
+        if (!Number.isFinite(slot) || slot < 1 || slot > 8) continue;
+        r64ByRegionSlot.set(`${(row as Record<string, unknown>).region}:${Math.trunc(slot)}`, row as unknown as Record<string, unknown>);
+      }
+
+      for (const matchup of espnMatchups) {
+        const row = r64ByRegionSlot.get(`${matchup.region}:${matchup.slot}`);
+        if (!row) continue;
+        const underdogLocal = localIdByEspn.get(matchup.underdog.espnTeamId) ?? null;
+        const favoriteLocal = localIdByEspn.get(matchup.favorite.espnTeamId) ?? null;
+        if (!underdogLocal || !favoriteLocal) continue;
+
+        const nextGameDate = matchup.startTime ? matchup.startTime.slice(0, 10) : null;
+        const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
+
+        if (row.team1_id !== underdogLocal) updatePayload.team1_id = underdogLocal;
+        if (row.team2_id !== favoriteLocal) updatePayload.team2_id = favoriteLocal;
+        if (scheduleColumnsAvailable) {
+          if (matchup.status && matchup.status !== toText(row.status)) updatePayload.status = matchup.status;
+          if (matchup.startTime && matchup.startTime !== toText(row.start_time)) updatePayload.start_time = matchup.startTime;
+          if (nextGameDate && nextGameDate !== toText(row.game_date)) updatePayload.game_date = nextGameDate;
+        }
+
+        if (Object.keys(updatePayload).length > 1) {
+          const { error: updErr } = await supabaseAdmin.from("games").update(updatePayload).eq("id", String(row.id));
+          if (updErr) throw updErr;
+          espnFallbackGameTeamsUpdated++;
+        }
+      }
+    }
+  }
+
+  if (!sportsDataOnly) {
     const { data: emptyR64Games, error: emptyR64Err } = await supabaseAdmin
       .from("games")
       .select("id,region,slot,team1_id,team2_id")
@@ -1023,6 +1291,10 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     teamsSeenInPayload: sportsTeamIds.length,
     teamsCreated,
     teamsUpdated,
+    espnFallbackMatchups,
+    espnFallbackTeamsCreated,
+    espnFallbackTeamsUpdated,
+    espnFallbackGameTeamsUpdated,
     normalizedSeedTeams,
     gameTeamsUpdated,
     r64Backfilled,
