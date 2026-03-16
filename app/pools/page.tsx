@@ -212,38 +212,40 @@ export default function PoolsPage() {
             </p>
           </div>
 
-          <Link
-            href="/drafts"
-            style={{
-              padding: "10px 14px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-              minHeight: 44,
-              display: "inline-flex",
-              alignItems: "center",
-              background: "var(--surface)",
-            }}
-          >
-            My Drafts
-          </Link>
-          <Link
-            href="/pools/new"
-            style={{
-              padding: "10px 14px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 900,
-              minHeight: 44,
-              display: "inline-flex",
-              alignItems: "center",
-              background: "var(--surface)",
-            }}
-          >
-            + New Pool
-          </Link>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Link
+              href="/drafts"
+              style={{
+                padding: "10px 14px",
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 900,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                background: "var(--surface)",
+              }}
+            >
+              My Drafts
+            </Link>
+            <Link
+              href="/pools/new"
+              style={{
+                padding: "10px 14px",
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontWeight: 900,
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                background: "var(--surface)",
+              }}
+            >
+              New Pool
+            </Link>
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
