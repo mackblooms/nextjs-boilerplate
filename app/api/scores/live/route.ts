@@ -16,6 +16,9 @@ type EspnCompetitor = {
 
 type EspnCompetition = {
   competitors?: EspnCompetitor[];
+  tournamentId?: number | string;
+  notes?: Array<{ headline?: string }>;
+  headlines?: Array<{ shortLinkText?: string; description?: string }>;
 };
 
 type EspnStatus = {
@@ -29,6 +32,8 @@ type EspnStatus = {
 type EspnEvent = {
   id?: string;
   date?: string;
+  name?: string;
+  shortName?: string;
   status?: EspnStatus;
   competitions?: EspnCompetition[];
 };
@@ -130,6 +135,37 @@ function sortScores(a: LiveScoreRow, b: LiveScoreRow) {
   return ta - tb;
 }
 
+function isNcaaTournamentEvent(event: EspnEvent) {
+  const comp = event.competitions?.[0];
+  if (!comp) return false;
+
+  const tournamentId = Number(comp.tournamentId);
+  if (Number.isFinite(tournamentId) && tournamentId === 22) return true;
+
+  const notesText = (comp.notes ?? [])
+    .map((n) => n.headline ?? "")
+    .join(" ")
+    .toLowerCase();
+
+  if (notesText.includes("men's basketball championship")) return true;
+  if (notesText.includes("mens basketball championship")) return true;
+  if (notesText.includes("ncaa tournament")) return true;
+
+  const headlineText = (comp.headlines ?? [])
+    .map((h) => `${h.shortLinkText ?? ""} ${h.description ?? ""}`)
+    .join(" ")
+    .toLowerCase();
+
+  if (headlineText.includes("men's basketball championship")) return true;
+  if (headlineText.includes("mens basketball championship")) return true;
+  if (headlineText.includes("ncaa tournament")) return true;
+
+  const eventText = `${event.name ?? ""} ${event.shortName ?? ""}`.toLowerCase();
+  if (eventText.includes("ncaa tournament")) return true;
+
+  return false;
+}
+
 function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   const comp = event.competitions?.[0];
   const competitors = comp?.competitors ?? [];
@@ -194,6 +230,7 @@ export async function GET(req: Request) {
     const seenIds = new Set<string>();
     for (const payload of responses) {
       for (const event of payload.events ?? []) {
+        if (!isNcaaTournamentEvent(event)) continue;
         const id = event.id;
         if (!id) {
           rawEvents.push(event);

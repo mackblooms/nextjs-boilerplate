@@ -63,6 +63,8 @@ type EspnCompetitor = {
 type EspnEvent = {
   id?: string;
   date?: string;
+  name?: string;
+  shortName?: string;
   status?: {
     type?: {
       state?: string;
@@ -71,6 +73,9 @@ type EspnEvent = {
     };
   };
   competitions?: Array<{
+    tournamentId?: number | string;
+    notes?: Array<{ headline?: string }>;
+    headlines?: Array<{ shortLinkText?: string; description?: string }>;
     competitors?: EspnCompetitor[];
   }>;
 };
@@ -127,6 +132,35 @@ function teamNameVariants(name: string) {
   }
 
   return variants;
+}
+
+function isNcaaTournamentEvent(event: EspnEvent) {
+  const comp = event.competitions?.[0];
+  if (!comp) return false;
+
+  const tournamentId = Number(comp.tournamentId);
+  if (Number.isFinite(tournamentId) && tournamentId === 22) return true;
+
+  const notesText = (comp.notes ?? [])
+    .map((n) => n.headline ?? "")
+    .join(" ")
+    .toLowerCase();
+  if (notesText.includes("men's basketball championship")) return true;
+  if (notesText.includes("mens basketball championship")) return true;
+  if (notesText.includes("ncaa tournament")) return true;
+
+  const headlineText = (comp.headlines ?? [])
+    .map((h) => `${h.shortLinkText ?? ""} ${h.description ?? ""}`)
+    .join(" ")
+    .toLowerCase();
+  if (headlineText.includes("men's basketball championship")) return true;
+  if (headlineText.includes("mens basketball championship")) return true;
+  if (headlineText.includes("ncaa tournament")) return true;
+
+  const eventText = `${event.name ?? ""} ${event.shortName ?? ""}`.toLowerCase();
+  if (eventText.includes("ncaa tournament")) return true;
+
+  return false;
 }
 
 function toLogoUrl(c: EspnCompetitor | undefined): string | null {
@@ -253,6 +287,7 @@ async function fetchEspnDirectScores(lookbackDays: number, lookaheadDays: number
   const seen = new Set<string>();
   for (const payload of payloads) {
     for (const event of payload.events ?? []) {
+      if (!isNcaaTournamentEvent(event)) continue;
       const game = normalizeEspnEvent(event);
       if (!game) continue;
       if (seen.has(game.id)) continue;
