@@ -639,7 +639,10 @@ export default function PoolPage() {
 
     setIsMember(true);
     setJoinPassword("");
-    setStatus({ tone: "success", text: "Joined! You can now access Draft, Bracket, and Leaderboard." });
+    setStatus({
+      tone: "success",
+      text: "Joined! You can now apply a saved draft, view brackets, and track leaderboard results.",
+    });
     trackEvent({
       eventName: "pool_join_success",
       poolId,
@@ -703,13 +706,13 @@ export default function PoolPage() {
   const recentFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
-    if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
+    if (draftedTeamCount === 0) return "Apply a saved draft to this pool, then your games will show here.";
     return "No final scores from today or yesterday for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
   const liveAndUpcomingEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
-    if (draftedTeamCount === 0) return "Draft teams first, then your games will show here.";
+    if (draftedTeamCount === 0) return "Apply a saved draft to this pool, then your games will show here.";
     return "No live games today or upcoming games tomorrow for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
 
@@ -927,6 +930,25 @@ export default function PoolPage() {
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
+                href="/drafts"
+                style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                  background: "var(--surface)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                My Drafts
+              </Link>
+              <Link
                 href={`/pool/${poolId}/draft`}
                 style={{
                   flex: "1 1 140px",
@@ -943,7 +965,7 @@ export default function PoolPage() {
                   justifyContent: "center",
                 }}
               >
-                Draft
+                Apply Draft
               </Link>
               <Link
                 href={`/pool/${poolId}/bracket`}

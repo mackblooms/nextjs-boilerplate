@@ -208,10 +208,26 @@ export default function PoolsPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Pools</h1>
             <p style={{ margin: 0, opacity: 0.8 }}>
-              One place for your pools, joining by password, and creating new pools.
+              Join pools here, then apply any saved draft from your Drafts workspace.
             </p>
           </div>
 
+          <Link
+            href="/drafts"
+            style={{
+              padding: "10px 14px",
+              border: "1px solid var(--border-color)",
+              borderRadius: 10,
+              textDecoration: "none",
+              fontWeight: 900,
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              background: "var(--surface)",
+            }}
+          >
+            My Drafts
+          </Link>
           <Link
             href="/pools/new"
             style={{
@@ -293,6 +309,19 @@ export default function PoolsPage() {
                 >
                   Discover pools
                 </button>
+                <Link
+                  href="/drafts"
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    textDecoration: "none",
+                    fontWeight: 800,
+                    background: "var(--surface)",
+                  }}
+                >
+                  Open drafts
+                </Link>
                 <Link
                   href="/pools/new"
                   style={{

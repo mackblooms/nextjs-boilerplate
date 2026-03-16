@@ -27,20 +27,7 @@ export default function HomeButton() {
         setHref("/");
         return;
       }
-
-      const { data: membership } = await supabase
-        .from("pool_members")
-        .select("pool_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (membership?.pool_id) {
-        setHref(`/pool/${membership.pool_id}`);
-        return;
-      }
-
-      setHref("/");
+      setHref("/drafts");
     };
 
     loadDestination();

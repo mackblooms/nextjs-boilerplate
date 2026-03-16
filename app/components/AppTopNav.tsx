@@ -54,19 +54,7 @@ export default function AppTopNav() {
       }
 
       setUserId(user.id);
-
-      const { data: homeMembership } = await supabase
-        .from("pool_members")
-        .select("pool_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (homeMembership?.pool_id) {
-        setHomeHref(`/pool/${homeMembership.pool_id}`);
-      } else {
-        setHomeHref("/");
-      }
+      setHomeHref("/drafts");
 
       const { data: memberships } = await supabase
         .from("pool_members")
@@ -149,8 +137,9 @@ export default function AppTopNav() {
       >
         <Link href={homeHref} style={pillStyle}>Home</Link>
         <Link href="/how-it-works" style={pillStyle}>How it works</Link>
+        <Link href="/drafts" style={pillStyle}>Drafts</Link>
         <Link href="/pools" style={pillStyle}>Pools</Link>
-        {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Draft</Link> : null}
+        {activePoolId ? <Link href={`/pool/${activePoolId}/draft`} style={pillStyle}>Apply</Link> : null}
         {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} style={pillStyle}>Bracket</Link> : null}
         {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} style={pillStyle}>Leaderboard</Link> : null}
         {activePoolId && activePool?.created_by === userId ? (

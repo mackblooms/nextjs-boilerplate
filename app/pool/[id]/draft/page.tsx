@@ -1,395 +1,364 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import {
-  BracketBoard,
-  type BracketBoardGame,
-  type BracketBoardTeam,
-} from "../../../components/BracketBoard";
-import { supabase } from "../../../../lib/supabaseClient";
-import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { supabase } from "@/lib/supabaseClient";
+import { ensurePoolEntry, trySetEntryName } from "@/lib/poolEntry";
+import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "@/lib/draftLock";
 import { trackEvent } from "@/lib/analytics";
+import {
+  sortDraftTeamsBySeedName,
+  summarizeDraft,
+  type DraftableTeam,
+  DRAFT_BUDGET,
+  MAX_14_TO_16_SEEDS,
+  MAX_1_OR_2_SEEDS,
+  MAX_1_SEEDS,
+  MAX_2_SEEDS,
+} from "@/lib/draftRules";
+import {
+  defaultDraftName,
+  isMissingSavedDraftTablesError,
+  sameTeamSet,
+  type SavedDraftPickRow,
+  type SavedDraftRow,
+} from "@/lib/savedDrafts";
 
-type Team = {
+type PoolRow = {
   id: string;
   name: string;
-  seed: number;
-  seed_in_region: number | null;
-  cost: number;
-  logo_url?: string | null;
+  is_private: boolean | null;
+  lock_time: string | null;
 };
 
-type EntryRow = { id: string; entry_name: string | null };
-type PickTeamRow = { team_id: string };
+type TeamRow = DraftableTeam & {
+  logo_url: string | null;
+};
 
-const BUDGET = 100;
-const MAX_1 = 2;
-const MAX_2 = 2;
-const MAX_12 = 4;
-const MAX_141516 = 6;
+type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 
-export default function DraftPage() {
+type GameRow = {
+  round: string;
+  team1_id: string | null;
+  team2_id: string | null;
+};
+
+type EntryPickRow = {
+  team_id: string;
+};
+
+function isTeamRow(value: TeamRow | undefined): value is TeamRow {
+  return Boolean(value);
+}
+
+function toPickMap(draftIds: string[], rows: SavedDraftPickRow[]) {
+  const out = new Map<string, Set<string>>();
+  for (const id of draftIds) out.set(id, new Set());
+  for (const row of rows) out.get(row.draft_id)?.add(row.team_id);
+  return out;
+}
+
+function toSortedDraftRows(rows: SavedDraftRow[]) {
+  return [...rows]
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }))
+    .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+}
+
+export default function PoolDraftPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
 
   const [loading, setLoading] = useState(true);
-  const [msg, setMsg] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [games, setGames] = useState<BracketBoardGame[]>([]);
-
-  const [entryId, setEntryId] = useState<string | null>(null);
-  const [entryName, setEntryName] = useState("");
+  const [pool, setPool] = useState<PoolRow | null>(null);
   const [isMember, setIsMember] = useState<boolean | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [entryId, setEntryId] = useState<string | null>(null);
+
+  const [teams, setTeams] = useState<TeamRow[]>([]);
+  const [drafts, setDrafts] = useState<DraftRow[]>([]);
+  const [pickMap, setPickMap] = useState<Map<string, Set<string>>>(new Map());
+  const [selectedDraftId, setSelectedDraftId] = useState("");
+  const [poolAppliedTeamIds, setPoolAppliedTeamIds] = useState<Set<string>>(new Set());
+
+  const [joinPassword, setJoinPassword] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [applying, setApplying] = useState(false);
 
   const [locked, setLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
-  const [poolIsPrivate, setPoolIsPrivate] = useState(true);
-  const [joinPassword, setJoinPassword] = useState("");
-  const [joining, setJoining] = useState(false);
-  const [showBracketModal, setShowBracketModal] = useState(false);
-  const [showClearDraftModal, setShowClearDraftModal] = useState(false);
-  const [clearDraftEntryId, setClearDraftEntryId] = useState<string | null>(null);
-  const [scale, setScale] = useState(1);
-  const [fitMode, setFitMode] = useState(true);
 
-  const bracketViewportRef = useRef<HTMLDivElement | null>(null);
-  const bracketContentRef = useRef<HTMLDivElement | null>(null);
+  const poolIsPrivate = (pool?.is_private ?? true) !== false;
 
-  const selectedTeams = useMemo(() => {
-    const map = new Map(teams.map((t) => [t.id, t]));
-    return Array.from(selected)
-      .map((id) => map.get(id))
-      .filter(Boolean) as Team[];
-  }, [selected, teams]);
-
-  const totalCost = useMemo(
-    () => selectedTeams.reduce((sum, t) => sum + t.cost, 0),
-    [selectedTeams],
-  );
-
-  const remaining = BUDGET - totalCost;
-
-  const count1 = useMemo(
-    () => selectedTeams.filter((t) => t.seed === 1).length,
-    [selectedTeams],
-  );
-  const count2 = useMemo(
-    () => selectedTeams.filter((t) => t.seed === 2).length,
-    [selectedTeams],
-  );
-  const count12 = count1 + count2;
-  const count141516 = useMemo(
-    () => selectedTeams.filter((t) => t.seed >= 14 && t.seed <= 16).length,
-    [selectedTeams],
-  );
-
-  const isValid =
-    totalCost <= BUDGET &&
-    count1 <= MAX_1 &&
-    count2 <= MAX_2 &&
-    count12 <= MAX_12 &&
-    count141516 <= MAX_141516;
-
-  const sortedTeams = useMemo(() => {
-    return [...teams].sort((a, b) => {
-      if (a.seed !== b.seed) return a.seed - b.seed;
-      return a.name.localeCompare(b.name);
-    });
+  const teamById = useMemo(() => {
+    const map = new Map<string, TeamRow>();
+    for (const row of teams) map.set(row.id, row);
+    return map;
   }, [teams]);
 
-  const bracketTeams = useMemo<BracketBoardTeam[]>(
+  const selectedDraft = useMemo(
+    () => drafts.find((draft) => draft.id === selectedDraftId) ?? null,
+    [drafts, selectedDraftId]
+  );
+  const selectedDraftPicks = useMemo(
+    () => pickMap.get(selectedDraftId) ?? new Set<string>(),
+    [pickMap, selectedDraftId]
+  );
+  const selectedDraftTeams = useMemo(
     () =>
-      teams.map((t) => ({
-        id: t.id,
-        name: t.name,
-        seed_in_region: t.seed_in_region ?? t.seed,
-        logo_url: t.logo_url ?? null,
-      })),
-    [teams],
+      Array.from(selectedDraftPicks)
+        .map((teamId) => teamById.get(teamId))
+        .filter(isTeamRow)
+        .sort(sortDraftTeamsBySeedName) as TeamRow[],
+    [selectedDraftPicks, teamById]
   );
 
-  const applyFitScale = useCallback(() => {
-    const viewport = bracketViewportRef.current;
-    const content = bracketContentRef.current;
-    if (!viewport || !content) return;
+  const selectedDraftSummary = useMemo(
+    () => summarizeDraft(selectedDraftPicks, teamById),
+    [selectedDraftPicks, teamById]
+  );
 
-    const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
-    setScale(Math.max(0.35, next));
-  }, []);
+  const appliedDraft = useMemo(
+    () =>
+      drafts.find((draft) => {
+        const draftPickSet = pickMap.get(draft.id) ?? new Set<string>();
+        return sameTeamSet(draftPickSet, poolAppliedTeamIds);
+      }) ?? null,
+    [drafts, pickMap, poolAppliedTeamIds]
+  );
 
-  const isMissingEntryNameError = (message?: string) => {
-    if (!message) return false;
-    return (
-      message.includes("column entries.entry_name does not exist") ||
-      message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
-    );
-  };
+  const selectedIsApplied = useMemo(
+    () => sameTeamSet(selectedDraftPicks, poolAppliedTeamIds),
+    [selectedDraftPicks, poolAppliedTeamIds]
+  );
 
-  const ensureEntry = useCallback(async (userId: string) => {
-    const { data: rows, error: entrySelErr } = await supabase
-      .from("entries")
-      .select("id")
+  const load = useCallback(async () => {
+    setLoading(true);
+    setMessage("");
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setLoading(false);
+      setIsMember(false);
+      setMessage("Please log in first.");
+      return;
+    }
+
+    const { data: poolRow, error: poolErr } = await supabase
+      .from("pools")
+      .select("id,name,is_private,lock_time")
+      .eq("id", poolId)
+      .single();
+
+    if (poolErr) {
+      setLoading(false);
+      setMessage(poolErr.message);
+      return;
+    }
+
+    const typedPool = poolRow as PoolRow;
+    setPool(typedPool);
+    setLockTime(resolveDraftLockTime(typedPool.lock_time ?? null));
+    setLocked(isDraftLocked(typedPool.lock_time ?? null));
+
+    const { data: memRow, error: memErr } = await supabase
+      .from("pool_members")
+      .select("pool_id")
       .eq("pool_id", poolId)
-      .eq("user_id", userId)
-      .limit(1);
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (entrySelErr) {
-      return { entry: null as EntryRow | null, error: entrySelErr.message };
+    if (memErr) {
+      setLoading(false);
+      setMessage(memErr.message);
+      return;
     }
 
-    const existing = (((rows ?? []) as { id: string }[])[0] ?? null) as
-      | { id: string }
-      | null;
+    setIsMember(Boolean(memRow));
 
-    if (existing) {
-      return { entry: { id: existing.id, entry_name: null }, error: null };
+    const { data: gameRows, error: gameErr } = await supabase
+      .from("games")
+      .select("round,team1_id,team2_id");
+
+    if (gameErr) {
+      setLoading(false);
+      setMessage(gameErr.message);
+      return;
     }
 
-    const { data: newEntryWithName, error: namedInsErr } = await supabase
-      .from("entries")
-      .insert({
-        pool_id: poolId,
-        user_id: userId,
-        entry_name: "My Bracket",
-      })
-      .select("id")
-      .single();
+    const r64TeamIds = Array.from(
+      new Set(
+        ((gameRows ?? []) as GameRow[])
+          .filter((g) => g.round === "R64")
+          .flatMap((g) => [g.team1_id, g.team2_id])
+          .filter((id): id is string => Boolean(id))
+      )
+    );
 
-    if (!namedInsErr && newEntryWithName) {
-      return {
-        entry: { id: newEntryWithName.id as string, entry_name: "My Bracket" },
-        error: null,
-      };
+    let teamQuery = supabase.from("teams").select("id,name,seed,cost,logo_url");
+    if (r64TeamIds.length > 0) {
+      teamQuery = teamQuery.in("id", r64TeamIds);
     }
 
-    const missingEntryName = isMissingEntryNameError(namedInsErr?.message);
+    const { data: teamRows, error: teamErr } = await teamQuery;
+    if (teamErr) {
+      setLoading(false);
+      setMessage(teamErr.message);
+      return;
+    }
+    setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsBySeedName));
 
-    if (!missingEntryName) {
-      return {
-        entry: null as EntryRow | null,
-        error: namedInsErr?.message ?? "Failed to create entry.",
-      };
+    if (!memRow) {
+      setEntryId(null);
+      setLoading(false);
+      return;
     }
 
-    const { data: newEntry, error: entryInsErr } = await supabase
-      .from("entries")
-      .insert({
-        pool_id: poolId,
-        user_id: userId,
-      })
-      .select("id")
-      .single();
+    const ensuredEntry = await ensurePoolEntry(supabase, poolId, user.id);
+    if (!ensuredEntry.entry || ensuredEntry.error) {
+      setLoading(false);
+      setMessage(ensuredEntry.error ?? "Failed to create your pool entry.");
+      return;
+    }
+    setEntryId(ensuredEntry.entry.id);
 
-    if (entryInsErr || !newEntry) {
-      return {
-        entry: null as EntryRow | null,
-        error: entryInsErr?.message ?? "Failed to create entry.",
-      };
+    const { data: poolPickRows, error: poolPicksErr } = await supabase
+      .from("entry_picks")
+      .select("team_id")
+      .eq("entry_id", ensuredEntry.entry.id);
+
+    if (poolPicksErr) {
+      setLoading(false);
+      setMessage(poolPicksErr.message);
+      return;
     }
 
-    return { entry: { id: newEntry.id as string, entry_name: null }, error: null };
+    const currentPoolPickSet = new Set(((poolPickRows ?? []) as EntryPickRow[]).map((row) => row.team_id));
+    setPoolAppliedTeamIds(currentPoolPickSet);
+
+    const draftRowsQuery = await supabase
+      .from("saved_drafts")
+      .select("id,user_id,name,created_at,updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (draftRowsQuery.error) {
+      setLoading(false);
+      if (isMissingSavedDraftTablesError(draftRowsQuery.error.message)) {
+        setMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+        return;
+      }
+      setMessage(draftRowsQuery.error.message);
+      return;
+    }
+
+    let userDraftRows = (draftRowsQuery.data ?? []) as SavedDraftRow[];
+
+    if (userDraftRows.length === 0) {
+      const fallbackName =
+        typedPool.name?.trim() && currentPoolPickSet.size > 0
+          ? `${typedPool.name} Draft`
+          : defaultDraftName(1);
+
+      const created = await supabase
+        .from("saved_drafts")
+        .insert({
+          user_id: user.id,
+          name: fallbackName,
+        })
+        .select("id,name,created_at,updated_at")
+        .single();
+
+      if (created.error || !created.data) {
+        setLoading(false);
+        setMessage(created.error?.message ?? "Failed to create your first saved draft.");
+        return;
+      }
+
+      const createdId = created.data.id as string;
+      if (currentPoolPickSet.size > 0) {
+        const copyRows = Array.from(currentPoolPickSet).map((teamId) => ({
+          draft_id: createdId,
+          team_id: teamId,
+        }));
+        const { error: copyErr } = await supabase.from("saved_draft_picks").insert(copyRows);
+        if (copyErr) {
+          setLoading(false);
+          setMessage(copyErr.message);
+          return;
+        }
+      }
+
+      userDraftRows = [
+        {
+          id: createdId,
+          user_id: user.id,
+          name: created.data.name as string,
+          created_at: created.data.created_at as string,
+          updated_at: created.data.updated_at as string,
+        },
+      ];
+    }
+
+    const nextDraftRows = toSortedDraftRows(userDraftRows);
+    const draftIds = nextDraftRows.map((draft) => draft.id);
+    const picksQuery = await supabase
+      .from("saved_draft_picks")
+      .select("draft_id,team_id")
+      .in("draft_id", draftIds);
+
+    if (picksQuery.error) {
+      setLoading(false);
+      setMessage(picksQuery.error.message);
+      return;
+    }
+
+    const nextPickMap = toPickMap(draftIds, (picksQuery.data ?? []) as SavedDraftPickRow[]);
+
+    const preAppliedDraft = nextDraftRows.find((draft) =>
+      sameTeamSet(nextPickMap.get(draft.id) ?? new Set<string>(), currentPoolPickSet)
+    );
+
+    setDrafts(nextDraftRows);
+    setPickMap(nextPickMap);
+    setSelectedDraftId(preAppliedDraft?.id ?? nextDraftRows[0]?.id ?? "");
+
+    setLoading(false);
   }, [poolId]);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setMsg("");
-
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-
-      if (!user) {
-        setMsg("Please log in first.");
-        setLoading(false);
-        return;
-      }
-
-      // ✅ Lock check (paste-in safe)
-      const { data: poolRow, error: poolErr } = await supabase
-        .from("pools")
-        .select("lock_time,is_private")
-        .eq("id", poolId)
-        .single();
-
-      if (poolErr) {
-        setMsg(poolErr.message);
-        setLoading(false);
-        return;
-      }
-
-      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
-      setLockTime(resolvedLockTime);
-      setLocked(isDraftLocked(poolRow?.lock_time ?? null));
-
-      setPoolIsPrivate((poolRow?.is_private ?? true) !== false);
-
-      // Membership
-      const { data: mem, error: memErr } = await supabase
-        .from("pool_members")
-        .select("pool_id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (memErr) {
-        setMsg(memErr.message);
-        setLoading(false);
-        return;
-      }
-
-      setIsMember(!!mem);
-
-      const { data: gameRows, error: gameErr } = await supabase
-        .from("games")
-        .select("id,round,region,slot,start_time,game_date,team1_id,team2_id,winner_team_id");
-
-      if (gameErr) {
-        setMsg(gameErr.message);
-        setLoading(false);
-        return;
-      }
-
-      const loadedGames = (gameRows ?? []) as BracketBoardGame[];
-      setGames(loadedGames);
-
-      const r64TeamIds = Array.from(
-        new Set(
-          loadedGames
-            .filter((g) => g.round === "R64")
-            .flatMap((g) => [g.team1_id, g.team2_id])
-            .filter((id): id is string => !!id),
-        ),
-      );
-
-      let teamsQuery = supabase
-        .from("teams")
-        .select("id,name,seed,seed_in_region,cost,logo_url");
-      if (r64TeamIds.length > 0) teamsQuery = teamsQuery.in("id", r64TeamIds);
-
-      const { data: teamRows, error: teamErr } = await teamsQuery;
-
-      if (teamErr) {
-        setMsg(teamErr.message);
-        setLoading(false);
-        return;
-      }
-
-      setTeams((teamRows ?? []) as Team[]);
-
-      if (r64TeamIds.length === 0) {
-        setMsg("Tournament field is still TBD in SportsDataIO. Draft teams will appear once R64 teams are assigned.");
-      }
-
-      if (!mem) {
-        setEntryId(null);
-        setSelected(new Set());
-        setLoading(false);
-        return;
-      }
-
-      const { entry, error: entryErr } = await ensureEntry(user.id);
-      if (entryErr || !entry) {
-        setMsg(entryErr ?? "Failed to load entry.");
-        setLoading(false);
-        return;
-      }
-
-      setEntryId(entry.id);
-      setEntryName(entry.entry_name ?? "My Bracket");
-
-      // Picks
-      const { data: picks, error: picksErr } = await supabase
-        .from("entry_picks")
-        .select("team_id")
-        .eq("entry_id", entry.id);
-
-      if (picksErr) {
-        setMsg(picksErr.message);
-        setLoading(false);
-        return;
-      }
-
-      setSelected(
-        new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)),
-      );
-
-      setLoading(false);
-    };
-
-    load();
-  }, [poolId, ensureEntry]);
-
-  useEffect(() => {
-    const hasModalOpen = showBracketModal || showClearDraftModal;
-    if (!hasModalOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      if (showClearDraftModal && !clearing) {
-        setShowClearDraftModal(false);
-        setClearDraftEntryId(null);
-      }
-      if (showBracketModal) {
-        setShowBracketModal(false);
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [clearing, showBracketModal, showClearDraftModal]);
-
-  useEffect(() => {
-    if (!showBracketModal || !fitMode) return;
-
-    const runFit = () => {
-      window.requestAnimationFrame(applyFitScale);
-    };
-
-    runFit();
-    window.addEventListener("resize", runFit);
-    return () => window.removeEventListener("resize", runFit);
-  }, [applyFitScale, fitMode, showBracketModal]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
 
   async function joinPool() {
-    setMsg("");
+    setMessage("");
     setJoining(true);
+
     trackEvent({
       eventName: "pool_join_attempt",
       poolId,
-      metadata: { location: "draft_page", is_private: poolIsPrivate },
+      metadata: { location: "pool_draft_apply_page", is_private: poolIsPrivate },
     });
 
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
     if (!session) {
-      setMsg("Please log in first.");
-      trackEvent({
-        eventName: "pool_join_failure",
-        poolId,
-        metadata: { location: "draft_page", reason: "not_authenticated" },
-      });
       setJoining(false);
+      setMessage("Please log in first.");
       return;
     }
 
     if (poolIsPrivate && !joinPassword.trim()) {
-      setMsg("Enter this pool's password.");
-      trackEvent({
-        eventName: "pool_join_failure",
-        poolId,
-        metadata: { location: "draft_page", reason: "missing_password" },
-      });
       setJoining(false);
+      setMessage("Enter this pool's password.");
       return;
     }
 
@@ -406,909 +375,459 @@ export default function DraftPage() {
     });
 
     const body = (await res.json().catch(() => ({}))) as { error?: string };
-
     if (!res.ok) {
-      setMsg(body.error ?? "Failed to join pool.");
+      setJoining(false);
+      setMessage(body.error ?? "Failed to join pool.");
       trackEvent({
         eventName: "pool_join_failure",
         poolId,
-        metadata: { location: "draft_page", reason: body.error ?? "api_error" },
+        metadata: { location: "pool_draft_apply_page", reason: body.error ?? "api_error" },
       });
-      setJoining(false);
       return;
     }
 
-    setIsMember(true);
     setJoinPassword("");
-
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
-    if (!user) {
-      setMsg("Joined, but failed to load your entry. Refresh and try again.");
-      setJoining(false);
-      return;
-    }
-
-    const { entry, error: entryErr } = await ensureEntry(user.id);
-    if (entryErr || !entry) {
-      setMsg(entryErr ?? "Joined, but failed to create entry.");
-      setJoining(false);
-      return;
-    }
-
-    setEntryId(entry.id);
-    setEntryName(entry.entry_name ?? "My Bracket");
-
-    const { data: picks, error: picksErr } = await supabase
-      .from("entry_picks")
-      .select("team_id")
-      .eq("entry_id", entry.id);
-
-    if (picksErr) {
-      setMsg(picksErr.message);
-      setJoining(false);
-      return;
-    }
-
-    setSelected(new Set(((picks ?? []) as PickTeamRow[]).map((p) => p.team_id)));
-    setMsg("Joined pool. You can draft now.");
     trackEvent({
       eventName: "pool_join_success",
       poolId,
-      metadata: { location: "draft_page", is_private: poolIsPrivate },
+      metadata: { location: "pool_draft_apply_page", is_private: poolIsPrivate },
     });
     setJoining(false);
+    await load();
+    setMessage("Joined pool. Pick a saved draft and apply it.");
   }
 
-  function toggleTeam(teamId: string) {
-    if (locked) return;
-
-    setMsg("");
-
-    const next = new Set(selected);
-    const map = new Map(teams.map((t) => [t.id, t]));
-
-    if (next.has(teamId)) {
-      next.delete(teamId);
-      setSelected(next);
+  async function applyDraftToPool() {
+    if (!isMember) {
+      setMessage("Join this pool before applying a draft.");
       return;
     }
 
-    next.add(teamId);
-
-    const arr = Array.from(next)
-      .map((id) => map.get(id))
-      .filter(Boolean) as Team[];
-
-    const cost = arr.reduce((s, t) => s + t.cost, 0);
-    const c1 = arr.filter((t) => t.seed === 1).length;
-    const c2 = arr.filter((t) => t.seed === 2).length;
-    const c141516 = arr.filter((t) => t.seed >= 14 && t.seed <= 16).length;
-
-    if (
-      cost > BUDGET ||
-      c1 > MAX_1 ||
-      c2 > MAX_2 ||
-      c1 + c2 > MAX_12 ||
-      c141516 > MAX_141516
-    ) {
-      const t = map.get(teamId);
-      setMsg(
-        `Can't add ${t?.name ?? "that team"} — it would break budget or seed caps.`,
-      );
+    if (!entryId) {
+      setMessage("Entry is not ready yet. Refresh and try again.");
       return;
     }
 
-    setSelected(next);
-  }
+    if (!selectedDraft) {
+      setMessage("Select a draft first.");
+      return;
+    }
 
-  async function savePicks() {
-    setMsg("");
+    if (locked) {
+      setMessage("Draft is locked for this pool.");
+      return;
+    }
+
+    if (!selectedDraftSummary.isValid) {
+      setMessage(selectedDraftSummary.error ?? "Selected draft is invalid.");
+      return;
+    }
+
+    setApplying(true);
+    setMessage("");
+
     trackEvent({
-      eventName: "draft_save_attempt",
+      eventName: "pool_draft_apply_attempt",
       poolId,
       entryId,
       metadata: {
-        selected_count: selected.size,
-        total_cost: totalCost,
-        is_valid: isValid,
+        draft_id: selectedDraft.id,
+        selected_count: selectedDraftPicks.size,
+        total_cost: selectedDraftSummary.totalCost,
       },
     });
 
-    let resolvedEntryId = entryId;
-    if (!isMember) {
-      setMsg("Join the pool before drafting.");
-      trackEvent({
-        eventName: "draft_save_failure",
-        poolId,
-        entryId,
-        metadata: { reason: "not_member" },
-      });
-      return;
-    }
-
-    if (!resolvedEntryId) {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-      if (!user) {
-        setMsg("Please log in first.");
-        trackEvent({
-          eventName: "draft_save_failure",
-          poolId,
-          entryId,
-          metadata: { reason: "not_authenticated" },
-        });
-        return;
-      }
-
-      const { entry, error: entryErr } = await ensureEntry(user.id);
-      if (entryErr || !entry) {
-        setMsg(entryErr ?? "Entry not ready yet. Refresh and try again.");
-        trackEvent({
-          eventName: "draft_save_failure",
-          poolId,
-          entryId,
-          metadata: { reason: entryErr ?? "entry_unavailable" },
-        });
-        return;
-      }
-
-      resolvedEntryId = entry.id;
-      setEntryId(entry.id);
-      if (!entryName.trim()) {
-        setEntryName(entry.entry_name ?? "My Bracket");
-      }
-    }
-
-    if (locked) {
-      setMsg("Draft is locked.");
-      trackEvent({
-        eventName: "draft_save_failure",
-        poolId,
-        entryId: resolvedEntryId,
-        metadata: { reason: "draft_locked" },
-      });
-      return;
-    }
-    if (!isValid) {
-      setMsg("Draft is not valid (budget/caps). Fix issues before saving.");
-      trackEvent({
-        eventName: "draft_save_failure",
-        poolId,
-        entryId: resolvedEntryId,
-        metadata: { reason: "invalid_draft" },
-      });
-      return;
-    }
-
-    const nickname = entryName.trim();
-
-    setSaving(true);
-
-    if (nickname) {
-      const { error: entryUpdateErr } = await supabase
-        .from("entries")
-        .update({ entry_name: nickname })
-        .eq("id", resolvedEntryId);
-
-      if (entryUpdateErr && !isMissingEntryNameError(entryUpdateErr.message)) {
-        setMsg(entryUpdateErr.message);
-        trackEvent({
-          eventName: "draft_save_failure",
-          poolId,
-          entryId: resolvedEntryId,
-          metadata: { reason: entryUpdateErr.message },
-        });
-        setSaving(false);
-        return;
-      }
-    }
-
-    const { error: delErr } = await supabase
+    const { error: clearErr } = await supabase
       .from("entry_picks")
       .delete()
-      .eq("entry_id", resolvedEntryId);
+      .eq("entry_id", entryId);
 
-    if (delErr) {
-      setMsg(delErr.message);
+    if (clearErr) {
+      setApplying(false);
+      setMessage(clearErr.message);
       trackEvent({
-        eventName: "draft_save_failure",
+        eventName: "pool_draft_apply_failure",
         poolId,
-        entryId: resolvedEntryId,
-        metadata: { reason: delErr.message },
+        entryId,
+        metadata: { draft_id: selectedDraft.id, reason: clearErr.message },
       });
-      setSaving(false);
       return;
     }
 
-    const rows = Array.from(selected).map((team_id) => ({
-      entry_id: resolvedEntryId,
-      team_id,
+    const rows = Array.from(selectedDraftPicks).map((teamId) => ({
+      entry_id: entryId,
+      team_id: teamId,
     }));
 
     if (rows.length > 0) {
-      const { error: insErr } = await supabase.from("entry_picks").insert(rows);
-      if (insErr) {
-        setMsg(insErr.message);
+      const { error: insertErr } = await supabase.from("entry_picks").insert(rows);
+      if (insertErr) {
+        setApplying(false);
+        setMessage(insertErr.message);
         trackEvent({
-          eventName: "draft_save_failure",
-          poolId,
-          entryId: resolvedEntryId,
-          metadata: { reason: insErr.message },
-        });
-        setSaving(false);
-        return;
-      }
-    }
-
-    setMsg("Saved!");
-    trackEvent({
-      eventName: "draft_save_success",
-      poolId,
-      entryId: resolvedEntryId,
-      metadata: {
-        selected_count: selected.size,
-        total_cost: totalCost,
-      },
-    });
-    setSaving(false);
-  }
-
-  async function clearDraft() {
-    setMsg("");
-
-    if (!isMember) {
-      setMsg("Join the pool before drafting.");
-      trackEvent({
-        eventName: "draft_clear_failure",
-        poolId,
-        entryId,
-        metadata: { reason: "not_member" },
-      });
-      return;
-    }
-
-    if (locked) {
-      setMsg("Draft is locked.");
-      trackEvent({
-        eventName: "draft_clear_failure",
-        poolId,
-        entryId,
-        metadata: { reason: "draft_locked" },
-      });
-      return;
-    }
-
-    let resolvedEntryId = entryId;
-    if (!resolvedEntryId) {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-      if (!user) {
-        setMsg("Please log in first.");
-        trackEvent({
-          eventName: "draft_clear_failure",
+          eventName: "pool_draft_apply_failure",
           poolId,
           entryId,
-          metadata: { reason: "not_authenticated" },
+          metadata: { draft_id: selectedDraft.id, reason: insertErr.message },
         });
         return;
       }
-
-      const { entry, error: entryErr } = await ensureEntry(user.id);
-      if (entryErr || !entry) {
-        setMsg(entryErr ?? "Entry not ready yet. Refresh and try again.");
-        trackEvent({
-          eventName: "draft_clear_failure",
-          poolId,
-          entryId,
-          metadata: { reason: entryErr ?? "entry_unavailable" },
-        });
-        return;
-      }
-
-      resolvedEntryId = entry.id;
-      setEntryId(entry.id);
     }
 
-    setClearDraftEntryId(resolvedEntryId);
-    setShowClearDraftModal(true);
-  }
-
-  function closeClearDraftModal() {
-    if (clearing) return;
-    setShowClearDraftModal(false);
-    setClearDraftEntryId(null);
-  }
-
-  async function confirmClearDraft() {
-    if (!clearDraftEntryId) {
-      setShowClearDraftModal(false);
+    const entryNameErr = await trySetEntryName(supabase, entryId, selectedDraft.name);
+    if (entryNameErr) {
+      setApplying(false);
+      setMessage(entryNameErr);
       return;
     }
 
-    setClearing(true);
+    setPoolAppliedTeamIds(new Set(selectedDraftPicks));
+    setApplying(false);
+    setMessage(`Applied "${selectedDraft.name}" to ${pool?.name ?? "this pool"}.`);
     trackEvent({
-      eventName: "draft_clear_attempt",
+      eventName: "pool_draft_apply_success",
       poolId,
-      entryId: clearDraftEntryId,
+      entryId,
       metadata: {
-        selected_count: selected.size,
+        draft_id: selectedDraft.id,
+        selected_count: selectedDraftPicks.size,
+        total_cost: selectedDraftSummary.totalCost,
       },
     });
-
-    const { error: delErr } = await supabase
-      .from("entry_picks")
-      .delete()
-      .eq("entry_id", clearDraftEntryId);
-
-    if (delErr) {
-      setMsg(delErr.message);
-      trackEvent({
-        eventName: "draft_clear_failure",
-        poolId,
-        entryId: clearDraftEntryId,
-        metadata: { reason: delErr.message },
-      });
-      setClearing(false);
-      setShowClearDraftModal(false);
-      setClearDraftEntryId(null);
-      return;
-    }
-
-    setSelected(new Set());
-    setMsg("Draft cleared.");
-    trackEvent({
-      eventName: "draft_clear_success",
-      poolId,
-      entryId: clearDraftEntryId,
-      metadata: { selected_count: 0 },
-    });
-    setClearing(false);
-    setShowClearDraftModal(false);
-    setClearDraftEntryId(null);
   }
-
-  const setFit = () => {
-    setFitMode(true);
-    window.requestAnimationFrame(applyFitScale);
-  };
-
-  const set100 = () => {
-    setFitMode(false);
-    setScale(1);
-  };
-
-  const openBracketModal = () => {
-    setFitMode(true);
-    setShowBracketModal(true);
-  };
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Draft</h1>
-        <p style={{ marginTop: 12 }}>Loading…</p>
+      <main style={{ maxWidth: 980, margin: "48px auto", padding: 16 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Pool Draft</h1>
+        <p style={{ marginTop: 12 }}>Loading...</p>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
-      <div
+    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16, display: "grid", gap: 16 }}>
+      <section
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          alignItems: "flex-start",
-          flexWrap: "wrap",
+          border: "1px solid var(--border-color)",
+          borderRadius: 14,
+          background: "var(--surface)",
+          padding: 14,
+          display: "grid",
+          gap: 12,
         }}
       >
-        <div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 6 }}>
-            Draft
-          </h1>
-          <div style={{ fontSize: 14, opacity: 0.85 }}>
-            Budget: {BUDGET} • Caps: max {MAX_1} one-seeds, max {MAX_2}{" "}
-            two-seeds, max {MAX_12} combined, max {MAX_141516} seeds 14-16
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>{pool?.name ?? "Pool"}</h1>
+            <p style={{ margin: "6px 0 0", opacity: 0.85 }}>
+              Apply one of your saved drafts to this pool.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Link
+              href="/drafts"
+              style={{
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                textDecoration: "none",
+                fontWeight: 800,
+                background: "var(--surface)",
+              }}
+            >
+              Edit Drafts
+            </Link>
+            <Link
+              href={`/pool/${poolId}/leaderboard`}
+              style={{
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                textDecoration: "none",
+                fontWeight: 800,
+                background: "var(--surface)",
+              }}
+            >
+              Leaderboard
+            </Link>
           </div>
         </div>
 
-        {isMember ? (
-          <button
-            type="button"
-            onClick={openBracketModal}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <span
             style={{
-              padding: "10px 12px",
+              fontSize: 12,
+              borderRadius: 999,
+              padding: "6px 10px",
               border: "1px solid var(--border-color)",
-              borderRadius: 10,
-              background: "var(--surface)",
-              fontWeight: 900,
-              cursor: "pointer",
+              background: "var(--surface-muted)",
+              fontWeight: 800,
             }}
           >
-            View Bracket
-          </button>
+            {poolIsPrivate ? "Private pool" : "Public pool"}
+          </span>
+          {isMember ? (
+            <span
+              style={{
+                fontSize: 12,
+                borderRadius: 999,
+                padding: "6px 10px",
+                border: "1px solid var(--border-color)",
+                background: "var(--success-bg)",
+                fontWeight: 800,
+              }}
+            >
+              You are a member
+            </span>
+          ) : null}
+          {locked ? (
+            <span
+              style={{
+                fontSize: 12,
+                borderRadius: 999,
+                padding: "6px 10px",
+                border: "1px solid var(--warning-border)",
+                background: "var(--warning-bg)",
+                fontWeight: 800,
+              }}
+            >
+              Draft locked
+            </span>
+          ) : null}
+        </div>
+
+        {lockTime ? (
+          <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>Lock time: {formatDraftLockTimeET(lockTime)}</p>
         ) : null}
-      </div>
+      </section>
 
       {!isMember ? (
-        <div style={{ marginTop: 18 }}>
-          <p style={{ opacity: 0.9 }}>You are not a member of this pool yet.</p>
+        <section
+          style={{
+            border: "1px solid var(--border-color)",
+            borderRadius: 14,
+            background: "var(--surface)",
+            padding: 14,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
+          <p style={{ margin: 0, opacity: 0.85 }}>
+            {poolIsPrivate
+              ? "Enter the pool password to join, then you can apply any saved draft."
+              : "Join this pool to apply one of your saved drafts."}
+          </p>
           {poolIsPrivate ? (
             <input
               type="password"
               value={joinPassword}
-              onChange={(e) => setJoinPassword(e.target.value)}
+              onChange={(event) => setJoinPassword(event.target.value)}
               placeholder="Pool password"
               style={{
-                marginTop: 10,
                 width: "100%",
-                maxWidth: 360,
-                padding: "12px 14px",
+                maxWidth: 380,
+                padding: "10px 12px",
                 borderRadius: 10,
                 border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
               }}
             />
           ) : null}
           <button
-            onClick={joinPool}
+            type="button"
+            onClick={() => void joinPool()}
             disabled={joining}
             style={{
-              marginTop: 10,
+              width: "100%",
+              maxWidth: 240,
               padding: "12px 14px",
               borderRadius: 10,
-              border: "none",
-              cursor: joining ? "not-allowed" : "pointer",
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
               fontWeight: 900,
+              cursor: joining ? "not-allowed" : "pointer",
               opacity: joining ? 0.7 : 1,
             }}
           >
             {joining ? "Joining..." : "Join pool"}
           </button>
-        </div>
+        </section>
       ) : null}
 
-      <div
-        style={{
-          marginTop: 18,
-          display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          gap: 18,
-        }}
-      >
-        {/* Team list */}
+      {isMember ? (
         <section
           style={{
             border: "1px solid var(--border-color)",
-            borderRadius: 12,
+            borderRadius: 14,
+            background: "var(--surface)",
             padding: 14,
+            display: "grid",
+            gap: 12,
           }}
         >
-          <div style={{ fontWeight: 900, marginBottom: 10 }}>Teams</div>
-
           <div style={{ display: "grid", gap: 8 }}>
-            {sortedTeams.map((t) => {
-              const checked = selected.has(t.id);
-              return (
-                <label
-                  key={t.id}
+            <label htmlFor="pool-draft-select" style={{ fontWeight: 800, fontSize: 13 }}>
+              Saved draft
+            </label>
+            <select
+              id="pool-draft-select"
+              value={selectedDraftId}
+              onChange={(event) => setSelectedDraftId(event.target.value)}
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+              }}
+            >
+              {drafts.length === 0 ? <option value="">No drafts available</option> : null}
+              {drafts.map((draft) => (
+                <option key={draft.id} value={draft.id}>
+                  {draft.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => void applyDraftToPool()}
+              disabled={applying || !selectedDraft || locked || !selectedDraftSummary.isValid}
+              style={{
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface)",
+                fontWeight: 900,
+                cursor:
+                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid
+                    ? "not-allowed"
+                    : "pointer",
+                opacity: applying || !selectedDraft || locked || !selectedDraftSummary.isValid ? 0.7 : 1,
+              }}
+            >
+              {applying ? "Applying..." : selectedIsApplied ? "Re-apply draft" : "Apply draft to pool"}
+            </button>
+            <Link
+              href="/drafts"
+              style={{
+                padding: "12px 14px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                textDecoration: "none",
+                fontWeight: 800,
+                background: "var(--surface)",
+              }}
+            >
+              Open Draft Editor
+            </Link>
+          </div>
+
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 10,
+              padding: "10px 12px",
+              background: selectedDraftSummary.isValid ? "var(--success-bg)" : "var(--danger-bg)",
+              fontWeight: 800,
+            }}
+          >
+            {selectedDraft
+              ? `Draft "${selectedDraft.name}" - ${selectedDraftPicks.size} teams - ${selectedDraftSummary.totalCost}/${DRAFT_BUDGET}`
+              : "Select a draft first."}
+            {selectedDraftSummary.isValid ? "" : ` - ${selectedDraftSummary.error ?? "Invalid draft."}`}
+          </div>
+
+          <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
+            <div>
+              Rules: max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max {MAX_1_OR_2_SEEDS} combined
+              one/two, max {MAX_14_TO_16_SEEDS} seeds 14-16.
+            </div>
+            <div>
+              Currently applied draft:{" "}
+              <b>{appliedDraft ? appliedDraft.name : poolAppliedTeamIds.size > 0 ? "Custom / unsaved mix" : "None"}</b>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {isMember && selectedDraft ? (
+        <section
+          style={{
+            border: "1px solid var(--border-color)",
+            borderRadius: 14,
+            background: "var(--surface)",
+            padding: 14,
+            display: "grid",
+            gap: 8,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>{selectedDraft.name} teams</h2>
+          {selectedDraftTeams.length === 0 ? (
+            <p style={{ margin: 0, opacity: 0.8 }}>
+              This draft has no picks yet. Add teams in <Link href="/drafts">Draft Editor</Link>.
+            </p>
+          ) : (
+            <div style={{ display: "grid", gap: 6 }}>
+              {selectedDraftTeams.map((team) => (
+                <div
+                  key={team.id}
                   style={{
                     display: "flex",
-                    alignItems: "center",
                     justifyContent: "space-between",
+                    alignItems: "center",
                     gap: 10,
-                    padding: "10px 10px",
                     border: "1px solid var(--border-color)",
                     borderRadius: 10,
-                    cursor: locked ? "not-allowed" : "pointer",
-                    userSelect: "none",
-                    opacity: locked ? 0.85 : 1,
+                    padding: "8px 10px",
+                    background: poolAppliedTeamIds.has(team.id) ? "var(--highlight)" : "var(--surface-muted)",
                   }}
                 >
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={locked}
-                      onChange={() => toggleTeam(t.id)}
-                    />
-
-                    {t.logo_url ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    {team.logo_url ? (
                       <img
-                        src={t.logo_url}
-                        alt={t.name}
+                        src={team.logo_url}
+                        alt={team.name}
                         width={20}
                         height={20}
-                        style={{ objectFit: "contain", flexShrink: 0 }}
+                        style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
                       />
                     ) : (
                       <span style={{ width: 20, height: 20, flexShrink: 0 }} />
                     )}
-
-                    <div>
-                      <div style={{ fontWeight: 800 }}>{t.name}</div>
-                      <div style={{ fontSize: 12, opacity: 0.75 }}>
-                        Seed {t.seed}
-                      </div>
-                    </div>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      ({team.seed}) {team.name}
+                    </span>
                   </div>
-
-                  <div style={{ fontWeight: 900 }}>{t.cost}</div>
-                </label>
-              );
-            })}
-          </div>
+                  <b>{team.cost}</b>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
-
-        {/* Sidebar */}
-        <aside
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            padding: 14,
-            height: "fit-content",
-            position: "sticky",
-            top: 16,
-          }}
-        >
-          <div style={{ fontWeight: 900, marginBottom: 10 }}>Summary</div>
-
-          <label
-            style={{
-              display: "block",
-              fontSize: 13,
-              fontWeight: 700,
-              marginBottom: 6,
-            }}
-          >
-            Bracket nickname
-          </label>
-          <input
-            value={entryName}
-            onChange={(e) => setEntryName(e.target.value)}
-            placeholder="e.g., Cardiac Cinderellas"
-            disabled={locked}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid var(--border-color)",
-              marginBottom: 12,
-              opacity: locked ? 0.8 : 1,
-            }}
-          />
-
-          <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Total cost</span>
-              <b>{totalCost}</b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Remaining</span>
-              <b>{remaining}</b>
-            </div>
-
-            <hr
-              style={{
-                border: "none",
-                borderTop: "1px solid var(--border-color)",
-              }}
-            />
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1-seeds</span>
-              <b>
-                {count1}/{MAX_1}
-              </b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>2-seeds</span>
-              <b>
-                {count2}/{MAX_2}
-              </b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1+2 combined</span>
-              <b>
-                {count12}/{MAX_12}
-              </b>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>14-16 seeds</span>
-              <b>
-                {count141516}/{MAX_141516}
-              </b>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 14 }}>
-            <div
-              style={{
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: isValid ? "var(--success-bg)" : "var(--danger-bg)",
-                fontWeight: 900,
-              }}
-            >
-              {isValid ? "Draft is valid ✅" : "Draft invalid ❌"}
-            </div>
-
-            {locked ? (
-              <div
-                style={{
-                  marginTop: 10,
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  background: "var(--warning-bg)",
-                  border: "1px solid var(--warning-border)",
-                  fontWeight: 900,
-                }}
-              >
-                Draft Locked 🔒
-              </div>
-            ) : null}
-
-            {lockTime && (
-              <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
-                Locks: {formatDraftLockTimeET(lockTime)}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={savePicks}
-            disabled={saving || clearing || !isMember || !isValid || locked}
-            style={{
-              marginTop: 12,
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "none",
-              cursor: saving || clearing ? "not-allowed" : "pointer",
-              fontWeight: 900,
-              opacity: saving || clearing || !isMember || !isValid || locked ? 0.6 : 1,
-            }}
-          >
-            {saving ? "Saving…" : locked ? "Draft Locked" : "Save picks"}
-          </button>
-
-          <button
-            type="button"
-            onClick={clearDraft}
-            disabled={showClearDraftModal || clearing || saving || !isMember || locked}
-            style={{
-              marginTop: 10,
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              cursor: showClearDraftModal || clearing || saving ? "not-allowed" : "pointer",
-              fontWeight: 900,
-              opacity: showClearDraftModal || clearing || saving || !isMember || locked ? 0.6 : 1,
-            }}
-          >
-            {clearing ? "Clearing..." : "Clear Draft"}
-          </button>
-
-          {msg ? (
-            <p style={{ marginTop: 12, fontSize: 14, whiteSpace: "pre-wrap" }}>
-              {msg}
-            </p>
-          ) : null}
-        </aside>
-      </div>
-
-      {showClearDraftModal ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Clear draft confirmation"
-          onClick={closeClearDraftModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.45)",
-            zIndex: 2100,
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(92vw, 460px)",
-              borderRadius: 14,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 16,
-              display: "grid",
-              gap: 12,
-            }}
-          >
-            <div style={{ fontSize: 20, fontWeight: 900 }}>Clear Draft?</div>
-            <p style={{ margin: 0, fontSize: 14, opacity: 0.9 }}>
-              This will remove all drafted teams from your entry immediately.
-            </p>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button
-                type="button"
-                onClick={closeClearDraftModal}
-                disabled={clearing}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  cursor: clearing ? "not-allowed" : "pointer",
-                  opacity: clearing ? 0.7 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmClearDraft}
-                disabled={clearing}
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--danger-bg)",
-                  fontWeight: 900,
-                  cursor: clearing ? "not-allowed" : "pointer",
-                  opacity: clearing ? 0.7 : 1,
-                }}
-              >
-                {clearing ? "Clearing..." : "Yes, Clear Draft"}
-              </button>
-            </div>
-          </div>
-        </div>
       ) : null}
 
-      {showBracketModal ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Bracket preview"
-          onClick={() => setShowBracketModal(false)}
+      {message ? (
+        <p
+          role="status"
+          aria-live="polite"
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "var(--surface)",
-            zIndex: 2000,
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
+            margin: 0,
+            border: "1px solid var(--border-color)",
+            borderRadius: 10,
+            padding: "10px 12px",
+            background: "var(--surface-muted)",
+            fontWeight: 700,
           }}
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(96vw, 1900px)",
-              maxHeight: "92vh",
-              borderRadius: 14,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              display: "grid",
-              gridTemplateRows: "auto 1fr",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                padding: 12,
-                borderBottom: "1px solid var(--border-color)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ fontWeight: 900, fontSize: 18 }}>
-                Bracket Preview
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBracketModal(false)}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface)",
-                  padding: "8px 10px",
-                  fontWeight: 900,
-                  cursor: "pointer",
-                }}
-              >
-                Close
-              </button>
-            </div>
-
-            <div
-              style={{
-                padding: "10px 12px",
-                borderBottom: "1px solid var(--border-color)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              <div style={{ fontSize: 12, opacity: 0.75 }}>
-                Your selected teams are highlighted in yellow.
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <div style={{ fontWeight: 900, fontSize: 12 }}>View:</div>
-                <button
-                  type="button"
-                  onClick={setFit}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: fitMode ? "var(--surface-elevated)" : "var(--surface)",
-                    fontWeight: 900,
-                    cursor: "pointer",
-                  }}
-                >
-                  Fit
-                </button>
-                <button
-                  type="button"
-                  onClick={set100}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background:
-                      !fitMode && scale === 1
-                        ? "var(--surface-elevated)"
-                        : "var(--surface)",
-                    fontWeight: 900,
-                    cursor: "pointer",
-                  }}
-                >
-                  100%
-                </button>
-                <div style={{ fontSize: 12, opacity: 0.75 }}>
-                  Zoom: <b>{Math.round(scale * 100)}%</b>
-                </div>
-              </div>
-            </div>
-
-            <div ref={bracketViewportRef} style={{ padding: 12, overflow: "auto" }}>
-              <div
-                ref={bracketContentRef}
-                style={{
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top left",
-                  width: "max-content",
-                  margin: "0 auto",
-                }}
-              >
-                <BracketBoard
-                  teams={bracketTeams}
-                  games={games}
-                  highlightTeamIds={selected}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+          {message}
+        </p>
       ) : null}
     </main>
   );
 }
-
