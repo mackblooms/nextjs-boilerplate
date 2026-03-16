@@ -403,10 +403,26 @@ function toDateKeyUtc(date: Date): string {
 }
 
 function parseEspnRegion(note: string): RegionName | null {
-  const m = note.match(/\b(East|West|South|Midwest)\s+Region\b/i);
-  if (!m) return null;
-  const value = `${m[1].charAt(0).toUpperCase()}${m[1].slice(1).toLowerCase()}`;
-  return isRegionName(value) ? value : null;
+  const text = note.toLowerCase();
+  if (text.includes("midwest")) return "Midwest";
+  if (text.includes("south")) return "South";
+  if (text.includes("east")) return "East";
+  if (text.includes("west")) return "West";
+  return null;
+}
+
+function isEspnTournamentFirstRoundHeadline(note: string): boolean {
+  const text = note
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text.includes("mens basketball championship")) return false;
+  return (
+    text.includes("1st round") ||
+    text.includes("first round") ||
+    text.includes("round of 64")
+  );
 }
 
 async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
@@ -422,7 +438,7 @@ async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
   for (const key of keys) {
     const url =
       `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` +
-      `?dates=${key}&groups=50&limit=500`;
+      `?dates=${key}&limit=700`;
     const resp = await fetchJsonOrEmpty(url);
     if (!resp.ok || !resp.json) continue;
 
@@ -437,8 +453,7 @@ async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
       const notes = Array.isArray(comp.notes) ? (comp.notes as unknown[]) : [];
       const firstNote = (notes[0] ?? {}) as Record<string, unknown>;
       const headline = String(firstNote.headline ?? "").trim();
-      if (!headline.toLowerCase().includes("mens basketball championship")) continue;
-      if (!headline.toLowerCase().includes("1st round")) continue;
+      if (!isEspnTournamentFirstRoundHeadline(headline)) continue;
 
       const region = parseEspnRegion(headline);
       if (!region) continue;
