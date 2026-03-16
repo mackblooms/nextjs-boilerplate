@@ -738,7 +738,11 @@ export default function LeaderboardPage() {
 
             {rows.map((r) => {
               const canOpenBracket = draftLocked || r.user_id === myUserId;
-              const draftLabel = r.entry_name?.trim() || "Unnamed draft";
+              const draftLabel =
+                r.entry_name?.trim() ||
+                r.display_name?.trim() ||
+                r.full_name?.trim() ||
+                r.user_id.slice(0, 8);
               const profileLabel =
                 r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
 
