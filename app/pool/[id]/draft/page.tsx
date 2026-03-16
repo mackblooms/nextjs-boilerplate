@@ -13,7 +13,6 @@ import {
   type DraftableTeam,
   DRAFT_BUDGET,
   MAX_14_TO_16_SEEDS,
-  MAX_1_OR_2_SEEDS,
   MAX_1_SEEDS,
   MAX_2_SEEDS,
 } from "@/lib/draftRules";
@@ -745,8 +744,8 @@ export default function PoolDraftPage() {
 
           <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
             <div>
-              Rules: max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max {MAX_1_OR_2_SEEDS} combined
-              one/two, max {MAX_14_TO_16_SEEDS} seeds 14-16.
+              Rules: max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max {MAX_14_TO_16_SEEDS} seeds
+              14-16.
             </div>
             <div>
               Currently applied draft:{" "}

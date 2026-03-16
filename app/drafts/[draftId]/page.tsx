@@ -7,7 +7,6 @@ import { supabase } from "@/lib/supabaseClient";
 import {
   DRAFT_BUDGET,
   MAX_14_TO_16_SEEDS,
-  MAX_1_OR_2_SEEDS,
   MAX_1_SEEDS,
   MAX_2_SEEDS,
   sortDraftTeamsBySeedName,
@@ -453,12 +452,6 @@ export default function DraftDetailPage() {
               </b>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1+2 combined</span>
-              <b>
-                {summary.count12}/{MAX_1_OR_2_SEEDS}
-              </b>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span>14-16 seeds</span>
               <b>
                 {summary.count141516}/{MAX_14_TO_16_SEEDS}
@@ -498,7 +491,7 @@ export default function DraftDetailPage() {
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
             Rules: budget {DRAFT_BUDGET}, max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max{" "}
-            {MAX_1_OR_2_SEEDS} combined one/two, max {MAX_14_TO_16_SEEDS} seeds 14-16.
+            {MAX_14_TO_16_SEEDS} seeds 14-16.
           </div>
 
           <div style={{ display: "grid", gap: 4 }}>

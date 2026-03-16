@@ -175,7 +175,6 @@ export default function HowItWorksPage() {
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Max 2 one-seeds</li>
           <li>Max 2 two-seeds</li>
-          <li>Max 4 combined one-seeds + two-seeds</li>
           <li>Max 6 combined seeds 14-16</li>
         </ul>
       </section>
