@@ -43,6 +43,7 @@ export default function DraftPage() {
   const [entryName, setEntryName] = useState("");
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const [locked, setLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
@@ -50,6 +51,8 @@ export default function DraftPage() {
   const [joinPassword, setJoinPassword] = useState("");
   const [joining, setJoining] = useState(false);
   const [showBracketModal, setShowBracketModal] = useState(false);
+  const [showClearDraftModal, setShowClearDraftModal] = useState(false);
+  const [clearDraftEntryId, setClearDraftEntryId] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
 
@@ -325,12 +328,18 @@ export default function DraftPage() {
   }, [poolId, ensureEntry]);
 
   useEffect(() => {
-    if (!showBracketModal) return;
+    const hasModalOpen = showBracketModal || showClearDraftModal;
+    if (!hasModalOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key !== "Escape") return;
+      if (showClearDraftModal && !clearing) {
+        setShowClearDraftModal(false);
+        setClearDraftEntryId(null);
+      }
+      if (showBracketModal) {
         setShowBracketModal(false);
       }
     };
@@ -340,7 +349,7 @@ export default function DraftPage() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [applyFitScale, showBracketModal]);
+  }, [clearing, showBracketModal, showClearDraftModal]);
 
   useEffect(() => {
     if (!showBracketModal || !fitMode) return;
@@ -648,6 +657,120 @@ export default function DraftPage() {
     setSaving(false);
   }
 
+  async function clearDraft() {
+    setMsg("");
+
+    if (!isMember) {
+      setMsg("Join the pool before drafting.");
+      trackEvent({
+        eventName: "draft_clear_failure",
+        poolId,
+        entryId,
+        metadata: { reason: "not_member" },
+      });
+      return;
+    }
+
+    if (locked) {
+      setMsg("Draft is locked.");
+      trackEvent({
+        eventName: "draft_clear_failure",
+        poolId,
+        entryId,
+        metadata: { reason: "draft_locked" },
+      });
+      return;
+    }
+
+    let resolvedEntryId = entryId;
+    if (!resolvedEntryId) {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+      if (!user) {
+        setMsg("Please log in first.");
+        trackEvent({
+          eventName: "draft_clear_failure",
+          poolId,
+          entryId,
+          metadata: { reason: "not_authenticated" },
+        });
+        return;
+      }
+
+      const { entry, error: entryErr } = await ensureEntry(user.id);
+      if (entryErr || !entry) {
+        setMsg(entryErr ?? "Entry not ready yet. Refresh and try again.");
+        trackEvent({
+          eventName: "draft_clear_failure",
+          poolId,
+          entryId,
+          metadata: { reason: entryErr ?? "entry_unavailable" },
+        });
+        return;
+      }
+
+      resolvedEntryId = entry.id;
+      setEntryId(entry.id);
+    }
+
+    setClearDraftEntryId(resolvedEntryId);
+    setShowClearDraftModal(true);
+  }
+
+  function closeClearDraftModal() {
+    if (clearing) return;
+    setShowClearDraftModal(false);
+    setClearDraftEntryId(null);
+  }
+
+  async function confirmClearDraft() {
+    if (!clearDraftEntryId) {
+      setShowClearDraftModal(false);
+      return;
+    }
+
+    setClearing(true);
+    trackEvent({
+      eventName: "draft_clear_attempt",
+      poolId,
+      entryId: clearDraftEntryId,
+      metadata: {
+        selected_count: selected.size,
+      },
+    });
+
+    const { error: delErr } = await supabase
+      .from("entry_picks")
+      .delete()
+      .eq("entry_id", clearDraftEntryId);
+
+    if (delErr) {
+      setMsg(delErr.message);
+      trackEvent({
+        eventName: "draft_clear_failure",
+        poolId,
+        entryId: clearDraftEntryId,
+        metadata: { reason: delErr.message },
+      });
+      setClearing(false);
+      setShowClearDraftModal(false);
+      setClearDraftEntryId(null);
+      return;
+    }
+
+    setSelected(new Set());
+    setMsg("Draft cleared.");
+    trackEvent({
+      eventName: "draft_clear_success",
+      poolId,
+      entryId: clearDraftEntryId,
+      metadata: { selected_count: 0 },
+    });
+    setClearing(false);
+    setShowClearDraftModal(false);
+    setClearDraftEntryId(null);
+  }
+
   const setFit = () => {
     setFitMode(true);
     window.requestAnimationFrame(applyFitScale);
@@ -944,19 +1067,38 @@ export default function DraftPage() {
 
           <button
             onClick={savePicks}
-            disabled={saving || !isMember || !isValid || locked}
+            disabled={saving || clearing || !isMember || !isValid || locked}
             style={{
               marginTop: 12,
               width: "100%",
               padding: "12px 14px",
               borderRadius: 10,
               border: "none",
-              cursor: saving ? "not-allowed" : "pointer",
+              cursor: saving || clearing ? "not-allowed" : "pointer",
               fontWeight: 900,
-              opacity: saving || !isMember || !isValid || locked ? 0.6 : 1,
+              opacity: saving || clearing || !isMember || !isValid || locked ? 0.6 : 1,
             }}
           >
             {saving ? "Saving…" : locked ? "Draft Locked" : "Save picks"}
+          </button>
+
+          <button
+            type="button"
+            onClick={clearDraft}
+            disabled={showClearDraftModal || clearing || saving || !isMember || locked}
+            style={{
+              marginTop: 10,
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              cursor: showClearDraftModal || clearing || saving ? "not-allowed" : "pointer",
+              fontWeight: 900,
+              opacity: showClearDraftModal || clearing || saving || !isMember || locked ? 0.6 : 1,
+            }}
+          >
+            {clearing ? "Clearing..." : "Clear Draft"}
           </button>
 
           {msg ? (
@@ -966,6 +1108,76 @@ export default function DraftPage() {
           ) : null}
         </aside>
       </div>
+
+      {showClearDraftModal ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Clear draft confirmation"
+          onClick={closeClearDraftModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            zIndex: 2100,
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(92vw, 460px)",
+              borderRadius: 14,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 16,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 900 }}>Clear Draft?</div>
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.9 }}>
+              This will remove all drafted teams from your entry immediately.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button
+                type="button"
+                onClick={closeClearDraftModal}
+                disabled={clearing}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: clearing ? "not-allowed" : "pointer",
+                  opacity: clearing ? 0.7 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmClearDraft}
+                disabled={clearing}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--danger-bg)",
+                  fontWeight: 900,
+                  cursor: clearing ? "not-allowed" : "pointer",
+                  opacity: clearing ? 0.7 : 1,
+                }}
+              >
+                {clearing ? "Clearing..." : "Yes, Clear Draft"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {showBracketModal ? (
         <div
