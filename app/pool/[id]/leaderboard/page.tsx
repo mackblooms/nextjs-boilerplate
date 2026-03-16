@@ -477,19 +477,30 @@ export default function LeaderboardPage() {
       >[];
       const entryIds = baseRows.map((r) => r.entry_id);
 
-      let entryNameById = new Map<string, string | null>();
-      if (entryIds.length > 0) {
-        const { data: entryRows } = await supabase
-          .from("entries")
-          .select("id,entry_name")
-          .in("id", entryIds);
+      let draftNameByEntry = new Map<string, string>();
+      const token = await getAccessToken();
+      if (token) {
+        try {
+          const draftNameRes = await fetch(`/api/pools/draft-names?poolId=${encodeURIComponent(poolId)}`, {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          });
 
-        entryNameById = new Map(
-          (
-            (entryRows as { id: string; entry_name: string | null }[] | null) ??
-            []
-          ).map((row) => [row.id, row.entry_name]),
-        );
+          if (draftNameRes.ok) {
+            const payload = (await draftNameRes.json().catch(() => ({}))) as {
+              draftNamesByEntry?: Record<string, string>;
+            };
+            draftNameByEntry = new Map(
+              Object.entries(payload.draftNamesByEntry ?? {}).map(([entryId, draftName]) => [
+                entryId,
+                String(draftName),
+              ]),
+            );
+          }
+        } catch {
+          // Keep leaderboard usable even if draft-name lookup is temporarily unavailable.
+        }
       }
 
       const userIds = Array.from(new Set(baseRows.map((r) => r.user_id)));
@@ -621,7 +632,7 @@ export default function LeaderboardPage() {
           );
           return {
             ...r,
-            entry_name: entryNameById.get(r.entry_id) ?? null,
+            entry_name: draftNameByEntry.get(r.entry_id) ?? null,
             full_name: profileByUser.get(r.user_id)?.full_name ?? null,
             avatar_url: withAvatarFallback(
               r.user_id,
@@ -661,7 +672,7 @@ export default function LeaderboardPage() {
           return {
             entry_id: r.entry_id,
             display_name: r.display_name,
-            entry_name: entryNameById.get(r.entry_id) ?? null,
+            entry_name: draftNameByEntry.get(r.entry_id) ?? null,
             total_score: totalScore,
           };
         });
@@ -738,11 +749,7 @@ export default function LeaderboardPage() {
 
             {rows.map((r) => {
               const canOpenBracket = draftLocked || r.user_id === myUserId;
-              const draftLabel =
-                r.entry_name?.trim() ||
-                r.display_name?.trim() ||
-                r.full_name?.trim() ||
-                r.user_id.slice(0, 8);
+              const draftLabel = r.entry_name?.trim() || "Unnamed draft";
               const profileLabel =
                 r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
 
