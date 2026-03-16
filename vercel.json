@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/admin/sync-bracket",
-      "schedule": "0 12 * * *"
+      "schedule": "*/30 * * * *"
     },
     {
       "path": "/api/admin/sync-scores",
-      "schedule": "0 0 * * *" 
+      "schedule": "*/10 * * * *"
     }
   ]
 }

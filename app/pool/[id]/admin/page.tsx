@@ -709,12 +709,15 @@ export default function AdminPage() {
       const skippedUnlinked = Number(json?.skippedUnlinked ?? 0);
       const skippedNoTeamMap = Number(json?.skippedNoTeamMap ?? 0);
       const skippedTie = Number(json?.skippedTie ?? 0);
+      const advancedSlotsUpdated = Number(json?.advancedSlotsUpdated ?? 0);
+      const advancedGamesTouched = Number(json?.advancedGamesTouched ?? 0);
       const mode = String(json?.mode ?? "tournament");
 
       setMsg(
         `Sync Games complete (${mode === "tournament" ? `season ${season}` : "daily"}) | finals seen: ${finalsSeen}, ` +
           `winners updated: ${updatedGames}, already set: ${alreadySet}, skipped (unlinked): ${skippedUnlinked}, ` +
-          `skipped (no team map): ${skippedNoTeamMap}, skipped (tie): ${skippedTie}`
+          `skipped (no team map): ${skippedNoTeamMap}, skipped (tie): ${skippedTie}, ` +
+          `advanced slots/games: ${advancedSlotsUpdated}/${advancedGamesTouched}`
       );
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : "Unknown error");
@@ -747,6 +750,12 @@ export default function AdminPage() {
       const passCount = Number(json?.passCount ?? 1);
       const linkedTotal = Number(json?.totals?.linked ?? json?.bracket?.linked ?? 0);
       const updatedTotal = Number(json?.totals?.updatedWinners ?? json?.scores?.updatedGames ?? 0);
+      const advancedSlotsTotal = Number(
+        json?.totals?.advancedSlotsUpdated ?? json?.scores?.advancedSlotsUpdated ?? 0
+      );
+      const advancedGamesTotal = Number(
+        json?.totals?.advancedGamesTouched ?? json?.scores?.advancedGamesTouched ?? 0
+      );
       const finalsSeen = Number(json?.scores?.finalsSeen ?? 0);
       const skippedNoMap = Number(json?.bracket?.skippedNoMap ?? 0);
       const scheduleUpdated = Number(json?.bracket?.scheduleUpdated ?? 0);
@@ -781,7 +790,7 @@ export default function AdminPage() {
           `canonical 2026 slots/teams (applied/created/updated): ${canonicalR64SlotsApplied}/${canonicalTeamsCreated}/${canonicalTeamsUpdated}, ` +
           `seeds normalized: ${normalizedSeedTeams}, r64 seed-order fixed: ${r64SeedOrderFixed}, branding fixed: ${brandingOverridesApplied}, game teams updated: ${gameTeamsUpdated}, r64 backfilled: ${r64Backfilled}, r64 cleared: ${clearedR64Teams}, ` +
           `missing seeds/logos: ${teamsWithoutSeed}/${teamsWithoutLogo} | ` +
-          `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal} ` +
+          `times/status updated: ${scheduleUpdated} | updated winners: ${updatedTotal}, advanced slots/games: ${advancedSlotsTotal}/${advancedGamesTotal} ` +
           `(finals seen on last pass: ${finalsSeen})`
       );
     } catch (e: unknown) {

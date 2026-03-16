@@ -81,6 +81,8 @@ export async function POST(req: Request) {
       clearedR64Teams: number;
       updatedWinners: number;
       finalsSeen: number;
+      advancedSlotsUpdated: number;
+      advancedGamesTouched: number;
     }> = [];
 
     let bracketRes: unknown = null;
@@ -88,6 +90,8 @@ export async function POST(req: Request) {
     let totalLinked = 0;
     let totalUpdatedWinners = 0;
     let totalClearedR64Teams = 0;
+    let totalAdvancedSlotsUpdated = 0;
+    let totalAdvancedGamesTouched = 0;
 
     const MAX_PASSES = 8;
     for (let pass = 1; pass <= MAX_PASSES; pass++) {
@@ -109,6 +113,8 @@ export async function POST(req: Request) {
       const clearedR64Teams = countField(bracketRes, "clearedR64Teams");
       const updatedWinners = countField(scoresRes, "updatedGames");
       const finalsSeen = countField(scoresRes, "finalsSeen");
+      const advancedSlotsUpdated = countField(scoresRes, "advancedSlotsUpdated");
+      const advancedGamesTouched = countField(scoresRes, "advancedGamesTouched");
 
       passSummaries.push({
         pass,
@@ -118,13 +124,17 @@ export async function POST(req: Request) {
         clearedR64Teams,
         updatedWinners,
         finalsSeen,
+        advancedSlotsUpdated,
+        advancedGamesTouched,
       });
 
       totalLinked += linked;
       totalUpdatedWinners += updatedWinners;
       totalClearedR64Teams += clearedR64Teams;
+      totalAdvancedSlotsUpdated += advancedSlotsUpdated;
+      totalAdvancedGamesTouched += advancedGamesTouched;
 
-      if (linked === 0 && updatedWinners === 0) break;
+      if (linked === 0 && updatedWinners === 0 && advancedSlotsUpdated === 0) break;
     }
 
     return NextResponse.json({
@@ -139,6 +149,8 @@ export async function POST(req: Request) {
         linked: totalLinked,
         updatedWinners: totalUpdatedWinners,
         clearedR64Teams: totalClearedR64Teams,
+        advancedSlotsUpdated: totalAdvancedSlotsUpdated,
+        advancedGamesTouched: totalAdvancedGamesTouched,
       },
     });
   } catch (e: unknown) {

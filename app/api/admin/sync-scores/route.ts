@@ -22,6 +22,23 @@ type FinalGame = {
   awayScore: number;
 };
 
+type LocalBracketGame = {
+  id: string;
+  round: string | null;
+  region: string | null;
+  slot: number | null;
+  team1_id: string | null;
+  team2_id: string | null;
+  winner_team_id: string | null;
+};
+
+type PropagationTarget = {
+  round: "R32" | "S16" | "E8" | "F4" | "CHIP";
+  region: string | null;
+  slot: number;
+  side: "team1_id" | "team2_id";
+};
+
 // YYYY-MM-DD (SportsDataIO expects this for BoxScoresByDate)
 function ymd(d: Date) {
   const yyyy = d.getFullYear();
@@ -32,6 +49,11 @@ function ymd(d: Date) {
 
 function norm(s: unknown) {
   return String(s ?? "").trim().toLowerCase();
+}
+
+function isMissingColumnError(message: string): boolean {
+  const msg = message.toLowerCase();
+  return msg.includes("column") && msg.includes("does not exist");
 }
 
 function toSeason(value: unknown): number | null {
@@ -78,6 +100,138 @@ function collectFinalGames(games: SportsGame[]): FinalGame[] {
   return finals;
 }
 
+function gameKey(round: string, region: string | null, slot: number): string {
+  if (round === "R64" || round === "R32" || round === "S16" || round === "E8") {
+    return `${round}|${norm(region)}|${slot}`;
+  }
+  return `${round}|${slot}`;
+}
+
+function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
+  const round = String(g.round ?? "").toUpperCase();
+  const slot = Number(g.slot);
+  if (!Number.isFinite(slot) || slot < 1) return null;
+
+  if (round === "R64" || round === "R32" || round === "S16") {
+    const nextRound = round === "R64" ? "R32" : round === "R32" ? "S16" : "E8";
+    return {
+      round: nextRound,
+      region: g.region ?? null,
+      slot: Math.ceil(slot / 2),
+      side: slot % 2 === 1 ? "team1_id" : "team2_id",
+    };
+  }
+
+  if (round === "E8") {
+    const region = norm(g.region);
+    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team1_id" };
+    if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
+    if (region === "east") return { round: "F4", region: null, slot: 2, side: "team1_id" };
+    if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
+    return null;
+  }
+
+  if (round === "F4") {
+    if (slot === 1) return { round: "CHIP", region: null, slot: 1, side: "team1_id" };
+    if (slot === 2) return { round: "CHIP", region: null, slot: 1, side: "team2_id" };
+    return null;
+  }
+
+  return null;
+}
+
+async function hasStatusColumn(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>): Promise<boolean> {
+  const { error } = await supabaseAdmin.from("games").select("id,status").limit(1);
+  if (!error) return true;
+  if (isMissingColumnError(String(error.message ?? ""))) return false;
+  throw error;
+}
+
+async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, nowIso: string) {
+  const { data: allGames, error: gamesErr } = await supabaseAdmin
+    .from("games")
+    .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+  if (gamesErr) throw gamesErr;
+
+  const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
+    ...g,
+    id: String(g.id),
+  }));
+
+  const byId = new Map<string, LocalBracketGame>();
+  const byKey = new Map<string, LocalBracketGame>();
+  for (const g of games) {
+    byId.set(g.id, g);
+    const round = String(g.round ?? "").toUpperCase();
+    const slot = Number(g.slot);
+    if (!Number.isFinite(slot) || slot < 1 || !round) continue;
+    byKey.set(gameKey(round, g.region ?? null, Math.trunc(slot)), g);
+  }
+
+  const order: Record<string, number> = { R64: 1, R32: 2, S16: 3, E8: 4, F4: 5, CHIP: 6 };
+  const sorted = [...games].sort((a, b) => {
+    const ao = order[String(a.round ?? "").toUpperCase()] ?? 99;
+    const bo = order[String(b.round ?? "").toUpperCase()] ?? 99;
+    if (ao !== bo) return ao - bo;
+    const ar = String(a.region ?? "");
+    const br = String(b.region ?? "");
+    if (ar !== br) return ar.localeCompare(br);
+    return Number(a.slot ?? 0) - Number(b.slot ?? 0);
+  });
+
+  let advancedSlotsUpdated = 0;
+  let advancedGamesTouched = 0;
+  let clearedInvalidWinners = 0;
+  const touchedGameIds = new Set<string>();
+
+  for (const source of sorted) {
+    const winnerId = source.winner_team_id ? String(source.winner_team_id) : null;
+    if (!winnerId) continue;
+
+    const targetRef = nextTargetForWinner(source);
+    if (!targetRef) continue;
+
+    const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
+    if (!target) continue;
+
+    const nextTeam1 = targetRef.side === "team1_id" ? winnerId : (target.team1_id ? String(target.team1_id) : null);
+    const nextTeam2 = targetRef.side === "team2_id" ? winnerId : (target.team2_id ? String(target.team2_id) : null);
+
+    const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
+    if (targetRef.side === "team1_id" && String(target.team1_id ?? "") !== winnerId) {
+      updatePayload.team1_id = winnerId;
+      advancedSlotsUpdated++;
+    }
+    if (targetRef.side === "team2_id" && String(target.team2_id ?? "") !== winnerId) {
+      updatePayload.team2_id = winnerId;
+      advancedSlotsUpdated++;
+    }
+
+    const existingWinner = target.winner_team_id ? String(target.winner_team_id) : null;
+    if (existingWinner && existingWinner !== nextTeam1 && existingWinner !== nextTeam2) {
+      updatePayload.winner_team_id = null;
+      clearedInvalidWinners++;
+    }
+
+    if (Object.keys(updatePayload).length <= 1) continue;
+
+    const { error: updErr } = await supabaseAdmin
+      .from("games")
+      .update(updatePayload)
+      .eq("id", target.id);
+    if (updErr) throw updErr;
+
+    if ("team1_id" in updatePayload) target.team1_id = String(updatePayload.team1_id);
+    if ("team2_id" in updatePayload) target.team2_id = String(updatePayload.team2_id);
+    if ("winner_team_id" in updatePayload) target.winner_team_id = null;
+
+    touchedGameIds.add(target.id);
+  }
+
+  advancedGamesTouched = touchedGameIds.size;
+  return { advancedSlotsUpdated, advancedGamesTouched, clearedInvalidWinners };
+}
+
 async function fetchGamesByDateFinal(date: string): Promise<SportsGame[]> {
   const url = `${BASE}/v3/cbb/scores/json/GamesByDateFinal/${date}?key=${encodeURIComponent(KEY ?? "")}`;
   const res = await fetch(url, { cache: "no-store" });
@@ -109,17 +263,8 @@ async function fetchTournamentGames(season: number): Promise<SportsGame[]> {
 
 async function applyFinalsToLocalGames(finals: FinalGame[]) {
   const supabaseAdmin = getSupabaseAdmin();
-
-  if (finals.length === 0) {
-    return {
-      finalsSeen: 0,
-      updatedGames: 0,
-      alreadySet: 0,
-      skippedUnlinked: 0,
-      skippedNoTeamMap: 0,
-      skippedTie: 0,
-    };
-  }
+  const nowIso = new Date().toISOString();
+  const canWriteStatus = await hasStatusColumn(supabaseAdmin);
 
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
@@ -133,11 +278,15 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
   }
 
   const sportsIds = Array.from(new Set(finals.map((f) => f.gameId)));
-  const { data: localGames, error: localErr } = await supabaseAdmin
-    .from("games")
-    .select("id,sportsdata_game_id,winner_team_id")
-    .in("sportsdata_game_id", sportsIds);
-  if (localErr) throw localErr;
+  let localGames: Array<{ id: string; sportsdata_game_id: number | null; winner_team_id: string | null }> = [];
+  if (sportsIds.length > 0) {
+    const { data, error: localErr } = await supabaseAdmin
+      .from("games")
+      .select("id,sportsdata_game_id,winner_team_id")
+      .in("sportsdata_game_id", sportsIds);
+    if (localErr) throw localErr;
+    localGames = (data ?? []) as Array<{ id: string; sportsdata_game_id: number | null; winner_team_id: string | null }>;
+  }
 
   const localBySportsGameId = new Map<number, { id: string; winner_team_id: string | null }>();
   for (const g of localGames ?? []) {
@@ -178,18 +327,23 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
       continue;
     }
 
+    const updatePayload: Record<string, unknown> = {
+      winner_team_id: winnerLocalId,
+      last_synced_at: nowIso,
+    };
+    if (canWriteStatus) updatePayload.status = "Final";
+
     const { error: updErr } = await supabaseAdmin
       .from("games")
-      .update({
-        winner_team_id: winnerLocalId,
-        last_synced_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", localGame.id);
     if (updErr) throw updErr;
 
     localGame.winner_team_id = winnerLocalId;
     updatedGames++;
   }
+
+  const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
 
   return {
     finalsSeen: finals.length,
@@ -198,6 +352,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     skippedUnlinked,
     skippedNoTeamMap,
     skippedTie,
+    ...propagation,
   };
 }
 
