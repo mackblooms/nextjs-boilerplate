@@ -94,7 +94,13 @@ type Row = {
   rank_delta: number | null;
 };
 
-type TeamSeedRow = { id: string; seed_in_region: number | null };
+type TeamSeedRow = {
+  id: string;
+  seed_in_region: number | null;
+  name: string | null;
+  cost: number | null;
+  logo_url: string | null;
+};
 type PickRow = { entry_id: string; team_id: string };
 type ScoringGameWithDate = ScoringGame & {
   game_date: string | null;
@@ -150,6 +156,23 @@ type ArchiveDetail = {
   my_entry: ArchivedEntry | null;
 };
 
+type TeamValueRow = {
+  team_id: string;
+  team_name: string;
+  logo_url: string | null;
+  cost: number;
+  points: number;
+  roi: number;
+  selections: number;
+};
+
+type TeamPopularityRow = {
+  team_id: string;
+  team_name: string;
+  logo_url: string | null;
+  selections: number;
+};
+
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
     error?.code === "PGRST204" &&
@@ -186,6 +209,25 @@ function gameDayKey(game: { game_date: string | null; start_time: string | null 
   const d = new Date(game.start_time);
   if (Number.isNaN(d.getTime())) return null;
   return etDayKey(d);
+}
+
+function hasGamesStarted(games: ScoringGameWithDate[]) {
+  const nowMs = Date.now();
+  const todayEt = etDayKey(new Date());
+
+  for (const game of games) {
+    if (game.winner_team_id) return true;
+
+    if (game.start_time) {
+      const startMs = Date.parse(game.start_time);
+      if (Number.isFinite(startMs) && startMs <= nowMs) return true;
+    }
+
+    const day = gameDayKey(game);
+    if (day && day < todayEt) return true;
+  }
+
+  return false;
 }
 
 function rankRows<
@@ -238,6 +280,172 @@ function formatWhen(value: string) {
   return d.toLocaleString();
 }
 
+function formatRoi(roi: number) {
+  return `${roi.toFixed(2)}x`;
+}
+
+function TeamValueTable({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: TeamValueRow[];
+}) {
+  return (
+    <section
+      style={{
+        border: "1px solid var(--border-color)",
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "var(--surface)",
+      }}
+    >
+      <div
+        style={{
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--border-color)",
+          fontWeight: 900,
+          background: "var(--surface-muted)",
+        }}
+      >
+        {title}
+      </div>
+
+      {rows.length === 0 ? (
+        <div style={{ padding: "12px", opacity: 0.8 }}>No team data yet.</div>
+      ) : (
+        <>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 56px 62px 58px",
+              gap: 8,
+              padding: "8px 12px",
+              fontWeight: 800,
+              borderBottom: "1px solid var(--border-color)",
+              fontSize: 12,
+              letterSpacing: 0.2,
+            }}
+          >
+            <div>Team</div>
+            <div style={{ textAlign: "right" }}>Price</div>
+            <div style={{ textAlign: "right" }}>Points</div>
+            <div style={{ textAlign: "right" }}>ROI</div>
+          </div>
+
+          {rows.map((row) => (
+            <div
+              key={row.team_id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 56px 62px 58px",
+                gap: 8,
+                padding: "8px 12px",
+                alignItems: "center",
+                borderBottom: "1px solid var(--border-color)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                {row.logo_url ? (
+                  <img
+                    src={row.logo_url}
+                    alt=""
+                    width={18}
+                    height={18}
+                    style={{ objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : null}
+                <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {row.team_name}
+                </span>
+              </div>
+              <div style={{ textAlign: "right", fontWeight: 700 }}>{row.cost}</div>
+              <div style={{ textAlign: "right", fontWeight: 700 }}>{row.points}</div>
+              <div style={{ textAlign: "right", fontWeight: 900 }}>{formatRoi(row.roi)}</div>
+            </div>
+          ))}
+        </>
+      )}
+    </section>
+  );
+}
+
+function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
+  return (
+    <section
+      style={{
+        border: "1px solid var(--border-color)",
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "var(--surface)",
+      }}
+    >
+      <div
+        style={{
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--border-color)",
+          fontWeight: 900,
+          background: "var(--surface-muted)",
+        }}
+      >
+        Most Popular Teams
+      </div>
+
+      {rows.length === 0 ? (
+        <div style={{ padding: "12px", opacity: 0.8 }}>No selections yet.</div>
+      ) : (
+        <>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 88px",
+              gap: 8,
+              padding: "8px 12px",
+              fontWeight: 800,
+              borderBottom: "1px solid var(--border-color)",
+              fontSize: 12,
+              letterSpacing: 0.2,
+            }}
+          >
+            <div>Team</div>
+            <div style={{ textAlign: "right" }}>Selections</div>
+          </div>
+
+          {rows.map((row) => (
+            <div
+              key={row.team_id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 88px",
+                gap: 8,
+                padding: "8px 12px",
+                alignItems: "center",
+                borderBottom: "1px solid var(--border-color)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                {row.logo_url ? (
+                  <img
+                    src={row.logo_url}
+                    alt=""
+                    width={18}
+                    height={18}
+                    style={{ objectFit: "contain", flexShrink: 0 }}
+                  />
+                ) : null}
+                <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {row.team_name}
+                </span>
+              </div>
+              <div style={{ textAlign: "right", fontWeight: 900 }}>{row.selections}</div>
+            </div>
+          ))}
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -250,6 +458,10 @@ export default function LeaderboardPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [isPoolOwner, setIsPoolOwner] = useState(false);
+  const [showTeamInsights, setShowTeamInsights] = useState(false);
+  const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
+  const [worstValueTeams, setWorstValueTeams] = useState<TeamValueRow[]>([]);
+  const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -412,6 +624,10 @@ export default function LeaderboardPage() {
       setLoading(true);
       setMsg("");
       setPoolName("");
+      setShowTeamInsights(false);
+      setBestValueTeams([]);
+      setWorstValueTeams([]);
+      setPopularTeams([]);
 
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
@@ -556,7 +772,7 @@ export default function LeaderboardPage() {
 
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,seed_in_region");
+        .select("id,seed_in_region,name,cost,logo_url");
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -621,6 +837,91 @@ export default function LeaderboardPage() {
           arr.push(row.team_id);
           picksByEntry.set(row.entry_id, arr);
         }
+      }
+
+      const gamesStarted = hasGamesStarted(gameRows);
+      const shouldShowInsights = isLocked && gamesStarted;
+      const teamMetaById = new Map(
+        ((teamRows as TeamSeedRow[] | null) ?? []).map((row) => [row.id, row]),
+      );
+
+      if (shouldShowInsights) {
+        const BEST_WORST_LIMIT = 6;
+        const POPULAR_LIMIT = 7;
+
+        const selectionCountByTeam = new Map<string, number>();
+        for (const teamIds of picksByEntry.values()) {
+          for (const teamId of teamIds) {
+            selectionCountByTeam.set(teamId, (selectionCountByTeam.get(teamId) ?? 0) + 1);
+          }
+        }
+
+        const valueRows: TeamValueRow[] = [];
+        const popularityRows: TeamPopularityRow[] = [];
+
+        for (const [teamId, selections] of selectionCountByTeam.entries()) {
+          const teamMeta = teamMetaById.get(teamId);
+          const teamName = teamMeta?.name?.trim() || "Unknown team";
+          const logoUrl = teamMeta?.logo_url ?? null;
+          popularityRows.push({
+            team_id: teamId,
+            team_name: teamName,
+            logo_url: logoUrl,
+            selections,
+          });
+
+          const cost = teamMeta?.cost;
+          if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) continue;
+
+          const points = teamScores.get(teamId) ?? 0;
+          valueRows.push({
+            team_id: teamId,
+            team_name: teamName,
+            logo_url: logoUrl,
+            cost,
+            points,
+            roi: points / cost,
+            selections,
+          });
+        }
+
+        const bestRows = [...valueRows]
+          .sort(
+            (a, b) =>
+              b.roi - a.roi ||
+              b.points - a.points ||
+              b.selections - a.selections ||
+              a.team_name.localeCompare(b.team_name),
+          )
+          .slice(0, BEST_WORST_LIMIT);
+
+        const worstRows = [...valueRows]
+          .sort(
+            (a, b) =>
+              a.roi - b.roi ||
+              a.points - b.points ||
+              b.selections - a.selections ||
+              a.team_name.localeCompare(b.team_name),
+          )
+          .slice(0, BEST_WORST_LIMIT);
+
+        const popularRows = [...popularityRows]
+          .sort(
+            (a, b) =>
+              b.selections - a.selections ||
+              a.team_name.localeCompare(b.team_name),
+          )
+          .slice(0, POPULAR_LIMIT);
+
+        setShowTeamInsights(true);
+        setBestValueTeams(bestRows);
+        setWorstValueTeams(worstRows);
+        setPopularTeams(popularRows);
+      } else {
+        setShowTeamInsights(false);
+        setBestValueTeams([]);
+        setWorstValueTeams([]);
+        setPopularTeams([]);
       }
 
       const computed = baseRows
@@ -696,7 +997,7 @@ export default function LeaderboardPage() {
   }, [poolId]);
 
   return (
-    <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
+    <main style={{ maxWidth: 1240, margin: "48px auto", padding: 16 }}>
       <div
         style={{ display: "flex", justifyContent: "space-between", gap: 12 }}
       >
@@ -709,183 +1010,219 @@ export default function LeaderboardPage() {
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
 
       {!loading && !msg ? (
-        <>
-          <div
-            style={{
-              marginTop: 16,
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              overflow: "hidden",
-            }}
-          >
-            {!draftLocked ? (
-              <div
-                style={{
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                  background: "var(--highlight)",
-                  borderBottom: "1px solid var(--highlight-border)",
-                }}
-              >
-                Other brackets are hidden until draft lock
-                {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
-              </div>
-            ) : null}
-
+        <div className="leaderboard-layout" style={{ marginTop: 16 }}>
+          <section>
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "80px 1fr 140px",
-                padding: "10px 12px",
-                fontWeight: 900,
-                background: "var(--surface-muted)",
-                borderBottom: "1px solid var(--border-color)",
+                border: "1px solid var(--border-color)",
+                borderRadius: 12,
+                overflow: "hidden",
               }}
             >
-              <div>Rank</div>
-              <div>Player</div>
-              <div style={{ textAlign: "right" }}>Score</div>
-            </div>
-
-            {rows.map((r) => {
-              const canOpenBracket = draftLocked || r.user_id === myUserId;
-              const draftLabel = r.entry_name?.trim() || "Unnamed draft";
-              const profileLabel =
-                r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
-
-              return (
+              {!draftLocked ? (
                 <div
-                  key={r.entry_id}
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "80px 1fr 140px",
                     padding: "10px 12px",
-                    borderBottom: "1px solid var(--border-color)",
-                    alignItems: "center",
-                    background:
-                      r.user_id === myUserId
-                        ? "var(--surface-elevated)"
-                        : "transparent",
+                    fontWeight: 700,
+                    background: "var(--highlight)",
+                    borderBottom: "1px solid var(--highlight-border)",
                   }}
                 >
-                  <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span>{r.rank}</span>
-                    {r.rank_delta != null ? (
-                      r.rank_delta > 0 ? (
-                        <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
-                          up {r.rank_delta}
-                        </span>
-                      ) : r.rank_delta < 0 ? (
-                        <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
-                          down {Math.abs(r.rank_delta)}
-                        </span>
-                      ) : (
-                        <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
-                          -
-                        </span>
-                      )
-                    ) : null}
-                  </div>
-                  <div style={{ fontWeight: 800 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <img
-                        src={r.avatar_url}
-                        alt={profileLabel}
-                        width={36}
-                        height={36}
-                        style={{
-                          borderRadius: 9999,
-                          objectFit: "cover",
-                          border: "1px solid var(--border-color)",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div>
-                        {canOpenBracket ? (
-                          <a
-                            href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                            style={{ textDecoration: "none", display: "inline-block" }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 800,
-                                color: "var(--foreground)",
-                                fontSize: 17,
-                              }}
-                            >
-                              {draftLabel}
-                              {r.user_id === myUserId ? " (You)" : ""}
-                            </div>
-                            <div
-                              style={{
-                                color: "var(--foreground)",
-                                opacity: 0.72,
-                                fontSize: 13,
-                                marginTop: 2,
-                              }}
-                            >
-                              {profileLabel}
-                            </div>
-                          </a>
+                  Other brackets are hidden until draft lock
+                  {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
+                </div>
+              ) : null}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "80px 1fr 140px",
+                  padding: "10px 12px",
+                  fontWeight: 900,
+                  background: "var(--surface-muted)",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <div>Rank</div>
+                <div>Player</div>
+                <div style={{ textAlign: "right" }}>Score</div>
+              </div>
+
+              {rows.map((r) => {
+                const canOpenBracket = draftLocked || r.user_id === myUserId;
+                const draftLabel = r.entry_name?.trim() || "Unnamed draft";
+                const profileLabel =
+                  r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
+
+                return (
+                  <div
+                    key={r.entry_id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "80px 1fr 140px",
+                      padding: "10px 12px",
+                      borderBottom: "1px solid var(--border-color)",
+                      alignItems: "center",
+                      background:
+                        r.user_id === myUserId
+                          ? "var(--surface-elevated)"
+                          : "transparent",
+                    }}
+                  >
+                    <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span>{r.rank}</span>
+                      {r.rank_delta != null ? (
+                        r.rank_delta > 0 ? (
+                          <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
+                            up {r.rank_delta}
+                          </span>
+                        ) : r.rank_delta < 0 ? (
+                          <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
+                            down {Math.abs(r.rank_delta)}
+                          </span>
                         ) : (
-                          <>
-                            <div
-                              style={{
-                                fontWeight: 800,
-                                color: "var(--foreground)",
-                                fontSize: 17,
-                              }}
+                          <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
+                            -
+                          </span>
+                        )
+                      ) : null}
+                    </div>
+                    <div style={{ fontWeight: 800 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <img
+                          src={r.avatar_url}
+                          alt={profileLabel}
+                          width={36}
+                          height={36}
+                          style={{
+                            borderRadius: 9999,
+                            objectFit: "cover",
+                            border: "1px solid var(--border-color)",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div>
+                          {canOpenBracket ? (
+                            <a
+                              href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                              style={{ textDecoration: "none", display: "inline-block" }}
                             >
-                              {draftLabel}
-                            </div>
-                            <div
-                              style={{
-                                color: "var(--foreground)",
-                                opacity: 0.72,
-                                fontSize: 13,
-                                marginTop: 2,
-                              }}
-                            >
-                              {profileLabel}
-                            </div>
-                          </>
-                        )}
+                              <div
+                                style={{
+                                  fontWeight: 800,
+                                  color: "var(--foreground)",
+                                  fontSize: 17,
+                                }}
+                              >
+                                {draftLabel}
+                                {r.user_id === myUserId ? " (You)" : ""}
+                              </div>
+                              <div
+                                style={{
+                                  color: "var(--foreground)",
+                                  opacity: 0.72,
+                                  fontSize: 13,
+                                  marginTop: 2,
+                                }}
+                              >
+                                {profileLabel}
+                              </div>
+                            </a>
+                          ) : (
+                            <>
+                              <div
+                                style={{
+                                  fontWeight: 800,
+                                  color: "var(--foreground)",
+                                  fontSize: 17,
+                                }}
+                              >
+                                {draftLabel}
+                              </div>
+                              <div
+                                style={{
+                                  color: "var(--foreground)",
+                                  opacity: 0.72,
+                                  fontSize: 13,
+                                  marginTop: 2,
+                                }}
+                              >
+                                {profileLabel}
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div style={{ textAlign: "right", fontWeight: 900 }}>
+                      {r.total_score}
+                    </div>
                   </div>
-                  <div style={{ textAlign: "right", fontWeight: 900 }}>
-                    {r.total_score}
-                  </div>
+                );
+              })}
+
+              {rows.length === 0 ? (
+                <div style={{ padding: "12px 12px" }}>
+                  No entries yet. Have friends join and draft.
                 </div>
-              );
-            })}
+              ) : null}
+            </div>
 
-            {rows.length === 0 ? (
-              <div style={{ padding: "12px 12px" }}>
-                No entries yet. Have friends join and draft.
-              </div>
-            ) : null}
-          </div>
+            <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  void openArchive();
+                }}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Archive
+              </button>
+            </div>
+          </section>
 
-          <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={() => {
-                void openArchive();
-              }}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface)",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              Archive
-            </button>
-          </div>
-        </>
+          <aside style={{ display: "grid", gap: 12 }}>
+            {showTeamInsights ? (
+              <>
+                <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
+                <TeamValueTable title="Worst Value Teams" rows={worstValueTeams} />
+                <TeamPopularityTable rows={popularTeams} />
+              </>
+            ) : (
+              <section
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: "var(--surface)",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    fontWeight: 900,
+                    background: "var(--surface-muted)",
+                  }}
+                >
+                  Team Insights
+                </div>
+                <div style={{ padding: "12px", opacity: 0.85 }}>
+                  {!draftLocked
+                    ? "Team value and popularity tables unlock after draft lock."
+                    : "Best value, worst value, and most popular teams appear once tournament games start."}
+                </div>
+              </section>
+            )}
+          </aside>
+        </div>
       ) : null}
 
       {archiveOpen ? (

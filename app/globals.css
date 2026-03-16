@@ -126,3 +126,16 @@ body {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
 }
+
+.leaderboard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .leaderboard-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
