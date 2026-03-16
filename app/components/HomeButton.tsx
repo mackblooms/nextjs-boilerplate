@@ -27,7 +27,7 @@ export default function HomeButton() {
         setHref("/");
         return;
       }
-      setHref("/drafts");
+      setHref("/");
     };
 
     loadDestination();

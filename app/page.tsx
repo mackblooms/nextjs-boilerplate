@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -66,6 +67,12 @@ type EspnScoreboard = {
   events?: EspnEvent[];
 };
 
+type TeamLookupRow = {
+  id: string;
+  name: string;
+  espn_team_id?: string | number | null;
+};
+
 const buttonStyle = {
   display: "inline-block",
   padding: "12px 16px",
@@ -119,7 +126,7 @@ function formatGameDateTimeET(startTime: string | null) {
 function statusLabel(game: LiveScoreGame) {
   const when = formatGameDateTimeET(game.startTime);
   if (game.state === "UPCOMING") return when;
-  return `${when} • ${game.detail}`;
+  return `${when} - ${game.detail}`;
 }
 
 function yyyymmdd(date: Date) {
@@ -178,6 +185,30 @@ function etDayKeyFromIso(startTime: string | null) {
   const d = new Date(startTime);
   if (Number.isNaN(d.getTime())) return null;
   return etDayKey(d);
+}
+
+function normalizeTeamKey(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[']/g, "")
+    .replace(/[.]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function teamNameVariants(name: string) {
+  const base = normalizeTeamKey(name);
+  const variants = new Set<string>([base]);
+
+  if (base.includes(" state")) {
+    variants.add(base.replace(/\bstate\b/g, "st"));
+  }
+  if (base.includes(" st")) {
+    variants.add(base.replace(/\bst\b/g, "state"));
+  }
+
+  return variants;
 }
 
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
@@ -370,6 +401,12 @@ function HomeContent() {
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoresError, setScoresError] = useState<string | null>(null);
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [personalizedLoaded, setPersonalizedLoaded] = useState(false);
+  const [trackedEspnIds, setTrackedEspnIds] = useState<string[]>([]);
+  const [trackedTeamKeys, setTrackedTeamKeys] = useState<string[]>([]);
+  const [trackedTeamCount, setTrackedTeamCount] = useState(0);
+
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
     const params = new URLSearchParams({
@@ -395,8 +432,129 @@ function HomeContent() {
       setInvitePoolName(data?.name ?? null);
     };
 
-    loadInvitePoolName();
+    void loadInvitePoolName();
   }, [invitePoolId]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadPersonalizedTeams = async () => {
+      setPersonalizedLoaded(false);
+
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (!user) {
+        if (!canceled) {
+          setIsAuthenticated(false);
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
+        }
+        return;
+      }
+
+      if (!canceled) setIsAuthenticated(true);
+
+      let teamIds: string[] = [];
+
+      const savedDraftRes = await supabase
+        .from("saved_drafts")
+        .select("id")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(1);
+
+      if (!savedDraftRes.error && savedDraftRes.data?.[0]?.id) {
+        const draftId = savedDraftRes.data[0].id as string;
+        const savedPickRes = await supabase
+          .from("saved_draft_picks")
+          .select("team_id")
+          .eq("draft_id", draftId);
+        if (!savedPickRes.error) {
+          teamIds = ((savedPickRes.data ?? []) as Array<{ team_id: string }>)
+            .map((row) => row.team_id)
+            .filter(Boolean);
+        }
+      } else if (savedDraftRes.error && !isMissingSavedDraftTablesError(savedDraftRes.error.message)) {
+        // Ignore and continue to entry fallback.
+      }
+
+      if (teamIds.length === 0) {
+        const entryRes = await supabase
+          .from("entries")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        const entryId = (entryRes.data?.[0] as { id: string } | undefined)?.id ?? null;
+        if (entryId) {
+          const entryPickRes = await supabase
+            .from("entry_picks")
+            .select("team_id")
+            .eq("entry_id", entryId);
+          if (!entryPickRes.error) {
+            teamIds = ((entryPickRes.data ?? []) as Array<{ team_id: string }>)
+              .map((row) => row.team_id)
+              .filter(Boolean);
+          }
+        }
+      }
+
+      const uniqueTeamIds = Array.from(new Set(teamIds));
+      if (uniqueTeamIds.length === 0) {
+        if (!canceled) {
+          setTrackedEspnIds([]);
+          setTrackedTeamKeys([]);
+          setTrackedTeamCount(0);
+          setPersonalizedLoaded(true);
+        }
+        return;
+      }
+
+      let teamRows: TeamLookupRow[] = [];
+      const withEspnRes = await supabase
+        .from("teams")
+        .select("id,name,espn_team_id")
+        .in("id", uniqueTeamIds);
+
+      if (!withEspnRes.error) {
+        teamRows = (withEspnRes.data ?? []) as TeamLookupRow[];
+      } else if (withEspnRes.error.message.includes("espn_team_id")) {
+        const fallbackRes = await supabase
+          .from("teams")
+          .select("id,name")
+          .in("id", uniqueTeamIds);
+
+        if (!fallbackRes.error) {
+          teamRows = (fallbackRes.data ?? []) as TeamLookupRow[];
+        }
+      }
+
+      const espnSet = new Set<string>();
+      const keySet = new Set<string>();
+      for (const row of teamRows) {
+        if (row.espn_team_id != null) espnSet.add(String(row.espn_team_id));
+        for (const variant of teamNameVariants(row.name ?? "")) {
+          if (variant) keySet.add(variant);
+        }
+      }
+
+      if (!canceled) {
+        setTrackedEspnIds(Array.from(espnSet));
+        setTrackedTeamKeys(Array.from(keySet));
+        setTrackedTeamCount(uniqueTeamIds.length);
+        setPersonalizedLoaded(true);
+      }
+    };
+
+    void loadPersonalizedTeams();
+
+    return () => {
+      canceled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let canceled = false;
@@ -437,7 +595,7 @@ function HomeContent() {
       }
     };
 
-    loadScores();
+    void loadScores();
     const interval = window.setInterval(loadScores, 45_000);
 
     return () => {
@@ -446,29 +604,59 @@ function HomeContent() {
     };
   }, []);
 
+  const trackedEspnSet = useMemo(() => new Set(trackedEspnIds), [trackedEspnIds]);
+  const trackedKeySet = useMemo(() => new Set(trackedTeamKeys), [trackedTeamKeys]);
+  const visibleScores = useMemo(() => {
+    if (isAuthenticated !== true) return scores;
+    if (trackedEspnSet.size === 0 && trackedKeySet.size === 0) return [];
+
+    return scores.filter((g) => {
+      if (g.awayTeamId && trackedEspnSet.has(g.awayTeamId)) return true;
+      if (g.homeTeamId && trackedEspnSet.has(g.homeTeamId)) return true;
+
+      const awayKey = normalizeTeamKey(g.awayTeamName || g.awayTeam);
+      const homeKey = normalizeTeamKey(g.homeTeamName || g.homeTeam);
+      return trackedKeySet.has(awayKey) || trackedKeySet.has(homeKey);
+    });
+  }, [isAuthenticated, scores, trackedEspnSet, trackedKeySet]);
+
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
   const tomorrowEt = useMemo(() => etDayKey(shiftDate(1)), []);
 
   const recentFinals = useMemo(
     () =>
-      scores.filter((g) => {
+      visibleScores.filter((g) => {
         if (g.state !== "FINAL") return false;
         const gameDay = etDayKeyFromIso(g.startTime);
         return gameDay === yesterdayEt || gameDay === todayEt;
       }),
-    [scores, yesterdayEt, todayEt]
+    [visibleScores, yesterdayEt, todayEt]
   );
   const liveAndUpcoming = useMemo(
     () =>
-      scores.filter((g) => {
+      visibleScores.filter((g) => {
         const gameDay = etDayKeyFromIso(g.startTime);
         const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
         const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
         return isLiveToday || isUpcomingTomorrow;
       }),
-    [scores, todayEt, tomorrowEt]
+    [visibleScores, todayEt, tomorrowEt]
   );
+
+  const recentFinalsEmptyMessage = useMemo(() => {
+    if (isAuthenticated !== true) return "No final scores from today or yesterday.";
+    if (!personalizedLoaded) return "Loading your selected teams...";
+    if (trackedTeamCount === 0) return "No selected teams yet. Create or apply a draft.";
+    return "No final scores from today or yesterday for your selected teams.";
+  }, [isAuthenticated, personalizedLoaded, trackedTeamCount]);
+
+  const liveAndUpcomingEmptyMessage = useMemo(() => {
+    if (isAuthenticated !== true) return "No live games today or upcoming games tomorrow.";
+    if (!personalizedLoaded) return "Loading your selected teams...";
+    if (trackedTeamCount === 0) return "No selected teams yet. Create or apply a draft.";
+    return "No live games today or upcoming games tomorrow for your selected teams.";
+  }, [isAuthenticated, personalizedLoaded, trackedTeamCount]);
 
   return (
     <main
@@ -483,9 +671,9 @@ function HomeContent() {
           <ScorePanel
             title="Recent Finals"
             games={recentFinals}
-            loading={scoresLoading}
+            loading={scoresLoading || (isAuthenticated === true && !personalizedLoaded)}
             error={scoresError}
-            emptyMessage="No final scores from today or yesterday."
+            emptyMessage={recentFinalsEmptyMessage}
           />
         </div>
 
@@ -515,6 +703,12 @@ function HomeContent() {
             bracketball (beta)
           </h1>
 
+          {isAuthenticated ? (
+            <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
+              Tracking scores for your selected teams.
+            </p>
+          ) : null}
+
           {invitePoolId ? (
             <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
               You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
@@ -535,24 +729,31 @@ function HomeContent() {
               onClick={() =>
                 trackEvent({
                   eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId) },
+                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
                 })
               }
             >
               How it works
             </Link>
-            <Link
-              href={loginHref}
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId) },
-                })
-              }
-            >
-              Login / Sign up
-            </Link>
+            {isAuthenticated === false ? (
+              <Link
+                href={loginHref}
+                style={buttonStyle}
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                Login / Sign up
+              </Link>
+            ) : isAuthenticated === true ? (
+              <>
+                <Link href="/drafts" style={buttonStyle}>My Drafts</Link>
+                <Link href="/pools" style={buttonStyle}>My Pools</Link>
+              </>
+            ) : null}
           </div>
         </section>
 
@@ -560,9 +761,9 @@ function HomeContent() {
           <ScorePanel
             title="Live / Upcoming"
             games={liveAndUpcoming}
-            loading={scoresLoading}
+            loading={scoresLoading || (isAuthenticated === true && !personalizedLoaded)}
             error={scoresError}
-            emptyMessage="No live games today or upcoming games tomorrow."
+            emptyMessage={liveAndUpcomingEmptyMessage}
           />
         </div>
       </div>

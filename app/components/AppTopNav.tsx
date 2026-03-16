@@ -54,7 +54,7 @@ export default function AppTopNav() {
       }
 
       setUserId(user.id);
-      setHomeHref("/drafts");
+      setHomeHref("/");
 
       const { data: memberships } = await supabase
         .from("pool_members")
