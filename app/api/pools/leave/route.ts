@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type LeavePoolRequest = {
   poolId?: string;
+  entryIds?: string[];
 };
 
 type EntryIdRow = {
@@ -40,6 +41,20 @@ export async function POST(req: Request) {
 
     const userId = authData.user.id;
 
+    const { data: poolRow, error: poolErr } = await supabaseAdmin
+      .from("pools")
+      .select("created_by")
+      .eq("id", poolId)
+      .maybeSingle();
+
+    if (poolErr) {
+      return NextResponse.json({ error: poolErr.message }, { status: 400 });
+    }
+
+    if (!poolRow) {
+      return NextResponse.json({ error: "Pool not found." }, { status: 404 });
+    }
+
     const { data: entryRows, error: entryLoadErr } = await supabaseAdmin
       .from("entries")
       .select("id")
@@ -50,7 +65,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: entryLoadErr.message }, { status: 400 });
     }
 
-    const entryIds = ((entryRows ?? []) as EntryIdRow[]).map((row) => row.id);
+    const allEntryIds = ((entryRows ?? []) as EntryIdRow[]).map((row) => row.id);
+    const requestedEntryIds = Array.isArray(body.entryIds)
+      ? Array.from(new Set(body.entryIds.map((id) => id.trim()).filter((id) => id.length > 0)))
+      : [];
+
+    const removingSpecificEntries = requestedEntryIds.length > 0;
+    const entryIds = removingSpecificEntries
+      ? allEntryIds.filter((id) => requestedEntryIds.includes(id))
+      : allEntryIds;
+
+    if (removingSpecificEntries && entryIds.length === 0) {
+      return NextResponse.json({ error: "No matching entries found for this pool." }, { status: 400 });
+    }
+
     if (entryIds.length > 0) {
       const { error: picksDeleteErr } = await supabaseAdmin
         .from("entry_picks")
@@ -71,17 +99,39 @@ export async function POST(req: Request) {
       }
     }
 
-    const { error: membershipDeleteErr } = await supabaseAdmin
-      .from("pool_members")
-      .delete()
+    const { data: remainingEntries, error: remainingEntriesErr } = await supabaseAdmin
+      .from("entries")
+      .select("id")
       .eq("pool_id", poolId)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .limit(1);
 
-    if (membershipDeleteErr) {
-      return NextResponse.json({ error: membershipDeleteErr.message }, { status: 400 });
+    if (remainingEntriesErr) {
+      return NextResponse.json({ error: remainingEntriesErr.message }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true });
+    let membershipRemoved = false;
+    if ((remainingEntries ?? []).length === 0) {
+      if (poolRow.created_by !== userId) {
+        const { error: membershipDeleteErr } = await supabaseAdmin
+          .from("pool_members")
+          .delete()
+          .eq("pool_id", poolId)
+          .eq("user_id", userId);
+
+        if (membershipDeleteErr) {
+          return NextResponse.json({ error: membershipDeleteErr.message }, { status: 400 });
+        }
+
+        membershipRemoved = true;
+      }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      removedEntryIds: entryIds,
+      membershipRemoved,
+    });
   } catch (error: unknown) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error." },

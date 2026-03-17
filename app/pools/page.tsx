@@ -21,6 +21,11 @@ type DraftRow = {
   updated_at: string;
 };
 
+type LeaveEntryRow = {
+  id: string;
+  entry_name: string | null;
+};
+
 type StatusTone = "success" | "error" | "info";
 
 type StatusMessage = {
@@ -73,6 +78,13 @@ export default function PoolsPage() {
   const [availableDrafts, setAvailableDrafts] = useState<DraftRow[]>([]);
   const [draftPickMap, setDraftPickMap] = useState<Map<string, Set<string>>>(new Map());
   const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
+
+  const [leaveModalPool, setLeaveModalPool] = useState<PoolRow | null>(null);
+  const [leaveEntries, setLeaveEntries] = useState<LeaveEntryRow[]>([]);
+  const [selectedLeaveEntryIds, setSelectedLeaveEntryIds] = useState<Set<string>>(new Set());
+  const [leaveModalLoading, setLeaveModalLoading] = useState(false);
+  const [leaveModalSubmitting, setLeaveModalSubmitting] = useState(false);
+  const [leaveModalMessage, setLeaveModalMessage] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -150,6 +162,7 @@ export default function PoolsPage() {
   }, [discoverPools, query]);
 
   const selectedDraftCount = selectedDraftIds.size;
+  const selectedLeaveCount = selectedLeaveEntryIds.size;
 
   function rememberJoinedPool(pool: PoolRow) {
     setMyPools((prev) => {
@@ -448,7 +461,16 @@ export default function PoolsPage() {
     setSelectedDraftIds(new Set());
   }
 
-  async function leavePool(pool: PoolRow) {
+  function closeLeaveModal() {
+    setLeaveModalPool(null);
+    setLeaveEntries([]);
+    setSelectedLeaveEntryIds(new Set());
+    setLeaveModalLoading(false);
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("");
+  }
+
+  async function openLeaveModal(pool: PoolRow) {
     setJoinStatus(null);
 
     if (!userId) {
@@ -456,17 +478,96 @@ export default function PoolsPage() {
       return;
     }
 
-    const confirmed = window.confirm(`Leave ${pool.name}? This removes your entries from this pool.`);
-    if (!confirmed) return;
+    setLeaveModalPool(pool);
+    setLeaveEntries([]);
+    setSelectedLeaveEntryIds(new Set());
+    setLeaveModalLoading(true);
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("");
+
+    const withName = await supabase
+      .from("entries")
+      .select("id,entry_name")
+      .eq("pool_id", pool.id)
+      .eq("user_id", userId);
+
+    if (withName.error && !isMissingEntryNameError(withName.error.message)) {
+      setLeaveModalLoading(false);
+      setLeaveModalMessage(withName.error.message);
+      return;
+    }
+
+    if (withName.error && isMissingEntryNameError(withName.error.message)) {
+      const fallback = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", pool.id)
+        .eq("user_id", userId);
+
+      if (fallback.error) {
+        setLeaveModalLoading(false);
+        setLeaveModalMessage(fallback.error.message);
+        return;
+      }
+
+      const rows = ((fallback.data ?? []) as Array<{ id: string }>).map((row) => ({
+        id: row.id,
+        entry_name: null,
+      }));
+      setLeaveEntries(rows);
+      setLeaveModalLoading(false);
+      return;
+    }
+
+    setLeaveEntries((withName.data ?? []) as LeaveEntryRow[]);
+    setLeaveModalLoading(false);
+  }
+
+  function toggleLeaveEntrySelection(entryId: string) {
+    setSelectedLeaveEntryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(entryId)) {
+        next.delete(entryId);
+      } else {
+        next.add(entryId);
+      }
+      return next;
+    });
+  }
+
+  function selectAllLeaveEntries() {
+    setSelectedLeaveEntryIds(new Set(leaveEntries.map((entry) => entry.id)));
+  }
+
+  function clearLeaveSelection() {
+    setSelectedLeaveEntryIds(new Set());
+  }
+
+  async function submitLeaveSelection() {
+    const pool = leaveModalPool;
+    if (!pool) return;
+
+    if (!userId) {
+      setLeaveModalMessage("Please log in first.");
+      return;
+    }
+
+    const entryIds = Array.from(selectedLeaveEntryIds);
+    if (leaveEntries.length > 0 && entryIds.length === 0) {
+      setLeaveModalMessage("Select at least one draft to remove.");
+      return;
+    }
 
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
     if (!session) {
-      setJoinStatus({ tone: "error", text: "Session expired. Log in again to leave this pool." });
+      setLeaveModalMessage("Session expired. Log in again to leave this pool.");
       return;
     }
 
     setLeavingPoolId(pool.id);
+    setLeaveModalSubmitting(true);
+    setLeaveModalMessage("");
 
     const res = await fetch("/api/pools/leave", {
       method: "POST",
@@ -474,25 +575,54 @@ export default function PoolsPage() {
         "content-type": "application/json",
         authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ poolId: pool.id }),
+      body: JSON.stringify({
+        poolId: pool.id,
+        entryIds: entryIds.length > 0 ? entryIds : undefined,
+      }),
     });
 
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    const body = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      removedEntryIds?: string[];
+      membershipRemoved?: boolean;
+    };
+
     if (!res.ok) {
       setLeavingPoolId(null);
-      setJoinStatus({ tone: "error", text: body.error ?? "Failed to leave pool." });
+      setLeaveModalSubmitting(false);
+      setLeaveModalMessage(body.error ?? "Failed to remove selected drafts.");
       return;
     }
 
-    setMyPools((prev) => {
-      const next = prev.filter((row) => row.id !== pool.id);
-      if (next.length === 0) {
-        setActiveTab("discover");
-      }
-      return next;
-    });
+    const removedEntryIds = new Set(body.removedEntryIds ?? []);
+    const remainingEntries = leaveEntries.filter((entry) => !removedEntryIds.has(entry.id));
+
+    if (body.membershipRemoved) {
+      setMyPools((prev) => {
+        const next = prev.filter((row) => row.id !== pool.id);
+        if (next.length === 0) {
+          setActiveTab("discover");
+        }
+        return next;
+      });
+      setLeavingPoolId(null);
+      setLeaveModalSubmitting(false);
+      closeLeaveModal();
+      setJoinStatus({ tone: "success", text: `Left ${pool.name}.` });
+      return;
+    }
+
+    setLeaveEntries(remainingEntries);
+    setSelectedLeaveEntryIds(new Set());
     setLeavingPoolId(null);
-    setJoinStatus({ tone: "success", text: `Left ${pool.name}.` });
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("Removed selected draft(s) from this pool.");
+  }
+
+  function leaveEntryLabel(entry: LeaveEntryRow, index: number) {
+    const trimmed = entry.entry_name?.trim() ?? "";
+    if (trimmed.length > 0) return trimmed;
+    return `Draft ${index + 1}`;
   }
 
   const tabButton = (isActive: boolean): CSSProperties => ({
@@ -697,9 +827,10 @@ export default function PoolsPage() {
                         style={{
                           padding: "9px 12px",
                           borderRadius: 10,
-                          border: "1px solid var(--border-color)",
+                          border: "1px solid #166534",
                           fontWeight: 800,
-                          background: "var(--surface)",
+                          background: "#16a34a",
+                          color: "#ffffff",
                           minHeight: 40,
                           cursor: !userId ? "not-allowed" : "pointer",
                           opacity: !userId ? 0.7 : 1,
@@ -725,14 +856,15 @@ export default function PoolsPage() {
                       </Link>
                       <button
                         type="button"
-                        onClick={() => void leavePool(pool)}
+                        onClick={() => void openLeaveModal(pool)}
                         disabled={leavingPoolId === pool.id}
                         style={{
                           padding: "9px 12px",
                           borderRadius: 10,
-                          border: "1px solid var(--border-color)",
+                          border: "1px solid #991b1b",
                           fontWeight: 800,
-                          background: "var(--surface)",
+                          background: "#dc2626",
+                          color: "#ffffff",
                           minHeight: 40,
                           cursor: leavingPoolId === pool.id ? "not-allowed" : "pointer",
                           opacity: leavingPoolId === pool.id ? 0.7 : 1,
@@ -834,8 +966,9 @@ export default function PoolsPage() {
                             padding: "10px 12px",
                             minHeight: 44,
                             borderRadius: 10,
-                            border: "1px solid var(--border-color)",
-                            background: "var(--surface)",
+                            border: "1px solid #166534",
+                            background: "#16a34a",
+                            color: "#ffffff",
                             fontWeight: 800,
                             cursor: !userId ? "not-allowed" : "pointer",
                             opacity: !userId ? 0.7 : 1,
@@ -869,6 +1002,208 @@ export default function PoolsPage() {
             </ul>
           ) : null}
         </section>
+      ) : null}
+
+      {leaveModalPool ? (
+        <div
+          role="presentation"
+          onClick={closeLeaveModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 118,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remove drafts from pool"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(640px, 100%)",
+              maxHeight: "88vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Remove Drafts from {leaveModalPool.name}</h2>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                Choose which entered drafts to remove from this pool.
+              </p>
+            </div>
+
+            {leaveModalLoading ? <p style={{ margin: 0 }}>Loading your pool drafts...</p> : null}
+
+            {!leaveModalLoading && leaveEntries.length > 0 ? (
+              <>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={selectAllLeaveEntries}
+                    disabled={leaveModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearLeaveSelection}
+                    disabled={leaveModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  {leaveEntries.map((entry, index) => {
+                    const checked = selectedLeaveEntryIds.has(entry.id);
+                    return (
+                      <label
+                        key={entry.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "center",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleLeaveEntrySelection(entry.id)}
+                          disabled={leaveModalSubmitting}
+                        />
+                        <div style={{ display: "grid", gap: 2 }}>
+                          <div style={{ fontWeight: 900 }}>{leaveEntryLabel(entry, index)}</div>
+                          <div style={{ fontSize: 12, opacity: 0.75 }}>Entry ID: {entry.id.slice(0, 8)}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
+
+            {!leaveModalLoading && leaveEntries.length === 0 ? (
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 700 }}>No entered drafts found for this pool.</p>
+                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
+                  Use the red button below to leave the pool entirely.
+                </p>
+              </div>
+            ) : null}
+
+            {leaveModalMessage ? (
+              <p
+                style={{
+                  margin: 0,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                }}
+              >
+                {leaveModalMessage}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={closeLeaveModal}
+                disabled={leaveModalSubmitting}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                  opacity: leaveModalSubmitting ? 0.7 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void submitLeaveSelection()}
+                disabled={
+                  leaveModalSubmitting ||
+                  leaveModalLoading ||
+                  (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                }
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid #991b1b",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  fontWeight: 900,
+                  cursor:
+                    leaveModalSubmitting ||
+                    leaveModalLoading ||
+                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    leaveModalSubmitting ||
+                    leaveModalLoading ||
+                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                      ? 0.7
+                      : 1,
+                }}
+              >
+                {leaveModalSubmitting
+                  ? "Removing..."
+                  : leaveEntries.length > 0
+                    ? `Remove ${selectedLeaveCount} Draft${selectedLeaveCount === 1 ? "" : "s"}`
+                    : "Leave Pool"}
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       {joinModalPool ? (
