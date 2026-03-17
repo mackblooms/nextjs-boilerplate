@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -15,6 +16,7 @@ type GuideStep = {
   route: string;
   action: string;
   previewPath: string;
+  screenshotSrc?: string;
 };
 
 function readTutorialOptOut() {
@@ -59,6 +61,7 @@ function buildSteps(isAuthed: boolean): GuideStep[] {
       route: "/drafts",
       action: "Open Drafts",
       previewPath: "/tutorial/draft-preview",
+      screenshotSrc: "/tutorial-step3.png",
     },
     {
       id: "pools",
@@ -122,22 +125,37 @@ function LiveScreenPreview({
           overflow: "hidden",
         }}
       >
-        <iframe
-          src={step.previewPath}
-          title={`Preview of ${step.previewPath}`}
-          loading="lazy"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "160%",
-            height: "160%",
-            transform: "scale(0.625)",
-            transformOrigin: "top left",
-            border: 0,
-            pointerEvents: "none",
-            background: "var(--surface)",
-          }}
-        />
+        {step.screenshotSrc ? (
+          <Image
+            src={step.screenshotSrc}
+            alt={`Screenshot preview of ${step.previewPath}`}
+            width={1440}
+            height={1024}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "top left",
+            }}
+          />
+        ) : (
+          <iframe
+            src={step.previewPath}
+            title={`Preview of ${step.previewPath}`}
+            loading="lazy"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "160%",
+              height: "160%",
+              transform: "scale(0.625)",
+              transformOrigin: "top left",
+              border: 0,
+              pointerEvents: "none",
+              background: "var(--surface)",
+            }}
+          />
+        )}
       </div>
     </section>
   );
