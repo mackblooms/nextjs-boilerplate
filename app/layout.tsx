@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
 import ThemeSwitch from "./components/ThemeSwitch";
@@ -21,7 +22,9 @@ export default function RootLayout({
         <HomeButton />
         <ThemeSwitch />
         <AppTopNav />
-        <InstructionsModal />
+        <Suspense fallback={null}>
+          <InstructionsModal />
+        </Suspense>
 
         {children}
       </body>
