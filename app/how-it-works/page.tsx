@@ -179,13 +179,13 @@ export default function HowItWorksPage() {
           bonus equal to the sum of your teams&apos; seeds. This applies to Round
           of 64 only.
         </p>
+        <p style={{ marginTop: 10, lineHeight: 1.6, opacity: 0.85 }}>
+          Your draft does not need to spend exactly 100 points. Any valid draft
+          at or under the 100-point budget can qualify.
+        </p>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>
-            Example draft (cost 100): <b>1, 1, 2, 2, 9, 10, 12, 14</b>
-          </li>
-          <li>
-            Draft cost check:{" "}
-            <b>22 + 22 + 19 + 19 + 6 + 5 + 4 + 3 = 100</b>
+            Example draft: <b>1, 1, 2, 2, 9, 10, 12, 14</b>
           </li>
           <li>
             Perfect Round of 64 bonus:{" "}

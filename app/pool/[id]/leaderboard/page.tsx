@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -968,40 +967,10 @@ export default function LeaderboardPage() {
 
   return (
     <main style={{ maxWidth: 1240, margin: "48px auto", padding: 16 }}>
-      <div
-        style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}
-      >
+      <div>
         <h1 style={{ fontSize: 28, fontWeight: 900 }}>
           {poolName ? `Leaderboard - ${poolName}` : "Leaderboard"}
         </h1>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Link
-            href={`/pool/${poolId}`}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              textDecoration: "none",
-              fontWeight: 800,
-              background: "var(--surface)",
-            }}
-          >
-            Pool Home
-          </Link>
-          <Link
-            href={`/pool/${poolId}/draft`}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              textDecoration: "none",
-              fontWeight: 800,
-              background: "var(--surface)",
-            }}
-          >
-            Apply Draft
-          </Link>
-        </div>
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}

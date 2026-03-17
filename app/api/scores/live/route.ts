@@ -139,29 +139,39 @@ function isNcaaTournamentEvent(event: EspnEvent) {
   const comp = event.competitions?.[0];
   if (!comp) return false;
 
+  const excludedPhrases = [
+    "nit",
+    "national invitation tournament",
+    "college basketball crown",
+    "cbi",
+    "college basketball invitational",
+    "the crown",
+  ];
+
   const tournamentId = Number(comp.tournamentId);
-  if (Number.isFinite(tournamentId) && tournamentId === 22) return true;
+  if (Number.isFinite(tournamentId)) {
+    return tournamentId === 22;
+  }
 
   const notesText = (comp.notes ?? [])
     .map((n) => n.headline ?? "")
     .join(" ")
     .toLowerCase();
 
-  if (notesText.includes("men's basketball championship")) return true;
-  if (notesText.includes("mens basketball championship")) return true;
-  if (notesText.includes("ncaa tournament")) return true;
-
   const headlineText = (comp.headlines ?? [])
     .map((h) => `${h.shortLinkText ?? ""} ${h.description ?? ""}`)
     .join(" ")
     .toLowerCase();
 
-  if (headlineText.includes("men's basketball championship")) return true;
-  if (headlineText.includes("mens basketball championship")) return true;
-  if (headlineText.includes("ncaa tournament")) return true;
-
   const eventText = `${event.name ?? ""} ${event.shortName ?? ""}`.toLowerCase();
-  if (eventText.includes("ncaa tournament")) return true;
+  const combined = `${notesText} ${headlineText} ${eventText}`;
+  if (excludedPhrases.some((phrase) => combined.includes(phrase))) return false;
+
+  if (combined.includes("men's basketball championship")) return true;
+  if (combined.includes("mens basketball championship")) return true;
+  if (combined.includes("ncaa tournament")) return true;
+  if (combined.includes("ncaa men's tournament")) return true;
+  if (combined.includes("march madness")) return true;
 
   return false;
 }

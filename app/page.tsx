@@ -226,27 +226,39 @@ function isNcaaTournamentEvent(event: EspnEvent) {
   const comp = event.competitions?.[0];
   if (!comp) return false;
 
+  const excludedPhrases = [
+    "nit",
+    "national invitation tournament",
+    "college basketball crown",
+    "cbi",
+    "college basketball invitational",
+    "the crown",
+  ];
+
   const tournamentId = Number(comp.tournamentId);
-  if (Number.isFinite(tournamentId) && tournamentId === 22) return true;
+  if (Number.isFinite(tournamentId)) {
+    return tournamentId === 22;
+  }
 
   const notesText = (comp.notes ?? [])
     .map((n) => n.headline ?? "")
     .join(" ")
     .toLowerCase();
-  if (notesText.includes("men's basketball championship")) return true;
-  if (notesText.includes("mens basketball championship")) return true;
-  if (notesText.includes("ncaa tournament")) return true;
 
   const headlineText = (comp.headlines ?? [])
     .map((h) => `${h.shortLinkText ?? ""} ${h.description ?? ""}`)
     .join(" ")
     .toLowerCase();
-  if (headlineText.includes("men's basketball championship")) return true;
-  if (headlineText.includes("mens basketball championship")) return true;
-  if (headlineText.includes("ncaa tournament")) return true;
 
   const eventText = `${event.name ?? ""} ${event.shortName ?? ""}`.toLowerCase();
-  if (eventText.includes("ncaa tournament")) return true;
+  const combined = `${notesText} ${headlineText} ${eventText}`;
+  if (excludedPhrases.some((phrase) => combined.includes(phrase))) return false;
+
+  if (combined.includes("men's basketball championship")) return true;
+  if (combined.includes("mens basketball championship")) return true;
+  if (combined.includes("ncaa tournament")) return true;
+  if (combined.includes("ncaa men's tournament")) return true;
+  if (combined.includes("march madness")) return true;
 
   return false;
 }
@@ -823,16 +835,15 @@ function HomeContent() {
   const liveAndUpcoming = useMemo(
     () =>
       scores.filter((g) => {
+        if (g.state === "FINAL") return false;
         const gameDay = etDayKeyFromIso(g.startTime);
-        const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
-        const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
-        return isLiveToday || isUpcomingTomorrow;
+        return gameDay === todayEt || gameDay === tomorrowEt;
       }),
     [scores, todayEt, tomorrowEt]
   );
 
   const recentFinalsEmptyMessage = "No final scores from today or yesterday.";
-  const liveAndUpcomingEmptyMessage = "No live games today or upcoming games tomorrow.";
+  const liveAndUpcomingEmptyMessage = "No live or upcoming games for today or tomorrow.";
 
   return (
     <main
@@ -941,46 +952,43 @@ function HomeContent() {
             </p>
           ) : null}
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <Link
-              href="/how-it-works"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
-                })
-              }
+          {isAuthenticated !== true ? (
+            <div
+              style={{
+                display: "flex",
+                gap: 12,
+                flexWrap: "wrap",
+                justifyContent: "center",
+              }}
             >
-              How it works
-            </Link>
-            {isAuthenticated === false ? (
               <Link
-                href={loginHref}
+                href="/how-it-works"
                 style={buttonStyle}
                 onClick={() =>
                   trackEvent({
                     eventName: "home_cta_click",
-                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
                   })
                 }
               >
-                Login / Sign up
+                How it works
               </Link>
-            ) : isAuthenticated === true ? (
-              <>
-                <Link href="/drafts" style={buttonStyle}>My Drafts</Link>
-                <Link href="/pools" style={buttonStyle}>My Pools</Link>
-              </>
-            ) : null}
-          </div>
+              {isAuthenticated === false ? (
+                <Link
+                  href={loginHref}
+                  style={buttonStyle}
+                  onClick={() =>
+                    trackEvent({
+                      eventName: "home_cta_click",
+                      metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                    })
+                  }
+                >
+                  Login / Sign up
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
         </section>
 
         <div className="home-scores-right">
@@ -1161,7 +1169,7 @@ function HomeFallback() {
             games={[]}
             loading
             error={null}
-            emptyMessage="No live games today or upcoming games tomorrow."
+            emptyMessage="No live or upcoming games for today or tomorrow."
           />
         </div>
       </div>

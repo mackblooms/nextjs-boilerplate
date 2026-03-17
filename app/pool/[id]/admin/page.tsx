@@ -608,19 +608,51 @@ export default function AdminPage() {
   async function setWinner(gameId: string, winnerTeamId: string | null) {
     setMsg("");
 
-    const { error } = await supabase.rpc("set_game_winner", {
-      p_pool_id: poolId,
-      p_game_id: gameId,
-      p_winner_team_id: winnerTeamId,
-    });
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
 
-    if (error) {
-      setMsg(error.message);
+    if (authErr || !userId) {
+      setMsg("Not logged in (could not read user).");
       return;
     }
 
-    setGames((prev) => prev.map((g) => (g.id === gameId ? { ...g, winner_team_id: winnerTeamId } : g)));
-    setMsg("Winner updated.");
+    try {
+      const res = await fetch("/api/admin/set-game-winner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          poolId,
+          userId,
+          gameId,
+          winnerTeamId,
+        }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(json.error ?? "Failed to set winner.");
+        return;
+      }
+
+      const { data: gameRows, error: gameErr } = await supabase
+        .from("games")
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+
+      if (gameErr) {
+        setMsg(`Winner saved, but refresh failed: ${gameErr.message}`);
+        return;
+      }
+
+      setGames((gameRows ?? []) as GameRow[]);
+      const advancedSlots = Number(json.advancedSlotsUpdated ?? 0);
+      const advancedGames = Number(json.advancedGamesTouched ?? 0);
+      const cleared = Number(json.clearedInvalidWinners ?? 0);
+      setMsg(
+        `Winner updated. Advanced slots/games: ${advancedSlots}/${advancedGames}. Cleared invalid winners: ${cleared}.`,
+      );
+    } catch (e: unknown) {
+      setMsg(e instanceof Error ? e.message : "Failed to set winner.");
+    }
   }
 
   async function syncLogos() {
