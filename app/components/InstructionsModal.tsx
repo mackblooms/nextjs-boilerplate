@@ -285,7 +285,7 @@ function ScreenPreview({ type }: { type: GuidePreview }) {
   }
 
   return (
-    <PreviewShell title="Pools" path="/pools -> /pool/[id]/draft">
+    <PreviewShell title="Pools" path="/pools">
       <div style={{ display: "grid", gap: 6 }}>
         <div style={{ display: "flex", gap: 6 }}>
           <MockField text="My Pools" />
@@ -303,9 +303,8 @@ function ScreenPreview({ type }: { type: GuidePreview }) {
         >
           <MockField text="Pool card: March Madness League" />
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <MockButton text="Open details" />
-            <MockButton text="Join pool" />
-            <MockButton text="Apply Draft" />
+            <MockButton text="Join" />
+            <MockButton text="Leaderboard" />
           </div>
         </div>
       </div>
@@ -357,13 +356,13 @@ function buildSteps(isAuthed: boolean): GuideStep[] {
     {
       id: "pools",
       title: "Step 4: Add your draft to a pool",
-      detail: "Go to Pools, join or create your pool, open that pool, then tap Apply Draft.",
+      detail: "Go to Pools, tap Join, enter the pool password, then select one or more drafts in the modal.",
       route: "/pools",
       action: "Open Pools",
       checklist: [
-        "Join/create the pool.",
-        "Open that pool.",
-        "Go to Apply Draft and submit your saved draft.",
+        "Tap Join on the pool card.",
+        "Enter the pool password (if private).",
+        "Check one or more drafts and submit.",
       ],
       preview: "pools",
     },

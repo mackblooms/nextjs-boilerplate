@@ -2,12 +2,33 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { sameTeamSet, isMissingSavedDraftTablesError, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
 
 type PoolRow = {
   id: string;
   name: string;
   is_private: boolean | null;
+};
+
+type MembershipRow = {
+  pool_id: string;
+};
+
+type DraftRow = {
+  id: string;
+  name: string;
+  updated_at: string;
+};
+
+type EntryRow = {
+  id: string;
+  entry_name?: string | null;
+};
+
+type EntryPickRow = {
+  entry_id: string;
+  team_id: string;
 };
 
 type StatusTone = "success" | "error" | "info";
@@ -27,6 +48,18 @@ function sortPoolsByName(a: PoolRow, b: PoolRow) {
   return a.name.localeCompare(b.name);
 }
 
+function sortDraftsByUpdatedAt(a: DraftRow, b: DraftRow) {
+  return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+}
+
+function isMissingEntryNameError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
 export default function PoolsPage() {
   const [loading, setLoading] = useState(true);
   const [allPools, setAllPools] = useState<PoolRow[]>([]);
@@ -37,8 +70,18 @@ export default function PoolsPage() {
   const [allPoolsMsg, setAllPoolsMsg] = useState("");
   const [myPoolsMsg, setMyPoolsMsg] = useState("");
   const [joinStatus, setJoinStatus] = useState<StatusMessage | null>(null);
-  const [joiningPoolId, setJoiningPoolId] = useState<string | null>(null);
-  const [joinPasswordByPool, setJoinPasswordByPool] = useState<Record<string, string>>({});
+
+  const [joinModalPool, setJoinModalPool] = useState<PoolRow | null>(null);
+  const [joinPasswordInput, setJoinPasswordInput] = useState("");
+  const [joiningPool, setJoiningPool] = useState(false);
+
+  const [draftModalPool, setDraftModalPool] = useState<PoolRow | null>(null);
+  const [draftModalLoading, setDraftModalLoading] = useState(false);
+  const [draftModalSubmitting, setDraftModalSubmitting] = useState(false);
+  const [draftModalMessage, setDraftModalMessage] = useState("");
+  const [availableDrafts, setAvailableDrafts] = useState<DraftRow[]>([]);
+  const [draftPickMap, setDraftPickMap] = useState<Map<string, Set<string>>>(new Map());
+  const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const load = async () => {
@@ -88,7 +131,7 @@ export default function PoolsPage() {
         return;
       }
 
-      const memberPoolIds = new Set((memberships ?? []).map((m) => m.pool_id as string));
+      const memberPoolIds = new Set((memberships ?? []).map((m) => (m as MembershipRow).pool_id));
       const memberPools = pools.filter((pool) => memberPoolIds.has(pool.id)).sort(sortPoolsByName);
       setMyPools(memberPools);
 
@@ -115,7 +158,16 @@ export default function PoolsPage() {
     return discoverPools.filter((pool) => pool.name.toLowerCase().includes(needle));
   }, [discoverPools, query]);
 
-  async function joinPool(pool: PoolRow) {
+  const selectedDraftCount = selectedDraftIds.size;
+
+  function rememberJoinedPool(pool: PoolRow) {
+    setMyPools((prev) => {
+      if (prev.some((row) => row.id === pool.id)) return prev;
+      return [...prev, pool].sort(sortPoolsByName);
+    });
+  }
+
+  function openJoinModal(pool: PoolRow) {
     setJoinStatus(null);
 
     if (!userId) {
@@ -123,23 +175,130 @@ export default function PoolsPage() {
       return;
     }
 
+    setJoinModalPool(pool);
+    setJoinPasswordInput("");
+  }
+
+  function closeJoinModal() {
+    if (joiningPool) return;
+    setJoinModalPool(null);
+    setJoinPasswordInput("");
+  }
+
+  function closeDraftModal() {
+    if (draftModalSubmitting) return;
+    setDraftModalPool(null);
+    setDraftModalLoading(false);
+    setDraftModalSubmitting(false);
+    setDraftModalMessage("");
+    setAvailableDrafts([]);
+    setDraftPickMap(new Map());
+    setSelectedDraftIds(new Set());
+  }
+
+  async function loadDraftModal(pool: PoolRow) {
+    setDraftModalPool(pool);
+    setDraftModalLoading(true);
+    setDraftModalMessage("");
+    setAvailableDrafts([]);
+    setDraftPickMap(new Map());
+    setSelectedDraftIds(new Set());
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setDraftModalLoading(false);
+      setDraftModalMessage("Please log in first.");
+      return;
+    }
+
+    const draftsQuery = await supabase
+      .from("saved_drafts")
+      .select("id,name,updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (draftsQuery.error) {
+      setDraftModalLoading(false);
+      if (isMissingSavedDraftTablesError(draftsQuery.error.message)) {
+        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+        return;
+      }
+      setDraftModalMessage(draftsQuery.error.message);
+      return;
+    }
+
+    const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);
+    setAvailableDrafts(drafts);
+
+    if (drafts.length === 0) {
+      setDraftModalLoading(false);
+      setDraftModalMessage("No saved drafts yet. Create one first, then come back and join.");
+      return;
+    }
+
+    const draftIds = drafts.map((draft) => draft.id);
+    const picksQuery = await supabase
+      .from("saved_draft_picks")
+      .select("draft_id,team_id")
+      .in("draft_id", draftIds);
+
+    if (picksQuery.error) {
+      setDraftModalLoading(false);
+      if (isMissingSavedDraftTablesError(picksQuery.error.message)) {
+        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+        return;
+      }
+      setDraftModalMessage(picksQuery.error.message);
+      return;
+    }
+
+    const nextPickMap = new Map<string, Set<string>>();
+    for (const draftId of draftIds) {
+      nextPickMap.set(draftId, new Set());
+    }
+    for (const row of (picksQuery.data ?? []) as SavedDraftPickRow[]) {
+      const picks = nextPickMap.get(row.draft_id) ?? new Set<string>();
+      picks.add(row.team_id);
+      nextPickMap.set(row.draft_id, picks);
+    }
+
+    setDraftPickMap(nextPickMap);
+    setDraftModalLoading(false);
+  }
+
+  async function joinPoolThenPickDrafts() {
+    const pool = joinModalPool;
+    if (!pool) return;
+
+    setJoinStatus(null);
+    setJoiningPool(true);
+
+    if (myPoolIds.has(pool.id)) {
+      setJoinModalPool(null);
+      setJoinPasswordInput("");
+      setJoiningPool(false);
+      await loadDraftModal(pool);
+      return;
+    }
+
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
 
     if (!session) {
-      setJoinStatus({ tone: "error", text: "Session expired. Log in again to join a pool." });
+      setJoiningPool(false);
+      setJoinStatus({ tone: "error", text: "Session expired. Log in again to join this pool." });
       return;
     }
 
     const requiresPassword = (pool.is_private ?? true) !== false;
-    const password = (joinPasswordByPool[pool.id] ?? "").trim();
+    const password = joinPasswordInput.trim();
 
     if (requiresPassword && password.length === 0) {
-      setJoinStatus({ tone: "error", text: "Enter the pool password to join this private pool." });
+      setJoiningPool(false);
+      setJoinStatus({ tone: "error", text: "Enter the pool password to continue." });
       return;
     }
-
-    setJoiningPoolId(pool.id);
 
     const res = await fetch("/api/pools/join", {
       method: "POST",
@@ -156,16 +315,214 @@ export default function PoolsPage() {
     const body = (await res.json().catch(() => ({}))) as { error?: string };
 
     if (!res.ok) {
+      setJoiningPool(false);
       setJoinStatus({ tone: "error", text: body.error ?? "Failed to join pool." });
-      setJoiningPoolId(null);
       return;
     }
 
-    setMyPools((prev) => [...prev, pool].sort(sortPoolsByName));
-    setJoinPasswordByPool((prev) => ({ ...prev, [pool.id]: "" }));
-    setJoinStatus({ tone: "success", text: `Joined ${pool.name}. You can open it from My Pools.` });
-    setJoiningPoolId(null);
+    rememberJoinedPool(pool);
     setActiveTab("my");
+    setJoinModalPool(null);
+    setJoinPasswordInput("");
+    setJoiningPool(false);
+    await loadDraftModal(pool);
+  }
+
+  async function createEntry(poolId: string, userIdValue: string, entryName: string): Promise<{ id: string }> {
+    const insertWithName = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolId,
+        user_id: userIdValue,
+        entry_name: entryName,
+      })
+      .select("id")
+      .single();
+
+    if (!insertWithName.error && insertWithName.data) {
+      return { id: insertWithName.data.id as string };
+    }
+
+    if (!isMissingEntryNameError(insertWithName.error?.message)) {
+      throw new Error(insertWithName.error?.message ?? "Failed to create entry.");
+    }
+
+    const insertFallback = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolId,
+        user_id: userIdValue,
+      })
+      .select("id")
+      .single();
+
+    if (insertFallback.error || !insertFallback.data) {
+      throw new Error(insertFallback.error?.message ?? "Failed to create entry.");
+    }
+
+    return { id: insertFallback.data.id as string };
+  }
+
+  async function submitSelectedDrafts() {
+    const pool = draftModalPool;
+    if (!pool) return;
+
+    if (selectedDraftIds.size === 0) {
+      setDraftModalMessage("Select at least one draft.");
+      return;
+    }
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setDraftModalMessage("Please log in first.");
+      return;
+    }
+
+    setDraftModalSubmitting(true);
+    setDraftModalMessage("");
+
+    const existingEntriesWithName = await supabase
+      .from("entries")
+      .select("id,entry_name")
+      .eq("pool_id", pool.id)
+      .eq("user_id", user.id);
+
+    let existingEntries: EntryRow[] = [];
+    if (existingEntriesWithName.error && !isMissingEntryNameError(existingEntriesWithName.error.message)) {
+      setDraftModalSubmitting(false);
+      setDraftModalMessage(existingEntriesWithName.error.message);
+      return;
+    }
+
+    if (existingEntriesWithName.error && isMissingEntryNameError(existingEntriesWithName.error.message)) {
+      const fallback = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", pool.id)
+        .eq("user_id", user.id);
+
+      if (fallback.error) {
+        setDraftModalSubmitting(false);
+        setDraftModalMessage(fallback.error.message);
+        return;
+      }
+
+      existingEntries = (fallback.data ?? []) as EntryRow[];
+    } else {
+      existingEntries = (existingEntriesWithName.data ?? []) as EntryRow[];
+    }
+
+    const existingEntryIds = existingEntries.map((row) => row.id);
+    const existingPickSets: Set<string>[] = [];
+
+    if (existingEntryIds.length > 0) {
+      const picksQuery = await supabase
+        .from("entry_picks")
+        .select("entry_id,team_id")
+        .in("entry_id", existingEntryIds);
+
+      if (picksQuery.error) {
+        setDraftModalSubmitting(false);
+        setDraftModalMessage(picksQuery.error.message);
+        return;
+      }
+
+      const picksByEntryId = new Map<string, Set<string>>();
+      for (const entryId of existingEntryIds) {
+        picksByEntryId.set(entryId, new Set());
+      }
+
+      for (const row of (picksQuery.data ?? []) as EntryPickRow[]) {
+        const picks = picksByEntryId.get(row.entry_id) ?? new Set<string>();
+        picks.add(row.team_id);
+        picksByEntryId.set(row.entry_id, picks);
+      }
+
+      for (const pickSet of picksByEntryId.values()) {
+        existingPickSets.push(pickSet);
+      }
+    }
+
+    let created = 0;
+    let skippedDuplicates = 0;
+    let skippedEmpty = 0;
+
+    const selectedRows = availableDrafts.filter((draft) => selectedDraftIds.has(draft.id));
+
+    try {
+      for (const draft of selectedRows) {
+        const draftPickSet = draftPickMap.get(draft.id) ?? new Set<string>();
+        const draftPickIds = Array.from(draftPickSet);
+
+        if (draftPickIds.length === 0) {
+          skippedEmpty += 1;
+          continue;
+        }
+
+        const duplicate = existingPickSets.some((existingSet) => sameTeamSet(existingSet, draftPickSet));
+        if (duplicate) {
+          skippedDuplicates += 1;
+          continue;
+        }
+
+        const createdEntry = await createEntry(pool.id, user.id, draft.name.trim() || "My Bracket");
+        const rows = draftPickIds.map((teamId) => ({
+          entry_id: createdEntry.id,
+          team_id: teamId,
+        }));
+
+        const insertPicks = await supabase.from("entry_picks").insert(rows);
+        if (insertPicks.error) {
+          throw new Error(insertPicks.error.message);
+        }
+
+        existingPickSets.push(new Set(draftPickIds));
+        created += 1;
+      }
+    } catch (error: unknown) {
+      setDraftModalSubmitting(false);
+      setDraftModalMessage(error instanceof Error ? error.message : "Failed to enter selected drafts.");
+      return;
+    }
+
+    setDraftModalSubmitting(false);
+
+    if (created === 0) {
+      setDraftModalMessage("No entries were created. Adjust your selection and try again.");
+      return;
+    }
+
+    closeDraftModal();
+    setJoinStatus({
+      tone: "success",
+      text:
+        `Entered ${created} draft${created === 1 ? "" : "s"} into ${pool.name}.` +
+        (skippedDuplicates > 0
+          ? ` Skipped ${skippedDuplicates} duplicate draft${skippedDuplicates === 1 ? "" : "s"}.`
+          : "") +
+        (skippedEmpty > 0 ? ` Skipped ${skippedEmpty} empty draft${skippedEmpty === 1 ? "" : "s"}.` : ""),
+    });
+  }
+
+  function toggleDraftSelection(draftId: string) {
+    setSelectedDraftIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(draftId)) {
+        next.delete(draftId);
+      } else {
+        next.add(draftId);
+      }
+      return next;
+    });
+  }
+
+  function selectAllDrafts() {
+    setSelectedDraftIds(new Set(availableDrafts.map((draft) => draft.id)));
+  }
+
+  function clearDraftSelection() {
+    setSelectedDraftIds(new Set());
   }
 
   const tabButton = (isActive: boolean): CSSProperties => ({
@@ -208,7 +565,7 @@ export default function PoolsPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Pools</h1>
             <p style={{ margin: 0, opacity: 0.8 }}>
-              Join pools here, then apply any saved draft from your Drafts workspace.
+              Join a pool, then select one or more saved drafts to enter.
             </p>
           </div>
 
@@ -363,38 +720,23 @@ export default function PoolsPage() {
                       <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link
-                        href={`/pool/${pool.id}`}
+                      <button
+                        type="button"
+                        onClick={() => openJoinModal(pool)}
+                        disabled={!userId}
                         style={{
                           padding: "9px 12px",
                           borderRadius: 10,
                           border: "1px solid var(--border-color)",
-                          textDecoration: "none",
                           fontWeight: 800,
                           background: "var(--surface)",
                           minHeight: 40,
-                          display: "inline-flex",
-                          alignItems: "center",
+                          cursor: !userId ? "not-allowed" : "pointer",
+                          opacity: !userId ? 0.7 : 1,
                         }}
                       >
-                        Open pool
-                      </Link>
-                      <Link
-                        href={`/pool/${pool.id}/draft`}
-                        style={{
-                          padding: "9px 12px",
-                          borderRadius: 10,
-                          border: "1px solid var(--border-color)",
-                          textDecoration: "none",
-                          fontWeight: 800,
-                          background: "var(--surface)",
-                          minHeight: 40,
-                          display: "inline-flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        Apply Draft
-                      </Link>
+                        Join
+                      </button>
                       <Link
                         href={`/pool/${pool.id}/leaderboard`}
                         style={{
@@ -451,7 +793,7 @@ export default function PoolsPage() {
             />
             {!userId ? (
               <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
-                Log in to join pools. You can still browse and open pool pages now.
+                Log in to join pools and enter drafts.
               </p>
             ) : null}
           </div>
@@ -465,7 +807,6 @@ export default function PoolsPage() {
             <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
               {filteredDiscoverPools.map((pool) => {
                 const isPrivate = (pool.is_private ?? true) !== false;
-                const joinDisabled = joiningPoolId === pool.id || !userId;
 
                 return (
                   <li key={pool.id}>
@@ -494,53 +835,13 @@ export default function PoolsPage() {
                             {isPrivate ? "Private (password required)" : "Public"}
                           </div>
                         </div>
-
-                        <Link
-                          href={`/pool/${pool.id}`}
-                          style={{
-                            padding: "9px 12px",
-                            borderRadius: 10,
-                            border: "1px solid var(--border-color)",
-                            textDecoration: "none",
-                            fontWeight: 800,
-                            background: "var(--surface)",
-                            minHeight: 40,
-                            display: "inline-flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          Open details
-                        </Link>
                       </div>
 
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {isPrivate ? (
-                          <input
-                            type="password"
-                            value={joinPasswordByPool[pool.id] ?? ""}
-                            onChange={(e) =>
-                              setJoinPasswordByPool((prev) => ({
-                                ...prev,
-                                [pool.id]: e.target.value,
-                              }))
-                            }
-                            placeholder="Pool password"
-                            style={{
-                              flex: "1 1 230px",
-                              minWidth: 0,
-                              padding: "10px 12px",
-                              minHeight: 44,
-                              borderRadius: 10,
-                              border: "1px solid var(--border-color)",
-                              background: "var(--surface-muted)",
-                            }}
-                          />
-                        ) : null}
-
                         <button
                           type="button"
-                          onClick={() => void joinPool(pool)}
-                          disabled={joinDisabled}
+                          onClick={() => openJoinModal(pool)}
+                          disabled={!userId}
                           style={{
                             flex: "1 1 160px",
                             padding: "10px 12px",
@@ -549,12 +850,30 @@ export default function PoolsPage() {
                             border: "1px solid var(--border-color)",
                             background: "var(--surface)",
                             fontWeight: 800,
-                            cursor: joinDisabled ? "not-allowed" : "pointer",
-                            opacity: joinDisabled ? 0.7 : 1,
+                            cursor: !userId ? "not-allowed" : "pointer",
+                            opacity: !userId ? 0.7 : 1,
                           }}
                         >
-                          {joiningPoolId === pool.id ? "Joining..." : "Join pool"}
+                          Join
                         </button>
+                        <Link
+                          href={`/pool/${pool.id}/leaderboard`}
+                          style={{
+                            flex: "1 1 160px",
+                            padding: "10px 12px",
+                            minHeight: 44,
+                            borderRadius: 10,
+                            border: "1px solid var(--border-color)",
+                            textDecoration: "none",
+                            fontWeight: 800,
+                            background: "var(--surface)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          Leaderboard
+                        </Link>
                       </div>
                     </div>
                   </li>
@@ -563,6 +882,319 @@ export default function PoolsPage() {
             </ul>
           ) : null}
         </section>
+      ) : null}
+
+      {joinModalPool ? (
+        <div
+          role="presentation"
+          onClick={closeJoinModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 120,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Join pool"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(520px, 100%)",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Join {joinModalPool.name}</h2>
+            <p style={{ margin: 0, opacity: 0.8 }}>
+              {myPoolIds.has(joinModalPool.id)
+                ? "You are already in this pool. Continue to choose one or more drafts to enter."
+                : (joinModalPool.is_private ?? true) !== false
+                ? "Enter the pool password to continue."
+                : "This is a public pool. Continue to pick which drafts to enter."}
+            </p>
+
+            {(joinModalPool.is_private ?? true) !== false && !myPoolIds.has(joinModalPool.id) ? (
+              <input
+                type="password"
+                value={joinPasswordInput}
+                onChange={(event) => setJoinPasswordInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !joiningPool) {
+                    void joinPoolThenPickDrafts();
+                  }
+                }}
+                placeholder="Pool password"
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                }}
+              />
+            ) : null}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={closeJoinModal}
+                disabled={joiningPool}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: joiningPool ? "not-allowed" : "pointer",
+                  opacity: joiningPool ? 0.7 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void joinPoolThenPickDrafts()}
+                disabled={joiningPool}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 900,
+                  cursor: joiningPool ? "not-allowed" : "pointer",
+                  opacity: joiningPool ? 0.7 : 1,
+                }}
+              >
+                {joiningPool ? "Joining..." : "Continue"}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {draftModalPool ? (
+        <div
+          role="presentation"
+          onClick={closeDraftModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 125,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Select drafts to enter"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(640px, 100%)",
+              maxHeight: "88vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Enter Drafts in {draftModalPool.name}</h2>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                Select one or more drafts below. Each selected draft creates its own entry in this pool.
+              </p>
+            </div>
+
+            {draftModalLoading ? <p style={{ margin: 0 }}>Loading your drafts...</p> : null}
+
+            {!draftModalLoading && availableDrafts.length > 0 ? (
+              <>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={selectAllDrafts}
+                    disabled={draftModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDraftSelection}
+                    disabled={draftModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  {availableDrafts.map((draft) => {
+                    const picks = draftPickMap.get(draft.id);
+                    const pickCount = picks?.size ?? 0;
+                    const checked = selectedDraftIds.has(draft.id);
+
+                    return (
+                      <label
+                        key={draft.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "center",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleDraftSelection(draft.id)}
+                          disabled={draftModalSubmitting}
+                        />
+                        <div style={{ display: "grid", gap: 2 }}>
+                          <div style={{ fontWeight: 900 }}>{draft.name}</div>
+                          <div style={{ fontSize: 13, opacity: 0.8 }}>
+                            {pickCount} team{pickCount === 1 ? "" : "s"} selected
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
+
+            {!draftModalLoading && availableDrafts.length === 0 ? (
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
+                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
+                  Open <Link href="/drafts">My Drafts</Link> to create one.
+                </p>
+              </div>
+            ) : null}
+
+            {draftModalMessage ? (
+              <p
+                style={{
+                  margin: 0,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                }}
+              >
+                {draftModalMessage}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
+              <Link
+                href="/drafts"
+                onClick={closeDraftModal}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  textDecoration: "none",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                Manage Drafts
+              </Link>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={closeDraftModal}
+                  disabled={draftModalSubmitting}
+                  style={{
+                    padding: "10px 12px",
+                    minHeight: 44,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 800,
+                    cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                    opacity: draftModalSubmitting ? 0.7 : 1,
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void submitSelectedDrafts()}
+                  disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading}
+                  style={{
+                    padding: "10px 12px",
+                    minHeight: 44,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 900,
+                    cursor:
+                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading
+                        ? "not-allowed"
+                        : "pointer",
+                    opacity: draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading ? 0.7 : 1,
+                  }}
+                >
+                  {draftModalSubmitting
+                    ? "Entering..."
+                    : `Enter ${selectedDraftCount} Draft${selectedDraftCount === 1 ? "" : "s"}`}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
       ) : null}
     </main>
   );
