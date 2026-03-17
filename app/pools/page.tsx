@@ -362,22 +362,56 @@ export default function PoolsPage() {
                       <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
                       <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
                     </div>
-                    <Link
-                      href={`/pool/${pool.id}/leaderboard`}
-                      style={{
-                        padding: "9px 12px",
-                        borderRadius: 10,
-                        border: "1px solid var(--border-color)",
-                        textDecoration: "none",
-                        fontWeight: 800,
-                        background: "var(--surface)",
-                        minHeight: 40,
-                        display: "inline-flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      Leaderboard
-                    </Link>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <Link
+                        href={`/pool/${pool.id}`}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          textDecoration: "none",
+                          fontWeight: 800,
+                          background: "var(--surface)",
+                          minHeight: 40,
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Open pool
+                      </Link>
+                      <Link
+                        href={`/pool/${pool.id}/draft`}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          textDecoration: "none",
+                          fontWeight: 800,
+                          background: "var(--surface)",
+                          minHeight: 40,
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Apply Draft
+                      </Link>
+                      <Link
+                        href={`/pool/${pool.id}/leaderboard`}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          textDecoration: "none",
+                          fontWeight: 800,
+                          background: "var(--surface)",
+                          minHeight: 40,
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Leaderboard
+                      </Link>
+                    </div>
                   </div>
                 </li>
               ))}
