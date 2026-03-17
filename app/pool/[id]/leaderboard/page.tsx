@@ -772,7 +772,7 @@ export default function LeaderboardPage() {
       }
 
       let picksByEntry = new Map<string, string[]>();
-      if (isLocked && entryIds.length > 0) {
+      if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
           .select("entry_id,team_id")
