@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { sameTeamSet, isMissingSavedDraftTablesError, type SavedDraftPickRow } from "@/lib/savedDrafts";
+import { isMissingSavedDraftTablesError, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
 
 type PoolRow = {
@@ -19,16 +19,6 @@ type DraftRow = {
   id: string;
   name: string;
   updated_at: string;
-};
-
-type EntryRow = {
-  id: string;
-  entry_name?: string | null;
-};
-
-type EntryPickRow = {
-  entry_id: string;
-  team_id: string;
 };
 
 type StatusTone = "success" | "error" | "info";
@@ -70,6 +60,7 @@ export default function PoolsPage() {
   const [allPoolsMsg, setAllPoolsMsg] = useState("");
   const [myPoolsMsg, setMyPoolsMsg] = useState("");
   const [joinStatus, setJoinStatus] = useState<StatusMessage | null>(null);
+  const [leavingPoolId, setLeavingPoolId] = useState<string | null>(null);
 
   const [joinModalPool, setJoinModalPool] = useState<PoolRow | null>(null);
   const [joinPasswordInput, setJoinPasswordInput] = useState("");
@@ -382,70 +373,7 @@ export default function PoolsPage() {
     setDraftModalSubmitting(true);
     setDraftModalMessage("");
 
-    const existingEntriesWithName = await supabase
-      .from("entries")
-      .select("id,entry_name")
-      .eq("pool_id", pool.id)
-      .eq("user_id", user.id);
-
-    let existingEntries: EntryRow[] = [];
-    if (existingEntriesWithName.error && !isMissingEntryNameError(existingEntriesWithName.error.message)) {
-      setDraftModalSubmitting(false);
-      setDraftModalMessage(existingEntriesWithName.error.message);
-      return;
-    }
-
-    if (existingEntriesWithName.error && isMissingEntryNameError(existingEntriesWithName.error.message)) {
-      const fallback = await supabase
-        .from("entries")
-        .select("id")
-        .eq("pool_id", pool.id)
-        .eq("user_id", user.id);
-
-      if (fallback.error) {
-        setDraftModalSubmitting(false);
-        setDraftModalMessage(fallback.error.message);
-        return;
-      }
-
-      existingEntries = (fallback.data ?? []) as EntryRow[];
-    } else {
-      existingEntries = (existingEntriesWithName.data ?? []) as EntryRow[];
-    }
-
-    const existingEntryIds = existingEntries.map((row) => row.id);
-    const existingPickSets: Set<string>[] = [];
-
-    if (existingEntryIds.length > 0) {
-      const picksQuery = await supabase
-        .from("entry_picks")
-        .select("entry_id,team_id")
-        .in("entry_id", existingEntryIds);
-
-      if (picksQuery.error) {
-        setDraftModalSubmitting(false);
-        setDraftModalMessage(picksQuery.error.message);
-        return;
-      }
-
-      const picksByEntryId = new Map<string, Set<string>>();
-      for (const entryId of existingEntryIds) {
-        picksByEntryId.set(entryId, new Set());
-      }
-
-      for (const row of (picksQuery.data ?? []) as EntryPickRow[]) {
-        const picks = picksByEntryId.get(row.entry_id) ?? new Set<string>();
-        picks.add(row.team_id);
-        picksByEntryId.set(row.entry_id, picks);
-      }
-
-      for (const pickSet of picksByEntryId.values()) {
-        existingPickSets.push(pickSet);
-      }
-    }
-
     let created = 0;
-    let skippedDuplicates = 0;
     let skippedEmpty = 0;
 
     const selectedRows = availableDrafts.filter((draft) => selectedDraftIds.has(draft.id));
@@ -460,12 +388,6 @@ export default function PoolsPage() {
           continue;
         }
 
-        const duplicate = existingPickSets.some((existingSet) => sameTeamSet(existingSet, draftPickSet));
-        if (duplicate) {
-          skippedDuplicates += 1;
-          continue;
-        }
-
         const createdEntry = await createEntry(pool.id, user.id, draft.name.trim() || "My Bracket");
         const rows = draftPickIds.map((teamId) => ({
           entry_id: createdEntry.id,
@@ -476,8 +398,6 @@ export default function PoolsPage() {
         if (insertPicks.error) {
           throw new Error(insertPicks.error.message);
         }
-
-        existingPickSets.push(new Set(draftPickIds));
         created += 1;
       }
     } catch (error: unknown) {
@@ -489,7 +409,13 @@ export default function PoolsPage() {
     setDraftModalSubmitting(false);
 
     if (created === 0) {
-      setDraftModalMessage("No entries were created. Adjust your selection and try again.");
+      if (skippedEmpty > 0) {
+        setDraftModalMessage(
+          "No entries were created because the selected draft(s) have no teams yet. Add picks to your drafts and try again."
+        );
+      } else {
+        setDraftModalMessage("No entries were created. Adjust your selection and try again.");
+      }
       return;
     }
 
@@ -498,9 +424,6 @@ export default function PoolsPage() {
       tone: "success",
       text:
         `Entered ${created} draft${created === 1 ? "" : "s"} into ${pool.name}.` +
-        (skippedDuplicates > 0
-          ? ` Skipped ${skippedDuplicates} duplicate draft${skippedDuplicates === 1 ? "" : "s"}.`
-          : "") +
         (skippedEmpty > 0 ? ` Skipped ${skippedEmpty} empty draft${skippedEmpty === 1 ? "" : "s"}.` : ""),
     });
   }
@@ -523,6 +446,53 @@ export default function PoolsPage() {
 
   function clearDraftSelection() {
     setSelectedDraftIds(new Set());
+  }
+
+  async function leavePool(pool: PoolRow) {
+    setJoinStatus(null);
+
+    if (!userId) {
+      setJoinStatus({ tone: "error", text: "Log in first to leave a pool." });
+      return;
+    }
+
+    const confirmed = window.confirm(`Leave ${pool.name}? This removes your entries from this pool.`);
+    if (!confirmed) return;
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) {
+      setJoinStatus({ tone: "error", text: "Session expired. Log in again to leave this pool." });
+      return;
+    }
+
+    setLeavingPoolId(pool.id);
+
+    const res = await fetch("/api/pools/leave", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ poolId: pool.id }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setLeavingPoolId(null);
+      setJoinStatus({ tone: "error", text: body.error ?? "Failed to leave pool." });
+      return;
+    }
+
+    setMyPools((prev) => {
+      const next = prev.filter((row) => row.id !== pool.id);
+      if (next.length === 0) {
+        setActiveTab("discover");
+      }
+      return next;
+    });
+    setLeavingPoolId(null);
+    setJoinStatus({ tone: "success", text: `Left ${pool.name}.` });
   }
 
   const tabButton = (isActive: boolean): CSSProperties => ({
@@ -753,6 +723,23 @@ export default function PoolsPage() {
                       >
                         Leaderboard
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => void leavePool(pool)}
+                        disabled={leavingPoolId === pool.id}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          fontWeight: 800,
+                          background: "var(--surface)",
+                          minHeight: 40,
+                          cursor: leavingPoolId === pool.id ? "not-allowed" : "pointer",
+                          opacity: leavingPoolId === pool.id ? 0.7 : 1,
+                        }}
+                      >
+                        {leavingPoolId === pool.id ? "Leaving..." : "Leave"}
+                      </button>
                     </div>
                   </div>
                 </li>
