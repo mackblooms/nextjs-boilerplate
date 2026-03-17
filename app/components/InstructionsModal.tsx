@@ -5,30 +5,118 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-type GuidePreview = "login" | "profile" | "drafts" | "draft-editor" | "pools";
+const TUTORIAL_OPT_OUT_KEY = "bracketball.tutorial.opt_out.v1";
+
+type TargetBox = {
+  top: string;
+  left: string;
+  width: string;
+  height: string;
+};
 
 type GuideStep = {
   id: string;
+  stepNumber: number;
   title: string;
   detail: string;
   route: string;
   action: string;
-  checklist: string[];
-  preview: GuidePreview;
+  previewPath: string;
+  targetHint: string;
+  targetBox: TargetBox;
 };
 
-function PreviewShell({
-  title,
-  path,
-  children,
+function readTutorialOptOut() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(TUTORIAL_OPT_OUT_KEY) === "1";
+}
+
+function writeTutorialOptOut(enabled: boolean) {
+  if (typeof window === "undefined") return;
+  if (enabled) {
+    window.localStorage.setItem(TUTORIAL_OPT_OUT_KEY, "1");
+    return;
+  }
+  window.localStorage.removeItem(TUTORIAL_OPT_OUT_KEY);
+}
+
+function buildSteps(isAuthed: boolean): GuideStep[] {
+  const shared: GuideStep[] = [
+    {
+      id: "profile",
+      stepNumber: 1,
+      title: "Set up your profile",
+      detail: "Add your name and favorite team, then save.",
+      route: "/profile",
+      action: "Open Profile",
+      previewPath: "/profile",
+      targetHint: "Tap Save or Save and continue",
+      targetBox: { top: "72%", left: "62%", width: "32%", height: "12%" },
+    },
+    {
+      id: "drafts",
+      stepNumber: 2,
+      title: "Create your draft",
+      detail: "Go to My Drafts, name a draft, then create it.",
+      route: "/drafts",
+      action: "Open Drafts",
+      previewPath: "/drafts",
+      targetHint: "Tap Create Draft",
+      targetBox: { top: "24%", left: "64%", width: "28%", height: "11%" },
+    },
+    {
+      id: "draft-build",
+      stepNumber: 3,
+      title: "Build your picks",
+      detail: "Open your draft, choose teams, and save your draft.",
+      route: "/drafts",
+      action: "Open Drafts",
+      previewPath: "/drafts",
+      targetHint: "Tap Edit on one draft card",
+      targetBox: { top: "48%", left: "67%", width: "20%", height: "11%" },
+    },
+    {
+      id: "pools",
+      stepNumber: 4,
+      title: "Add draft to a pool",
+      detail: "Open Pools, join or open your pool, then apply your draft.",
+      route: "/pools",
+      action: "Open Pools",
+      previewPath: "/pools",
+      targetHint: "Tap Join pool or Open details",
+      targetBox: { top: "53%", left: "59%", width: "34%", height: "12%" },
+    },
+  ];
+
+  if (isAuthed) return shared;
+
+  return [
+    {
+      id: "login",
+      stepNumber: 0,
+      title: "Log in or create account",
+      detail: "Use email and password to start and save your progress.",
+      route: "/login",
+      action: "Open Login",
+      previewPath: "/login",
+      targetHint: "Tap Sign in or Create account",
+      targetBox: { top: "20%", left: "16%", width: "68%", height: "10%" },
+    },
+    ...shared,
+  ];
+}
+
+function LiveScreenPreview({
+  step,
+  done,
+  onTargetClick,
 }: {
-  title: string;
-  path: string;
-  children: React.ReactNode;
+  step: GuideStep;
+  done: boolean;
+  onTargetClick: () => void;
 }) {
   return (
     <section
-      aria-label={`${title} example`}
       style={{
         border: "1px solid var(--border-color)",
         borderRadius: 12,
@@ -38,306 +126,88 @@ function PreviewShell({
     >
       <div
         style={{
-          borderBottom: "1px solid var(--border-color)",
-          background: "var(--surface-muted)",
           padding: "8px 10px",
-          display: "grid",
-          gap: 8,
+          background: "var(--surface-muted)",
+          borderBottom: "1px solid var(--border-color)",
+          fontWeight: 800,
+          fontSize: 13,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 9999,
-              background: "var(--border-color)",
-              display: "inline-block",
-            }}
-          />
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 9999,
-              background: "var(--border-color)",
-              display: "inline-block",
-            }}
-          />
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 9999,
-              background: "var(--border-color)",
-              display: "inline-block",
-            }}
-          />
-        </div>
+        Live screen preview: <code>{step.previewPath}</code>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "16 / 10",
+          background: "var(--surface)",
+          overflow: "hidden",
+        }}
+      >
+        <iframe
+          src={step.previewPath}
+          title={`Preview of ${step.previewPath}`}
+          loading="lazy"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "160%",
+            height: "160%",
+            transform: "scale(0.625)",
+            transformOrigin: "top left",
+            border: 0,
+            pointerEvents: "none",
+            background: "var(--surface)",
+          }}
+        />
+
         <div
           style={{
-            border: "1px solid var(--border-color)",
+            position: "absolute",
+            top: step.targetBox.top,
+            left: step.targetBox.left,
+            width: step.targetBox.width,
+            height: step.targetBox.height,
             borderRadius: 8,
-            background: "var(--surface)",
-            padding: "6px 8px",
-            fontSize: 12,
-            fontWeight: 700,
+            border: done ? "2px solid #16a34a" : "2px solid #f59e0b",
+            boxShadow: done ? "0 0 0 2px rgba(22,163,74,0.22)" : "0 0 0 2px rgba(245,158,11,0.22)",
+            background: done ? "rgba(22,163,74,0.14)" : "rgba(245,158,11,0.16)",
+            display: "grid",
+            placeItems: "center",
           }}
         >
-          {path}
+          <button
+            type="button"
+            onClick={onTargetClick}
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 999,
+              padding: "6px 10px",
+              fontWeight: 900,
+              fontSize: 12,
+              background: "var(--surface)",
+              cursor: "pointer",
+            }}
+          >
+            {done ? "Done" : "Tap Target"}
+          </button>
         </div>
       </div>
-      <div style={{ padding: 10, display: "grid", gap: 8 }}>
-        <div style={{ fontWeight: 900 }}>{title}</div>
-        {children}
+
+      <div
+        style={{
+          padding: "8px 10px",
+          borderTop: "1px solid var(--border-color)",
+          fontSize: 13,
+          fontWeight: 700,
+          opacity: 0.9,
+        }}
+      >
+        {step.targetHint}
       </div>
     </section>
   );
-}
-
-function MockField({
-  text,
-  subtle = false,
-}: {
-  text: string;
-  subtle?: boolean;
-}) {
-  return (
-    <div
-      style={{
-        border: "1px solid var(--border-color)",
-        borderRadius: 8,
-        padding: "8px 9px",
-        background: "var(--surface)",
-        fontWeight: 700,
-        fontSize: 12,
-        opacity: subtle ? 0.72 : 1,
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-function MockButton({ text }: { text: string }) {
-  return (
-    <div
-      style={{
-        border: "1px solid var(--border-color)",
-        borderRadius: 8,
-        padding: "8px 10px",
-        background: "var(--surface-elevated)",
-        fontWeight: 900,
-        fontSize: 12,
-        width: "fit-content",
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-function ScreenPreview({ type }: { type: GuidePreview }) {
-  if (type === "login") {
-    return (
-      <PreviewShell title="Sign in" path="/login">
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", gap: 6 }}>
-            <MockField text="Sign in" />
-            <MockField text="Create account" subtle />
-          </div>
-          <MockField text="you@example.com" subtle />
-          <MockField text="Password" subtle />
-          <MockButton text="Sign in" />
-        </div>
-      </PreviewShell>
-    );
-  }
-
-  if (type === "profile") {
-    return (
-      <PreviewShell title="Set up your profile" path="/profile">
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 9999,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-elevated)",
-              }}
-            />
-            <MockField text="Avatar picker" subtle />
-          </div>
-          <MockField text="Full name (first + last)" subtle />
-          <MockField text="Favorite college team" subtle />
-          <MockButton text="Save and continue" />
-        </div>
-      </PreviewShell>
-    );
-  }
-
-  if (type === "drafts") {
-    return (
-      <PreviewShell title="My Drafts" path="/drafts">
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <MockField text="New draft name" subtle />
-            <MockButton text="Create Draft" />
-          </div>
-          <div
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 8,
-              background: "var(--surface)",
-              padding: 8,
-              display: "grid",
-              gap: 6,
-            }}
-          >
-            <div style={{ fontWeight: 900, fontSize: 12 }}>My Draft 1</div>
-            <div style={{ display: "flex", gap: 6 }}>
-              <MockButton text="Edit" />
-              <MockButton text="Join Pool(s)" />
-            </div>
-          </div>
-        </div>
-      </PreviewShell>
-    );
-  }
-
-  if (type === "draft-editor") {
-    return (
-      <PreviewShell title="Draft editor" path="/drafts/[draftId]">
-        <div style={{ display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <MockField text="Draft name" subtle />
-            <MockButton text="Save Draft" />
-            <MockButton text="Open Pools" />
-          </div>
-          <div
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 8,
-              background: "var(--surface)",
-              padding: 8,
-              display: "grid",
-              gap: 6,
-            }}
-          >
-            <MockField text="[ ] (1) Team A - Cost 22" subtle />
-            <MockField text="[x] (8) Team B - Cost 6" />
-            <MockField text="[x] (12) Team C - Cost 4" />
-          </div>
-          <MockField text="Summary: 14 teams selected | 98/100 budget | valid" />
-        </div>
-      </PreviewShell>
-    );
-  }
-
-  return (
-    <PreviewShell title="Pools" path="/pools">
-      <div style={{ display: "grid", gap: 6 }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          <MockField text="My Pools" />
-          <MockField text="Discover & Join" subtle />
-        </div>
-        <div
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            background: "var(--surface)",
-            padding: 8,
-            display: "grid",
-            gap: 6,
-          }}
-        >
-          <MockField text="Pool card: March Madness League" />
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <MockButton text="Join" />
-            <MockButton text="Leaderboard" />
-          </div>
-        </div>
-      </div>
-    </PreviewShell>
-  );
-}
-
-function buildSteps(isAuthed: boolean): GuideStep[] {
-  const shared: GuideStep[] = [
-    {
-      id: "profile",
-      title: "Step 1: Start your profile",
-      detail: "Open Profile and save your full name + favorite team. This unlocks the normal flow.",
-      route: "/profile",
-      action: "Open Profile",
-      checklist: [
-        "Enter first and last name.",
-        "Enter favorite college team.",
-        "Tap Save and continue.",
-      ],
-      preview: "profile",
-    },
-    {
-      id: "drafts",
-      title: "Step 2: Create your draft",
-      detail: "Go to My Drafts and create at least one draft.",
-      route: "/drafts",
-      action: "Open Drafts",
-      checklist: [
-        "Create a draft name.",
-        "Tap Create Draft.",
-        "Open your new draft with Edit.",
-      ],
-      preview: "drafts",
-    },
-    {
-      id: "draft-editor",
-      title: "Step 3: Build your picks",
-      detail: "Open your draft, choose teams, and stay within your draft rules and budget.",
-      route: "/drafts",
-      action: "Edit Draft",
-      checklist: [
-        "Select teams in your draft editor.",
-        "Keep your budget/rules valid.",
-        "Tap Save Draft.",
-      ],
-      preview: "draft-editor",
-    },
-    {
-      id: "pools",
-      title: "Step 4: Add your draft to a pool",
-      detail: "Go to Pools, tap Join, enter the pool password, then select one or more drafts in the modal.",
-      route: "/pools",
-      action: "Open Pools",
-      checklist: [
-        "Tap Join on the pool card.",
-        "Enter the pool password (if private).",
-        "Check one or more drafts and submit.",
-      ],
-      preview: "pools",
-    },
-  ];
-
-  if (isAuthed) return shared;
-
-  return [
-    {
-      id: "login",
-      title: "Step 0: Sign in or create account",
-      detail: "Use Login / Sign up first so your profile and drafts are saved to your account.",
-      route: "/login",
-      action: "Open Login",
-      checklist: [
-        "Sign in with email + password.",
-        "If new, create account and verify email.",
-        "Return to this guide after login.",
-      ],
-      preview: "login",
-    },
-    ...shared,
-  ];
 }
 
 export default function InstructionsModal() {
@@ -347,6 +217,8 @@ export default function InstructionsModal() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [completedStepIds, setCompletedStepIds] = useState<Set<string>>(new Set());
 
   const shouldSuppressModal = useMemo(() => {
     if (!pathname) return false;
@@ -366,23 +238,21 @@ export default function InstructionsModal() {
     const loadAuth = async () => {
       const { data } = await supabase.auth.getUser();
       if (!mounted) return;
-
-      const user = data.user ?? null;
-      setIsAuthed(Boolean(user));
+      setIsAuthed(Boolean(data.user));
       setIsReady(true);
     };
 
     void loadAuth();
 
-    const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      setIsAuthed(Boolean(user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setIsAuthed(Boolean(session?.user));
       setIsReady(true);
     });
 
     return () => {
       mounted = false;
-      authSub.subscription.unsubscribe();
+      sub.subscription.unsubscribe();
     };
   }, []);
 
@@ -396,6 +266,13 @@ export default function InstructionsModal() {
       }
 
       if (!shouldForceOpen) return;
+      if (readTutorialOptOut()) {
+        setIsOpen(false);
+        return;
+      }
+
+      setDontShowAgain(readTutorialOptOut());
+      setCompletedStepIds(new Set());
       setCurrentStepIndex(0);
       setIsOpen(true);
     }, 0);
@@ -413,15 +290,15 @@ export default function InstructionsModal() {
   }, [isOpen]);
 
   const closeGuide = useCallback(() => {
+    writeTutorialOptOut(dontShowAgain);
     setIsOpen(false);
-  }, []);
+  }, [dontShowAgain]);
 
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeGuide();
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [closeGuide, isOpen]);
@@ -431,14 +308,31 @@ export default function InstructionsModal() {
   }
 
   const steps = buildSteps(isAuthed);
-  const boundedStepIndex = Math.min(currentStepIndex, Math.max(steps.length - 1, 0));
-  const currentStep = steps[boundedStepIndex];
-  const isFirstStep = boundedStepIndex === 0;
-  const isLastStep = boundedStepIndex === steps.length - 1;
+  const safeIndex = Math.min(currentStepIndex, Math.max(steps.length - 1, 0));
+  const step = steps[safeIndex];
+  const isFirstStep = safeIndex === 0;
+  const isLastStep = safeIndex === steps.length - 1;
+  const currentStepDone = completedStepIds.has(step.id);
+
   const progressPercent =
-    steps.length <= 1 ? 100 : Math.round((boundedStepIndex / (steps.length - 1)) * 100);
+    steps.length <= 1 ? 100 : Math.round((safeIndex / (steps.length - 1)) * 100);
+
+  function markCurrentStepDone() {
+    setCompletedStepIds((prev) => {
+      const next = new Set(prev);
+      next.add(step.id);
+      return next;
+    });
+
+    if (!isLastStep) {
+      window.setTimeout(() => {
+        setCurrentStepIndex((prev) => Math.min(prev + 1, steps.length - 1));
+      }, 140);
+    }
+  }
 
   function nextStep() {
+    if (!currentStepDone) return;
     if (isLastStep) {
       closeGuide();
       return;
@@ -458,7 +352,7 @@ export default function InstructionsModal() {
         position: "fixed",
         inset: 0,
         zIndex: 2200,
-        background: "rgba(0, 0, 0, 0.58)",
+        background: "rgba(0, 0, 0, 0.6)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -468,11 +362,11 @@ export default function InstructionsModal() {
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="How to start on bracketball"
+        aria-label="Bracketball tutorial"
         onClick={(event) => event.stopPropagation()}
         style={{
-          width: "min(760px, 100%)",
-          maxHeight: "90vh",
+          width: "min(900px, 100%)",
+          maxHeight: "92vh",
           overflow: "auto",
           borderRadius: 14,
           border: "1px solid var(--border-color)",
@@ -483,13 +377,10 @@ export default function InstructionsModal() {
         }}
       >
         <div style={{ display: "grid", gap: 4 }}>
-          <h2 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>Start Here</h2>
-          <p style={{ margin: 0, opacity: 0.88, lineHeight: 1.5 }}>
-            Step-by-step tutorial. Use Next to move through each screen.
-          </p>
-          <p style={{ margin: 0, opacity: 0.7, fontSize: 13 }}>
-            Step {boundedStepIndex + 1} of {steps.length}
-          </p>
+          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>
+            Step {step.stepNumber} of {steps[steps.length - 1]?.stepNumber ?? steps.length}: {step.title}
+          </h2>
+          <p style={{ margin: 0, opacity: 0.88 }}>{step.detail}</p>
         </div>
 
         <div
@@ -513,67 +404,28 @@ export default function InstructionsModal() {
           />
         </div>
 
-        <article
-          key={currentStep.id}
+        <LiveScreenPreview step={step} done={currentStepDone} onTargetClick={markCurrentStepDone} />
+
+        <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
+          Interactive mode: tap the highlighted target in the preview to complete this step.
+        </p>
+
+        <label
           style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            background: "var(--surface-muted)",
-            padding: 12,
-            display: "grid",
-            gap: 10,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontWeight: 700,
+            fontSize: 14,
           }}
         >
-          <div style={{ display: "grid", gap: 4 }}>
-            <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>{currentStep.title}</h3>
-            <p style={{ margin: 0, lineHeight: 1.45 }}>{currentStep.detail}</p>
-            <p style={{ margin: 0, opacity: 0.75, fontSize: 13 }}>
-              Route: <code>{currentStep.route}</code>
-            </p>
-          </div>
-
-          <div style={{ display: "grid", gap: 8 }}>
-            {currentStep.checklist.map((item) => (
-              <div
-                key={item}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "8px 10px",
-                  background: "var(--surface)",
-                  fontWeight: 700,
-                }}
-              >
-                {item}
-              </div>
-            ))}
-          </div>
-
-          <ScreenPreview type={currentStep.preview} />
-        </article>
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {steps.map((step, index) => (
-            <button
-              key={step.id}
-              type="button"
-              onClick={() => setCurrentStepIndex(index)}
-              aria-label={`Go to ${step.title}`}
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: 9999,
-                border: "1px solid var(--border-color)",
-                background:
-                  index === boundedStepIndex ? "var(--surface-elevated)" : "var(--surface)",
-                fontWeight: 800,
-                cursor: "pointer",
-              }}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+          <input
+            type="checkbox"
+            checked={dontShowAgain}
+            onChange={(event) => setDontShowAgain(event.target.checked)}
+          />
+          Don&apos;t show me this tutorial again
+        </label>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
@@ -588,14 +440,16 @@ export default function InstructionsModal() {
               background: "var(--surface)",
               fontWeight: 800,
               cursor: isFirstStep ? "not-allowed" : "pointer",
-              opacity: isFirstStep ? 0.55 : 1,
+              opacity: isFirstStep ? 0.6 : 1,
             }}
           >
             Back
           </button>
+
           <button
             type="button"
             onClick={nextStep}
+            disabled={!currentStepDone}
             style={{
               minHeight: 44,
               padding: "10px 14px",
@@ -603,13 +457,15 @@ export default function InstructionsModal() {
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
               fontWeight: 900,
-              cursor: "pointer",
+              cursor: currentStepDone ? "pointer" : "not-allowed",
+              opacity: currentStepDone ? 1 : 0.6,
             }}
           >
             {isLastStep ? "Finish" : "Next"}
           </button>
+
           <Link
-            href={currentStep.route}
+            href={step.route}
             onClick={closeGuide}
             style={{
               minHeight: 44,
@@ -623,8 +479,9 @@ export default function InstructionsModal() {
               alignItems: "center",
             }}
           >
-            {currentStep.action}
+            {step.action}
           </Link>
+
           <button
             type="button"
             onClick={closeGuide}
@@ -634,29 +491,12 @@ export default function InstructionsModal() {
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
-              fontWeight: 900,
+              fontWeight: 800,
               cursor: "pointer",
             }}
           >
-            Skip tutorial
+            Skip
           </button>
-          <Link
-            href="/how-it-works"
-            onClick={closeGuide}
-            style={{
-              minHeight: 44,
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              textDecoration: "none",
-              background: "var(--surface)",
-              fontWeight: 800,
-              display: "inline-flex",
-              alignItems: "center",
-            }}
-          >
-            Read Full Rules
-          </Link>
         </div>
       </section>
     </div>
