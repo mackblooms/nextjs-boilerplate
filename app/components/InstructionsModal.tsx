@@ -31,7 +31,7 @@ function writeTutorialOptOut(enabled: boolean) {
   window.localStorage.removeItem(TUTORIAL_OPT_OUT_KEY);
 }
 
-function buildSteps(isAuthed: boolean, draftEditorPreviewPath: string): GuideStep[] {
+function buildSteps(isAuthed: boolean): GuideStep[] {
   const shared: GuideStep[] = [
     {
       id: "profile",
@@ -56,9 +56,9 @@ function buildSteps(isAuthed: boolean, draftEditorPreviewPath: string): GuideSte
       stepNumber: 3,
       title: "Open and build your draft",
       detail: "From My Drafts, open one draft with Edit, then choose teams and save.",
-      route: draftEditorPreviewPath,
-      action: "Open Draft Editor",
-      previewPath: draftEditorPreviewPath,
+      route: "/drafts",
+      action: "Open Drafts",
+      previewPath: "/tutorial/draft-preview",
     },
     {
       id: "pools",
@@ -149,7 +149,6 @@ export default function InstructionsModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [draftEditorPreviewPath, setDraftEditorPreviewPath] = useState("/drafts");
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
@@ -189,42 +188,6 @@ export default function InstructionsModal() {
       sub.subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    let canceled = false;
-
-    const loadDraftPreviewPath = async () => {
-      if (!isReady || !isAuthed) {
-        if (!canceled) setDraftEditorPreviewPath("/drafts");
-        return;
-      }
-
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-      if (!user) {
-        if (!canceled) setDraftEditorPreviewPath("/drafts");
-        return;
-      }
-
-      const { data } = await supabase
-        .from("saved_drafts")
-        .select("id")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1);
-
-      const firstDraftId = (data?.[0] as { id: string } | undefined)?.id ?? null;
-      if (!canceled) {
-        setDraftEditorPreviewPath(firstDraftId ? `/drafts/${firstDraftId}` : "/drafts");
-      }
-    };
-
-    void loadDraftPreviewPath();
-
-    return () => {
-      canceled = true;
-    };
-  }, [isAuthed, isReady]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -276,7 +239,7 @@ export default function InstructionsModal() {
     return null;
   }
 
-  const steps = buildSteps(isAuthed, draftEditorPreviewPath);
+  const steps = buildSteps(isAuthed);
   const safeIndex = Math.min(currentStepIndex, Math.max(steps.length - 1, 0));
   const step = steps[safeIndex];
   const isFirstStep = safeIndex === 0;

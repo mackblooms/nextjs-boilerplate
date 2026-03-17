@@ -581,6 +581,18 @@ function HomeContent() {
   useEffect(() => {
     let canceled = false;
 
+    const resetAuthedHomeState = () => {
+      if (canceled) return;
+      setIsAuthenticated(false);
+      setUserId(null);
+      setMemberPools([]);
+      setSelectedPoolId("");
+      setTrackedEspnIds([]);
+      setTrackedTeamKeys([]);
+      setTrackedTeamCount(0);
+      setPersonalizedLoaded(true);
+    };
+
     const loadUserPools = async () => {
       setPersonalizedLoaded(false);
 
@@ -588,16 +600,7 @@ function HomeContent() {
       const user = authData.user;
 
       if (!user) {
-        if (!canceled) {
-          setIsAuthenticated(false);
-          setUserId(null);
-          setMemberPools([]);
-          setSelectedPoolId("");
-          setTrackedEspnIds([]);
-          setTrackedTeamKeys([]);
-          setTrackedTeamCount(0);
-          setPersonalizedLoaded(true);
-        }
+        resetAuthedHomeState();
         return;
       }
 
@@ -658,8 +661,21 @@ function HomeContent() {
 
     void loadUserPools();
 
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        resetAuthedHomeState();
+        return;
+      }
+
+      if (canceled) return;
+      setIsAuthenticated(true);
+      setUserId(session.user.id);
+      void loadUserPools();
+    });
+
     return () => {
       canceled = true;
+      sub.subscription.unsubscribe();
     };
   }, []);
 
