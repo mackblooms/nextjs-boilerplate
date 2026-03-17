@@ -6,82 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
-
-type ScoringGame = {
-  round: string;
-  team1_id: string | null;
-  team2_id: string | null;
-  winner_team_id: string | null;
-};
-
-const BASE_POINTS_BY_ROUND: Record<string, number> = {
-  R64: 12,
-  R32: 36,
-  S16: 84,
-  E8: 180,
-  F4: 300,
-  CHIP: 360,
-};
-
-const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
-  14: 24,
-  15: 40,
-  16: 56,
-};
-
-function seedMultiplier(seed: number | null | undefined): number {
-  if (!seed || seed < 1 || seed > 16) return 1;
-  return 1 + (seed - 1) * 0.035;
-}
-
-function scoreTeamWins(
-  games: ScoringGame[],
-  teamSeedById: Map<string, number | null>,
-): Map<string, number> {
-  const totals = new Map<string, number>();
-  const historicAwarded = new Set<string>();
-
-  for (const g of games) {
-    const winnerId = g.winner_team_id;
-    if (!winnerId) continue;
-
-    const base = BASE_POINTS_BY_ROUND[g.round] ?? 0;
-    if (!base) continue;
-
-    const winnerSeed = teamSeedById.get(winnerId) ?? null;
-    const opponentId =
-      g.team1_id === winnerId
-        ? g.team2_id
-        : g.team2_id === winnerId
-          ? g.team1_id
-          : null;
-    const opponentSeed = opponentId
-      ? (teamSeedById.get(opponentId) ?? null)
-      : null;
-    const upsetBonus =
-      !winnerSeed || !opponentSeed
-        ? 0
-        : Math.max(0, 4 * (winnerSeed - opponentSeed));
-
-    let historicBonus = 0;
-    if (
-      g.round === "R64" &&
-      winnerSeed &&
-      HISTORIC_BONUS_BY_SEED[winnerSeed] &&
-      !historicAwarded.has(winnerId)
-    ) {
-      historicBonus = HISTORIC_BONUS_BY_SEED[winnerSeed];
-      historicAwarded.add(winnerId);
-    }
-
-    const winScore = Math.round(
-      base * seedMultiplier(winnerSeed) + upsetBonus + historicBonus,
-    );
-    totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
-  }
-
-  return totals;
-}
+import { scoreEntries, type ScoringGame } from "../../../../lib/scoring";
 
 type Row = {
   entry_id: string;
@@ -174,6 +99,15 @@ type TeamPopularityRow = {
   selections: number;
 };
 
+const ROUND_ORDER: Record<string, number> = {
+  R64: 1,
+  R32: 2,
+  S16: 3,
+  E8: 4,
+  F4: 5,
+  CHIP: 6,
+};
+
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
     error?.code === "PGRST204" &&
@@ -231,16 +165,37 @@ function hasGamesStarted(games: ScoringGameWithDate[]) {
   return false;
 }
 
+function roundReachedOrderByTeam(games: ScoringGame[]): Map<string, number> {
+  const out = new Map<string, number>();
+
+  for (const game of games) {
+    const order = ROUND_ORDER[game.round] ?? 0;
+    if (!order) continue;
+
+    for (const teamId of [game.team1_id, game.team2_id]) {
+      if (!teamId) continue;
+      const current = out.get(teamId) ?? 0;
+      if (order > current) out.set(teamId, order);
+    }
+  }
+
+  return out;
+}
+
 function rankRows<
   T extends {
     total_score: number;
     entry_name: string | null;
     display_name: string | null;
+    final_four_count: number;
+    championship_count: number;
   },
 >(rows: T[]) {
   const sorted = [...rows].sort(
     (a, b) =>
       b.total_score - a.total_score ||
+      b.final_four_count - a.final_four_count ||
+      b.championship_count - a.championship_count ||
       (a.entry_name ?? a.display_name ?? "").localeCompare(
         b.entry_name ?? b.display_name ?? "",
       ),
@@ -817,8 +772,6 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const teamScores = scoreTeamWins(gameRows, teamSeedById);
-
       let picksByEntry = new Map<string, string[]>();
       if (isLocked && entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
@@ -839,6 +792,10 @@ export default function LeaderboardPage() {
           picksByEntry.set(row.entry_id, arr);
         }
       }
+
+      const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry);
+      const teamScores = scoredEntries.teamScoresByTeamId;
+      const currentRoundReachedByTeam = roundReachedOrderByTeam(gameRows);
 
       const gamesStarted = hasGamesStarted(gameRows);
       const shouldShowInsights = isLocked && gamesStarted;
@@ -927,11 +884,15 @@ export default function LeaderboardPage() {
 
       const computed = baseRows
         .map((r) => {
-          const teamIds = picksByEntry.get(r.entry_id) ?? [];
-          const totalScore = teamIds.reduce(
-            (sum, teamId) => sum + (teamScores.get(teamId) ?? 0),
-            0,
-          );
+          const totalScore = scoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0;
+          const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
+          const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((currentRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
+          }, 0);
+          const championshipCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((currentRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
+          }, 0);
+
           return {
             ...r,
             entry_name: draftNameByEntry.get(r.entry_id) ?? null,
@@ -941,6 +902,8 @@ export default function LeaderboardPage() {
               profileByUser.get(r.user_id)?.avatar_url ?? null,
             ),
             total_score: totalScore,
+            final_four_count: finalFourCount,
+            championship_count: championshipCount,
             rank_delta: null,
           };
       });
@@ -964,18 +927,24 @@ export default function LeaderboardPage() {
 
       const priorRankByEntry = new Map<string, number>();
       if (!missingGameDays) {
-        const priorTeamScores = scoreTeamWins(priorGames, teamSeedById);
+        const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
+        const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
         const priorComputed = baseRows.map((r) => {
-          const teamIds = picksByEntry.get(r.entry_id) ?? [];
-          const totalScore = teamIds.reduce(
-            (sum, teamId) => sum + (priorTeamScores.get(teamId) ?? 0),
-            0,
-          );
+          const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
+          const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
+          }, 0);
+          const championshipCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
+          }, 0);
+
           return {
             entry_id: r.entry_id,
             display_name: r.display_name,
             entry_name: draftNameByEntry.get(r.entry_id) ?? null,
-            total_score: totalScore,
+            total_score: priorScoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0,
+            final_four_count: finalFourCount,
+            championship_count: championshipCount,
           };
         });
 

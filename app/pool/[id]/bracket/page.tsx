@@ -13,6 +13,7 @@ import {
 import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { scoreEntries } from "../../../../lib/scoring";
 
 type Team = {
   id: string;
@@ -84,21 +85,6 @@ type RoundKey = "R64" | "R32" | "S16" | "E8";
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 type Region = (typeof REGIONS)[number];
 
-const BASE_POINTS_BY_ROUND: Record<string, number> = {
-  R64: 12,
-  R32: 36,
-  S16: 84,
-  E8: 180,
-  F4: 300,
-  CHIP: 360,
-};
-
-const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
-  14: 24,
-  15: 40,
-  16: 56,
-};
-
 const isRegion = (value: string | null): value is Region =>
   value !== null && REGIONS.includes(value as Region);
 
@@ -115,46 +101,6 @@ function toLiveStateRank(state: LiveScoreState) {
 
 function pairKey(a: string, b: string) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
-function seedMultiplier(seed: number | null | undefined): number {
-  if (!seed || seed < 1 || seed > 16) return 1;
-  return 1 + (seed - 1) * 0.035;
-}
-
-function scoreTeamWins(games: Game[], teamSeedById: Map<string, number | null>): Map<string, number> {
-  const totals = new Map<string, number>();
-  const historicAwarded = new Set<string>();
-
-  for (const g of games) {
-    const winnerId = g.winner_team_id;
-    if (!winnerId) continue;
-
-    const base = BASE_POINTS_BY_ROUND[g.round] ?? 0;
-    if (!base) continue;
-
-    const winnerSeed = teamSeedById.get(winnerId) ?? null;
-    const opponentId =
-      g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
-    const opponentSeed = opponentId ? (teamSeedById.get(opponentId) ?? null) : null;
-    const upsetBonus = !winnerSeed || !opponentSeed ? 0 : Math.max(0, 4 * (winnerSeed - opponentSeed));
-
-    let historicBonus = 0;
-    if (
-      g.round === "R64" &&
-      winnerSeed &&
-      HISTORIC_BONUS_BY_SEED[winnerSeed] &&
-      !historicAwarded.has(winnerId)
-    ) {
-      historicBonus = HISTORIC_BONUS_BY_SEED[winnerSeed];
-      historicAwarded.add(winnerId);
-    }
-
-    const winScore = Math.round(base * seedMultiplier(winnerSeed) + upsetBonus + historicBonus);
-    totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
-  }
-
-  return totals;
 }
 
 function parseSecondHalfMinutesRemaining(detail: string | null | undefined): number | null {
@@ -460,7 +406,7 @@ export default function BracketPage() {
       const teamSeedById = new Map(
         (((teamRows as Team[] | null) ?? []) as Team[]).map((t) => [t.id, t.seed_in_region ?? null]),
       );
-      const teamScores = scoreTeamWins((gameRows as Game[] | null) ?? [], teamSeedById);
+      const picksByEntry = new Map<string, string[]>();
 
       let entryNameById = new Map<string, string | null>();
       if (entryIds.length > 0) {
@@ -477,7 +423,6 @@ export default function BracketPage() {
         );
       }
 
-      const entryScoreById = new Map<string, number>();
       if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
@@ -489,12 +434,13 @@ export default function BracketPage() {
           return;
         }
 
-        for (const entryId of entryIds) entryScoreById.set(entryId, 0);
         for (const row of (pickRows ?? []) as { entry_id: string; team_id: string }[]) {
-          const points = teamScores.get(row.team_id) ?? 0;
-          entryScoreById.set(row.entry_id, (entryScoreById.get(row.entry_id) ?? 0) + points);
+          const entryPickIds = picksByEntry.get(row.entry_id) ?? [];
+          entryPickIds.push(row.team_id);
+          picksByEntry.set(row.entry_id, entryPickIds);
         }
       }
+      const scoredEntries = scoreEntries((gameRows as Game[] | null) ?? [], teamSeedById, picksByEntry);
 
       let profileByUser = new Map<
         string,
@@ -543,7 +489,7 @@ export default function BracketPage() {
           user_id: p.user_id,
           display_name: p.display_name,
           entry_name: entryNameById.get(p.entry_id) ?? null,
-          total_score: entryScoreById.get(p.entry_id) ?? 0,
+          total_score: scoredEntries.totalScoreByEntryId.get(p.entry_id) ?? 0,
           full_name: profile?.full_name ?? null,
           favorite_team: profile?.favorite_team ?? null,
           avatar_url: profile?.avatar_url ?? null,

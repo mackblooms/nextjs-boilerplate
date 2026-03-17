@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { withAvatarFallback } from "./avatar";
-import { scoreTeamWins, type ScoringGame } from "./scoring";
+import { scoreEntries, type ScoringGame } from "./scoring";
 
 type PoolLeaderboardRow = {
   entry_id: string;
@@ -74,10 +74,20 @@ function isMissingAvatarColumnError(error: { message?: string; code?: string } |
   );
 }
 
-function rankRows<T extends { total_score: number; entry_name: string | null; display_name: string | null }>(rows: T[]) {
+function rankRows<
+  T extends {
+    total_score: number;
+    entry_name: string | null;
+    display_name: string | null;
+    final_four_count: number;
+    championship_count: number;
+  },
+>(rows: T[]) {
   const sorted = [...rows].sort(
     (a, b) =>
       b.total_score - a.total_score ||
+      b.final_four_count - a.final_four_count ||
+      b.championship_count - a.championship_count ||
       (a.entry_name ?? a.display_name ?? "").localeCompare(
         b.entry_name ?? b.display_name ?? "",
       ),
@@ -274,8 +284,14 @@ export async function buildPoolArchiveSnapshot(
   const teamSeedById = new Map(
     teamRows.map((row) => [row.id, row.seed_in_region ?? row.seed ?? null]),
   );
-
-  const teamScores = scoreTeamWins(gameRows, teamSeedById);
+  const picksByEntry = new Map<string, string[]>();
+  for (const row of pickRows) {
+    const teamIds = picksByEntry.get(row.entry_id) ?? [];
+    teamIds.push(row.team_id);
+    picksByEntry.set(row.entry_id, teamIds);
+  }
+  const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry);
+  const teamScores = scoredEntries.teamScoresByTeamId;
 
   const roundReachedOrderByTeam = new Map<string, number>();
   for (const game of gameRows) {
@@ -324,7 +340,13 @@ export async function buildPoolArchiveSnapshot(
 
   const computed = baseRows.map((row) => {
     const draftedTeams = draftedTeamsByEntry.get(row.entry_id) ?? [];
-    const totalScore = draftedTeams.reduce((sum, team) => sum + team.total_team_score, 0);
+    const totalScore = scoredEntries.totalScoreByEntryId.get(row.entry_id) ?? 0;
+    const finalFourCount = draftedTeams.reduce((sum, team) => {
+      return sum + ((ROUND_ORDER[team.round_reached ?? ""] ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
+    }, 0);
+    const championshipCount = draftedTeams.reduce((sum, team) => {
+      return sum + ((ROUND_ORDER[team.round_reached ?? ""] ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
+    }, 0);
 
     return {
       entry_id: row.entry_id,
@@ -337,6 +359,8 @@ export async function buildPoolArchiveSnapshot(
       ),
       entry_name: entryNameById.get(row.entry_id) ?? null,
       total_score: totalScore,
+      final_four_count: finalFourCount,
+      championship_count: championshipCount,
       drafted_teams: draftedTeams,
     };
   });

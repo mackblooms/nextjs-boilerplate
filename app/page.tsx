@@ -114,6 +114,8 @@ const scoreRowStyle = {
 
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
+const SCORING_UPDATE_VERSION = "2026-03-perfect-r64";
+const SCORING_UPDATE_SEEN_KEY = `bb:scoring-update-seen:${SCORING_UPDATE_VERSION}`;
 
 function formatGameDateTimeET(startTime: string | null) {
   if (!startTime) return "Time TBD (ET)";
@@ -516,6 +518,7 @@ function HomeContent() {
   const [trackedEspnIds, setTrackedEspnIds] = useState<string[]>([]);
   const [trackedTeamKeys, setTrackedTeamKeys] = useState<string[]>([]);
   const [trackedTeamCount, setTrackedTeamCount] = useState(0);
+  const [showScoringUpdateModal, setShowScoringUpdateModal] = useState(false);
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
@@ -544,6 +547,24 @@ function HomeContent() {
 
     void loadInvitePoolName();
   }, [invitePoolId]);
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(SCORING_UPDATE_SEEN_KEY) === "1") return;
+      setShowScoringUpdateModal(true);
+    } catch {
+      setShowScoringUpdateModal(true);
+    }
+  }, []);
+
+  const dismissScoringUpdateModal = () => {
+    setShowScoringUpdateModal(false);
+    try {
+      window.localStorage.setItem(SCORING_UPDATE_SEEN_KEY, "1");
+    } catch {
+      // Ignore storage failures.
+    }
+  };
 
   useEffect(() => {
     let canceled = false;
@@ -974,6 +995,81 @@ function HomeContent() {
           />
         </div>
       </div>
+
+      {showScoringUpdateModal ? (
+        <div
+          role="presentation"
+          onClick={dismissScoringUpdateModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 120,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Scoring update"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 16,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>
+              Scoring Update
+            </h2>
+            <p style={{ margin: 0, lineHeight: 1.5 }}>
+              We added one scoring rule: <b>Perfect Round of 64 Bonus</b>. If all
+              of your drafted teams win in the Round of 64, you earn bonus points
+              equal to the sum of your teams&apos; seeds.
+            </p>
+            <p style={{ margin: 0, opacity: 0.85 }}>
+              Want to read the full scoring details?
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={dismissScoringUpdateModal}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Not now
+              </button>
+              <Link
+                href="/how-it-works"
+                onClick={dismissScoringUpdateModal}
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                  background: "var(--surface-elevated)",
+                }}
+              >
+                Read Scoring Rules
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
