@@ -171,7 +171,32 @@ export default function HowItWorksPage() {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900 }}>6) Draft Caps</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>
+          6) Perfect Round of 64 Bonus
+        </h2>
+        <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+          If <b>all</b> of your drafted teams win in the Round of 64, you earn a
+          bonus equal to the sum of your teams&apos; seeds. This applies to Round
+          of 64 only.
+        </p>
+        <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
+          <li>
+            Example draft (cost 100): <b>1, 1, 2, 2, 9, 10, 12, 14</b>
+          </li>
+          <li>
+            Draft cost check:{" "}
+            <b>22 + 22 + 19 + 19 + 6 + 5 + 4 + 3 = 100</b>
+          </li>
+          <li>
+            Perfect Round of 64 bonus:{" "}
+            <b>1 + 1 + 2 + 2 + 9 + 10 + 12 + 14 = 51 points</b>
+          </li>
+          <li>If any drafted team loses in that round, no bonus is awarded.</li>
+        </ul>
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>7) Draft Caps</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Max 2 one-seeds</li>
           <li>Max 2 two-seeds</li>
@@ -180,7 +205,7 @@ export default function HowItWorksPage() {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900 }}>7) Tie-breakers</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>8) Tie-breakers</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Total points (obviously).</li>
           <li>If tied: most Final Four teams drafted.</li>
@@ -190,7 +215,7 @@ export default function HowItWorksPage() {
       </section>
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 900 }}>8) FAQ / Edge Cases</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>9) FAQ / Edge Cases</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>
             <b>Play-in teams:</b> once decided, the winner inherits the slot and
