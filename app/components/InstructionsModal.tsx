@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
-const GUIDE_VERSION = "2026-03-quickstart-v2";
-const GUEST_GUIDE_SEEN_KEY = `bracketball.quickstart.guest.seen.${GUIDE_VERSION}`;
-const USER_HIDE_ON_LOGIN_KEY_PREFIX = `bracketball.quickstart.user.hide_on_login.${GUIDE_VERSION}`;
-const SESSION_SHOWN_KEY_PREFIX = `bracketball.quickstart.session.shown.${GUIDE_VERSION}`;
 
 type GuidePreview = "login" | "profile" | "drafts" | "draft-editor" | "pools";
 
@@ -21,49 +16,6 @@ type GuideStep = {
   checklist: string[];
   preview: GuidePreview;
 };
-
-function userHideOnLoginKey(userId: string) {
-  return `${USER_HIDE_ON_LOGIN_KEY_PREFIX}.${userId}`;
-}
-
-function sessionShownKey(userId: string | null) {
-  return userId ? `${SESSION_SHOWN_KEY_PREFIX}.user.${userId}` : `${SESSION_SHOWN_KEY_PREFIX}.guest`;
-}
-
-function hasShownGuideThisSession(userId: string | null) {
-  if (typeof window === "undefined") return true;
-  return window.sessionStorage.getItem(sessionShownKey(userId)) === "1";
-}
-
-function markGuideShownThisSession(userId: string | null) {
-  if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(sessionShownKey(userId), "1");
-}
-
-function hasGuestSeenGuide() {
-  if (typeof window === "undefined") return true;
-  return window.localStorage.getItem(GUEST_GUIDE_SEEN_KEY) === "1";
-}
-
-function markGuestGuideSeen() {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(GUEST_GUIDE_SEEN_KEY, "1");
-}
-
-function isUserHideOnLoginEnabled(userId: string | null) {
-  if (!userId || typeof window === "undefined") return false;
-  return window.localStorage.getItem(userHideOnLoginKey(userId)) === "1";
-}
-
-function setUserHideOnLogin(userId: string | null, enabled: boolean) {
-  if (!userId || typeof window === "undefined") return;
-  const key = userHideOnLoginKey(userId);
-  if (enabled) {
-    window.localStorage.setItem(key, "1");
-    return;
-  }
-  window.localStorage.removeItem(key);
-}
 
 function PreviewShell({
   title,
@@ -390,12 +342,11 @@ function buildSteps(isAuthed: boolean): GuideStep[] {
 
 export default function InstructionsModal() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
-  const [activeUserId, setActiveUserId] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [hideOnLoginChecked, setHideOnLoginChecked] = useState(false);
 
   const shouldSuppressModal = useMemo(() => {
     if (!pathname) return false;
@@ -405,35 +356,9 @@ export default function InstructionsModal() {
     return false;
   }, [pathname]);
 
-  const tryOpenGuide = useCallback(
-    (userId: string | null) => {
-      if (shouldSuppressModal) {
-        setIsOpen(false);
-        return;
-      }
-
-      if (userId) {
-        const disabledForLogin = isUserHideOnLoginEnabled(userId);
-        if (disabledForLogin || hasShownGuideThisSession(userId)) {
-          setIsOpen(false);
-          return;
-        }
-        setHideOnLoginChecked(false);
-        setIsOpen(true);
-        markGuideShownThisSession(userId);
-        setCurrentStepIndex(0);
-        return;
-      }
-
-      const shouldOpenGuest = !hasGuestSeenGuide() && !hasShownGuideThisSession(null);
-      setIsOpen(shouldOpenGuest);
-      if (shouldOpenGuest) {
-        markGuideShownThisSession(null);
-        setCurrentStepIndex(0);
-      }
-    },
-    [shouldSuppressModal]
-  );
+  const isLandingPage = pathname === "/";
+  const isPostLoginPrompt = searchParams.get("onboarding") === "1";
+  const shouldForceOpen = isLandingPage || isPostLoginPrompt;
 
   useEffect(() => {
     let mounted = true;
@@ -443,10 +368,7 @@ export default function InstructionsModal() {
       if (!mounted) return;
 
       const user = data.user ?? null;
-      const userId = user?.id ?? null;
-      setActiveUserId(userId);
       setIsAuthed(Boolean(user));
-      tryOpenGuide(userId);
       setIsReady(true);
     };
 
@@ -454,10 +376,7 @@ export default function InstructionsModal() {
 
     const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user ?? null;
-      const userId = user?.id ?? null;
-      setActiveUserId(userId);
       setIsAuthed(Boolean(user));
-      tryOpenGuide(userId);
       setIsReady(true);
     });
 
@@ -465,7 +384,24 @@ export default function InstructionsModal() {
       mounted = false;
       authSub.subscription.unsubscribe();
     };
-  }, [tryOpenGuide]);
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    const timeout = window.setTimeout(() => {
+      if (shouldSuppressModal) {
+        setIsOpen(false);
+        return;
+      }
+
+      if (!shouldForceOpen) return;
+      setCurrentStepIndex(0);
+      setIsOpen(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [isReady, shouldForceOpen, shouldSuppressModal]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -477,13 +413,8 @@ export default function InstructionsModal() {
   }, [isOpen]);
 
   const closeGuide = useCallback(() => {
-    if (activeUserId) {
-      setUserHideOnLogin(activeUserId, hideOnLoginChecked);
-    } else {
-      markGuestGuideSeen();
-    }
     setIsOpen(false);
-  }, [activeUserId, hideOnLoginChecked]);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -727,25 +658,6 @@ export default function InstructionsModal() {
             Read Full Rules
           </Link>
         </div>
-
-        {isAuthed ? (
-          <label
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={hideOnLoginChecked}
-              onChange={(event) => setHideOnLoginChecked(event.target.checked)}
-            />
-            Stop showing this when I log in
-          </label>
-        ) : null}
       </section>
     </div>
   );
