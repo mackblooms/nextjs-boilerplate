@@ -30,6 +30,22 @@ export default function HowItWorksPage() {
         This page starts with draft budget rules, then scoring rules.
       </p>
 
+      <div style={{ marginTop: 12 }}>
+        <Link
+          href="/how-it-works?tutorial=1"
+          style={{
+            display: "inline-block",
+            padding: "10px 12px",
+            border: "1px solid var(--border-color)",
+            borderRadius: 10,
+            textDecoration: "none",
+            fontWeight: 900,
+          }}
+        >
+          Open Tutorial Again
+        </Link>
+      </div>
+
       <section style={{ marginTop: 24 }}>
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>
           1) Draft Budget: 100 Total Points

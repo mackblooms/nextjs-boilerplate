@@ -22,6 +22,7 @@ function getSupabaseClient() {
 export default function AppTopNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const supabase = useMemo(() => getSupabaseClient(), []);
   const [userId, setUserId] = useState<string | null>(null);
   const [homeHref, setHomeHref] = useState("/");
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
@@ -34,33 +35,78 @@ export default function AppTopNav() {
   }, [pathname]);
 
   useEffect(() => {
-    const load = async () => {
-      const supabase = getSupabaseClient();
+    let canceled = false;
+
+    const resetNav = () => {
+      if (canceled) return;
+      setUserId(null);
+      setHomeHref("/");
+      setActivePoolId(null);
+      setActivePool(null);
+    };
+
+    const syncAuth = async () => {
       if (!supabase) {
-        setUserId(null);
-        setHomeHref("/");
+        resetNav();
         return;
       }
 
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
-
       if (!user) {
-        setUserId(null);
-        setHomeHref("/");
-        setActivePoolId(null);
-        setActivePool(null);
+        resetNav();
         return;
       }
 
+      if (canceled) return;
       setUserId(user.id);
       setHomeHref("/");
+    };
+
+    void syncAuth();
+
+    if (!supabase) {
+      return () => {
+        canceled = true;
+      };
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        resetNav();
+        return;
+      }
+
+      if (canceled) return;
+      setUserId(session.user.id);
+      setHomeHref("/");
+    });
+
+    return () => {
+      canceled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadPoolContext = async () => {
+      if (!supabase || !userId) {
+        if (!canceled) {
+          setActivePoolId(null);
+          setActivePool(null);
+        }
+        return;
+      }
 
       const { data: memberships } = await supabase
         .from("pool_members")
         .select("pool_id")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("joined_at", { ascending: true });
+
+      if (canceled) return;
 
       const membershipPoolIds = (memberships ?? []).map((m) => m.pool_id);
       const selectedPoolId = poolIdFromPath ?? membershipPoolIds[0] ?? null;
@@ -77,18 +123,32 @@ export default function AppTopNav() {
         .eq("id", selectedPoolId)
         .single();
 
+      if (canceled) return;
       setActivePool(poolData ?? null);
     };
 
-    load();
-  }, [poolIdFromPath]);
+    void loadPoolContext();
+
+    return () => {
+      canceled = true;
+    };
+  }, [poolIdFromPath, supabase, userId]);
 
   async function signOut() {
-    const supabase = getSupabaseClient();
+    // Hide authed nav immediately, then clear auth/session.
+    setUserId(null);
+    setActivePoolId(null);
+    setActivePool(null);
+
     if (supabase) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Keep redirect behavior even if revoke request fails.
+      }
     }
-    router.push("/");
+
+    router.replace("/");
     router.refresh();
   }
 
