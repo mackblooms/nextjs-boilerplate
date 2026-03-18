@@ -86,6 +86,16 @@ type RoundKey = "R64" | "R32" | "S16" | "E8";
 
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 type Region = (typeof REGIONS)[number];
+type FocusTarget = "ALL" | Region | "FINAL_FOUR";
+
+const FOCUS_TOGGLE_OPTIONS: Array<{ label: string; value: FocusTarget }> = [
+  { label: "Full Bracket", value: "ALL" },
+  { label: "East", value: "East" },
+  { label: "West", value: "West" },
+  { label: "South", value: "South" },
+  { label: "Midwest", value: "Midwest" },
+  { label: "Final Four", value: "FINAL_FOUR" },
+];
 
 const isRegion = (value: string | null): value is Region =>
   value !== null && REGIONS.includes(value as Region);
@@ -237,18 +247,61 @@ export default function BracketPage() {
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
+  const [fitTarget, setFitTarget] = useState<FocusTarget>("ALL");
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const focusSectionRefs = useRef<
+    Record<Exclude<FocusTarget, "ALL">, HTMLElement | null>
+  >({
+    East: null,
+    West: null,
+    South: null,
+    Midwest: null,
+    FINAL_FOUR: null,
+  });
 
-  const applyFitScale = useCallback(() => {
+  const clampScale = (next: number) => Math.max(0.35, Math.min(1.8, next));
+
+  const applyFitScale = useCallback((
+    target: FocusTarget = fitTarget,
+    behavior: ScrollBehavior = "auto",
+  ) => {
     const viewport = viewportRef.current;
     const content = contentRef.current;
     if (!viewport || !content) return;
 
-    const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
-    setScale(Math.max(0.35, next));
-  }, []);
+    if (target === "ALL") {
+      const next = clampScale(Math.min(1, viewport.clientWidth / content.scrollWidth));
+      setScale(next);
+      viewport.scrollTo({ left: 0, top: 0, behavior });
+      return;
+    }
+
+    const targetNode = focusSectionRefs.current[target];
+    if (!targetNode) return;
+
+    const viewportTop = viewport.getBoundingClientRect().top;
+    const availableHeight = Math.max(320, window.innerHeight - viewportTop - 24);
+    const widthScale = viewport.clientWidth / (targetNode.offsetWidth + 48);
+    const heightScale = availableHeight / (targetNode.offsetHeight + 48);
+    const next = clampScale(Math.min(widthScale, heightScale));
+
+    setScale(next);
+    window.requestAnimationFrame(() => {
+      targetNode.scrollIntoView({
+        behavior,
+        block: "center",
+        inline: "center",
+      });
+    });
+  }, [fitTarget]);
+
+  const focusOnTarget = useCallback((target: FocusTarget) => {
+    setFitMode(true);
+    setFitTarget(target);
+    window.requestAnimationFrame(() => applyFitScale(target, "smooth"));
+  }, [applyFitScale]);
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -648,27 +701,18 @@ export default function BracketPage() {
     if (!fitMode || loading) return;
 
     const runFit = () => {
-      window.requestAnimationFrame(applyFitScale);
+      window.requestAnimationFrame(() => applyFitScale(fitTarget));
     };
 
     runFit();
     window.addEventListener("resize", runFit);
     return () => window.removeEventListener("resize", runFit);
-  }, [applyFitScale, fitMode, loading]);
-
-  const zoomIn = () => {
-    setFitMode(false);
-    setScale((s) => Math.min(1.25, +(s + 0.1).toFixed(2)));
-  };
-
-  const zoomOut = () => {
-    setFitMode(false);
-    setScale((s) => Math.max(0.35, +(s - 0.1).toFixed(2)));
-  };
+  }, [applyFitScale, fitMode, fitTarget, loading]);
 
   const setFit = () => {
     setFitMode(true);
-    window.requestAnimationFrame(applyFitScale);
+    setFitTarget("ALL");
+    window.requestAnimationFrame(() => applyFitScale("ALL"));
   };
   const set100 = () => {
     setFitMode(false);
@@ -1026,6 +1070,7 @@ export default function BracketPage() {
 
   const renderRegionBracket = (region: Region, reverse = false) => {
     const rounds = byRoundByRegion[region];
+    const isFocused = fitMode && fitTarget === region;
 
     const renderRoundColumn = (title: string, roundKey: RoundKey) => {
       const gamesForRound = rounds[roundKey] ?? [];
@@ -1075,12 +1120,32 @@ export default function BracketPage() {
 
     return (
       <section
+        ref={(node) => {
+          focusSectionRefs.current[region] = node;
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Focus on ${region} region`}
+        aria-pressed={isFocused}
+        title={`Focus on ${region}`}
+        onClick={() => focusOnTarget(region)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            focusOnTarget(region);
+          }
+        }}
         style={{
-          border: "1px solid var(--border-color)",
+          border: isFocused
+            ? "2px solid var(--highlight-border)"
+            : "1px solid var(--border-color)",
           borderRadius: 16,
           padding: 14,
           background: "var(--surface-muted)",
           minWidth: 4 * 260 + 3 * 16 + 40,
+          cursor: "pointer",
+          boxShadow: isFocused ? "0 0 0 2px var(--highlight)" : "none",
+          transition: "border-color 120ms ease, box-shadow 120ms ease",
         }}
       >
         <div
@@ -1344,6 +1409,39 @@ export default function BracketPage() {
           marginInline: "auto",
         }}
       >
+        <div style={{ fontWeight: 900 }}>Focus:</div>
+        {FOCUS_TOGGLE_OPTIONS.map((option) => {
+          const isActive = fitMode && fitTarget === option.value;
+          return (
+            <button
+              key={option.value}
+              onClick={() => focusOnTarget(option.value)}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: isActive ? "var(--surface-elevated)" : "var(--surface)",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        style={{
+          marginTop: 12,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+          maxWidth: 1800,
+          marginInline: "auto",
+        }}
+      >
         <div style={{ fontWeight: 900 }}>View:</div>
         <button
           onClick={setFit}
@@ -1351,7 +1449,10 @@ export default function BracketPage() {
             padding: "8px 10px",
             borderRadius: 10,
             border: "1px solid var(--border-color)",
-            background: fitMode ? "var(--surface-elevated)" : "var(--surface)",
+            background:
+              fitMode && fitTarget === "ALL"
+                ? "var(--surface-elevated)"
+                : "var(--surface)",
             fontWeight: 900,
             cursor: "pointer",
           }}
@@ -1374,35 +1475,6 @@ export default function BracketPage() {
         >
           100%
         </button>
-        <button
-          onClick={zoomOut}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid var(--border-color)",
-            background: "var(--surface)",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          −
-        </button>
-        <button
-          onClick={zoomIn}
-          style={{
-            padding: "8px 10px",
-            borderRadius: 10,
-            border: "1px solid var(--border-color)",
-            background: "var(--surface)",
-            fontWeight: 900,
-            cursor: "pointer",
-          }}
-        >
-          +
-        </button>
-        <div style={{ fontSize: 12, opacity: 0.7 }}>
-          Zoom: <b>{Math.round(scale * 100)}%</b>
-        </div>
       </div>
 
       <div
@@ -1414,7 +1486,7 @@ export default function BracketPage() {
           background: "var(--surface)",
           padding: 12,
           overflowX: "auto",
-          overflowY: "hidden",
+          overflowY: "auto",
         }}
       >
         <div
@@ -1448,12 +1520,36 @@ export default function BracketPage() {
               }}
             >
               <section
+                ref={(node) => {
+                  focusSectionRefs.current.FINAL_FOUR = node;
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Focus on Final Four"
+                aria-pressed={fitMode && fitTarget === "FINAL_FOUR"}
+                title="Focus on Final Four"
+                onClick={() => focusOnTarget("FINAL_FOUR")}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    focusOnTarget("FINAL_FOUR");
+                  }
+                }}
                 style={{
-                  border: "1px solid var(--border-color)",
+                  border:
+                    fitMode && fitTarget === "FINAL_FOUR"
+                      ? "2px solid var(--highlight-border)"
+                      : "1px solid var(--border-color)",
                   borderRadius: 16,
                   padding: 14,
                   background: "var(--surface)",
                   width: 860,
+                  cursor: "pointer",
+                  boxShadow:
+                    fitMode && fitTarget === "FINAL_FOUR"
+                      ? "0 0 0 2px var(--highlight)"
+                      : "none",
+                  transition: "border-color 120ms ease, box-shadow 120ms ease",
                 }}
               >
                 <div

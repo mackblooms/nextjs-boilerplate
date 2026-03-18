@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { isMissingSavedDraftTablesError, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
 type Pool = {
   id: string;
@@ -18,6 +19,17 @@ type StatusTone = "success" | "error" | "info";
 type StatusMessage = {
   tone: StatusTone;
   text: string;
+};
+
+type DraftRow = {
+  id: string;
+  name: string;
+  updated_at: string;
+};
+
+type LeaveEntryRow = {
+  id: string;
+  entry_name: string | null;
 };
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -83,6 +95,35 @@ type EspnEvent = {
 type EspnScoreboard = {
   events?: EspnEvent[];
 };
+
+function sortDraftsByUpdatedAt(a: DraftRow, b: DraftRow) {
+  return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+}
+
+function isMissingEntryNameError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function isSingleEntryPerPoolConstraintError(message?: string) {
+  if (!message) return false;
+  const lowered = message.toLowerCase();
+  return (
+    lowered.includes("entries_pool_id_user_id_key") ||
+    (lowered.includes("duplicate key") &&
+      lowered.includes("pool_id") &&
+      lowered.includes("user_id"))
+  );
+}
+
+function leaveEntryLabel(entry: LeaveEntryRow, index: number) {
+  const trimmed = entry.entry_name?.trim() ?? "";
+  if (trimmed.length > 0) return trimmed;
+  return `Entry ${index + 1}`;
+}
 
 function yyyymmdd(date: Date) {
   const yyyy = date.getFullYear();
@@ -427,9 +468,23 @@ export default function PoolPage() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [copyMsg, setCopyMsg] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [joinPassword, setJoinPassword] = useState("");
   const [joining, setJoining] = useState(false);
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  const [draftModalLoading, setDraftModalLoading] = useState(false);
+  const [draftModalSubmitting, setDraftModalSubmitting] = useState(false);
+  const [draftModalMessage, setDraftModalMessage] = useState("");
+  const [availableDrafts, setAvailableDrafts] = useState<DraftRow[]>([]);
+  const [draftPickMap, setDraftPickMap] = useState<Map<string, Set<string>>>(new Map());
+  const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
+  const [leaveModalLoading, setLeaveModalLoading] = useState(false);
+  const [leaveModalSubmitting, setLeaveModalSubmitting] = useState(false);
+  const [leaveModalMessage, setLeaveModalMessage] = useState("");
+  const [leaveEntries, setLeaveEntries] = useState<LeaveEntryRow[]>([]);
+  const [selectedLeaveEntryIds, setSelectedLeaveEntryIds] = useState<Set<string>>(new Set());
   const [scores, setScores] = useState<LiveScoreGame[]>([]);
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoresError, setScoresError] = useState<string | null>(null);
@@ -556,7 +611,7 @@ export default function PoolPage() {
     };
 
     load();
-  }, [poolId]);
+  }, [poolId, reloadKey]);
 
   useEffect(() => {
     if (!copyMsg) return;
@@ -614,6 +669,363 @@ export default function PoolPage() {
   }, []);
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
+  const selectedDraftCount = selectedDraftIds.size;
+  const selectedLeaveCount = selectedLeaveEntryIds.size;
+
+  function closeDraftModal() {
+    if (draftModalSubmitting) return;
+    setDraftModalOpen(false);
+    setDraftModalLoading(false);
+    setDraftModalSubmitting(false);
+    setDraftModalMessage("");
+    setAvailableDrafts([]);
+    setDraftPickMap(new Map());
+    setSelectedDraftIds(new Set());
+  }
+
+  async function openDraftModal() {
+    setDraftModalOpen(true);
+    setDraftModalLoading(true);
+    setDraftModalSubmitting(false);
+    setDraftModalMessage("");
+    setAvailableDrafts([]);
+    setDraftPickMap(new Map());
+    setSelectedDraftIds(new Set());
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setDraftModalLoading(false);
+      setDraftModalMessage("Please log in first.");
+      return;
+    }
+
+    const draftsQuery = await supabase
+      .from("saved_drafts")
+      .select("id,name,updated_at")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false });
+
+    if (draftsQuery.error) {
+      setDraftModalLoading(false);
+      if (isMissingSavedDraftTablesError(draftsQuery.error.message)) {
+        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+        return;
+      }
+      setDraftModalMessage(draftsQuery.error.message);
+      return;
+    }
+
+    const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);
+    setAvailableDrafts(drafts);
+
+    if (drafts.length === 0) {
+      setDraftModalLoading(false);
+      setDraftModalMessage("No saved drafts yet. Create one first.");
+      return;
+    }
+
+    const draftIds = drafts.map((draft) => draft.id);
+    const picksQuery = await supabase
+      .from("saved_draft_picks")
+      .select("draft_id,team_id")
+      .in("draft_id", draftIds);
+
+    if (picksQuery.error) {
+      setDraftModalLoading(false);
+      if (isMissingSavedDraftTablesError(picksQuery.error.message)) {
+        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+        return;
+      }
+      setDraftModalMessage(picksQuery.error.message);
+      return;
+    }
+
+    const nextPickMap = new Map<string, Set<string>>();
+    for (const draftId of draftIds) {
+      nextPickMap.set(draftId, new Set());
+    }
+    for (const row of (picksQuery.data ?? []) as SavedDraftPickRow[]) {
+      const picks = nextPickMap.get(row.draft_id) ?? new Set<string>();
+      picks.add(row.team_id);
+      nextPickMap.set(row.draft_id, picks);
+    }
+
+    setDraftPickMap(nextPickMap);
+    setDraftModalLoading(false);
+  }
+
+  function toggleDraftSelection(draftId: string) {
+    setSelectedDraftIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(draftId)) next.delete(draftId);
+      else next.add(draftId);
+      return next;
+    });
+  }
+
+  function selectAllDrafts() {
+    setSelectedDraftIds(new Set(availableDrafts.map((draft) => draft.id)));
+  }
+
+  function clearDraftSelection() {
+    setSelectedDraftIds(new Set());
+  }
+
+  async function createEntry(poolIdValue: string, userId: string, entryName: string): Promise<{ id: string }> {
+    const insertWithName = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolIdValue,
+        user_id: userId,
+        entry_name: entryName.trim() || "My Bracket",
+      })
+      .select("id")
+      .single();
+
+    if (!insertWithName.error && insertWithName.data) {
+      return { id: insertWithName.data.id as string };
+    }
+
+    if (!isMissingEntryNameError(insertWithName.error?.message)) {
+      if (isSingleEntryPerPoolConstraintError(insertWithName.error?.message)) {
+        throw new Error(
+          "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
+        );
+      }
+      throw new Error(insertWithName.error?.message ?? "Failed to create entry.");
+    }
+
+    const insertFallback = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolIdValue,
+        user_id: userId,
+      })
+      .select("id")
+      .single();
+
+    if (insertFallback.error || !insertFallback.data) {
+      if (isSingleEntryPerPoolConstraintError(insertFallback.error?.message)) {
+        throw new Error(
+          "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
+        );
+      }
+      throw new Error(insertFallback.error?.message ?? "Failed to create entry.");
+    }
+
+    return { id: insertFallback.data.id as string };
+  }
+
+  async function submitSelectedDrafts() {
+    if (selectedDraftIds.size === 0) {
+      setDraftModalMessage("Select at least one draft.");
+      return;
+    }
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setDraftModalMessage("Please log in first.");
+      return;
+    }
+
+    setDraftModalSubmitting(true);
+    setDraftModalMessage("");
+
+    let created = 0;
+    let skippedEmpty = 0;
+    const selectedRows = availableDrafts.filter((draft) => selectedDraftIds.has(draft.id));
+
+    try {
+      for (const draft of selectedRows) {
+        const draftPickSet = draftPickMap.get(draft.id) ?? new Set<string>();
+        const draftPickIds = Array.from(draftPickSet);
+        if (draftPickIds.length === 0) {
+          skippedEmpty += 1;
+          continue;
+        }
+
+        const createdEntry = await createEntry(poolId, user.id, draft.name);
+        const rows = draftPickIds.map((teamId) => ({
+          entry_id: createdEntry.id,
+          team_id: teamId,
+        }));
+        const insertPicks = await supabase.from("entry_picks").insert(rows);
+        if (insertPicks.error) {
+          throw new Error(insertPicks.error.message);
+        }
+        created += 1;
+      }
+    } catch (error: unknown) {
+      setDraftModalSubmitting(false);
+      setDraftModalMessage(error instanceof Error ? error.message : "Failed to enter selected drafts.");
+      return;
+    }
+
+    setDraftModalSubmitting(false);
+
+    if (created === 0) {
+      if (skippedEmpty > 0) {
+        setDraftModalMessage(
+          "No entries were created because selected draft(s) have no teams yet. Add picks to drafts and try again."
+        );
+      } else {
+        setDraftModalMessage("No entries were created. Adjust your selection and try again.");
+      }
+      return;
+    }
+
+    closeDraftModal();
+    setStatus({
+      tone: "success",
+      text:
+        `Entered ${created} draft${created === 1 ? "" : "s"} into ${pool?.name ?? "this pool"}.` +
+        (skippedEmpty > 0 ? ` Skipped ${skippedEmpty} empty draft${skippedEmpty === 1 ? "" : "s"}.` : ""),
+    });
+    setReloadKey((prev) => prev + 1);
+  }
+
+  function closeLeaveModal() {
+    if (leaveModalSubmitting) return;
+    setLeaveModalOpen(false);
+    setLeaveModalLoading(false);
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("");
+    setLeaveEntries([]);
+    setSelectedLeaveEntryIds(new Set());
+  }
+
+  async function openLeaveModal() {
+    setStatus(null);
+    setLeaveModalOpen(true);
+    setLeaveModalLoading(true);
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("");
+    setLeaveEntries([]);
+    setSelectedLeaveEntryIds(new Set());
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setLeaveModalLoading(false);
+      setLeaveModalMessage("Please log in first.");
+      return;
+    }
+
+    const withName = await supabase
+      .from("entries")
+      .select("id,entry_name")
+      .eq("pool_id", poolId)
+      .eq("user_id", user.id);
+
+    if (withName.error && !isMissingEntryNameError(withName.error.message)) {
+      setLeaveModalLoading(false);
+      setLeaveModalMessage(withName.error.message);
+      return;
+    }
+
+    if (withName.error && isMissingEntryNameError(withName.error.message)) {
+      const fallback = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id);
+
+      if (fallback.error) {
+        setLeaveModalLoading(false);
+        setLeaveModalMessage(fallback.error.message);
+        return;
+      }
+
+      const rows = ((fallback.data ?? []) as Array<{ id: string }>).map((row) => ({
+        id: row.id,
+        entry_name: null,
+      }));
+      setLeaveEntries(rows);
+      setLeaveModalLoading(false);
+      return;
+    }
+
+    setLeaveEntries((withName.data ?? []) as LeaveEntryRow[]);
+    setLeaveModalLoading(false);
+  }
+
+  function toggleLeaveEntrySelection(entryId: string) {
+    setSelectedLeaveEntryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(entryId)) next.delete(entryId);
+      else next.add(entryId);
+      return next;
+    });
+  }
+
+  function selectAllLeaveEntries() {
+    setSelectedLeaveEntryIds(new Set(leaveEntries.map((entry) => entry.id)));
+  }
+
+  function clearLeaveSelection() {
+    setSelectedLeaveEntryIds(new Set());
+  }
+
+  async function submitLeaveSelection() {
+    if (leaveEntries.length > 0 && selectedLeaveEntryIds.size === 0) {
+      setLeaveModalMessage("Select at least one entry to remove.");
+      return;
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData.session;
+    if (!session) {
+      setLeaveModalMessage("Session expired. Log in again to continue.");
+      return;
+    }
+
+    setLeaveModalSubmitting(true);
+    setLeaveModalMessage("");
+
+    const entryIds = Array.from(selectedLeaveEntryIds);
+    const res = await fetch("/api/pools/leave", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        poolId,
+        entryIds: entryIds.length > 0 ? entryIds : undefined,
+      }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      removedEntryIds?: string[];
+      membershipRemoved?: boolean;
+    };
+
+    if (!res.ok) {
+      setLeaveModalSubmitting(false);
+      setLeaveModalMessage(body.error ?? "Failed to remove selected entries.");
+      return;
+    }
+
+    if (body.membershipRemoved) {
+      setLeaveModalSubmitting(false);
+      closeLeaveModal();
+      setIsMember(false);
+      setStatus({ tone: "success", text: `Left ${pool?.name ?? "this pool"}.` });
+      setReloadKey((prev) => prev + 1);
+      return;
+    }
+
+    const removedIds = new Set(body.removedEntryIds ?? []);
+    const remainingEntries = leaveEntries.filter((entry) => !removedIds.has(entry.id));
+    setLeaveEntries(remainingEntries);
+    setSelectedLeaveEntryIds(new Set());
+    setLeaveModalSubmitting(false);
+    setLeaveModalMessage("Removed selected entries from this pool.");
+    setReloadKey((prev) => prev + 1);
+  }
 
   async function joinPool() {
     setStatus(null);
@@ -678,7 +1090,7 @@ export default function PoolPage() {
     setJoinPassword("");
     setStatus({
       tone: "success",
-      text: "Joined! You can now enter saved drafts, view brackets, and track leaderboard results.",
+      text: "Joined! Choose draft(s) to enter next.",
     });
     trackEvent({
       eventName: "pool_join_success",
@@ -686,6 +1098,8 @@ export default function PoolPage() {
       metadata: { location: "pool_page", is_private: poolIsPrivate },
     });
     setJoining(false);
+    setReloadKey((prev) => prev + 1);
+    await openDraftModal();
   }
 
   async function copyShareLink() {
@@ -930,8 +1344,8 @@ export default function PoolPage() {
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
             <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 14 }}>
               {poolIsPrivate
-                ? "This is a private pool. Enter the pool password to join."
-                : "This is a public pool. Join now to make picks and track results."}
+                ? "This is a private pool. Enter the pool password to join, then pick draft(s) to enter."
+                : "This is a public pool. Join now, then pick draft(s) to enter."}
             </p>
             <div style={{ marginTop: 12, width: "100%", maxWidth: 420 }}>
               {poolIsPrivate ? (
@@ -973,7 +1387,7 @@ export default function PoolPage() {
                   opacity: joinDisabled ? 0.7 : 1,
                 }}
               >
-                {joining ? "Joining..." : "Join pool"}
+                {joining ? "Joining..." : "Join + Choose Drafts"}
               </button>
             </div>
           </section>
@@ -1012,8 +1426,9 @@ export default function PoolPage() {
               >
                 My Drafts
               </Link>
-              <Link
-                href={`/pool/${poolId}/draft`}
+              <button
+                type="button"
+                onClick={() => void openDraftModal()}
                 style={{
                   flex: "1 1 140px",
                   minWidth: 120,
@@ -1021,16 +1436,37 @@ export default function PoolPage() {
                   minHeight: 44,
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
-                  textDecoration: "none",
                   fontWeight: 800,
                   background: "var(--surface)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  cursor: "pointer",
                 }}
               >
                 Enter Drafts
-              </Link>
+              </button>
+              <button
+                type="button"
+                onClick={() => void openLeaveModal()}
+                style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid #dc2626",
+                  fontWeight: 800,
+                  background: "rgba(220,38,38,0.12)",
+                  color: "#dc2626",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}
+              >
+                Leave Entries
+              </button>
               <Link
                 href={`/pool/${poolId}/bracket`}
                 style={{
@@ -1103,6 +1539,413 @@ export default function PoolPage() {
           />
         </div>
       </div>
+
+      {draftModalOpen ? (
+        <div
+          role="presentation"
+          onClick={closeDraftModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 125,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Select drafts to enter"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(640px, 100%)",
+              maxHeight: "88vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Enter Drafts in {pool?.name ?? "Pool"}</h2>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                Select one or more drafts below. Each selected draft creates its own entry in this pool.
+              </p>
+            </div>
+
+            {draftModalLoading ? <p style={{ margin: 0 }}>Loading your drafts...</p> : null}
+
+            {!draftModalLoading && availableDrafts.length > 0 ? (
+              <>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={selectAllDrafts}
+                    disabled={draftModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDraftSelection}
+                    disabled={draftModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  {availableDrafts.map((draft) => {
+                    const picks = draftPickMap.get(draft.id);
+                    const pickCount = picks?.size ?? 0;
+                    const checked = selectedDraftIds.has(draft.id);
+                    return (
+                      <label
+                        key={draft.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "center",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleDraftSelection(draft.id)}
+                          disabled={draftModalSubmitting}
+                        />
+                        <div style={{ display: "grid", gap: 2 }}>
+                          <div style={{ fontWeight: 900 }}>{draft.name}</div>
+                          <div style={{ fontSize: 13, opacity: 0.8 }}>
+                            {pickCount} team{pickCount === 1 ? "" : "s"} selected
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
+
+            {!draftModalLoading && availableDrafts.length === 0 ? (
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
+                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
+                  Open <Link href="/drafts">My Drafts</Link> to create one.
+                </p>
+              </div>
+            ) : null}
+
+            {draftModalMessage ? (
+              <p
+                style={{
+                  margin: 0,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                }}
+              >
+                {draftModalMessage}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
+              <Link
+                href="/drafts"
+                onClick={closeDraftModal}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  textDecoration: "none",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                Manage Drafts
+              </Link>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={closeDraftModal}
+                  disabled={draftModalSubmitting}
+                  style={{
+                    padding: "10px 12px",
+                    minHeight: 44,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 800,
+                    cursor: draftModalSubmitting ? "not-allowed" : "pointer",
+                    opacity: draftModalSubmitting ? 0.7 : 1,
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void submitSelectedDrafts()}
+                  disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading}
+                  style={{
+                    padding: "10px 12px",
+                    minHeight: 44,
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    fontWeight: 900,
+                    cursor:
+                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading
+                        ? "not-allowed"
+                        : "pointer",
+                    opacity: draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading ? 0.7 : 1,
+                  }}
+                >
+                  {draftModalSubmitting
+                    ? "Entering..."
+                    : `Enter ${selectedDraftCount} Draft${selectedDraftCount === 1 ? "" : "s"}`}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {leaveModalOpen ? (
+        <div
+          role="presentation"
+          onClick={closeLeaveModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 118,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remove entries from pool"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(640px, 100%)",
+              maxHeight: "88vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
+                Remove Entries from {pool?.name ?? "Pool"}
+              </h2>
+              <p style={{ margin: 0, opacity: 0.8 }}>
+                Choose which entries to remove from this pool.
+              </p>
+            </div>
+
+            {leaveModalLoading ? <p style={{ margin: 0 }}>Loading your pool entries...</p> : null}
+
+            {!leaveModalLoading && leaveEntries.length > 0 ? (
+              <>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={selectAllLeaveEntries}
+                    disabled={leaveModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearLeaveSelection}
+                    disabled={leaveModalSubmitting}
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 10,
+                      border: "1px solid var(--border-color)",
+                      background: "var(--surface)",
+                      fontWeight: 800,
+                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div style={{ display: "grid", gap: 8 }}>
+                  {leaveEntries.map((entry, index) => {
+                    const checked = selectedLeaveEntryIds.has(entry.id);
+                    return (
+                      <label
+                        key={entry.id}
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          alignItems: "center",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleLeaveEntrySelection(entry.id)}
+                          disabled={leaveModalSubmitting}
+                        />
+                        <div style={{ display: "grid", gap: 2 }}>
+                          <div style={{ fontWeight: 900 }}>{leaveEntryLabel(entry, index)}</div>
+                          <div style={{ fontSize: 12, opacity: 0.75 }}>Entry ID: {entry.id.slice(0, 8)}</div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
+
+            {!leaveModalLoading && leaveEntries.length === 0 ? (
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                }}
+              >
+                <p style={{ margin: 0, fontWeight: 700 }}>No entries found for this pool.</p>
+                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
+                  Use the red button below to leave this pool.
+                </p>
+              </div>
+            ) : null}
+
+            {leaveModalMessage ? (
+              <p
+                style={{
+                  margin: 0,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  fontWeight: 700,
+                }}
+              >
+                {leaveModalMessage}
+              </p>
+            ) : null}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={closeLeaveModal}
+                disabled={leaveModalSubmitting}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  fontWeight: 800,
+                  cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
+                  opacity: leaveModalSubmitting ? 0.7 : 1,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void submitLeaveSelection()}
+                disabled={leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)}
+                style={{
+                  padding: "10px 12px",
+                  minHeight: 44,
+                  borderRadius: 10,
+                  border: "1px solid #dc2626",
+                  background: "rgba(220,38,38,0.12)",
+                  color: "#dc2626",
+                  fontWeight: 900,
+                  cursor:
+                    leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                      ? 0.7
+                      : 1,
+                }}
+              >
+                {leaveModalSubmitting
+                  ? "Removing..."
+                  : leaveEntries.length > 0
+                    ? `Remove ${selectedLeaveCount} Entr${selectedLeaveCount === 1 ? "y" : "ies"}`
+                    : "Leave Pool"}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
