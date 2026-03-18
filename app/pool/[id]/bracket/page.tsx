@@ -677,49 +677,12 @@ export default function BracketPage() {
     return matchLiveScoresToGames(games, liveScores, espnTeamIdByLocalId);
   }, [espnTeamIdByLocalId, games, liveScores]);
 
-  const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
-    if (!g) return null;
-
-    if (g.start_time) {
-      const d = new Date(g.start_time);
-      if (!Number.isNaN(d.getTime())) {
-        return (
-          d.toLocaleString("en-US", {
-            timeZone: "America/New_York",
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }) + " ET"
-        );
-      }
-    }
-
-    if (g.game_date) {
-      const d = new Date(`${g.game_date}T00:00:00Z`);
-      if (!Number.isNaN(d.getTime())) {
-        return (
-          d.toLocaleDateString("en-US", {
-            timeZone: "America/New_York",
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          }) + " ET"
-        );
-      }
-    }
-
-    return null;
-  }, []);
-
   const formatGameMeta = useCallback((g: Game | null | undefined): string | null => {
     if (!g) return null;
     const live = liveByGameId.get(g.id);
-    if (live?.detail) return live.detail;
-    return formatGameTimeEst(g);
-  }, [formatGameTimeEst, liveByGameId]);
+    if (live?.detail && live.state !== "UPCOMING") return live.detail;
+    return null;
+  }, [liveByGameId]);
 
   const upsetWatchGameIds = useMemo(() => {
     const out = new Set<string>();
