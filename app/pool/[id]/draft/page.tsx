@@ -63,6 +63,17 @@ function isMissingEntryNameError(message?: string) {
   );
 }
 
+function isSingleEntryPerPoolConstraintError(message?: string) {
+  if (!message) return false;
+  const lowered = message.toLowerCase();
+  return (
+    lowered.includes("entries_pool_id_user_id_key") ||
+    (lowered.includes("duplicate key") &&
+      lowered.includes("pool_id") &&
+      lowered.includes("user_id"))
+  );
+}
+
 function entryLabel(entry: EntryRow, index: number) {
   const trimmed = entry.entry_name?.trim() ?? "";
   if (trimmed.length > 0) return trimmed;
@@ -383,6 +394,11 @@ export default function PoolDraftPage() {
     }
 
     if (!isMissingEntryNameError(insertWithName.error?.message)) {
+      if (isSingleEntryPerPoolConstraintError(insertWithName.error?.message)) {
+        throw new Error(
+          "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
+        );
+      }
       throw new Error(insertWithName.error?.message ?? "Failed to create entry.");
     }
 
@@ -396,6 +412,11 @@ export default function PoolDraftPage() {
       .single();
 
     if (insertFallback.error || !insertFallback.data) {
+      if (isSingleEntryPerPoolConstraintError(insertFallback.error?.message)) {
+        throw new Error(
+          "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
+        );
+      }
       throw new Error(insertFallback.error?.message ?? "Failed to create entry.");
     }
 
