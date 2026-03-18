@@ -561,13 +561,18 @@ function HomeContent() {
   }, [invitePoolId]);
 
   useEffect(() => {
+    if (isAuthenticated !== true) {
+      setShowScoringUpdateModal(false);
+      return;
+    }
+
     try {
       if (window.localStorage.getItem(SCORING_UPDATE_SEEN_KEY) === "1") return;
       setShowScoringUpdateModal(true);
     } catch {
       setShowScoringUpdateModal(true);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const dismissScoringUpdateModal = () => {
     setShowScoringUpdateModal(false);
