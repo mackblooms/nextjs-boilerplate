@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
-import { isMissingSavedDraftTablesError, type SavedDraftPickRow } from "@/lib/savedDrafts";
+import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
 type Pool = {
   id: string;
@@ -478,6 +478,7 @@ export default function PoolPage() {
   const [draftModalMessage, setDraftModalMessage] = useState("");
   const [availableDrafts, setAvailableDrafts] = useState<DraftRow[]>([]);
   const [draftPickMap, setDraftPickMap] = useState<Map<string, Set<string>>>(new Map());
+  const [alreadyEnteredDraftIds, setAlreadyEnteredDraftIds] = useState<Set<string>>(new Set());
   const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
   const [leaveModalLoading, setLeaveModalLoading] = useState(false);
@@ -680,6 +681,7 @@ export default function PoolPage() {
     setDraftModalMessage("");
     setAvailableDrafts([]);
     setDraftPickMap(new Map());
+    setAlreadyEnteredDraftIds(new Set());
     setSelectedDraftIds(new Set());
   }
 
@@ -690,6 +692,7 @@ export default function PoolPage() {
     setDraftModalMessage("");
     setAvailableDrafts([]);
     setDraftPickMap(new Map());
+    setAlreadyEnteredDraftIds(new Set());
     setSelectedDraftIds(new Set());
 
     const { data: authData } = await supabase.auth.getUser();
@@ -751,11 +754,60 @@ export default function PoolPage() {
       nextPickMap.set(row.draft_id, picks);
     }
 
+    const entryRowsQuery = await supabase
+      .from("entries")
+      .select("id")
+      .eq("pool_id", poolId)
+      .eq("user_id", user.id);
+
+    if (entryRowsQuery.error) {
+      setDraftModalLoading(false);
+      setDraftModalMessage(entryRowsQuery.error.message);
+      return;
+    }
+
+    const entryIds = ((entryRowsQuery.data ?? []) as Array<{ id: string }>).map((row) => row.id);
+    const entryPickMap = new Map<string, Set<string>>();
+    if (entryIds.length > 0) {
+      const entryPicksQuery = await supabase
+        .from("entry_picks")
+        .select("entry_id,team_id")
+        .in("entry_id", entryIds);
+
+      if (entryPicksQuery.error) {
+        setDraftModalLoading(false);
+        setDraftModalMessage(entryPicksQuery.error.message);
+        return;
+      }
+
+      for (const entryId of entryIds) entryPickMap.set(entryId, new Set());
+      for (const row of (entryPicksQuery.data ?? []) as Array<{ entry_id: string; team_id: string }>) {
+        const picks = entryPickMap.get(row.entry_id) ?? new Set<string>();
+        picks.add(row.team_id);
+        entryPickMap.set(row.entry_id, picks);
+      }
+    }
+
+    const enteredDrafts = new Set<string>();
+    for (const draft of drafts) {
+      const draftPicks = nextPickMap.get(draft.id) ?? new Set<string>();
+      if (draftPicks.size === 0) continue;
+      for (const entryPicks of entryPickMap.values()) {
+        if (entryPicks.size === 0) continue;
+        if (sameTeamSet(draftPicks, entryPicks)) {
+          enteredDrafts.add(draft.id);
+          break;
+        }
+      }
+    }
+
     setDraftPickMap(nextPickMap);
+    setAlreadyEnteredDraftIds(enteredDrafts);
     setDraftModalLoading(false);
   }
 
   function toggleDraftSelection(draftId: string) {
+    if (alreadyEnteredDraftIds.has(draftId)) return;
     setSelectedDraftIds((prev) => {
       const next = new Set(prev);
       if (next.has(draftId)) next.delete(draftId);
@@ -765,7 +817,9 @@ export default function PoolPage() {
   }
 
   function selectAllDrafts() {
-    setSelectedDraftIds(new Set(availableDrafts.map((draft) => draft.id)));
+    setSelectedDraftIds(
+      new Set(availableDrafts.filter((draft) => !alreadyEnteredDraftIds.has(draft.id)).map((draft) => draft.id))
+    );
   }
 
   function clearDraftSelection() {
@@ -830,12 +884,19 @@ export default function PoolPage() {
       return;
     }
 
+    const selectedRows = availableDrafts.filter(
+      (draft) => selectedDraftIds.has(draft.id) && !alreadyEnteredDraftIds.has(draft.id)
+    );
+    if (selectedRows.length === 0) {
+      setDraftModalMessage("Selected draft(s) are already in this pool.");
+      return;
+    }
+
     setDraftModalSubmitting(true);
     setDraftModalMessage("");
 
     let created = 0;
     let skippedEmpty = 0;
-    const selectedRows = availableDrafts.filter((draft) => selectedDraftIds.has(draft.id));
 
     try {
       for (const draft of selectedRows) {
@@ -925,6 +986,7 @@ export default function PoolPage() {
       return;
     }
 
+    let nextEntries: LeaveEntryRow[] = [];
     if (withName.error && isMissingEntryNameError(withName.error.message)) {
       const fallback = await supabase
         .from("entries")
@@ -938,16 +1000,70 @@ export default function PoolPage() {
         return;
       }
 
-      const rows = ((fallback.data ?? []) as Array<{ id: string }>).map((row) => ({
+      nextEntries = ((fallback.data ?? []) as Array<{ id: string }>).map((row) => ({
         id: row.id,
         entry_name: null,
       }));
-      setLeaveEntries(rows);
-      setLeaveModalLoading(false);
-      return;
+    } else {
+      nextEntries = (withName.data ?? []) as LeaveEntryRow[];
     }
 
-    setLeaveEntries((withName.data ?? []) as LeaveEntryRow[]);
+    const unresolvedEntries = nextEntries.filter((entry) => !(entry.entry_name?.trim().length));
+    if (unresolvedEntries.length > 0) {
+      const draftsQuery = await supabase
+        .from("saved_drafts")
+        .select("id,name,updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+
+      if (!draftsQuery.error) {
+        const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);
+        const draftIds = drafts.map((draft) => draft.id);
+        if (draftIds.length > 0) {
+          const draftPicksQuery = await supabase
+            .from("saved_draft_picks")
+            .select("draft_id,team_id")
+            .in("draft_id", draftIds);
+
+          const unresolvedEntryIds = unresolvedEntries.map((entry) => entry.id);
+          const entryPicksQuery = await supabase
+            .from("entry_picks")
+            .select("entry_id,team_id")
+            .in("entry_id", unresolvedEntryIds);
+
+          if (!draftPicksQuery.error && !entryPicksQuery.error) {
+            const draftPickMap = new Map<string, Set<string>>();
+            for (const draftId of draftIds) draftPickMap.set(draftId, new Set());
+            for (const row of (draftPicksQuery.data ?? []) as SavedDraftPickRow[]) {
+              const picks = draftPickMap.get(row.draft_id) ?? new Set<string>();
+              picks.add(row.team_id);
+              draftPickMap.set(row.draft_id, picks);
+            }
+
+            const entryPickMap = new Map<string, Set<string>>();
+            for (const entryId of unresolvedEntryIds) entryPickMap.set(entryId, new Set());
+            for (const row of (entryPicksQuery.data ?? []) as Array<{ entry_id: string; team_id: string }>) {
+              const picks = entryPickMap.get(row.entry_id) ?? new Set<string>();
+              picks.add(row.team_id);
+              entryPickMap.set(row.entry_id, picks);
+            }
+
+            nextEntries = nextEntries.map((entry) => {
+              if (entry.entry_name?.trim().length) return entry;
+              const entryPicks = entryPickMap.get(entry.id) ?? new Set<string>();
+              if (entryPicks.size === 0) return entry;
+              const matchedDraft = drafts.find((draft) =>
+                sameTeamSet(draftPickMap.get(draft.id) ?? new Set<string>(), entryPicks)
+              );
+              if (!matchedDraft?.name?.trim()) return entry;
+              return { ...entry, entry_name: matchedDraft.name.trim() };
+            });
+          }
+        }
+      }
+    }
+
+    setLeaveEntries(nextEntries);
     setLeaveModalLoading(false);
   }
 
@@ -1622,7 +1738,8 @@ export default function PoolPage() {
                   {availableDrafts.map((draft) => {
                     const picks = draftPickMap.get(draft.id);
                     const pickCount = picks?.size ?? 0;
-                    const checked = selectedDraftIds.has(draft.id);
+                    const isAlreadyEntered = alreadyEnteredDraftIds.has(draft.id);
+                    const checked = isAlreadyEntered || selectedDraftIds.has(draft.id);
                     return (
                       <label
                         key={draft.id}
@@ -1634,17 +1751,21 @@ export default function PoolPage() {
                           borderRadius: 10,
                           padding: "10px 12px",
                           background: checked ? "var(--surface-elevated)" : "var(--surface)",
-                          cursor: "pointer",
+                          cursor: isAlreadyEntered ? "not-allowed" : "pointer",
+                          opacity: isAlreadyEntered ? 0.75 : 1,
                         }}
                       >
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleDraftSelection(draft.id)}
-                          disabled={draftModalSubmitting}
+                          disabled={draftModalSubmitting || isAlreadyEntered}
                         />
                         <div style={{ display: "grid", gap: 2 }}>
-                          <div style={{ fontWeight: 900 }}>{draft.name}</div>
+                          <div style={{ fontWeight: 900 }}>
+                            {draft.name}
+                            {isAlreadyEntered ? " (already entered)" : ""}
+                          </div>
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
                             {pickCount} team{pickCount === 1 ? "" : "s"} selected
                           </div>
