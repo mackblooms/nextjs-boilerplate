@@ -822,6 +822,7 @@ export default function BracketPage() {
     }
 
     const t = teamById.get(teamId);
+    const displaySeed = teamSeedForDisplay(teamId);
     const espnId = t?.espn_team_id ? String(t.espn_team_id).trim() : "";
     const logoSrc = t?.logo_url || (espnId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png` : null);
     const isHighlighted = highlightTeamIds.has(teamId);
@@ -884,7 +885,7 @@ export default function BracketPage() {
         >
           {hasScore
             ? score
-            : (t?.seed_in_region ?? "")}
+            : (displaySeed ?? "")}
         </span>
       </span>
     );
