@@ -71,6 +71,7 @@ type LiveScoresResponse = {
 };
 
 type MatchedLiveGame = {
+  state: LiveScoreState;
   detail: string;
   team1Score: number | null;
   team2Score: number | null;
@@ -192,6 +193,7 @@ function matchLiveScoresToGames(
 
     if (live.awayTeamId === team1EspnId) {
       out.set(g.id, {
+        state: live.state,
         detail: live.detail,
         team1Score: live.awayScore,
         team2Score: live.homeScore,
@@ -201,6 +203,7 @@ function matchLiveScoresToGames(
 
     if (live.homeTeamId === team1EspnId) {
       out.set(g.id, {
+        state: live.state,
         detail: live.detail,
         team1Score: live.homeScore,
         team2Score: live.awayScore,
@@ -799,7 +802,13 @@ export default function BracketPage() {
     winnerId: string | null,
     score?: number | null,
   ) => {
-    const hasScore = typeof score === "number" && Number.isFinite(score);
+    const showScoreColumn = score !== undefined;
+    const scoreLabel =
+      score === undefined
+        ? ""
+        : (typeof score === "number" && Number.isFinite(score))
+          ? String(score)
+          : "-";
 
     if (!teamId) {
       return (
@@ -807,6 +816,7 @@ export default function BracketPage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "center",
             gap: 10,
             padding: "6px 8px",
             borderRadius: 8,
@@ -815,8 +825,32 @@ export default function BracketPage() {
             fontWeight: 700,
           }}
         >
-          <span>TBD</span>
-          <span>{hasScore ? score : ""}</span>
+          <span style={{ flex: 1, minWidth: 0 }}>TBD</span>
+          <span
+            style={{
+              opacity: 0.75,
+              flexShrink: 0,
+              width: 24,
+              textAlign: "right",
+              whiteSpace: "nowrap",
+              lineHeight: "18px",
+            }}
+          >
+            {" "}
+          </span>
+          <span
+            style={{
+              opacity: showScoreColumn ? 1 : 0.5,
+              flexShrink: 0,
+              width: 24,
+              textAlign: "right",
+              whiteSpace: "nowrap",
+              lineHeight: "18px",
+              fontWeight: 900,
+            }}
+          >
+            {scoreLabel}
+          </span>
         </span>
       );
     }
@@ -849,6 +883,7 @@ export default function BracketPage() {
             gap: 8,
             overflow: "hidden",
             minWidth: 0,
+            flex: 1,
           }}
         >
           {logoSrc ? (
@@ -877,18 +912,38 @@ export default function BracketPage() {
           style={{
             opacity: 0.75,
             flexShrink: 0,
-            width: 40,
+            width: 24,
             textAlign: "right",
             whiteSpace: "nowrap",
             lineHeight: "18px",
           }}
         >
-          {hasScore
-            ? score
-            : (displaySeed ?? "")}
+          {displaySeed ?? ""}
+        </span>
+        <span
+          style={{
+            opacity: showScoreColumn ? 1 : 0.5,
+            flexShrink: 0,
+            width: 24,
+            textAlign: "right",
+            whiteSpace: "nowrap",
+            lineHeight: "18px",
+            fontWeight: 900,
+          }}
+        >
+          {scoreLabel}
         </span>
       </span>
     );
+  };
+
+  const scoreForDisplay = (
+    live: MatchedLiveGame | undefined,
+    side: "team1" | "team2",
+  ): number | null | undefined => {
+    if (!live) return undefined;
+    if (live.state === "UPCOMING") return undefined;
+    return side === "team1" ? live.team1Score : live.team2Score;
   };
 
   const renderGameBox = (
@@ -985,8 +1040,8 @@ export default function BracketPage() {
               const [topRow, bottomRow] = orderBySeedForDisplay(
                 g.team1_id,
                 g.team2_id,
-                live?.team1Score,
-                live?.team2Score,
+                scoreForDisplay(live, "team1"),
+                scoreForDisplay(live, "team2"),
               );
               return (
                 <div
@@ -1417,7 +1472,7 @@ export default function BracketPage() {
                     {renderSingleTeamBox(
                       finalFour[0]?.team1_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
-                      finalFourTopLive?.team1Score,
+                      scoreForDisplay(finalFourTopLive, "team1"),
                       finalFourTopUpset,
                     )}
                   </div>
@@ -1425,7 +1480,7 @@ export default function BracketPage() {
                     {renderSingleTeamBox(
                       finalFour[0]?.team2_id ?? null,
                       finalFour[0]?.winner_team_id ?? null,
-                      finalFourTopLive?.team2Score,
+                      scoreForDisplay(finalFourTopLive, "team2"),
                       finalFourTopUpset,
                     )}
                   </div>
@@ -1433,7 +1488,7 @@ export default function BracketPage() {
                     {renderSingleTeamBox(
                       finalFour[1]?.team1_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
-                      finalFourBottomLive?.team1Score,
+                      scoreForDisplay(finalFourBottomLive, "team1"),
                       finalFourBottomUpset,
                     )}
                   </div>
@@ -1441,7 +1496,7 @@ export default function BracketPage() {
                     {renderSingleTeamBox(
                       finalFour[1]?.team2_id ?? null,
                       finalFour[1]?.winner_team_id ?? null,
-                      finalFourBottomLive?.team2Score,
+                      scoreForDisplay(finalFourBottomLive, "team2"),
                       finalFourBottomUpset,
                     )}
                   </div>
@@ -1470,8 +1525,8 @@ export default function BracketPage() {
                       const [topRow, bottomRow] = orderBySeedForDisplay(
                         championship?.team1_id ?? null,
                         championship?.team2_id ?? null,
-                        championshipLive?.team1Score,
-                        championshipLive?.team2Score,
+                        scoreForDisplay(championshipLive, "team1"),
+                        scoreForDisplay(championshipLive, "team2"),
                       );
                       return renderGameBox(
                         <>
