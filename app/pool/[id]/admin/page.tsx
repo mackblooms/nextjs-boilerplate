@@ -82,6 +82,7 @@ export default function AdminPage() {
   const [syncingLogos, setSyncingLogos] = useState(false);
   const [fullSyncing, setFullSyncing] = useState(false);
   const [syncingGames, setSyncingGames] = useState(false);
+  const [repairingSeeds, setRepairingSeeds] = useState(false);
 
   const [games, setGames] = useState<GameRow[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -814,6 +815,64 @@ export default function AdminPage() {
     }
   }
 
+  async function repairSeeds() {
+    setMsg("Repairing bracket seeds...");
+    setRepairingSeeds(true);
+
+    const { data: authData, error: authErr } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    if (authErr || !userId) {
+      setMsg("Not logged in (could not read user).");
+      setRepairingSeeds(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/repair-seeds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ poolId, userId }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error ?? "Seed repair failed");
+      }
+
+      const [teamRes, gameRes] = await Promise.all([
+        supabase
+          .from("teams")
+          .select("id,name,seed_in_region,region"),
+        supabase
+          .from("games")
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id"),
+      ]);
+
+      if (teamRes.error) throw new Error(`Seed repair complete, but teams refresh failed: ${teamRes.error.message}`);
+      if (gameRes.error) throw new Error(`Seed repair complete, but games refresh failed: ${gameRes.error.message}`);
+
+      setTeams((teamRes.data ?? []) as Team[]);
+      setGames((gameRes.data ?? []) as GameRow[]);
+
+      const gamesEligible = Number(json?.gamesEligible ?? 0);
+      const gamesOrderFixed = Number(json?.gamesOrderFixed ?? 0);
+      const teamsUpdated = Number(json?.teamsUpdated ?? 0);
+      const seedFields = Number(json?.teamSeedFieldsUpdated ?? 0);
+      const regionFields = Number(json?.teamRegionUpdated ?? 0);
+      const costFields = Number(json?.teamCostUpdated ?? 0);
+      const conflictSkipped = Number(json?.teamsSkippedConflict ?? 0);
+
+      setMsg(
+        `Seed repair complete | eligible games: ${gamesEligible}, game order fixed: ${gamesOrderFixed}, ` +
+        `teams updated: ${teamsUpdated}, seed fields: ${seedFields}, region fields: ${regionFields}, cost fields: ${costFields}, ` +
+        `conflicts skipped: ${conflictSkipped}`
+      );
+    } catch (e: unknown) {
+      setMsg(e instanceof Error ? e.message : "Seed repair failed.");
+    } finally {
+      setRepairingSeeds(false);
+    }
+  }
+
   function teamLabel(teamId: string | null) {
     if (!teamId) return "TBD";
     const t = teamById.get(teamId);
@@ -934,7 +993,7 @@ export default function AdminPage() {
 
           <button
             onClick={syncLogos}
-            disabled={syncingLogos || fullSyncing || syncingGames}
+            disabled={syncingLogos || fullSyncing || syncingGames || repairingSeeds}
             style={{
               padding: "10px 12px",
               minHeight: 44,
@@ -951,7 +1010,7 @@ export default function AdminPage() {
 
           <button
             onClick={fullSync}
-            disabled={fullSyncing || syncingLogos || syncingGames}
+            disabled={fullSyncing || syncingLogos || syncingGames || repairingSeeds}
             style={{
               padding: "10px 12px",
               minHeight: 44,
@@ -968,7 +1027,7 @@ export default function AdminPage() {
 
           <button
             onClick={syncGamesByDate}
-            disabled={syncingGames || fullSyncing || syncingLogos}
+            disabled={syncingGames || fullSyncing || syncingLogos || repairingSeeds}
             style={{
               padding: "10px 12px",
               minHeight: 44,
@@ -981,6 +1040,23 @@ export default function AdminPage() {
             }}
           >
             {syncingGames ? "Syncing Games..." : "Sync Games (SportsDataIO)"}
+          </button>
+
+          <button
+            onClick={repairSeeds}
+            disabled={repairingSeeds || syncingGames || fullSyncing || syncingLogos}
+            style={{
+              padding: "10px 12px",
+              minHeight: 44,
+              borderRadius: 10,
+              border: "1px solid var(--border-color)",
+              fontWeight: 900,
+              cursor: repairingSeeds ? "not-allowed" : "pointer",
+              background: "var(--surface)",
+              opacity: repairingSeeds ? 0.75 : 1,
+            }}
+          >
+            {repairingSeeds ? "Repairing Seeds..." : "Repair Seeds"}
           </button>
 
           <a

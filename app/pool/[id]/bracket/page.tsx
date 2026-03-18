@@ -726,11 +726,36 @@ export default function BracketPage() {
   const finalFourBottomUpset = finalFour[1] ? upsetWatchGameIds.has(finalFour[1].id) : false;
   const championshipUpset = championship ? upsetWatchGameIds.has(championship.id) : false;
 
+  const teamSeedForDisplay = (teamId: string | null): number | null => {
+    if (!teamId) return null;
+    const seed = teamById.get(teamId)?.seed_in_region;
+    return typeof seed === "number" ? seed : null;
+  };
+
+  const orderBySeedForDisplay = (
+    team1Id: string | null,
+    team2Id: string | null,
+    team1Score?: number | null,
+    team2Score?: number | null,
+  ) => {
+    const top = { teamId: team1Id, score: team1Score };
+    const bottom = { teamId: team2Id, score: team2Score };
+
+    const seed1 = teamSeedForDisplay(team1Id);
+    const seed2 = teamSeedForDisplay(team2Id);
+    if (seed1 == null || seed2 == null) return [top, bottom] as const;
+    if (seed1 <= seed2) return [top, bottom] as const;
+
+    return [bottom, top] as const;
+  };
+
   const renderTeam = (
     teamId: string | null,
     winnerId: string | null,
     score?: number | null,
   ) => {
+    const hasScore = typeof score === "number" && Number.isFinite(score);
+
     if (!teamId) {
       return (
         <span
@@ -746,7 +771,7 @@ export default function BracketPage() {
           }}
         >
           <span>TBD</span>
-          <span>{score === undefined ? "" : (score ?? "-")}</span>
+          <span>{hasScore ? score : ""}</span>
         </span>
       );
     }
@@ -812,9 +837,9 @@ export default function BracketPage() {
             lineHeight: "18px",
           }}
         >
-          {score === undefined
-            ? (t?.seed_in_region ?? "")
-            : (score ?? "-")}
+          {hasScore
+            ? score
+            : (t?.seed_in_region ?? "")}
         </span>
       </span>
     );
@@ -911,6 +936,12 @@ export default function BracketPage() {
               const start = rowStartFor(roundKey, g.slot);
               const live = liveByGameId.get(g.id);
               const meta = formatGameMeta(g);
+              const [topRow, bottomRow] = orderBySeedForDisplay(
+                g.team1_id,
+                g.team2_id,
+                live?.team1Score,
+                live?.team2Score,
+              );
               return (
                 <div
                   key={g.id}
@@ -918,8 +949,8 @@ export default function BracketPage() {
                 >
                   {renderGameBox(
                     <>
-                      {renderTeam(g.team1_id, g.winner_team_id, live?.team1Score)}
-                      {renderTeam(g.team2_id, g.winner_team_id, live?.team2Score)}
+                      {renderTeam(topRow.teamId, g.winner_team_id, topRow.score)}
+                      {renderTeam(bottomRow.teamId, g.winner_team_id, bottomRow.score)}
                     </>,
                     meta,
                     upsetWatchGameIds.has(g.id),
@@ -1389,22 +1420,30 @@ export default function BracketPage() {
                     >
                       Championship
                     </div>
-                    {renderGameBox(
-                      <>
-                        {renderTeam(
-                          championship?.team1_id ?? null,
-                          championship?.winner_team_id ?? null,
-                          championshipLive?.team1Score,
-                        )}
-                        {renderTeam(
-                          championship?.team2_id ?? null,
-                          championship?.winner_team_id ?? null,
-                          championshipLive?.team2Score,
-                        )}
-                      </>,
-                      formatGameMeta(championship),
-                      championshipUpset,
-                    )}
+                    {(() => {
+                      const [topRow, bottomRow] = orderBySeedForDisplay(
+                        championship?.team1_id ?? null,
+                        championship?.team2_id ?? null,
+                        championshipLive?.team1Score,
+                        championshipLive?.team2Score,
+                      );
+                      return renderGameBox(
+                        <>
+                          {renderTeam(
+                            topRow.teamId,
+                            championship?.winner_team_id ?? null,
+                            topRow.score,
+                          )}
+                          {renderTeam(
+                            bottomRow.teamId,
+                            championship?.winner_team_id ?? null,
+                            bottomRow.score,
+                          )}
+                        </>,
+                        formatGameMeta(championship),
+                        championshipUpset,
+                      );
+                    })()}
                   </div>
                 </div>
               </section>
