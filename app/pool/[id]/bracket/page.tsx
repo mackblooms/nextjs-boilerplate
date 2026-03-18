@@ -815,37 +815,44 @@ export default function BracketPage() {
         <span
           style={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            gap: 10,
-            padding: "6px 8px",
-            borderRadius: 8,
+            gap: 8,
+            padding: "4px 6px",
+            borderRadius: 7,
             border: "1px solid var(--border-color)",
             opacity: 0.6,
             fontWeight: 700,
           }}
         >
-          <span style={{ flex: 1, minWidth: 0 }}>TBD</span>
           <span
             style={{
               opacity: 0.75,
               flexShrink: 0,
-              width: 24,
-              textAlign: "right",
+              width: 18,
+              textAlign: "left",
               whiteSpace: "nowrap",
-              lineHeight: "18px",
+              lineHeight: "16px",
             }}
           >
-            {" "}
+            &nbsp;
+          </span>
+          <span
+            style={{
+              flex: 1,
+              minWidth: 0,
+              lineHeight: "16px",
+            }}
+          >
+            TBD
           </span>
           <span
             style={{
               opacity: showScoreColumn ? 1 : 0.5,
               flexShrink: 0,
-              width: 24,
+              width: 26,
               textAlign: "right",
               whiteSpace: "nowrap",
-              lineHeight: "18px",
+              lineHeight: "16px",
               fontWeight: 900,
             }}
           >
@@ -866,37 +873,48 @@ export default function BracketPage() {
       <span
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          gap: 10,
-          padding: "6px 8px",
-          borderRadius: 8,
+          alignItems: "center",
+          gap: 8,
+          padding: "4px 6px",
+          borderRadius: 7,
           border: "1px solid var(--border-color)",
           background: isHighlighted ? "var(--highlight)" : "transparent",
           fontWeight: isWinner ? 900 : 700,
-          alignItems: "center",
         }}
       >
         <span
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 6,
             overflow: "hidden",
             minWidth: 0,
             flex: 1,
+            lineHeight: "16px",
           }}
         >
+          <span
+            style={{
+              opacity: 0.78,
+              flexShrink: 0,
+              width: 18,
+              textAlign: "left",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {displaySeed ?? ""}
+          </span>
           {logoSrc ? (
             <Image
               src={logoSrc}
               alt={t?.name ?? "Team"}
-              width={18}
-              height={18}
+              width={16}
+              height={16}
               style={{ objectFit: "contain", flexShrink: 0 }}
               unoptimized
             />
           ) : (
-            <span style={{ width: 18, height: 18, flexShrink: 0 }} />
+            <span style={{ width: 16, height: 16, flexShrink: 0 }} />
           )}
           <span
             style={{
@@ -910,24 +928,12 @@ export default function BracketPage() {
         </span>
         <span
           style={{
-            opacity: 0.75,
-            flexShrink: 0,
-            width: 24,
-            textAlign: "right",
-            whiteSpace: "nowrap",
-            lineHeight: "18px",
-          }}
-        >
-          {displaySeed ?? ""}
-        </span>
-        <span
-          style={{
             opacity: showScoreColumn ? 1 : 0.5,
             flexShrink: 0,
-            width: 24,
+            width: 26,
             textAlign: "right",
             whiteSpace: "nowrap",
-            lineHeight: "18px",
+            lineHeight: "16px",
             fontWeight: 900,
           }}
         >
