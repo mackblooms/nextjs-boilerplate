@@ -164,7 +164,10 @@ export default function InstructionsModal() {
   const isLandingPage = pathname === "/";
   const isPostLoginPrompt = searchParams.get("onboarding") === "1";
   const isManualTutorialOpen = searchParams.get("tutorial") === "1";
-  const shouldForceOpen = isLandingPage || isPostLoginPrompt || isManualTutorialOpen;
+  const shouldForceOpen =
+    (isAuthed && isLandingPage) ||
+    (isAuthed && isPostLoginPrompt) ||
+    isManualTutorialOpen;
 
   useEffect(() => {
     let mounted = true;
