@@ -839,23 +839,50 @@ function HomeContent() {
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
   const tomorrowEt = useMemo(() => etDayKey(shiftDate(1)), []);
 
-  const recentFinals = useMemo(
+  const todayFinals = useMemo(
     () =>
       scores.filter((g) => {
         if (g.state !== "FINAL") return false;
         const gameDay = etDayKeyFromIso(g.startTime);
-        return gameDay === yesterdayEt || gameDay === todayEt;
+        return gameDay === todayEt;
       }),
-    [scores, yesterdayEt, todayEt]
+    [scores, todayEt]
   );
-  const liveAndUpcoming = useMemo(
+  const yesterdayFinals = useMemo(
+    () =>
+      scores.filter((g) => {
+        if (g.state !== "FINAL") return false;
+        const gameDay = etDayKeyFromIso(g.startTime);
+        return gameDay === yesterdayEt;
+      }),
+    [scores, yesterdayEt]
+  );
+  const recentFinals = useMemo(
+    () => (todayFinals.length > 0 ? todayFinals : yesterdayFinals),
+    [todayFinals, yesterdayFinals]
+  );
+
+  const todayLiveAndUpcoming = useMemo(
     () =>
       scores.filter((g) => {
         if (g.state === "FINAL") return false;
         const gameDay = etDayKeyFromIso(g.startTime);
-        return gameDay === todayEt || gameDay === tomorrowEt;
+        return gameDay === todayEt;
       }),
-    [scores, todayEt, tomorrowEt]
+    [scores, todayEt]
+  );
+  const tomorrowLiveAndUpcoming = useMemo(
+    () =>
+      scores.filter((g) => {
+        if (g.state === "FINAL") return false;
+        const gameDay = etDayKeyFromIso(g.startTime);
+        return gameDay === tomorrowEt;
+      }),
+    [scores, tomorrowEt]
+  );
+  const liveAndUpcoming = useMemo(
+    () => (todayLiveAndUpcoming.length > 0 ? todayLiveAndUpcoming : tomorrowLiveAndUpcoming),
+    [todayLiveAndUpcoming, tomorrowLiveAndUpcoming]
   );
 
   const recentFinalsEmptyMessage = "No final scores from today or yesterday.";

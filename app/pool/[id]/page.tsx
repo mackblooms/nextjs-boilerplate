@@ -715,28 +715,55 @@ export default function PoolPage() {
   const todayEt = useMemo(() => etDayKey(new Date()), []);
   const yesterdayEt = useMemo(() => etDayKey(shiftDate(-1)), []);
   const tomorrowEt = useMemo(() => etDayKey(shiftDate(1)), []);
-  const recentFinals = useMemo(
+  const todayFinals = useMemo(
     () =>
       draftedTeamScores
         .filter((g) => {
           if (g.state !== "FINAL") return false;
           const gameDay = etDayKeyFromIso(g.startTime);
-          return gameDay === yesterdayEt || gameDay === todayEt;
+          return gameDay === todayEt;
         })
-        .slice(0, 6),
-    [draftedTeamScores, yesterdayEt, todayEt]
+        .slice(0, 12),
+    [draftedTeamScores, todayEt]
   );
-  const liveAndUpcoming = useMemo(
+  const yesterdayFinals = useMemo(
+    () =>
+      draftedTeamScores
+        .filter((g) => {
+          if (g.state !== "FINAL") return false;
+          const gameDay = etDayKeyFromIso(g.startTime);
+          return gameDay === yesterdayEt;
+        })
+        .slice(0, 12),
+    [draftedTeamScores, yesterdayEt]
+  );
+  const recentFinals = useMemo(
+    () => (todayFinals.length > 0 ? todayFinals : yesterdayFinals).slice(0, 6),
+    [todayFinals, yesterdayFinals]
+  );
+  const todayLiveAndUpcoming = useMemo(
     () =>
       draftedTeamScores
         .filter((g) => {
           const gameDay = etDayKeyFromIso(g.startTime);
-          const isLiveToday = g.state === "LIVE" && gameDay === todayEt;
-          const isUpcomingTomorrow = g.state === "UPCOMING" && gameDay === tomorrowEt;
-          return isLiveToday || isUpcomingTomorrow;
+          return g.state !== "FINAL" && gameDay === todayEt;
         })
-        .slice(0, 6),
-    [draftedTeamScores, todayEt, tomorrowEt]
+        .slice(0, 12),
+    [draftedTeamScores, todayEt]
+  );
+  const tomorrowLiveAndUpcoming = useMemo(
+    () =>
+      draftedTeamScores
+        .filter((g) => {
+          const gameDay = etDayKeyFromIso(g.startTime);
+          return g.state !== "FINAL" && gameDay === tomorrowEt;
+        })
+        .slice(0, 12),
+    [draftedTeamScores, tomorrowEt]
+  );
+  const liveAndUpcoming = useMemo(
+    () => (todayLiveAndUpcoming.length > 0 ? todayLiveAndUpcoming : tomorrowLiveAndUpcoming).slice(0, 6),
+    [todayLiveAndUpcoming, tomorrowLiveAndUpcoming]
   );
   const recentFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
