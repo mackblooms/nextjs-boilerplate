@@ -229,7 +229,7 @@ export default function BracketPage() {
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(
     new Set(),
   );
-  const [myEntryId, setMyEntryId] = useState<string | null>(null);
+  const [myEntryIds, setMyEntryIds] = useState<Set<string>>(new Set());
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
@@ -421,13 +421,15 @@ export default function BracketPage() {
         display_name: string | null;
       }[];
 
-      const myEntry = basePlayers.find((p) => p.user_id === user.id)?.entry_id ?? null;
-      setMyEntryId(myEntry);
+      const myEntries = basePlayers.filter((p) => p.user_id === user.id).map((p) => p.entry_id);
+      const myEntryIdsSet = new Set(myEntries);
+      const myPrimaryEntry = myEntries[0] ?? null;
+      setMyEntryIds(myEntryIdsSet);
 
       const visiblePlayers = isLocked
         ? basePlayers
-        : myEntry
-          ? basePlayers.filter((p) => p.entry_id === myEntry)
+        : myEntryIdsSet.size > 0
+          ? basePlayers.filter((p) => myEntryIdsSet.has(p.entry_id))
           : [];
 
       const entryIds = visiblePlayers.map((p) => p.entry_id);
@@ -529,15 +531,15 @@ export default function BracketPage() {
         };
       });
 
-      if (!isLocked && entryId && entryId !== myEntry) {
-        setMsg("Drafts are private until lock. You can only view your bracket right now.");
+      if (!isLocked && entryId && !myEntryIdsSet.has(entryId)) {
+        setMsg("Drafts are private until lock. You can only view your own entries right now.");
       }
 
       setPlayers(opts);
       const requestedEntry = entryId && opts.some((p) => p.entry_id === entryId)
         ? entryId
         : null;
-      setSelectedEntryId(requestedEntry ?? myEntry ?? opts[0]?.entry_id ?? "");
+      setSelectedEntryId(requestedEntry ?? myPrimaryEntry ?? opts[0]?.entry_id ?? "");
       setLoading(false);
     };
 
@@ -549,8 +551,8 @@ export default function BracketPage() {
       setHighlightTeamIds(new Set());
       if (!selectedEntryId) return;
 
-      if (!draftLocked && myEntryId && selectedEntryId !== myEntryId) {
-        setMsg("Drafts are private until lock. You can only view your bracket right now.");
+      if (!draftLocked && !myEntryIds.has(selectedEntryId)) {
+        setMsg("Drafts are private until lock. You can only view your own entries right now.");
         return;
       }
 
@@ -570,7 +572,7 @@ export default function BracketPage() {
     };
 
     void loadHighlights();
-  }, [draftLocked, myEntryId, selectedEntryId]);
+  }, [draftLocked, myEntryIds, selectedEntryId]);
 
   const espnTeamIdByLocalId = useMemo(() => {
     const out = new Map<string, string>();

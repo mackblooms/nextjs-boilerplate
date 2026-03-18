@@ -484,11 +484,13 @@ export default function PoolPage() {
         .from("entries")
         .select("id")
         .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .limit(1);
+        .eq("user_id", user.id);
 
-      const entryId = (entryRows?.[0]?.id as string | undefined) ?? null;
-      if (!entryId) {
+      const entryIds = Array.from(
+        new Set(((entryRows ?? []) as Array<{ id: string }>).map((row) => row.id).filter(Boolean))
+      );
+
+      if (entryIds.length === 0) {
         setDraftedEspnIds([]);
         setDraftedTeamKeys([]);
         setDraftedTeamCount(0);
@@ -499,11 +501,11 @@ export default function PoolPage() {
 
       const { data: pickRows } = await supabase
         .from("entry_picks")
-        .select("team_id")
-        .eq("entry_id", entryId);
+        .select("entry_id,team_id")
+        .in("entry_id", entryIds);
 
       const pickedTeamIds = Array.from(
-        new Set(((pickRows ?? []) as Array<{ team_id: string }>).map((p) => p.team_id).filter(Boolean))
+        new Set(((pickRows ?? []) as Array<{ entry_id: string; team_id: string }>).map((p) => p.team_id).filter(Boolean))
       );
 
       if (pickedTeamIds.length === 0) {
@@ -676,7 +678,7 @@ export default function PoolPage() {
     setJoinPassword("");
     setStatus({
       tone: "success",
-      text: "Joined! You can now apply a saved draft, view brackets, and track leaderboard results.",
+      text: "Joined! You can now enter saved drafts, view brackets, and track leaderboard results.",
     });
     trackEvent({
       eventName: "pool_join_success",
@@ -768,13 +770,13 @@ export default function PoolPage() {
   const recentFinalsEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
-    if (draftedTeamCount === 0) return "Apply a saved draft to this pool, then your games will show here.";
+    if (draftedTeamCount === 0) return "Enter a saved draft in this pool, then your games will show here.";
     return "No final scores from today or yesterday for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
   const liveAndUpcomingEmptyMessage = useMemo(() => {
     if (!draftedLoaded) return "Loading your drafted teams...";
     if (isMember !== true) return "Join this pool to see your drafted-team scores.";
-    if (draftedTeamCount === 0) return "Apply a saved draft to this pool, then your games will show here.";
+    if (draftedTeamCount === 0) return "Enter a saved draft in this pool, then your games will show here.";
     return "No live games today or upcoming games tomorrow for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
 
@@ -1027,7 +1029,7 @@ export default function PoolPage() {
                   justifyContent: "center",
                 }}
               >
-                Apply Draft
+                Enter Drafts
               </Link>
               <Link
                 href={`/pool/${poolId}/bracket`}

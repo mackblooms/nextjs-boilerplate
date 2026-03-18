@@ -836,7 +836,7 @@ export default function PoolsPage() {
                           opacity: !userId ? 0.7 : 1,
                         }}
                       >
-                        Join
+                        Enter Drafts
                       </button>
                       <Link
                         href={`/pool/${pool.id}/leaderboard`}
@@ -974,7 +974,7 @@ export default function PoolsPage() {
                             opacity: !userId ? 0.7 : 1,
                           }}
                         >
-                          Join
+                          Join + Enter Drafts
                         </button>
                         <Link
                           href={`/pool/${pool.id}/leaderboard`}
@@ -1236,7 +1236,9 @@ export default function PoolsPage() {
               gap: 10,
             }}
           >
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Join {joinModalPool.name}</h2>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
+              {myPoolIds.has(joinModalPool.id) ? `Enter Drafts in ${joinModalPool.name}` : `Join ${joinModalPool.name}`}
+            </h2>
             <p style={{ margin: 0, opacity: 0.8 }}>
               {myPoolIds.has(joinModalPool.id)
                 ? "You are already in this pool. Continue to choose one or more drafts to enter."

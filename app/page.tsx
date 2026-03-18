@@ -703,11 +703,13 @@ function HomeContent() {
         .from("entries")
         .select("id")
         .eq("pool_id", selectedPoolId)
-        .eq("user_id", userId)
-        .limit(1);
+        .eq("user_id", userId);
 
-      const entryId = (entryRes.data?.[0] as { id: string } | undefined)?.id ?? null;
-      if (!entryId) {
+      const entryIds = Array.from(
+        new Set(((entryRes.data ?? []) as Array<{ id: string }>).map((entry) => entry.id).filter(Boolean))
+      );
+
+      if (entryIds.length === 0) {
         if (!canceled) {
           setTrackedEspnIds([]);
           setTrackedTeamKeys([]);
@@ -719,10 +721,10 @@ function HomeContent() {
 
       const entryPickRes = await supabase
         .from("entry_picks")
-        .select("team_id")
-        .eq("entry_id", entryId);
+        .select("entry_id,team_id")
+        .in("entry_id", entryIds);
 
-      const teamIds = ((entryPickRes.data ?? []) as Array<{ team_id: string }>)
+      const teamIds = ((entryPickRes.data ?? []) as Array<{ entry_id: string; team_id: string }>)
         .map((row) => row.team_id)
         .filter(Boolean);
 

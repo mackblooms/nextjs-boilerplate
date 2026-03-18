@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { ensurePoolEntry, trySetEntryName } from "@/lib/poolEntry";
+import { trySetEntryName } from "@/lib/poolEntry";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "@/lib/draftLock";
 import { trackEvent } from "@/lib/analytics";
 import {
@@ -17,7 +17,6 @@ import {
   MAX_2_SEEDS,
 } from "@/lib/draftRules";
 import {
-  defaultDraftName,
   isMissingSavedDraftTablesError,
   sameTeamSet,
   type SavedDraftPickRow,
@@ -47,8 +46,27 @@ type EntryPickRow = {
   team_id: string;
 };
 
+type EntryRow = {
+  id: string;
+  entry_name: string | null;
+};
+
 function isTeamRow(value: TeamRow | undefined): value is TeamRow {
   return Boolean(value);
+}
+
+function isMissingEntryNameError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function entryLabel(entry: EntryRow, index: number) {
+  const trimmed = entry.entry_name?.trim() ?? "";
+  if (trimmed.length > 0) return trimmed;
+  return `Entry ${index + 1}`;
 }
 
 function toPickMap(draftIds: string[], rows: SavedDraftPickRow[]) {
@@ -78,7 +96,8 @@ export default function PoolDraftPage() {
 
   const [pool, setPool] = useState<PoolRow | null>(null);
   const [isMember, setIsMember] = useState<boolean | null>(null);
-  const [entryId, setEntryId] = useState<string | null>(null);
+  const [existingEntries, setExistingEntries] = useState<EntryRow[]>([]);
+  const [targetEntryId, setTargetEntryId] = useState("");
 
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
@@ -123,6 +142,11 @@ export default function PoolDraftPage() {
     [selectedDraftPicks, teamById]
   );
 
+  const targetEntry = useMemo(
+    () => existingEntries.find((entry) => entry.id === targetEntryId) ?? null,
+    [existingEntries, targetEntryId]
+  );
+
   const appliedDraft = useMemo(
     () =>
       drafts.find((draft) => {
@@ -133,8 +157,8 @@ export default function PoolDraftPage() {
   );
 
   const selectedIsApplied = useMemo(
-    () => sameTeamSet(selectedDraftPicks, poolAppliedTeamIds),
-    [selectedDraftPicks, poolAppliedTeamIds]
+    () => targetEntryId.length > 0 && sameTeamSet(selectedDraftPicks, poolAppliedTeamIds),
+    [selectedDraftPicks, poolAppliedTeamIds, targetEntryId]
   );
 
   const load = useCallback(async () => {
@@ -215,32 +239,50 @@ export default function PoolDraftPage() {
     setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsBySeedName));
 
     if (!memRow) {
-      setEntryId(null);
+      setExistingEntries([]);
+      setTargetEntryId("");
+      setPoolAppliedTeamIds(new Set());
       setLoading(false);
       return;
     }
 
-    const ensuredEntry = await ensurePoolEntry(supabase, poolId, user.id);
-    if (!ensuredEntry.entry || ensuredEntry.error) {
-      setLoading(false);
-      setMessage(ensuredEntry.error ?? "Failed to create your pool entry.");
-      return;
-    }
-    setEntryId(ensuredEntry.entry.id);
+    const entriesWithNames = await supabase
+      .from("entries")
+      .select("id,entry_name")
+      .eq("pool_id", poolId)
+      .eq("user_id", user.id);
 
-    const { data: poolPickRows, error: poolPicksErr } = await supabase
-      .from("entry_picks")
-      .select("team_id")
-      .eq("entry_id", ensuredEntry.entry.id);
-
-    if (poolPicksErr) {
+    let nextEntries: EntryRow[] = [];
+    if (entriesWithNames.error && !isMissingEntryNameError(entriesWithNames.error.message)) {
       setLoading(false);
-      setMessage(poolPicksErr.message);
+      setMessage(entriesWithNames.error.message);
       return;
     }
 
-    const currentPoolPickSet = new Set(((poolPickRows ?? []) as EntryPickRow[]).map((row) => row.team_id));
-    setPoolAppliedTeamIds(currentPoolPickSet);
+    if (entriesWithNames.error && isMissingEntryNameError(entriesWithNames.error.message)) {
+      const fallbackEntries = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id);
+
+      if (fallbackEntries.error) {
+        setLoading(false);
+        setMessage(fallbackEntries.error.message);
+        return;
+      }
+
+      nextEntries = ((fallbackEntries.data ?? []) as Array<{ id: string }>).map((entry) => ({
+        id: entry.id,
+        entry_name: null,
+      }));
+    } else {
+      nextEntries = (entriesWithNames.data ?? []) as EntryRow[];
+    }
+
+    setExistingEntries(nextEntries);
+    setTargetEntryId("");
+    setPoolAppliedTeamIds(new Set());
 
     const draftRowsQuery = await supabase
       .from("saved_drafts")
@@ -258,55 +300,15 @@ export default function PoolDraftPage() {
       return;
     }
 
-    let userDraftRows = (draftRowsQuery.data ?? []) as SavedDraftRow[];
-
-    if (userDraftRows.length === 0) {
-      const fallbackName =
-        typedPool.name?.trim() && currentPoolPickSet.size > 0
-          ? `${typedPool.name} Draft`
-          : defaultDraftName(1);
-
-      const created = await supabase
-        .from("saved_drafts")
-        .insert({
-          user_id: user.id,
-          name: fallbackName,
-        })
-        .select("id,name,created_at,updated_at")
-        .single();
-
-      if (created.error || !created.data) {
-        setLoading(false);
-        setMessage(created.error?.message ?? "Failed to create your first saved draft.");
-        return;
-      }
-
-      const createdId = created.data.id as string;
-      if (currentPoolPickSet.size > 0) {
-        const copyRows = Array.from(currentPoolPickSet).map((teamId) => ({
-          draft_id: createdId,
-          team_id: teamId,
-        }));
-        const { error: copyErr } = await supabase.from("saved_draft_picks").insert(copyRows);
-        if (copyErr) {
-          setLoading(false);
-          setMessage(copyErr.message);
-          return;
-        }
-      }
-
-      userDraftRows = [
-        {
-          id: createdId,
-          user_id: user.id,
-          name: created.data.name as string,
-          created_at: created.data.created_at as string,
-          updated_at: created.data.updated_at as string,
-        },
-      ];
+    const nextDraftRows = toSortedDraftRows((draftRowsQuery.data ?? []) as SavedDraftRow[]);
+    if (nextDraftRows.length === 0) {
+      setDrafts([]);
+      setPickMap(new Map());
+      setSelectedDraftId("");
+      setLoading(false);
+      return;
     }
 
-    const nextDraftRows = toSortedDraftRows(userDraftRows);
     const draftIds = nextDraftRows.map((draft) => draft.id);
     const picksQuery = await supabase
       .from("saved_draft_picks")
@@ -321,13 +323,9 @@ export default function PoolDraftPage() {
 
     const nextPickMap = toPickMap(draftIds, (picksQuery.data ?? []) as SavedDraftPickRow[]);
 
-    const preAppliedDraft = nextDraftRows.find((draft) =>
-      sameTeamSet(nextPickMap.get(draft.id) ?? new Set<string>(), currentPoolPickSet)
-    );
-
     setDrafts(nextDraftRows);
     setPickMap(nextPickMap);
-    setSelectedDraftId(preAppliedDraft?.id ?? nextDraftRows[0]?.id ?? "");
+    setSelectedDraftId(nextDraftRows[0]?.id ?? "");
 
     setLoading(false);
   }, [poolId]);
@@ -336,6 +334,73 @@ export default function PoolDraftPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadTargetEntryPicks = async () => {
+      if (!isMember || !targetEntryId) {
+        if (!canceled) setPoolAppliedTeamIds(new Set());
+        return;
+      }
+
+      const { data: poolPickRows, error: poolPicksErr } = await supabase
+        .from("entry_picks")
+        .select("team_id")
+        .eq("entry_id", targetEntryId);
+
+      if (poolPicksErr) {
+        if (!canceled) setMessage(poolPicksErr.message);
+        return;
+      }
+
+      if (!canceled) {
+        setPoolAppliedTeamIds(new Set(((poolPickRows ?? []) as EntryPickRow[]).map((row) => row.team_id)));
+      }
+    };
+
+    void loadTargetEntryPicks();
+    return () => {
+      canceled = true;
+    };
+  }, [isMember, targetEntryId]);
+
+  async function createPoolEntry(poolIdValue: string, userId: string, entryName: string): Promise<EntryRow> {
+    const trimmedName = entryName.trim();
+    const insertWithName = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolIdValue,
+        user_id: userId,
+        entry_name: trimmedName || "My Bracket",
+      })
+      .select("id,entry_name")
+      .single();
+
+    if (!insertWithName.error && insertWithName.data) {
+      const row = insertWithName.data as { id: string; entry_name: string | null };
+      return { id: row.id, entry_name: row.entry_name };
+    }
+
+    if (!isMissingEntryNameError(insertWithName.error?.message)) {
+      throw new Error(insertWithName.error?.message ?? "Failed to create entry.");
+    }
+
+    const insertFallback = await supabase
+      .from("entries")
+      .insert({
+        pool_id: poolIdValue,
+        user_id: userId,
+      })
+      .select("id")
+      .single();
+
+    if (insertFallback.error || !insertFallback.data) {
+      throw new Error(insertFallback.error?.message ?? "Failed to create entry.");
+    }
+
+    return { id: insertFallback.data.id as string, entry_name: null };
+  }
 
   async function joinPool() {
     setMessage("");
@@ -393,17 +458,12 @@ export default function PoolDraftPage() {
     });
     setJoining(false);
     await load();
-    setMessage("Joined pool. Pick a saved draft and apply it.");
+    setMessage("Joined pool. Pick a saved draft and enter it.");
   }
 
   async function applyDraftToPool() {
     if (!isMember) {
-      setMessage("Join this pool before applying a draft.");
-      return;
-    }
-
-    if (!entryId) {
-      setMessage("Entry is not ready yet. Refresh and try again.");
+      setMessage("Join this pool before entering a draft.");
       return;
     }
 
@@ -422,39 +482,64 @@ export default function PoolDraftPage() {
       return;
     }
 
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) {
+      setMessage("Please log in first.");
+      return;
+    }
+
     setApplying(true);
     setMessage("");
+
+    const isUpdatingExisting = targetEntryId.trim().length > 0;
+    let resolvedEntryId = targetEntryId.trim();
+    let createdEntry: EntryRow | null = null;
+
+    if (!isUpdatingExisting) {
+      try {
+        createdEntry = await createPoolEntry(poolId, user.id, selectedDraft.name);
+        resolvedEntryId = createdEntry.id;
+      } catch (error: unknown) {
+        setApplying(false);
+        setMessage(error instanceof Error ? error.message : "Failed to create pool entry.");
+        return;
+      }
+    }
 
     trackEvent({
       eventName: "pool_draft_apply_attempt",
       poolId,
-      entryId,
+      entryId: resolvedEntryId,
       metadata: {
+        mode: isUpdatingExisting ? "update_existing_entry" : "create_new_entry",
         draft_id: selectedDraft.id,
         selected_count: selectedDraftPicks.size,
         total_cost: selectedDraftSummary.totalCost,
       },
     });
 
-    const { error: clearErr } = await supabase
-      .from("entry_picks")
-      .delete()
-      .eq("entry_id", entryId);
+    if (isUpdatingExisting) {
+      const { error: clearErr } = await supabase
+        .from("entry_picks")
+        .delete()
+        .eq("entry_id", resolvedEntryId);
 
-    if (clearErr) {
-      setApplying(false);
-      setMessage(clearErr.message);
-      trackEvent({
-        eventName: "pool_draft_apply_failure",
-        poolId,
-        entryId,
-        metadata: { draft_id: selectedDraft.id, reason: clearErr.message },
-      });
-      return;
+      if (clearErr) {
+        setApplying(false);
+        setMessage(clearErr.message);
+        trackEvent({
+          eventName: "pool_draft_apply_failure",
+          poolId,
+          entryId: resolvedEntryId,
+          metadata: { draft_id: selectedDraft.id, reason: clearErr.message },
+        });
+        return;
+      }
     }
 
     const rows = Array.from(selectedDraftPicks).map((teamId) => ({
-      entry_id: entryId,
+      entry_id: resolvedEntryId,
       team_id: teamId,
     }));
 
@@ -466,28 +551,54 @@ export default function PoolDraftPage() {
         trackEvent({
           eventName: "pool_draft_apply_failure",
           poolId,
-          entryId,
+          entryId: resolvedEntryId,
           metadata: { draft_id: selectedDraft.id, reason: insertErr.message },
         });
         return;
       }
     }
 
-    const entryNameErr = await trySetEntryName(supabase, entryId, selectedDraft.name);
-    if (entryNameErr) {
-      setApplying(false);
-      setMessage(entryNameErr);
-      return;
+    if (isUpdatingExisting) {
+      const entryNameErr = await trySetEntryName(supabase, resolvedEntryId, selectedDraft.name);
+      if (entryNameErr) {
+        setApplying(false);
+        setMessage(entryNameErr);
+        return;
+      }
     }
 
-    setPoolAppliedTeamIds(new Set(selectedDraftPicks));
+    if (createdEntry) {
+      setExistingEntries((prev) => [...prev, createdEntry]);
+      setTargetEntryId("");
+      setPoolAppliedTeamIds(new Set());
+    } else {
+      setPoolAppliedTeamIds(new Set(selectedDraftPicks));
+      setExistingEntries((prev) =>
+        prev.map((entry) =>
+          entry.id === resolvedEntryId ? { ...entry, entry_name: selectedDraft.name } : entry
+        )
+      );
+    }
+
+    const targetEntryIndex = targetEntry
+      ? existingEntries.findIndex((entry) => entry.id === targetEntry.id)
+      : -1;
+    const selectedEntryLabel = targetEntry
+      ? entryLabel(targetEntry, targetEntryIndex >= 0 ? targetEntryIndex : 0)
+      : "Selected entry";
+
     setApplying(false);
-    setMessage(`Applied "${selectedDraft.name}" to ${pool?.name ?? "this pool"}.`);
+    setMessage(
+      createdEntry
+        ? `Entered "${selectedDraft.name}" as a new entry in ${pool?.name ?? "this pool"}.`
+        : `Updated "${selectedEntryLabel}" with "${selectedDraft.name}".`
+    );
     trackEvent({
       eventName: "pool_draft_apply_success",
       poolId,
-      entryId,
+      entryId: resolvedEntryId,
       metadata: {
+        mode: isUpdatingExisting ? "update_existing_entry" : "create_new_entry",
         draft_id: selectedDraft.id,
         selected_count: selectedDraftPicks.size,
         total_cost: selectedDraftSummary.totalCost,
@@ -520,7 +631,7 @@ export default function PoolDraftPage() {
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>{pool?.name ?? "Pool"}</h1>
             <p style={{ margin: "6px 0 0", opacity: 0.85 }}>
-              Apply one of your saved drafts to this pool.
+              Enter saved drafts into this pool. You can create multiple entries.
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -615,8 +726,8 @@ export default function PoolDraftPage() {
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
           <p style={{ margin: 0, opacity: 0.85 }}>
             {poolIsPrivate
-              ? "Enter the pool password to join, then you can apply any saved draft."
-              : "Join this pool to apply one of your saved drafts."}
+              ? "Enter the pool password to join, then you can enter any saved draft."
+              : "Join this pool to enter one or more saved drafts."}
           </p>
           {poolIsPrivate ? (
             <input
@@ -692,11 +803,40 @@ export default function PoolDraftPage() {
             </select>
           </div>
 
+          <div style={{ display: "grid", gap: 8 }}>
+            <label htmlFor="pool-entry-target-select" style={{ fontWeight: 800, fontSize: 13 }}>
+              Entry target
+            </label>
+            <select
+              id="pool-entry-target-select"
+              value={targetEntryId}
+              onChange={(event) => setTargetEntryId(event.target.value)}
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+              }}
+            >
+              <option value="">Create new pool entry</option>
+              {existingEntries.map((entry, index) => (
+                <option key={entry.id} value={entry.id}>
+                  {entryLabel(entry, index)}
+                </option>
+              ))}
+            </select>
+            <p style={{ margin: 0, fontSize: 12, opacity: 0.75 }}>
+              Keep the default to add a new entry, or choose an existing entry to replace its picks.
+            </p>
+          </div>
+
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={() => void applyDraftToPool()}
-              disabled={applying || !selectedDraft || locked || !selectedDraftSummary.isValid}
+              disabled={applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0}
               style={{
                 padding: "12px 14px",
                 borderRadius: 10,
@@ -704,13 +844,22 @@ export default function PoolDraftPage() {
                 background: "var(--surface)",
                 fontWeight: 900,
                 cursor:
-                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid
+                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0
                     ? "not-allowed"
                     : "pointer",
-                opacity: applying || !selectedDraft || locked || !selectedDraftSummary.isValid ? 0.7 : 1,
+                opacity:
+                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0
+                    ? 0.7
+                    : 1,
               }}
             >
-              {applying ? "Applying..." : selectedIsApplied ? "Re-apply draft" : "Apply draft to pool"}
+              {applying
+                ? "Saving..."
+                : targetEntryId
+                  ? selectedIsApplied
+                    ? "Re-apply draft to selected entry"
+                    : "Update selected entry"
+                  : "Enter draft as new entry"}
             </button>
             <Link
               href="/drafts"
@@ -732,14 +881,21 @@ export default function PoolDraftPage() {
               border: "1px solid var(--border-color)",
               borderRadius: 10,
               padding: "10px 12px",
-              background: selectedDraftSummary.isValid ? "var(--success-bg)" : "var(--danger-bg)",
+              background:
+                !selectedDraft
+                  ? "var(--surface-muted)"
+                  : selectedDraftSummary.isValid
+                    ? "var(--success-bg)"
+                    : "var(--danger-bg)",
               fontWeight: 800,
             }}
           >
             {selectedDraft
               ? `Draft "${selectedDraft.name}" - ${selectedDraftPicks.size} teams - ${selectedDraftSummary.totalCost}/${DRAFT_BUDGET}`
-              : "Select a draft first."}
-            {selectedDraftSummary.isValid ? "" : ` - ${selectedDraftSummary.error ?? "Invalid draft."}`}
+              : "No saved drafts yet. Create one in Draft Editor first."}
+            {selectedDraft && !selectedDraftSummary.isValid
+              ? ` - ${selectedDraftSummary.error ?? "Invalid draft."}`
+              : ""}
           </div>
 
           <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
@@ -747,10 +903,16 @@ export default function PoolDraftPage() {
               Rules: max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max {MAX_14_TO_16_SEEDS} seeds
               14-16.
             </div>
-            <div>
-              Currently applied draft:{" "}
-              <b>{appliedDraft ? appliedDraft.name : poolAppliedTeamIds.size > 0 ? "Custom / unsaved mix" : "None"}</b>
-            </div>
+            {targetEntry ? (
+              <div>
+                Selected entry currently matches:{" "}
+                <b>{appliedDraft ? appliedDraft.name : poolAppliedTeamIds.size > 0 ? "Custom / unsaved mix" : "None"}</b>
+              </div>
+            ) : (
+              <div>
+                You are creating a new entry. Existing entries remain unchanged.
+              </div>
+            )}
           </div>
         </section>
       ) : null}
