@@ -859,12 +859,14 @@ export default function AdminPage() {
       const seedFields = Number(json?.teamSeedFieldsUpdated ?? 0);
       const regionFields = Number(json?.teamRegionUpdated ?? 0);
       const costFields = Number(json?.teamCostUpdated ?? 0);
-      const conflictSkipped = Number(json?.teamsSkippedConflict ?? 0);
+      const conflictCount = Number(json?.teamsWithConflicts ?? 0);
+      const conflictResolved = Number(json?.teamsConflictResolved ?? 0);
+      const seedInRegionBackfilled = Number(json?.teamsSeedInRegionBackfilled ?? 0);
 
       setMsg(
         `Seed repair complete | eligible games: ${gamesEligible}, game order fixed: ${gamesOrderFixed}, ` +
         `teams updated: ${teamsUpdated}, seed fields: ${seedFields}, region fields: ${regionFields}, cost fields: ${costFields}, ` +
-        `conflicts skipped: ${conflictSkipped}`
+        `conflicts: ${conflictCount} (resolved: ${conflictResolved}), seed_in_region backfilled: ${seedInRegionBackfilled}`
       );
     } catch (e: unknown) {
       setMsg(e instanceof Error ? e.message : "Seed repair failed.");

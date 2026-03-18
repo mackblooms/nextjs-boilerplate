@@ -87,8 +87,18 @@ function costForSeed(seed: number | null): number | null {
   return map[seed] ?? null;
 }
 
-function sameDesiredState(a: DesiredTeamState, b: DesiredTeamState) {
-  return a.seed === b.seed && a.region === b.region && a.cost === b.cost;
+function desiredStateKey(state: DesiredTeamState) {
+  return `${state.region}|${state.seed}|${state.cost ?? "null"}`;
+}
+
+function parseDesiredStateKey(key: string): DesiredTeamState | null {
+  const [regionRaw, seedRaw, costRaw] = key.split("|");
+  if (!isRegionName(regionRaw as string | null)) return null;
+  const region = regionRaw as RegionName;
+  const seed = toSeed(seedRaw);
+  if (!seed) return null;
+  const cost = costRaw === "null" ? null : toInt(costRaw);
+  return { region, seed, cost };
 }
 
 export async function POST(req: Request) {
@@ -146,8 +156,7 @@ export async function POST(req: Request) {
     let gamesMissingTeams = 0;
     let gamesInvalidRegionOrSlot = 0;
 
-    const desiredByTeamId = new Map<string, DesiredTeamState>();
-    const conflictingTeamIds = new Set<string>();
+    const assignmentsByTeamId = new Map<string, DesiredTeamState[]>();
 
     for (const row of games) {
       scannedGames++;
@@ -212,32 +221,49 @@ export async function POST(req: Request) {
         cost: costForSeed(bottomSeed),
       };
 
-      const currentTopDesired = desiredByTeamId.get(desiredTopId);
-      if (!currentTopDesired) {
-        desiredByTeamId.set(desiredTopId, topDesired);
-      } else if (!sameDesiredState(currentTopDesired, topDesired)) {
-        conflictingTeamIds.add(desiredTopId);
-      }
-
-      const currentBottomDesired = desiredByTeamId.get(desiredBottomId);
-      if (!currentBottomDesired) {
-        desiredByTeamId.set(desiredBottomId, bottomDesired);
-      } else if (!sameDesiredState(currentBottomDesired, bottomDesired)) {
-        conflictingTeamIds.add(desiredBottomId);
-      }
+      assignmentsByTeamId.set(desiredTopId, [...(assignmentsByTeamId.get(desiredTopId) ?? []), topDesired]);
+      assignmentsByTeamId.set(desiredBottomId, [...(assignmentsByTeamId.get(desiredBottomId) ?? []), bottomDesired]);
     }
 
     let teamsUpdated = 0;
     let teamSeedFieldsUpdated = 0;
     let teamRegionUpdated = 0;
     let teamCostUpdated = 0;
-    let teamsSkippedConflict = 0;
+    let teamsWithConflicts = 0;
+    let teamsConflictResolved = 0;
+
+    const desiredByTeamId = new Map<string, DesiredTeamState>();
+    for (const [teamId, assignments] of assignmentsByTeamId.entries()) {
+      if (assignments.length === 0) continue;
+      const counts = new Map<string, number>();
+      for (const assignment of assignments) {
+        const key = desiredStateKey(assignment);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+
+      if (counts.size > 1) teamsWithConflicts++;
+
+      let bestKey: string | null = null;
+      let bestCount = -1;
+      for (const [key, count] of counts.entries()) {
+        if (count > bestCount) {
+          bestKey = key;
+          bestCount = count;
+          continue;
+        }
+        if (count === bestCount && bestKey && key < bestKey) {
+          bestKey = key;
+        }
+      }
+
+      if (!bestKey) continue;
+      const resolved = parseDesiredStateKey(bestKey);
+      if (!resolved) continue;
+      if (counts.size > 1) teamsConflictResolved++;
+      desiredByTeamId.set(teamId, resolved);
+    }
 
     for (const [teamId, desired] of desiredByTeamId.entries()) {
-      if (conflictingTeamIds.has(teamId)) {
-        teamsSkippedConflict++;
-        continue;
-      }
 
       const existing = teamById.get(teamId);
       if (!existing) continue;
@@ -273,6 +299,26 @@ export async function POST(req: Request) {
       teamsUpdated++;
     }
 
+    // Repair leftover rows where seed is valid but seed_in_region is invalid (0/null/out of range).
+    let teamsSeedInRegionBackfilled = 0;
+    const { data: invalidSeedRows, error: invalidSeedRowsErr } = await supabaseAdmin
+      .from("teams")
+      .select("id,seed,seed_in_region")
+      .or("seed_in_region.eq.0,seed_in_region.is.null");
+    if (invalidSeedRowsErr) throw invalidSeedRowsErr;
+
+    for (const row of (invalidSeedRows ?? []) as Array<{ id: string; seed: number | null; seed_in_region: number | null }>) {
+      const seed = toSeed(row.seed);
+      if (!seed) continue;
+      if (toSeed(row.seed_in_region) === seed) continue;
+      const { error: backfillErr } = await supabaseAdmin
+        .from("teams")
+        .update({ seed_in_region: seed })
+        .eq("id", String(row.id));
+      if (backfillErr) throw backfillErr;
+      teamsSeedInRegionBackfilled++;
+    }
+
     return NextResponse.json({
       ok: true,
       scannedGames,
@@ -284,7 +330,9 @@ export async function POST(req: Request) {
       teamSeedFieldsUpdated,
       teamRegionUpdated,
       teamCostUpdated,
-      teamsSkippedConflict,
+      teamsWithConflicts,
+      teamsConflictResolved,
+      teamsSeedInRegionBackfilled,
     });
   } catch (e: unknown) {
     return NextResponse.json(
@@ -293,4 +341,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

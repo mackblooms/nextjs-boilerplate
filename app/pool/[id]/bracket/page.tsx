@@ -18,6 +18,7 @@ import { scoreEntries } from "../../../../lib/scoring";
 type Team = {
   id: string;
   name: string;
+  seed: number | null;
   seed_in_region: number | null;
   region: string | null;
   logo_url?: string | null;
@@ -93,6 +94,15 @@ function isMissingColumnError(message: string) {
   return msg.includes("column") && msg.includes("does not exist");
 }
 
+function normalizeSeed(value: unknown): number | null {
+  if (value == null) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  const seed = Math.trunc(n);
+  if (seed < 1 || seed > 16) return null;
+  return seed;
+}
+
 function toLiveStateRank(state: LiveScoreState) {
   if (state === "LIVE") return 2;
   if (state === "UPCOMING") return 1;
@@ -101,6 +111,20 @@ function toLiveStateRank(state: LiveScoreState) {
 
 function pairKey(a: string, b: string) {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+function expectedSeedsForR64Slot(slot: number): [number, number] | null {
+  const map: Record<number, [number, number]> = {
+    1: [1, 16],
+    2: [8, 9],
+    3: [5, 12],
+    4: [4, 13],
+    5: [6, 11],
+    6: [3, 14],
+    7: [7, 10],
+    8: [2, 15],
+  };
+  return map[slot] ?? null;
 }
 
 function parseSecondHalfMinutesRemaining(detail: string | null | undefined): number | null {
@@ -128,11 +152,13 @@ function getUpsetSnapshot(
 
   const team1Seed = teamById.get(game.team1_id)?.seed_in_region;
   const team2Seed = teamById.get(game.team2_id)?.seed_in_region;
-  if (typeof team1Seed !== "number" || typeof team2Seed !== "number") return null;
-  if (team1Seed === team2Seed) return null;
+  const normalizedTeam1Seed = normalizeSeed(team1Seed);
+  const normalizedTeam2Seed = normalizeSeed(team2Seed);
+  if (normalizedTeam1Seed == null || normalizedTeam2Seed == null) return null;
+  if (normalizedTeam1Seed === normalizedTeam2Seed) return null;
 
   const underdogLead =
-    team1Seed > team2Seed
+    normalizedTeam1Seed > normalizedTeam2Seed
       ? live.team1Score - live.team2Score
       : live.team2Score - live.team1Score;
 
@@ -328,14 +354,14 @@ export default function BracketPage() {
 
       const teamQuery = await supabase
         .from("teams")
-        .select("id,name,region,seed_in_region,logo_url,espn_team_id");
+        .select("id,name,region,seed,seed_in_region,logo_url,espn_team_id");
       let teamRows = (teamQuery.data ?? []) as Team[];
       let teamErr = teamQuery.error;
 
       if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
         const fallback = await supabase
           .from("teams")
-          .select("id,name,region,seed_in_region,logo_url");
+          .select("id,name,region,seed,seed_in_region,logo_url");
         teamRows = (fallback.data ?? []).map((row) => ({
           ...row,
           espn_team_id: null,
@@ -404,7 +430,10 @@ export default function BracketPage() {
       const entryIds = visiblePlayers.map((p) => p.entry_id);
       const userIds = Array.from(new Set(visiblePlayers.map((p) => p.user_id)));
       const teamSeedById = new Map(
-        (((teamRows as Team[] | null) ?? []) as Team[]).map((t) => [t.id, t.seed_in_region ?? null]),
+        (((teamRows as Team[] | null) ?? []) as Team[]).map((t) => [
+          t.id,
+          normalizeSeed(t.seed_in_region) ?? normalizeSeed(t.seed) ?? null,
+        ]),
       );
       const picksByEntry = new Map<string, string[]>();
 
@@ -726,10 +755,26 @@ export default function BracketPage() {
   const finalFourBottomUpset = finalFour[1] ? upsetWatchGameIds.has(finalFour[1].id) : false;
   const championshipUpset = championship ? upsetWatchGameIds.has(championship.id) : false;
 
+  const r64SeedByTeamId = useMemo(() => {
+    const out = new Map<string, number>();
+    for (const g of games) {
+      if (g.round !== "R64") continue;
+      const pair = expectedSeedsForR64Slot(g.slot);
+      if (!pair) continue;
+      const team1Id = g.team1_id ? String(g.team1_id) : null;
+      const team2Id = g.team2_id ? String(g.team2_id) : null;
+      if (team1Id) out.set(team1Id, pair[0]);
+      if (team2Id) out.set(team2Id, pair[1]);
+    }
+    return out;
+  }, [games]);
+
   const teamSeedForDisplay = (teamId: string | null): number | null => {
     if (!teamId) return null;
-    const seed = teamById.get(teamId)?.seed_in_region;
-    return typeof seed === "number" ? seed : null;
+    const fromR64 = r64SeedByTeamId.get(teamId) ?? null;
+    if (fromR64 != null) return fromR64;
+    const team = teamById.get(teamId);
+    return normalizeSeed(team?.seed_in_region) ?? normalizeSeed(team?.seed);
   };
 
   const orderBySeedForDisplay = (
