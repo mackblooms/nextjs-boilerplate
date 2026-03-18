@@ -677,12 +677,49 @@ export default function BracketPage() {
     return matchLiveScoresToGames(games, liveScores, espnTeamIdByLocalId);
   }, [espnTeamIdByLocalId, games, liveScores]);
 
+  const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
+    if (!g) return null;
+
+    if (g.start_time) {
+      const d = new Date(g.start_time);
+      if (!Number.isNaN(d.getTime())) {
+        return (
+          d.toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }) + " ET"
+        );
+      }
+    }
+
+    if (g.game_date) {
+      const d = new Date(`${g.game_date}T00:00:00Z`);
+      if (!Number.isNaN(d.getTime())) {
+        return (
+          d.toLocaleDateString("en-US", {
+            timeZone: "America/New_York",
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }) + " ET"
+        );
+      }
+    }
+
+    return null;
+  }, []);
+
   const formatGameMeta = useCallback((g: Game | null | undefined): string | null => {
     if (!g) return null;
     const live = liveByGameId.get(g.id);
     if (live?.detail && live.state !== "UPCOMING") return live.detail;
-    return null;
-  }, [liveByGameId]);
+    return formatGameTimeEst(g);
+  }, [formatGameTimeEst, liveByGameId]);
 
   const upsetWatchGameIds = useMemo(() => {
     const out = new Set<string>();
@@ -926,7 +963,7 @@ export default function BracketPage() {
           ? "2px solid #d97706"
           : "1px solid var(--border-color)",
         borderRadius: 14,
-        padding: 6,
+        padding: 4,
         background: "var(--surface)",
         boxShadow: upsetWatch
           ? "0 0 0 2px rgba(217,119,6,0.16)"
@@ -938,16 +975,17 @@ export default function BracketPage() {
         justifyContent: "space-between",
       }}
     >
-      <div style={{ display: "grid", gap: 6 }}>{children}</div>
+      <div style={{ display: "grid", gap: 4 }}>{children}</div>
       {meta ? (
         <div
           style={{
-            marginTop: 6,
-            paddingTop: 5,
+            marginTop: 3,
+            paddingTop: 2,
             borderTop: "1px solid var(--border-color)",
-            fontSize: 10,
+            fontSize: 8,
+            lineHeight: "10px",
             fontWeight: 700,
-            opacity: 0.72,
+            opacity: 0.62,
             textAlign: "center",
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -973,7 +1011,7 @@ export default function BracketPage() {
           ? "2px solid #d97706"
           : "1px solid var(--border-color)",
         borderRadius: 14,
-        padding: 6,
+        padding: 4,
         background: "var(--surface)",
         boxShadow: upsetWatch
           ? "0 0 0 2px rgba(217,119,6,0.16)"
