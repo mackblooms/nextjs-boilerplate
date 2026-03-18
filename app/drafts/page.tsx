@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
 
@@ -56,6 +57,8 @@ export default function DraftsPage() {
   const [newDraftName, setNewDraftName] = useState("");
   const [creating, setCreating] = useState(false);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
+  const draftsLocked = isDraftLibraryLocked();
+  const lockMessage = draftLibraryLockMessage();
 
   useEffect(() => {
     const load = async () => {
@@ -127,6 +130,11 @@ export default function DraftsPage() {
   }, []);
 
   async function createDraft() {
+    if (isDraftLibraryLocked()) {
+      setMessage(lockMessage);
+      return;
+    }
+
     if (!userId) {
       setMessage("Please log in first.");
       return;
@@ -166,6 +174,11 @@ export default function DraftsPage() {
   }
 
   async function deleteDraft(draftId: string, draftName: string) {
+    if (isDraftLibraryLocked()) {
+      setMessage(lockMessage);
+      return;
+    }
+
     const ok = window.confirm(`Delete "${draftName}"?`);
     if (!ok) return;
 
@@ -220,7 +233,7 @@ export default function DraftsPage() {
           <div>
             <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>My Drafts</h1>
             <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-              Create multiple drafts here, then open one to edit teams and save.
+              {draftsLocked ? lockMessage : "Create multiple drafts here, then open one to edit teams and save."}
             </p>
           </div>
           <Link
@@ -243,6 +256,7 @@ export default function DraftsPage() {
           <input
             value={newDraftName}
             onChange={(event) => setNewDraftName(event.target.value)}
+            disabled={draftsLocked || creating}
             placeholder={`New draft name (default: ${defaultDraftName(drafts.length + 1)})`}
             style={{
               flex: "1 1 300px",
@@ -256,18 +270,18 @@ export default function DraftsPage() {
           <button
             type="button"
             onClick={() => void createDraft()}
-            disabled={creating}
+            disabled={creating || draftsLocked}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
               fontWeight: 800,
-              cursor: creating ? "not-allowed" : "pointer",
-              opacity: creating ? 0.7 : 1,
+              cursor: creating || draftsLocked ? "not-allowed" : "pointer",
+              opacity: creating || draftsLocked ? 0.7 : 1,
             }}
           >
-            {creating ? "Creating..." : "Create Draft"}
+            {creating ? "Creating..." : draftsLocked ? "Drafts Locked" : "Create Draft"}
           </button>
         </div>
       </section>
@@ -310,7 +324,7 @@ export default function DraftsPage() {
                     background: "var(--surface)",
                   }}
                 >
-                  Edit
+                  {draftsLocked ? "View" : "Edit"}
                 </Link>
                 <Link
                   href="/pools"
@@ -328,7 +342,7 @@ export default function DraftsPage() {
                 <button
                   type="button"
                   onClick={() => void deleteDraft(draft.id, draft.name)}
-                  disabled={deletingDraftId === draft.id}
+                  disabled={deletingDraftId === draft.id || draftsLocked}
                   aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
                   title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
                   style={{
@@ -338,8 +352,8 @@ export default function DraftsPage() {
                     border: "1px solid #dc2626",
                     background: "rgba(220,38,38,0.12)",
                     color: "#dc2626",
-                    cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
-                    opacity: deletingDraftId === draft.id ? 0.7 : 1,
+                    cursor: deletingDraftId === draft.id || draftsLocked ? "not-allowed" : "pointer",
+                    opacity: deletingDraftId === draft.id || draftsLocked ? 0.7 : 1,
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",

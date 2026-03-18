@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 
 type LeavePoolRequest = {
   poolId?: string;
@@ -8,6 +9,11 @@ type LeavePoolRequest = {
 
 type EntryIdRow = {
   id: string;
+};
+
+type PoolRow = {
+  created_by: string;
+  lock_time: string | null;
 };
 
 function getBearerToken(req: Request): string | null {
@@ -43,7 +49,7 @@ export async function POST(req: Request) {
 
     const { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
-      .select("created_by")
+      .select("created_by,lock_time")
       .eq("id", poolId)
       .maybeSingle();
 
@@ -53,6 +59,15 @@ export async function POST(req: Request) {
 
     if (!poolRow) {
       return NextResponse.json({ error: "Pool not found." }, { status: 404 });
+    }
+
+    const pool = poolRow as PoolRow;
+    const lockTime = pool.lock_time;
+    if (isDraftLocked(lockTime)) {
+      return NextResponse.json(
+        { error: `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime)}).` },
+        { status: 423 },
+      );
     }
 
     const { data: entryRows, error: entryLoadErr } = await supabaseAdmin
@@ -112,7 +127,7 @@ export async function POST(req: Request) {
 
     let membershipRemoved = false;
     if ((remainingEntries ?? []).length === 0) {
-      if (poolRow.created_by !== userId) {
+      if (pool.created_by !== userId) {
         const { error: membershipDeleteErr } = await supabaseAdmin
           .from("pool_members")
           .delete()

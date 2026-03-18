@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
 type Pool = {
@@ -13,6 +14,7 @@ type Pool = {
   name: string;
   created_by: string;
   is_private: boolean | null;
+  lock_time: string | null;
 };
 
 type StatusTone = "success" | "error" | "info";
@@ -117,6 +119,10 @@ function isSingleEntryPerPoolConstraintError(message?: string) {
       lowered.includes("pool_id") &&
       lowered.includes("user_id"))
   );
+}
+
+function lockedEntriesMessage(lockTime: string | null | undefined) {
+  return `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime)}).`;
 }
 
 function leaveEntryLabel(entry: LeaveEntryRow, index: number) {
@@ -502,7 +508,7 @@ export default function PoolPage() {
 
       const { data: poolData, error: poolErr } = await supabase
         .from("pools")
-        .select("id,name,created_by,is_private")
+        .select("id,name,created_by,is_private,lock_time")
         .eq("id", poolId)
         .single();
 
@@ -670,6 +676,7 @@ export default function PoolPage() {
   }, []);
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
+  const entriesLocked = isDraftLocked(pool?.lock_time ?? null);
   const selectedDraftCount = selectedDraftIds.size;
   const selectedLeaveCount = selectedLeaveEntryIds.size;
 
@@ -686,6 +693,11 @@ export default function PoolPage() {
   }
 
   async function openDraftModal() {
+    if (isDraftLocked(pool?.lock_time ?? null)) {
+      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null) });
+      return;
+    }
+
     setDraftModalOpen(true);
     setDraftModalLoading(true);
     setDraftModalSubmitting(false);
@@ -872,6 +884,11 @@ export default function PoolPage() {
   }
 
   async function submitSelectedDrafts() {
+    if (isDraftLocked(pool?.lock_time ?? null)) {
+      setDraftModalMessage(lockedEntriesMessage(pool?.lock_time ?? null));
+      return;
+    }
+
     if (selectedDraftIds.size === 0) {
       setDraftModalMessage("Select at least one draft.");
       return;
@@ -889,6 +906,23 @@ export default function PoolPage() {
     );
     if (selectedRows.length === 0) {
       setDraftModalMessage("Selected draft(s) are already in this pool.");
+      return;
+    }
+
+    const lockQuery = await supabase
+      .from("pools")
+      .select("lock_time")
+      .eq("id", poolId)
+      .single();
+
+    if (lockQuery.error) {
+      setDraftModalMessage(lockQuery.error.message);
+      return;
+    }
+
+    const latestLockTime = (lockQuery.data as { lock_time: string | null }).lock_time;
+    if (isDraftLocked(latestLockTime)) {
+      setDraftModalMessage(lockedEntriesMessage(latestLockTime));
       return;
     }
 
@@ -958,6 +992,11 @@ export default function PoolPage() {
   }
 
   async function openLeaveModal() {
+    if (isDraftLocked(pool?.lock_time ?? null)) {
+      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null) });
+      return;
+    }
+
     setStatus(null);
     setLeaveModalOpen(true);
     setLeaveModalLoading(true);
@@ -1085,6 +1124,11 @@ export default function PoolPage() {
   }
 
   async function submitLeaveSelection() {
+    if (isDraftLocked(pool?.lock_time ?? null)) {
+      setLeaveModalMessage(lockedEntriesMessage(pool?.lock_time ?? null));
+      return;
+    }
+
     if (leaveEntries.length > 0 && selectedLeaveEntryIds.size === 0) {
       setLeaveModalMessage("Select at least one entry to remove.");
       return;
@@ -1204,6 +1248,22 @@ export default function PoolPage() {
 
     setIsMember(true);
     setJoinPassword("");
+
+    if (isDraftLocked(pool?.lock_time ?? null)) {
+      setStatus({
+        tone: "info",
+        text: `Joined ${pool?.name ?? "this pool"}. ${lockedEntriesMessage(pool?.lock_time ?? null)}`,
+      });
+      trackEvent({
+        eventName: "pool_join_success",
+        poolId,
+        metadata: { location: "pool_page", is_private: poolIsPrivate, entries_locked: true },
+      });
+      setJoining(false);
+      setReloadKey((prev) => prev + 1);
+      return;
+    }
+
     setStatus({
       tone: "success",
       text: "Joined! Choose draft(s) to enter next.",
@@ -1211,7 +1271,7 @@ export default function PoolPage() {
     trackEvent({
       eventName: "pool_join_success",
       poolId,
-      metadata: { location: "pool_page", is_private: poolIsPrivate },
+      metadata: { location: "pool_page", is_private: poolIsPrivate, entries_locked: false },
     });
     setJoining(false);
     setReloadKey((prev) => prev + 1);
@@ -1459,7 +1519,9 @@ export default function PoolPage() {
           >
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
             <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 14 }}>
-              {poolIsPrivate
+              {entriesLocked
+                ? `Draft entry and leave are locked (${formatDraftLockTimeET(pool?.lock_time ?? null)}).`
+                : poolIsPrivate
                 ? "This is a private pool. Enter the pool password to join, then pick draft(s) to enter."
                 : "This is a public pool. Join now, then pick draft(s) to enter."}
             </p>
@@ -1503,7 +1565,7 @@ export default function PoolPage() {
                   opacity: joinDisabled ? 0.7 : 1,
                 }}
               >
-                {joining ? "Joining..." : "Join + Choose Drafts"}
+                {joining ? "Joining..." : entriesLocked ? "Join Pool" : "Join + Choose Drafts"}
               </button>
             </div>
           </section>
@@ -1545,6 +1607,7 @@ export default function PoolPage() {
               <button
                 type="button"
                 onClick={() => void openDraftModal()}
+                disabled={entriesLocked}
                 style={{
                   flex: "1 1 140px",
                   minWidth: 120,
@@ -1557,7 +1620,8 @@ export default function PoolPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: "pointer",
+                  cursor: entriesLocked ? "not-allowed" : "pointer",
+                  opacity: entriesLocked ? 0.7 : 1,
                 }}
               >
                 Enter Drafts
@@ -1565,6 +1629,7 @@ export default function PoolPage() {
               <button
                 type="button"
                 onClick={() => void openLeaveModal()}
+                disabled={entriesLocked}
                 style={{
                   flex: "1 1 140px",
                   minWidth: 120,
@@ -1578,7 +1643,8 @@ export default function PoolPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: "pointer",
+                  cursor: entriesLocked ? "not-allowed" : "pointer",
+                  opacity: entriesLocked ? 0.7 : 1,
                 }}
               >
                 Leave Entries
@@ -1622,6 +1688,11 @@ export default function PoolPage() {
                 Leaderboard
               </Link>
             </div>
+            {entriesLocked ? (
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
+                Entry changes are locked for this pool.
+              </p>
+            ) : null}
           </section>
         ) : null}
 
@@ -1700,18 +1771,18 @@ export default function PoolPage() {
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={selectAllDrafts}
-                    disabled={draftModalSubmitting}
-                    style={{
+                <button
+                  type="button"
+                  onClick={selectAllDrafts}
+                  disabled={draftModalSubmitting || entriesLocked}
+                  style={{
                       padding: "8px 10px",
                       borderRadius: 10,
                       border: "1px solid var(--border-color)",
                       background: "var(--surface)",
                       fontWeight: 800,
-                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting ? 0.7 : 1,
+                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
                     }}
                   >
                     Select all
@@ -1719,15 +1790,15 @@ export default function PoolPage() {
                   <button
                     type="button"
                     onClick={clearDraftSelection}
-                    disabled={draftModalSubmitting}
+                    disabled={draftModalSubmitting || entriesLocked}
                     style={{
                       padding: "8px 10px",
                       borderRadius: 10,
                       border: "1px solid var(--border-color)",
                       background: "var(--surface)",
                       fontWeight: 800,
-                      cursor: draftModalSubmitting ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting ? 0.7 : 1,
+                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
+                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
                     }}
                   >
                     Clear
@@ -1759,7 +1830,7 @@ export default function PoolPage() {
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleDraftSelection(draft.id)}
-                          disabled={draftModalSubmitting || isAlreadyEntered}
+                          disabled={draftModalSubmitting || isAlreadyEntered || entriesLocked}
                         />
                         <div style={{ display: "grid", gap: 2 }}>
                           <div style={{ fontWeight: 900 }}>
@@ -1847,7 +1918,7 @@ export default function PoolPage() {
                 <button
                   type="button"
                   onClick={() => void submitSelectedDrafts()}
-                  disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading}
+                  disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked}
                   style={{
                     padding: "10px 12px",
                     minHeight: 44,
@@ -1856,10 +1927,11 @@ export default function PoolPage() {
                     background: "var(--surface)",
                     fontWeight: 900,
                     cursor:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading
+                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked
                         ? "not-allowed"
                         : "pointer",
-                    opacity: draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading ? 0.7 : 1,
+                    opacity:
+                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked ? 0.7 : 1,
                   }}
                 >
                   {draftModalSubmitting
@@ -1921,15 +1993,15 @@ export default function PoolPage() {
                   <button
                     type="button"
                     onClick={selectAllLeaveEntries}
-                    disabled={leaveModalSubmitting}
+                    disabled={leaveModalSubmitting || entriesLocked}
                     style={{
                       padding: "8px 10px",
                       borderRadius: 10,
                       border: "1px solid var(--border-color)",
                       background: "var(--surface)",
                       fontWeight: 800,
-                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
-                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                      cursor: leaveModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting || entriesLocked ? 0.7 : 1,
                     }}
                   >
                     Select all
@@ -1937,15 +2009,15 @@ export default function PoolPage() {
                   <button
                     type="button"
                     onClick={clearLeaveSelection}
-                    disabled={leaveModalSubmitting}
+                    disabled={leaveModalSubmitting || entriesLocked}
                     style={{
                       padding: "8px 10px",
                       borderRadius: 10,
                       border: "1px solid var(--border-color)",
                       background: "var(--surface)",
                       fontWeight: 800,
-                      cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
-                      opacity: leaveModalSubmitting ? 0.7 : 1,
+                      cursor: leaveModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
+                      opacity: leaveModalSubmitting || entriesLocked ? 0.7 : 1,
                     }}
                   >
                     Clear
@@ -1973,7 +2045,7 @@ export default function PoolPage() {
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleLeaveEntrySelection(entry.id)}
-                          disabled={leaveModalSubmitting}
+                          disabled={leaveModalSubmitting || entriesLocked}
                         />
                         <div style={{ display: "grid", gap: 2 }}>
                           <div style={{ fontWeight: 900 }}>{leaveEntryLabel(entry, index)}</div>
@@ -2038,7 +2110,12 @@ export default function PoolPage() {
               <button
                 type="button"
                 onClick={() => void submitLeaveSelection()}
-                disabled={leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)}
+                disabled={
+                  leaveModalSubmitting ||
+                  leaveModalLoading ||
+                  entriesLocked ||
+                  (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                }
                 style={{
                   padding: "10px 12px",
                   minHeight: 44,
@@ -2048,11 +2125,17 @@ export default function PoolPage() {
                   color: "#dc2626",
                   fontWeight: 900,
                   cursor:
-                    leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                    leaveModalSubmitting ||
+                    leaveModalLoading ||
+                    entriesLocked ||
+                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
                       ? "not-allowed"
                       : "pointer",
                   opacity:
-                    leaveModalSubmitting || leaveModalLoading || (leaveEntries.length > 0 && selectedLeaveCount === 0)
+                    leaveModalSubmitting ||
+                    leaveModalLoading ||
+                    entriesLocked ||
+                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
                       ? 0.7
                       : 1,
                 }}

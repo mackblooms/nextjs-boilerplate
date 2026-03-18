@@ -44,3 +44,11 @@ export function formatDraftLockTimeET(poolLockTime: string | null | undefined): 
     }) + " ET"
   );
 }
+
+export function isDraftLibraryLocked(now: Date = new Date()): boolean {
+  return isDraftLocked(null, now);
+}
+
+export function draftLibraryLockMessage(): string {
+  return `Draft editing is locked after first tip (${formatDraftLockTimeET(null)}).`;
+}

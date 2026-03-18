@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import {
   DRAFT_BUDGET,
@@ -62,6 +63,8 @@ export default function DraftDetailPage() {
   const [savedSelected, setSavedSelected] = useState<Set<string>>(new Set());
 
   const [saving, setSaving] = useState(false);
+  const draftsLocked = isDraftLibraryLocked();
+  const lockMessage = draftLibraryLockMessage();
 
   const teamById = useMemo(() => {
     const map = new Map<string, TeamRow>();
@@ -183,6 +186,11 @@ export default function DraftDetailPage() {
   }, [draftId]);
 
   function toggleTeam(teamId: string) {
+    if (isDraftLibraryLocked()) {
+      setMessage(lockMessage);
+      return;
+    }
+
     setMessage("");
     setSelected((prev) => {
       const next = new Set(prev);
@@ -202,6 +210,11 @@ export default function DraftDetailPage() {
   }
 
   async function saveDraft() {
+    if (isDraftLibraryLocked()) {
+      setMessage(lockMessage);
+      return;
+    }
+
     const nextName = renameValue.trim().slice(0, 80);
     if (!nextName) {
       setMessage("Enter a draft name.");
@@ -298,7 +311,7 @@ export default function DraftDetailPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>{draftName || "Draft"}</h1>
             <p style={{ margin: 0, opacity: 0.8 }}>
-              Edit your teams and save this draft.
+              {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -339,6 +352,7 @@ export default function DraftDetailPage() {
           <input
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
+            disabled={draftsLocked || saving}
             placeholder="Draft name"
             style={{
               width: "100%",
@@ -352,18 +366,18 @@ export default function DraftDetailPage() {
           <button
             type="button"
             onClick={() => void saveDraft()}
-            disabled={saving || !hasUnsavedChanges || !summary.isValid}
+            disabled={saving || draftsLocked || !hasUnsavedChanges || !summary.isValid}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
               fontWeight: 800,
-              cursor: saving || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
-              opacity: saving || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
+              cursor: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
+              opacity: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
             }}
           >
-            {saving ? "Saving..." : "Save Draft"}
+            {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
           </button>
         </div>
       </section>
@@ -400,6 +414,7 @@ export default function DraftDetailPage() {
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleTeam(team.id)}
+                    disabled={draftsLocked || saving}
                   />
 
                   {team.logo_url ? (
@@ -486,7 +501,7 @@ export default function DraftDetailPage() {
           <button
             type="button"
             onClick={() => void saveDraft()}
-            disabled={saving || !hasUnsavedChanges || !summary.isValid}
+            disabled={saving || draftsLocked || !hasUnsavedChanges || !summary.isValid}
             style={{
               width: "100%",
               padding: "12px 14px",
@@ -494,11 +509,11 @@ export default function DraftDetailPage() {
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
               fontWeight: 900,
-              cursor: saving || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
-              opacity: saving || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
+              cursor: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
+              opacity: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
             }}
           >
-            {saving ? "Saving..." : "Save Draft"}
+            {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
           </button>
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
