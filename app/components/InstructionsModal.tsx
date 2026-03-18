@@ -208,12 +208,15 @@ export default function InstructionsModal() {
 
       const { data } = await supabase
         .from("saved_drafts")
-        .select("id")
+        .select("id,name")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false })
-        .limit(1);
+        .limit(25);
 
-      const firstDraftId = (data?.[0] as { id: string } | undefined)?.id ?? null;
+      const rows = (data ?? []) as Array<{ id: string; name: string | null }>;
+      const preferredTestDraft =
+        rows.find((row) => (row.name ?? "").trim().toLowerCase().includes("test")) ?? null;
+      const firstDraftId = preferredTestDraft?.id ?? rows[0]?.id ?? null;
       if (!canceled) {
         setDraftEditorPreviewPath(firstDraftId ? `/drafts/${firstDraftId}` : "/drafts");
       }
