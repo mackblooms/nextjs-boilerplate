@@ -39,6 +39,13 @@ type PropagationTarget = {
   side: "team1_id" | "team2_id";
 };
 
+const PLAY_IN_R64_SLOT_KEYS = new Set([
+  "south|1",
+  "west|5",
+  "midwest|1",
+  "midwest|5",
+]);
+
 // YYYY-MM-DD (SportsDataIO expects this for BoxScoresByDate)
 function ymd(d: Date) {
   const yyyy = d.getFullYear();
@@ -232,6 +239,47 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
   return { advancedSlotsUpdated, advancedGamesTouched, clearedInvalidWinners };
 }
 
+async function applyPlayInWinnersToR64Slots(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  nowIso: string
+) {
+  const { data: r64Rows, error: r64Err } = await supabaseAdmin
+    .from("games")
+    .select("id,region,slot,team1_id,team2_id,winner_team_id")
+    .eq("round", "R64");
+  if (r64Err) throw r64Err;
+
+  let playInSlotsResolved = 0;
+  for (const row of (r64Rows ?? []) as LocalBracketGame[]) {
+    const slot = Number(row.slot);
+    if (!Number.isFinite(slot) || slot < 1) continue;
+    const key = `${norm(row.region)}|${Math.trunc(slot)}`;
+    if (!PLAY_IN_R64_SLOT_KEYS.has(key)) continue;
+
+    const winnerId = row.winner_team_id ? String(row.winner_team_id) : null;
+    const team1Id = row.team1_id ? String(row.team1_id) : null;
+    const team2Id = row.team2_id ? String(row.team2_id) : null;
+    if (!winnerId) continue;
+
+    // Play-in final mapped onto an R64 row: swap the placeholder team to the
+    // real winner and clear this temporary winner before normal propagation.
+    if (winnerId === team1Id || winnerId === team2Id) continue;
+
+    const { error: updErr } = await supabaseAdmin
+      .from("games")
+      .update({
+        team2_id: winnerId,
+        winner_team_id: null,
+        last_synced_at: nowIso,
+      })
+      .eq("id", String(row.id));
+    if (updErr) throw updErr;
+    playInSlotsResolved++;
+  }
+
+  return { playInSlotsResolved };
+}
+
 async function fetchGamesByDateFinal(date: string): Promise<SportsGame[]> {
   const url = `${BASE}/v3/cbb/scores/json/GamesByDateFinal/${date}?key=${encodeURIComponent(KEY ?? "")}`;
   const res = await fetch(url, { cache: "no-store" });
@@ -343,6 +391,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     updatedGames++;
   }
 
+  const playInResolution = await applyPlayInWinnersToR64Slots(supabaseAdmin, nowIso);
   const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
 
   return {
@@ -352,6 +401,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     skippedUnlinked,
     skippedNoTeamMap,
     skippedTie,
+    ...playInResolution,
     ...propagation,
   };
 }

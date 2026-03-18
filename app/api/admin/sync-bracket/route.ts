@@ -477,6 +477,13 @@ const PLAY_IN_ANCHORS: PlayInAnchor[] = [
   },
 ];
 
+function isPlayInPlaceholderName(name: string | null | undefined): boolean {
+  const normalized = normName(name);
+  if (!normalized) return false;
+  if (normalized.includes("first four winner")) return true;
+  return PLAY_IN_ANCHORS.some((anchor) => normalized === normName(anchor.placeholderName));
+}
+
 type CanonicalSlotTeam = { name: string; seed: number };
 type CanonicalR64Slot = {
   region: RegionName;
@@ -1649,7 +1656,11 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     if (allTeamsErr) throw allTeamsErr;
 
     const byNorm = new Map<string, Record<string, unknown>>();
+    const teamNameById = new Map<string, string | null>();
     for (const row of allTeams ?? []) {
+      if ((row as Record<string, unknown>).id) {
+        teamNameById.set(String((row as Record<string, unknown>).id), toText((row as Record<string, unknown>).name));
+      }
       const key = normName((row as Record<string, unknown>).name);
       if (key && !byNorm.has(key)) byNorm.set(key, row as unknown as Record<string, unknown>);
     }
@@ -1747,14 +1758,27 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         .neq("id", String(targetGame.id))
         .eq("team2_id", placeholderId);
 
-      if (targetGame.team1_id !== favoriteId || targetGame.team2_id !== placeholderId) {
+      const targetTeam2Id = toText(targetGame.team2_id);
+      const targetTeam2Name = targetTeam2Id ? teamNameById.get(targetTeam2Id) ?? null : null;
+      const keepResolvedUnderdog =
+        !!targetTeam2Id &&
+        targetTeam2Id !== placeholderId &&
+        !isPlayInPlaceholderName(targetTeam2Name);
+
+      const targetUpdate: Record<string, unknown> = {
+        last_synced_at: nowIso,
+      };
+      if (targetGame.team1_id !== favoriteId) {
+        targetUpdate.team1_id = favoriteId;
+      }
+      if (!keepResolvedUnderdog && targetGame.team2_id !== placeholderId) {
+        targetUpdate.team2_id = placeholderId;
+      }
+
+      if (Object.keys(targetUpdate).length > 1) {
         const { error: targetUpdErr } = await supabaseAdmin
           .from("games")
-          .update({
-            team1_id: favoriteId,
-            team2_id: placeholderId,
-            last_synced_at: nowIso,
-          })
+          .update(targetUpdate)
           .eq("id", String(targetGame.id));
         if (targetUpdErr) throw targetUpdErr;
         playInAnchorsApplied++;
@@ -1787,12 +1811,15 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
     const teamRows = (allTeams ?? []) as TeamIdentityRow[];
     const byExact = new Map<string, TeamIdentityRow>();
+    const teamNameById = new Map<string, string | null>();
     for (const t of teamRows) {
       const key = (toText(t.name) ?? "").toLowerCase();
       if (key && !byExact.has(key)) byExact.set(key, t);
+      teamNameById.set(String(t.id), toText(t.name));
     }
 
     const claimedTeamIds = new Set<string>();
+    const playInSlotKeys = new Set(PLAY_IN_ANCHORS.map((anchor) => `${anchor.region}:${anchor.slot}`));
 
     const resolveCanonicalTeam = async (
       team: CanonicalSlotTeam,
@@ -1863,6 +1890,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       const canonicalKey = team.name.toLowerCase();
       byExact.set(canonicalKey, chosen);
+      teamNameById.set(chosenId, toText(chosen.name));
       return chosenId;
     };
 
@@ -1929,6 +1957,15 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       const favoriteId = await resolveCanonicalTeam(slotDef.favorite, slotDef.region);
       const underdogId = await resolveCanonicalTeam(slotDef.underdog, slotDef.region);
+      const slotKey = `${slotDef.region}:${slotDef.slot}`;
+      const existingTeam2Id = toText(row.team2_id);
+      const existingTeam2Name = existingTeam2Id ? teamNameById.get(existingTeam2Id) ?? null : null;
+      const keepResolvedPlayInWinner =
+        playInSlotKeys.has(slotKey) &&
+        !!existingTeam2Id &&
+        existingTeam2Id !== underdogId &&
+        !isPlayInPlaceholderName(existingTeam2Name);
+      const desiredUnderdogId = keepResolvedPlayInWinner ? existingTeam2Id : underdogId;
 
       await supabaseAdmin
         .from("games")
@@ -1941,14 +1978,14 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
         .update({ team2_id: null, last_synced_at: nowIso })
         .eq("round", "R64")
         .neq("id", String(row.id))
-        .eq("team2_id", underdogId);
+        .eq("team2_id", desiredUnderdogId);
 
-      if (row.team1_id !== favoriteId || row.team2_id !== underdogId) {
+      if (row.team1_id !== favoriteId || row.team2_id !== desiredUnderdogId) {
         const { error: setGameErr } = await supabaseAdmin
           .from("games")
           .update({
             team1_id: favoriteId,
-            team2_id: underdogId,
+            team2_id: desiredUnderdogId,
             last_synced_at: nowIso,
           })
           .eq("id", String(row.id));
