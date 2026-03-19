@@ -1,7 +1,6 @@
 "use client";
 
 import { type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
@@ -995,6 +994,112 @@ function HomeContent() {
         padding: 16,
       }}
     >
+      <div
+        style={{
+          marginBottom: 16,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        {isAuthenticated ? (
+          <div
+            style={{
+              margin: 0,
+              fontSize: 14,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <span>
+              {scoreViewMode === "my-teams"
+                ? "Showing your selected teams from"
+                : "Highlighting your teams from"}
+            </span>
+            <select
+              id="home-pool-selector"
+              value={selectedPoolId}
+              onChange={(event) => setSelectedPoolId(event.target.value)}
+              disabled={memberPools.length === 0}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+                fontWeight: 700,
+                minHeight: 38,
+              }}
+            >
+              {memberPools.length === 0 ? (
+                <option value="">no joined pools</option>
+              ) : (
+                memberPools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </option>
+                ))
+              )}
+            </select>
+            <span>.</span>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <Link
+              href="/how-it-works"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
+                })
+              }
+            >
+              How it works
+            </Link>
+            {isAuthenticated === false ? (
+              <Link
+                href={loginHref}
+                style={buttonStyle}
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                Login / Sign up
+              </Link>
+            ) : null}
+          </div>
+        )}
+
+        {isAuthenticated === true && memberPools.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+            Join a pool to highlight your drafted teams on the scoreboard.
+          </p>
+        ) : null}
+
+        {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+            You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
+          </p>
+        ) : null}
+
+        {invitePoolId ? (
+          <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
+            You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
+          </p>
+        ) : null}
+      </div>
+
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
@@ -1014,131 +1119,11 @@ function HomeContent() {
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
-            padding: 20,
             background: "var(--surface)",
-            display: "grid",
-            justifyItems: "center",
-            textAlign: "center",
-            gap: 20,
+            minHeight: 360,
           }}
-        >
-          <Image
-            src="/pool-logo.svg?v=2"
-            alt="bracketball logo"
-            width={560}
-            height={206}
-            priority
-            style={{ width: "min(100%, 560px)", height: "auto", filter: "var(--logo-filter)" }}
-          />
-
-          <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>
-            bracketball (beta)
-          </h1>
-
-          {isAuthenticated ? (
-            <div style={{ display: "grid", gap: 10, justifyItems: "center" }}>
-              <div
-                style={{
-                  margin: 0,
-                  fontSize: 16,
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
-              >
-                <span>
-                  {scoreViewMode === "my-teams"
-                    ? "Showing your selected teams in"
-                    : "Showing all scores; highlighting your teams in"}
-                </span>
-                <select
-                  id="home-pool-selector"
-                  value={selectedPoolId}
-                  onChange={(event) => setSelectedPoolId(event.target.value)}
-                  disabled={memberPools.length === 0}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface-muted)",
-                    fontWeight: 700,
-                    minHeight: 40,
-                  }}
-                >
-                  {memberPools.length === 0 ? (
-                    <option value="">no joined pools</option>
-                  ) : (
-                    memberPools.map((pool) => (
-                      <option key={pool.id} value={pool.id}>
-                        {pool.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-                <span>.</span>
-              </div>
-            </div>
-          ) : null}
-
-          {isAuthenticated === true && memberPools.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-              Join a pool to highlight your drafted teams on the scoreboard.
-            </p>
-          ) : null}
-
-          {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
-            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-              You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
-            </p>
-          ) : null}
-
-          {invitePoolId ? (
-            <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-              You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
-            </p>
-          ) : null}
-
-          {isAuthenticated !== true ? (
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                flexWrap: "wrap",
-                justifyContent: "center",
-              }}
-            >
-              <Link
-                href="/how-it-works"
-                style={buttonStyle}
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
-                  })
-                }
-              >
-                How it works
-              </Link>
-              {isAuthenticated === false ? (
-                <Link
-                  href={loginHref}
-                  style={buttonStyle}
-                  onClick={() =>
-                    trackEvent({
-                      eventName: "home_cta_click",
-                      metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                    })
-                  }
-                >
-                  Login / Sign up
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
-        </section>
+          aria-label="Reserved center space"
+        />
 
         <div className="home-scores-right">
           <ScorePanel
@@ -1241,6 +1226,40 @@ function HomeFallback() {
         padding: 16,
       }}
     >
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <Link
+          href="/how-it-works"
+          style={buttonStyle}
+          onClick={() =>
+            trackEvent({
+              eventName: "home_cta_click",
+              metadata: { cta: "how_it_works", has_invite: false },
+            })
+          }
+        >
+          How it works
+        </Link>
+        <Link
+          href="/login"
+          style={buttonStyle}
+          onClick={() =>
+            trackEvent({
+              eventName: "home_cta_click",
+              metadata: { cta: "login_signup", has_invite: false },
+            })
+          }
+        >
+          Login / Sign up
+        </Link>
+      </div>
+
       <div className="home-layout">
         <div className="home-scores-left">
           <ScorePanel
@@ -1257,61 +1276,11 @@ function HomeFallback() {
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
-            padding: 20,
             background: "var(--surface)",
-            display: "grid",
-            justifyItems: "center",
-            textAlign: "center",
-            gap: 20,
+            minHeight: 360,
           }}
-        >
-          <Image
-            src="/pool-logo.svg?v=2"
-            alt="bracketball logo"
-            width={560}
-            height={206}
-            priority
-            style={{ width: "min(100%, 560px)", height: "auto", filter: "var(--logo-filter)" }}
-          />
-
-          <h1 style={{ fontSize: 34, fontWeight: 900, margin: 0 }}>
-            bracketball (beta)
-          </h1>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <Link
-              href="/how-it-works"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: false },
-                })
-              }
-            >
-              How it works
-            </Link>
-            <Link
-              href="/login"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "login_signup", has_invite: false },
-                })
-              }
-            >
-              Login / Sign up
-            </Link>
-          </div>
-        </section>
+          aria-label="Reserved center space"
+        />
 
         <div className="home-scores-right">
           <ScorePanel
