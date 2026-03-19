@@ -88,7 +88,6 @@ type TeamValueRow = {
   cost: number;
   points: number;
   roi: number;
-  selections: number;
 };
 
 type TeamPopularityRow = {
@@ -145,20 +144,30 @@ function gameDayKey(game: { game_date: string | null; start_time: string | null 
   return etDayKey(d);
 }
 
+function gameHasStarted(
+  game: ScoringGameWithDate,
+  nowMs: number,
+  todayEt: string,
+) {
+  if (game.winner_team_id) return true;
+
+  if (game.start_time) {
+    const startMs = Date.parse(game.start_time);
+    if (Number.isFinite(startMs) && startMs <= nowMs) return true;
+  }
+
+  const day = gameDayKey(game);
+  if (day && day < todayEt) return true;
+
+  return false;
+}
+
 function hasGamesStarted(games: ScoringGameWithDate[]) {
   const nowMs = Date.now();
   const todayEt = etDayKey(new Date());
 
   for (const game of games) {
-    if (game.winner_team_id) return true;
-
-    if (game.start_time) {
-      const startMs = Date.parse(game.start_time);
-      if (Number.isFinite(startMs) && startMs <= nowMs) return true;
-    }
-
-    const day = gameDayKey(game);
-    if (day && day < todayEt) return true;
+    if (gameHasStarted(game, nowMs, todayEt)) return true;
   }
 
   return false;
@@ -805,6 +814,8 @@ export default function LeaderboardPage() {
       if (shouldShowInsights) {
         const BEST_WORST_LIMIT = 6;
         const POPULAR_LIMIT = 7;
+        const nowMs = Date.now();
+        const todayEt = etDayKey(new Date());
 
         const selectionCountByTeam = new Map<string, number>();
         for (const teamIds of picksByEntry.values()) {
@@ -813,9 +824,7 @@ export default function LeaderboardPage() {
           }
         }
 
-        const valueRows: TeamValueRow[] = [];
         const popularityRows: TeamPopularityRow[] = [];
-
         for (const [teamId, selections] of selectionCountByTeam.entries()) {
           const teamMeta = teamMetaById.get(teamId);
           const teamName = teamMeta?.name?.trim() || "Unknown team";
@@ -826,7 +835,20 @@ export default function LeaderboardPage() {
             logo_url: logoUrl,
             selections,
           });
+        }
 
+        const startedTeamIds = new Set<string>();
+        for (const game of gameRows) {
+          if (!gameHasStarted(game, nowMs, todayEt)) continue;
+          if (game.team1_id) startedTeamIds.add(game.team1_id);
+          if (game.team2_id) startedTeamIds.add(game.team2_id);
+        }
+
+        const valueRows: TeamValueRow[] = [];
+        for (const teamId of startedTeamIds) {
+          const teamMeta = teamMetaById.get(teamId);
+          const teamName = teamMeta?.name?.trim() || "Unknown team";
+          const logoUrl = teamMeta?.logo_url ?? null;
           const cost = teamMeta?.cost;
           if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) continue;
 
@@ -838,7 +860,6 @@ export default function LeaderboardPage() {
             cost,
             points,
             roi: points / cost,
-            selections,
           });
         }
 
@@ -847,7 +868,6 @@ export default function LeaderboardPage() {
             (a, b) =>
               b.roi - a.roi ||
               b.points - a.points ||
-              b.selections - a.selections ||
               a.team_name.localeCompare(b.team_name),
           )
           .slice(0, BEST_WORST_LIMIT);
@@ -857,7 +877,6 @@ export default function LeaderboardPage() {
             (a, b) =>
               a.roi - b.roi ||
               a.points - b.points ||
-              b.selections - a.selections ||
               a.team_name.localeCompare(b.team_name),
           )
           .slice(0, BEST_WORST_LIMIT);
