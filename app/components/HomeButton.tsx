@@ -5,7 +5,13 @@ import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { Russo_One } from "next/font/google";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
+
+const russoOne = Russo_One({
+  subsets: ["latin"],
+  weight: "400",
+});
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
@@ -79,12 +85,12 @@ export default function HomeButton() {
         </span>
         <span
           style={{
-            fontFamily: "\"Sea Dog Swift\", \"DM Sans\", Arial, sans-serif",
+            fontFamily: russoOne.style.fontFamily,
             fontSize: 20,
             lineHeight: 1,
             letterSpacing: "0.01em",
             textTransform: "lowercase",
-            fontWeight: 700,
+            fontWeight: 400,
             color: "var(--foreground)",
             opacity: 0.72,
           }}
