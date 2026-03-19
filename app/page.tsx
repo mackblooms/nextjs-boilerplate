@@ -82,6 +82,8 @@ type PoolOption = {
   name: string;
 };
 
+type ScoreViewMode = "my-teams" | "all-scores";
+
 const buttonStyle = {
   display: "inline-block",
   padding: "12px 16px",
@@ -277,6 +279,17 @@ function isTrackedTeam(
   if (gameTeamId && trackedEspnSet.has(gameTeamId)) return true;
   const key = normalizeTeamKey(gameTeamName || fallbackLabel);
   return trackedKeySet.has(key);
+}
+
+function gameHasTrackedTeam(
+  game: LiveScoreGame,
+  trackedEspnSet: Set<string>,
+  trackedKeySet: Set<string>
+) {
+  return (
+    isTrackedTeam(game.awayTeamId, game.awayTeamName, game.awayTeam, trackedEspnSet, trackedKeySet) ||
+    isTrackedTeam(game.homeTeamId, game.homeTeamName, game.homeTeam, trackedEspnSet, trackedKeySet)
+  );
 }
 
 function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
@@ -531,6 +544,7 @@ function HomeContent() {
   const [trackedTeamKeys, setTrackedTeamKeys] = useState<string[]>([]);
   const [trackedTeamCount, setTrackedTeamCount] = useState(0);
   const [showScoringUpdateModal, setShowScoringUpdateModal] = useState(false);
+  const [scoreViewMode, setScoreViewMode] = useState<ScoreViewMode>("all-scores");
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
@@ -892,8 +906,23 @@ function HomeContent() {
     [todayLiveAndUpcoming, tomorrowLiveAndUpcoming]
   );
 
-  const recentFinalsEmptyMessage = "No final scores from today or yesterday.";
-  const liveAndUpcomingEmptyMessage = "No live or upcoming games for today or tomorrow.";
+  const shouldFilterToMyTeams =
+    isAuthenticated === true && scoreViewMode === "my-teams";
+  const displayedRecentFinals = useMemo(() => {
+    if (!shouldFilterToMyTeams) return recentFinals;
+    return recentFinals.filter((game) => gameHasTrackedTeam(game, trackedEspnSet, trackedKeySet));
+  }, [recentFinals, shouldFilterToMyTeams, trackedEspnSet, trackedKeySet]);
+  const displayedLiveAndUpcoming = useMemo(() => {
+    if (!shouldFilterToMyTeams) return liveAndUpcoming;
+    return liveAndUpcoming.filter((game) => gameHasTrackedTeam(game, trackedEspnSet, trackedKeySet));
+  }, [liveAndUpcoming, shouldFilterToMyTeams, trackedEspnSet, trackedKeySet]);
+
+  const recentFinalsEmptyMessage = shouldFilterToMyTeams
+    ? "No final scores for your teams from today or yesterday."
+    : "No final scores from today or yesterday.";
+  const liveAndUpcomingEmptyMessage = shouldFilterToMyTeams
+    ? "No live or upcoming games for your teams today or tomorrow."
+    : "No live or upcoming games for today or tomorrow.";
 
   return (
     <main
@@ -907,7 +936,7 @@ function HomeContent() {
         <div className="home-scores-left">
           <ScorePanel
             title="Recent Finals"
-            games={recentFinals}
+            games={displayedRecentFinals}
             loading={scoresLoading}
             error={scoresError}
             emptyMessage={recentFinalsEmptyMessage}
@@ -943,44 +972,97 @@ function HomeContent() {
           </h1>
 
           {isAuthenticated ? (
-            <div
-              style={{
-                margin: 0,
-                fontSize: 16,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <span>Tracking scores for your selected teams in</span>
-              <select
-                id="home-pool-selector"
-                value={selectedPoolId}
-                onChange={(event) => setSelectedPoolId(event.target.value)}
-                disabled={memberPools.length === 0}
+            <div style={{ display: "grid", gap: 10, justifyItems: "center" }}>
+              <div
+                role="group"
+                aria-label="Score view mode"
                 style={{
-                  padding: "8px 10px",
-                  borderRadius: 10,
+                  display: "inline-flex",
                   border: "1px solid var(--border-color)",
+                  borderRadius: 999,
+                  padding: 2,
                   background: "var(--surface-muted)",
-                  fontWeight: 700,
                   minHeight: 40,
                 }}
               >
-                {memberPools.length === 0 ? (
-                  <option value="">no joined pools</option>
-                ) : (
-                  memberPools.map((pool) => (
-                    <option key={pool.id} value={pool.id}>
-                      {pool.name}
-                    </option>
-                  ))
-                )}
-              </select>
-              <span>.</span>
+                <button
+                  type="button"
+                  onClick={() => setScoreViewMode("my-teams")}
+                  aria-pressed={scoreViewMode === "my-teams"}
+                  style={{
+                    border: "none",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    background:
+                      scoreViewMode === "my-teams" ? "var(--surface)" : "transparent",
+                    color: "inherit",
+                  }}
+                >
+                  My Teams
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScoreViewMode("all-scores")}
+                  aria-pressed={scoreViewMode === "all-scores"}
+                  style={{
+                    border: "none",
+                    borderRadius: 999,
+                    padding: "8px 14px",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    background:
+                      scoreViewMode === "all-scores" ? "var(--surface)" : "transparent",
+                    color: "inherit",
+                  }}
+                >
+                  All Scores
+                </button>
+              </div>
+              <div
+                style={{
+                  margin: 0,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span>
+                  {scoreViewMode === "my-teams"
+                    ? "Showing your selected teams in"
+                    : "Showing all scores; highlighting your teams in"}
+                </span>
+                <select
+                  id="home-pool-selector"
+                  value={selectedPoolId}
+                  onChange={(event) => setSelectedPoolId(event.target.value)}
+                  disabled={memberPools.length === 0}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface-muted)",
+                    fontWeight: 700,
+                    minHeight: 40,
+                  }}
+                >
+                  {memberPools.length === 0 ? (
+                    <option value="">no joined pools</option>
+                  ) : (
+                    memberPools.map((pool) => (
+                      <option key={pool.id} value={pool.id}>
+                        {pool.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <span>.</span>
+              </div>
             </div>
           ) : null}
 
@@ -1044,7 +1126,7 @@ function HomeContent() {
         <div className="home-scores-right">
           <ScorePanel
             title="Live / Upcoming"
-            games={liveAndUpcoming}
+            games={displayedLiveAndUpcoming}
             loading={scoresLoading}
             error={scoresError}
             emptyMessage={liveAndUpcomingEmptyMessage}
