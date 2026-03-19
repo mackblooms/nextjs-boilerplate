@@ -134,6 +134,11 @@ body {
   align-items: start;
 }
 
+.home-draft-link:hover,
+.home-draft-link:focus-visible {
+  text-decoration: underline;
+}
+
 @media (min-width: 1100px) {
   .leaderboard-layout {
     grid-template-columns: minmax(0, 1fr) 340px;

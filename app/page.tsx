@@ -90,10 +90,16 @@ type DraftPickRow = {
 type DraftPoolEntryRow = {
   id: string;
   pool_id: string;
+  entry_name: string | null;
 };
 type DraftPoolEntryPickRow = {
   entry_id: string;
   team_id: string;
+};
+type DraftPoolLeaderboardRow = {
+  entry_id: string;
+  user_id: string;
+  total_score: number | null;
 };
 
 type ScoreViewMode = "my-teams" | "all-scores";
@@ -134,19 +140,23 @@ const SCORING_UPDATE_VERSION = "2026-03-perfect-r64";
 const SCORING_UPDATE_SEEN_KEY = `bb:scoring-update-seen:${SCORING_UPDATE_VERSION}`;
 const MAX_HOME_DRAFTS = 10;
 
-function formatUpdatedAt(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "Unknown";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(d);
-}
-
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+}
+
+function isMissingEntryNameError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function normalizeDraftName(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }
 
 function PenIcon() {
@@ -610,8 +620,8 @@ function HomeContent() {
   const [homeDrafts, setHomeDrafts] = useState<HomeDraftRow[]>([]);
   const [homeDraftsLoading, setHomeDraftsLoading] = useState(false);
   const [homeDraftsMessage, setHomeDraftsMessage] = useState("");
-  const [homeDraftPickCounts, setHomeDraftPickCounts] = useState<Record<string, number>>({});
   const [homeDraftPoolsByDraft, setHomeDraftPoolsByDraft] = useState<Record<string, PoolOption[]>>({});
+  const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
 
@@ -679,8 +689,8 @@ function HomeContent() {
       setTrackedTeamKeys([]);
       setTrackedTeamCount(0);
       setHomeDrafts([]);
-      setHomeDraftPickCounts({});
       setHomeDraftPoolsByDraft({});
+      setHomeDraftPointsByDraft({});
       setExpandedDraftPools({});
       setHomeDraftsMessage("");
       setRenamingDraftId(null);
@@ -883,8 +893,8 @@ function HomeContent() {
     const resetDraftCenter = () => {
       if (canceled) return;
       setHomeDrafts([]);
-      setHomeDraftPickCounts({});
       setHomeDraftPoolsByDraft({});
+      setHomeDraftPointsByDraft({});
       setExpandedDraftPools({});
       setHomeDraftsLoading(false);
       setHomeDraftsMessage("");
@@ -914,8 +924,8 @@ function HomeContent() {
             setHomeDraftsMessage(draftRes.error.message);
           }
           setHomeDrafts([]);
-          setHomeDraftPickCounts({});
           setHomeDraftPoolsByDraft({});
+          setHomeDraftPointsByDraft({});
           setExpandedDraftPools({});
           setHomeDraftsLoading(false);
         }
@@ -943,8 +953,8 @@ function HomeContent() {
 
       if (nextDrafts.length === 0) {
         if (!canceled) {
-          setHomeDraftPickCounts({});
           setHomeDraftPoolsByDraft({});
+          setHomeDraftPointsByDraft({});
           setHomeDraftsLoading(false);
         }
         return;
@@ -963,20 +973,18 @@ function HomeContent() {
           } else {
             setHomeDraftsMessage(draftPickRes.error.message);
           }
-          setHomeDraftPickCounts({});
           setHomeDraftPoolsByDraft({});
+          setHomeDraftPointsByDraft({});
           setHomeDraftsLoading(false);
         }
         return;
       }
 
-      const pickCountsByDraft: Record<string, number> = {};
       const draftPicksByDraft = new Map<string, Set<string>>();
       for (const draftId of draftIds) {
         draftPicksByDraft.set(draftId, new Set<string>());
       }
       for (const row of (draftPickRes.data ?? []) as DraftPickRow[]) {
-        pickCountsByDraft[row.draft_id] = (pickCountsByDraft[row.draft_id] ?? 0) + 1;
         const picks = draftPicksByDraft.get(row.draft_id) ?? new Set<string>();
         picks.add(row.team_id);
         draftPicksByDraft.set(row.draft_id, picks);
@@ -984,29 +992,67 @@ function HomeContent() {
 
       const poolIds = memberPools.map((pool) => pool.id);
       const draftPoolsRecord: Record<string, PoolOption[]> = {};
+      const draftPointsRecord: Record<string, number> = {};
       for (const draft of nextDrafts) {
         draftPoolsRecord[draft.id] = [];
+        draftPointsRecord[draft.id] = 0;
       }
 
       if (poolIds.length > 0) {
-        const entryRes = await supabase
+        const entryWithNameRes = await supabase
           .from("entries")
-          .select("id,pool_id")
+          .select("id,pool_id,entry_name")
           .eq("user_id", userId)
           .in("pool_id", poolIds);
 
-        if (entryRes.error) {
+        let entryRows: DraftPoolEntryRow[] = [];
+        if (!entryWithNameRes.error) {
+          entryRows = (entryWithNameRes.data ?? []) as DraftPoolEntryRow[];
+        } else if (isMissingEntryNameError(entryWithNameRes.error.message)) {
+          const entryFallbackRes = await supabase
+            .from("entries")
+            .select("id,pool_id")
+            .eq("user_id", userId)
+            .in("pool_id", poolIds);
+
+          if (entryFallbackRes.error) {
+            if (!canceled) {
+              setHomeDraftsMessage(entryFallbackRes.error.message);
+              setHomeDraftPoolsByDraft(draftPoolsRecord);
+              setHomeDraftPointsByDraft(draftPointsRecord);
+              setHomeDraftsLoading(false);
+            }
+            return;
+          }
+
+          entryRows = ((entryFallbackRes.data ?? []) as Array<{ id: string; pool_id: string }>).map((entry) => ({
+            ...entry,
+            entry_name: null,
+          }));
+        } else {
           if (!canceled) {
-            setHomeDraftsMessage(entryRes.error.message);
-            setHomeDraftPickCounts(pickCountsByDraft);
+            setHomeDraftsMessage(entryWithNameRes.error.message);
             setHomeDraftPoolsByDraft(draftPoolsRecord);
+            setHomeDraftPointsByDraft(draftPointsRecord);
             setHomeDraftsLoading(false);
           }
           return;
         }
 
-        const entryRows = (entryRes.data ?? []) as DraftPoolEntryRow[];
         const entryIds = entryRows.map((entry) => entry.id);
+        const scoreByEntryId = new Map<string, number>();
+
+        const leaderboardRes = await supabase
+          .from("pool_leaderboard")
+          .select("entry_id,user_id,total_score")
+          .eq("user_id", userId)
+          .in("pool_id", poolIds);
+
+        if (!leaderboardRes.error) {
+          for (const row of (leaderboardRes.data ?? []) as DraftPoolLeaderboardRow[]) {
+            scoreByEntryId.set(row.entry_id, Number(row.total_score ?? 0));
+          }
+        }
 
         if (entryIds.length > 0) {
           const entryPickRes = await supabase
@@ -1017,8 +1063,8 @@ function HomeContent() {
           if (entryPickRes.error) {
             if (!canceled) {
               setHomeDraftsMessage(entryPickRes.error.message);
-              setHomeDraftPickCounts(pickCountsByDraft);
               setHomeDraftPoolsByDraft(draftPoolsRecord);
+              setHomeDraftPointsByDraft(draftPointsRecord);
               setHomeDraftsLoading(false);
             }
             return;
@@ -1034,9 +1080,31 @@ function HomeContent() {
             entryPicksByEntry.set(row.entry_id, picks);
           }
 
-          const matchedPoolIdsByDraft = new Map<string, Set<string>>();
+          const matchedEntryIdsByDraft = new Map<string, Set<string>>();
           for (const draft of nextDrafts) {
-            matchedPoolIdsByDraft.set(draft.id, new Set<string>());
+            matchedEntryIdsByDraft.set(draft.id, new Set<string>());
+          }
+
+          const draftIdsByName = new Map<string, string[]>();
+          for (const draft of nextDrafts) {
+            const key = normalizeDraftName(draft.name);
+            if (!key) continue;
+            const list = draftIdsByName.get(key) ?? [];
+            list.push(draft.id);
+            draftIdsByName.set(key, list);
+          }
+
+          for (const entry of entryRows) {
+            const entryNameKey = normalizeDraftName(entry.entry_name);
+            if (!entryNameKey) continue;
+            const matchingDraftIds = draftIdsByName.get(entryNameKey);
+            if (!matchingDraftIds || matchingDraftIds.length === 0) continue;
+            for (const draftId of matchingDraftIds) {
+              matchedEntryIdsByDraft.get(draftId)?.add(entry.id);
+            }
+          }
+
+          for (const draft of nextDrafts) {
             const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
             if (draftPicks.size === 0) continue;
 
@@ -1044,24 +1112,37 @@ function HomeContent() {
               const entryPicks = entryPicksByEntry.get(entry.id);
               if (!entryPicks || entryPicks.size === 0) continue;
               if (!sameTeamSet(draftPicks, entryPicks)) continue;
-              matchedPoolIdsByDraft.get(draft.id)?.add(entry.pool_id);
+              matchedEntryIdsByDraft.get(draft.id)?.add(entry.id);
             }
           }
 
+          const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
           const poolById = new Map(memberPools.map((pool) => [pool.id, pool]));
           for (const draft of nextDrafts) {
-            const poolList = Array.from(matchedPoolIdsByDraft.get(draft.id) ?? [])
+            const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
+            const matchedPoolIds = new Set<string>();
+            let totalPoints = 0;
+
+            for (const entryId of matchedEntries) {
+              const entry = entryById.get(entryId);
+              if (!entry) continue;
+              matchedPoolIds.add(entry.pool_id);
+              totalPoints += scoreByEntryId.get(entryId) ?? 0;
+            }
+
+            const poolList = Array.from(matchedPoolIds)
               .map((poolId) => poolById.get(poolId))
               .filter((pool): pool is PoolOption => Boolean(pool))
               .sort(sortPoolsByName);
             draftPoolsRecord[draft.id] = poolList;
+            draftPointsRecord[draft.id] = totalPoints;
           }
         }
       }
 
       if (!canceled) {
-        setHomeDraftPickCounts(pickCountsByDraft);
         setHomeDraftPoolsByDraft(draftPoolsRecord);
+        setHomeDraftPointsByDraft(draftPointsRecord);
         setHomeDraftsLoading(false);
       }
     };
@@ -1458,8 +1539,8 @@ function HomeContent() {
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length > 0 ? (
             <div style={{ display: "grid", gap: 10 }}>
               {homeDrafts.map((draft) => {
-                const pickCount = homeDraftPickCounts[draft.id] ?? 0;
                 const pools = homeDraftPoolsByDraft[draft.id] ?? [];
+                const currentPoints = homeDraftPointsByDraft[draft.id] ?? 0;
                 const expanded = Boolean(expandedDraftPools[draft.id]);
 
                 return (
@@ -1475,47 +1556,49 @@ function HomeContent() {
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                      <Link
-                        href={`/drafts/${draft.id}`}
-                        style={{
-                          color: "inherit",
-                          textDecoration: "none",
-                          fontWeight: 900,
-                          fontSize: 18,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                        title={`View ${draft.name}`}
-                      >
-                        {draft.name}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => void renameHomeDraft(draft)}
-                        disabled={renamingDraftId === draft.id}
-                        aria-label={`Rename ${draft.name}`}
-                        title={renamingDraftId === draft.id ? "Renaming..." : `Rename ${draft.name}`}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 8,
-                          border: "1px solid var(--border-color)",
-                          background: "var(--surface)",
-                          cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
-                          opacity: renamingDraftId === draft.id ? 0.7 : 1,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <PenIcon />
-                      </button>
-                    </div>
-
-                    <div style={{ fontSize: 13, opacity: 0.8 }}>
-                      {pickCount} team{pickCount === 1 ? "" : "s"} selected - updated {formatUpdatedAt(draft.updated_at)}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: 1 }}>
+                        <Link
+                          href={`/drafts/${draft.id}`}
+                          className="home-draft-link"
+                          style={{
+                            color: "inherit",
+                            textDecoration: "none",
+                            fontWeight: 900,
+                            fontSize: 18,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                          title={`View ${draft.name}`}
+                        >
+                          {draft.name}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => void renameHomeDraft(draft)}
+                          disabled={renamingDraftId === draft.id}
+                          aria-label={`Rename ${draft.name}`}
+                          title={renamingDraftId === draft.id ? "Renaming..." : `Rename ${draft.name}`}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 8,
+                            border: "1px solid var(--border-color)",
+                            background: "var(--surface)",
+                            cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
+                            opacity: renamingDraftId === draft.id ? 0.7 : 1,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <PenIcon />
+                        </button>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
+                        {currentPoints} pts
+                      </div>
                     </div>
 
                     <div
@@ -1540,7 +1623,7 @@ function HomeContent() {
                           padding: 0,
                         }}
                       >
-                        {expanded ? "Hide Pools ↑" : "Show Pools ↓"}
+                        {expanded ? "Hide Pools ^" : "Show Pools v"}
                       </button>
                     </div>
 
@@ -1816,3 +1899,4 @@ export default function Home() {
     </Suspense>
   );
 }
+
