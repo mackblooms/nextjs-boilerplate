@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -81,6 +82,20 @@ type PoolOption = {
   name: string;
 };
 
+type HomeDraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
+type DraftPickRow = {
+  draft_id: string;
+  team_id: string;
+};
+type DraftPoolEntryRow = {
+  id: string;
+  pool_id: string;
+};
+type DraftPoolEntryPickRow = {
+  entry_id: string;
+  team_id: string;
+};
+
 type ScoreViewMode = "my-teams" | "all-scores";
 
 const buttonStyle = {
@@ -117,6 +132,41 @@ const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const SCORING_UPDATE_VERSION = "2026-03-perfect-r64";
 const SCORING_UPDATE_SEEN_KEY = `bb:scoring-update-seen:${SCORING_UPDATE_VERSION}`;
+const MAX_HOME_DRAFTS = 10;
+
+function formatUpdatedAt(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "Unknown";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
+}
+
+function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
+  return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+}
+
+function PenIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
 
 function formatGameDateTimeET(startTime: string | null) {
   if (!startTime) return "Time TBD (ET)";
@@ -557,6 +607,13 @@ function HomeContent() {
   const [trackedTeamCount, setTrackedTeamCount] = useState(0);
   const [showScoringUpdateModal, setShowScoringUpdateModal] = useState(false);
   const [scoreViewMode, setScoreViewMode] = useState<ScoreViewMode>("all-scores");
+  const [homeDrafts, setHomeDrafts] = useState<HomeDraftRow[]>([]);
+  const [homeDraftsLoading, setHomeDraftsLoading] = useState(false);
+  const [homeDraftsMessage, setHomeDraftsMessage] = useState("");
+  const [homeDraftPickCounts, setHomeDraftPickCounts] = useState<Record<string, number>>({});
+  const [homeDraftPoolsByDraft, setHomeDraftPoolsByDraft] = useState<Record<string, PoolOption[]>>({});
+  const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
+  const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
@@ -621,6 +678,13 @@ function HomeContent() {
       setTrackedEspnIds([]);
       setTrackedTeamKeys([]);
       setTrackedTeamCount(0);
+      setHomeDrafts([]);
+      setHomeDraftPickCounts({});
+      setHomeDraftPoolsByDraft({});
+      setExpandedDraftPools({});
+      setHomeDraftsMessage("");
+      setRenamingDraftId(null);
+      setHomeDraftsLoading(false);
       setPersonalizedLoaded(true);
     };
 
@@ -816,6 +880,202 @@ function HomeContent() {
   useEffect(() => {
     let canceled = false;
 
+    const resetDraftCenter = () => {
+      if (canceled) return;
+      setHomeDrafts([]);
+      setHomeDraftPickCounts({});
+      setHomeDraftPoolsByDraft({});
+      setExpandedDraftPools({});
+      setHomeDraftsLoading(false);
+      setHomeDraftsMessage("");
+      setRenamingDraftId(null);
+    };
+
+    const loadHomeDrafts = async () => {
+      if (isAuthenticated !== true || !userId) {
+        resetDraftCenter();
+        return;
+      }
+
+      setHomeDraftsLoading(true);
+      setHomeDraftsMessage("");
+
+      const draftRes = await supabase
+        .from("saved_drafts")
+        .select("id,name,created_at,updated_at,user_id")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (draftRes.error) {
+        if (!canceled) {
+          if (isMissingSavedDraftTablesError(draftRes.error.message)) {
+            setHomeDraftsMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+          } else {
+            setHomeDraftsMessage(draftRes.error.message);
+          }
+          setHomeDrafts([]);
+          setHomeDraftPickCounts({});
+          setHomeDraftPoolsByDraft({});
+          setExpandedDraftPools({});
+          setHomeDraftsLoading(false);
+        }
+        return;
+      }
+
+      const nextDrafts = ((draftRes.data ?? []) as SavedDraftRow[])
+        .map((draft) => ({
+          id: draft.id,
+          name: draft.name,
+          created_at: draft.created_at,
+          updated_at: draft.updated_at,
+        }))
+        .sort(sortDraftsByUpdatedAt);
+
+      if (canceled) return;
+      setHomeDrafts(nextDrafts);
+      setExpandedDraftPools((prev) => {
+        const next: Record<string, boolean> = {};
+        for (const draft of nextDrafts) {
+          if (prev[draft.id]) next[draft.id] = true;
+        }
+        return next;
+      });
+
+      if (nextDrafts.length === 0) {
+        if (!canceled) {
+          setHomeDraftPickCounts({});
+          setHomeDraftPoolsByDraft({});
+          setHomeDraftsLoading(false);
+        }
+        return;
+      }
+
+      const draftIds = nextDrafts.map((draft) => draft.id);
+      const draftPickRes = await supabase
+        .from("saved_draft_picks")
+        .select("draft_id,team_id")
+        .in("draft_id", draftIds);
+
+      if (draftPickRes.error) {
+        if (!canceled) {
+          if (isMissingSavedDraftTablesError(draftPickRes.error.message)) {
+            setHomeDraftsMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
+          } else {
+            setHomeDraftsMessage(draftPickRes.error.message);
+          }
+          setHomeDraftPickCounts({});
+          setHomeDraftPoolsByDraft({});
+          setHomeDraftsLoading(false);
+        }
+        return;
+      }
+
+      const pickCountsByDraft: Record<string, number> = {};
+      const draftPicksByDraft = new Map<string, Set<string>>();
+      for (const draftId of draftIds) {
+        draftPicksByDraft.set(draftId, new Set<string>());
+      }
+      for (const row of (draftPickRes.data ?? []) as DraftPickRow[]) {
+        pickCountsByDraft[row.draft_id] = (pickCountsByDraft[row.draft_id] ?? 0) + 1;
+        const picks = draftPicksByDraft.get(row.draft_id) ?? new Set<string>();
+        picks.add(row.team_id);
+        draftPicksByDraft.set(row.draft_id, picks);
+      }
+
+      const poolIds = memberPools.map((pool) => pool.id);
+      const draftPoolsRecord: Record<string, PoolOption[]> = {};
+      for (const draft of nextDrafts) {
+        draftPoolsRecord[draft.id] = [];
+      }
+
+      if (poolIds.length > 0) {
+        const entryRes = await supabase
+          .from("entries")
+          .select("id,pool_id")
+          .eq("user_id", userId)
+          .in("pool_id", poolIds);
+
+        if (entryRes.error) {
+          if (!canceled) {
+            setHomeDraftsMessage(entryRes.error.message);
+            setHomeDraftPickCounts(pickCountsByDraft);
+            setHomeDraftPoolsByDraft(draftPoolsRecord);
+            setHomeDraftsLoading(false);
+          }
+          return;
+        }
+
+        const entryRows = (entryRes.data ?? []) as DraftPoolEntryRow[];
+        const entryIds = entryRows.map((entry) => entry.id);
+
+        if (entryIds.length > 0) {
+          const entryPickRes = await supabase
+            .from("entry_picks")
+            .select("entry_id,team_id")
+            .in("entry_id", entryIds);
+
+          if (entryPickRes.error) {
+            if (!canceled) {
+              setHomeDraftsMessage(entryPickRes.error.message);
+              setHomeDraftPickCounts(pickCountsByDraft);
+              setHomeDraftPoolsByDraft(draftPoolsRecord);
+              setHomeDraftsLoading(false);
+            }
+            return;
+          }
+
+          const entryPicksByEntry = new Map<string, Set<string>>();
+          for (const entryId of entryIds) {
+            entryPicksByEntry.set(entryId, new Set<string>());
+          }
+          for (const row of (entryPickRes.data ?? []) as DraftPoolEntryPickRow[]) {
+            const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
+            picks.add(row.team_id);
+            entryPicksByEntry.set(row.entry_id, picks);
+          }
+
+          const matchedPoolIdsByDraft = new Map<string, Set<string>>();
+          for (const draft of nextDrafts) {
+            matchedPoolIdsByDraft.set(draft.id, new Set<string>());
+            const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
+            if (draftPicks.size === 0) continue;
+
+            for (const entry of entryRows) {
+              const entryPicks = entryPicksByEntry.get(entry.id);
+              if (!entryPicks || entryPicks.size === 0) continue;
+              if (!sameTeamSet(draftPicks, entryPicks)) continue;
+              matchedPoolIdsByDraft.get(draft.id)?.add(entry.pool_id);
+            }
+          }
+
+          const poolById = new Map(memberPools.map((pool) => [pool.id, pool]));
+          for (const draft of nextDrafts) {
+            const poolList = Array.from(matchedPoolIdsByDraft.get(draft.id) ?? [])
+              .map((poolId) => poolById.get(poolId))
+              .filter((pool): pool is PoolOption => Boolean(pool))
+              .sort(sortPoolsByName);
+            draftPoolsRecord[draft.id] = poolList;
+          }
+        }
+      }
+
+      if (!canceled) {
+        setHomeDraftPickCounts(pickCountsByDraft);
+        setHomeDraftPoolsByDraft(draftPoolsRecord);
+        setHomeDraftsLoading(false);
+      }
+    };
+
+    void loadHomeDrafts();
+
+    return () => {
+      canceled = true;
+    };
+  }, [isAuthenticated, memberPools, userId]);
+
+  useEffect(() => {
+    let canceled = false;
+
     const loadScores = async () => {
       try {
         const lookbackDays = LANDING_LOOKBACK_DAYS;
@@ -985,6 +1245,56 @@ function HomeContent() {
       </button>
     </div>
   );
+  const homeDraftCountLabel = `${homeDrafts.length}/${MAX_HOME_DRAFTS} drafts created`;
+
+  const toggleDraftPools = (draftId: string) => {
+    setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
+  };
+
+  const renameHomeDraft = async (draft: HomeDraftRow) => {
+    if (!userId) {
+      setHomeDraftsMessage("Please log in to rename drafts.");
+      return;
+    }
+
+    const nextInput = window.prompt("Rename draft", draft.name)?.trim();
+    if (!nextInput) return;
+    const nextName = nextInput.slice(0, 80);
+    if (nextName === draft.name.trim()) return;
+
+    setRenamingDraftId(draft.id);
+    setHomeDraftsMessage("");
+
+    const { data, error } = await supabase
+      .from("saved_drafts")
+      .update({ name: nextName })
+      .eq("id", draft.id)
+      .eq("user_id", userId)
+      .select("id,name,created_at,updated_at")
+      .single();
+
+    if (error) {
+      setRenamingDraftId(null);
+      setHomeDraftsMessage(error.message);
+      return;
+    }
+
+    const updated = data as HomeDraftRow;
+    setHomeDrafts((prev) =>
+      prev
+        .map((row) =>
+          row.id === updated.id
+            ? {
+                ...row,
+                name: updated.name,
+                updated_at: updated.updated_at,
+              }
+            : row
+        )
+        .sort(sortDraftsByUpdatedAt)
+    );
+    setRenamingDraftId(null);
+  };
 
   return (
     <main
@@ -1120,10 +1430,205 @@ function HomeContent() {
             border: "1px solid var(--border-color)",
             borderRadius: 14,
             background: "var(--surface)",
+            padding: 14,
+            display: "grid",
+            gap: 12,
+            alignContent: "start",
             minHeight: 360,
           }}
-          aria-label="Reserved center space"
-        />
+          aria-label="My drafts"
+        >
+          <div style={{ display: "grid", gap: 4 }}>
+            <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>{homeDraftCountLabel}</p>
+          </div>
+
+          {isAuthenticated !== true ? (
+            <p style={{ margin: 0, opacity: 0.82 }}>Log in to view your saved drafts.</p>
+          ) : null}
+
+          {isAuthenticated === true && homeDraftsLoading ? (
+            <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
+          ) : null}
+
+          {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length === 0 ? (
+            <p style={{ margin: 0, opacity: 0.82 }}>No drafts found.</p>
+          ) : null}
+
+          {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length > 0 ? (
+            <div style={{ display: "grid", gap: 10 }}>
+              {homeDrafts.map((draft) => {
+                const pickCount = homeDraftPickCounts[draft.id] ?? 0;
+                const pools = homeDraftPoolsByDraft[draft.id] ?? [];
+                const expanded = Boolean(expandedDraftPools[draft.id]);
+
+                return (
+                  <article
+                    key={draft.id}
+                    style={{
+                      border: "1px solid var(--border-color)",
+                      borderRadius: 12,
+                      background: "var(--surface)",
+                      padding: 12,
+                      display: "grid",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                      <Link
+                        href={`/drafts/${draft.id}`}
+                        style={{
+                          color: "inherit",
+                          textDecoration: "none",
+                          fontWeight: 900,
+                          fontSize: 18,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={`View ${draft.name}`}
+                      >
+                        {draft.name}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => void renameHomeDraft(draft)}
+                        disabled={renamingDraftId === draft.id}
+                        aria-label={`Rename ${draft.name}`}
+                        title={renamingDraftId === draft.id ? "Renaming..." : `Rename ${draft.name}`}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 8,
+                          border: "1px solid var(--border-color)",
+                          background: "var(--surface)",
+                          cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
+                          opacity: renamingDraftId === draft.id ? 0.7 : 1,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <PenIcon />
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: 13, opacity: 0.8 }}>
+                      {pickCount} team{pickCount === 1 ? "" : "s"} selected - updated {formatUpdatedAt(draft.updated_at)}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>Pools: ({pools.length})</div>
+                      <button
+                        type="button"
+                        onClick={() => toggleDraftPools(draft.id)}
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          color: "inherit",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          padding: 0,
+                        }}
+                      >
+                        {expanded ? "Hide Pools ↑" : "Show Pools ↓"}
+                      </button>
+                    </div>
+
+                    {expanded ? (
+                      <div
+                        style={{
+                          borderTop: "1px solid var(--border-color)",
+                          paddingTop: 10,
+                          display: "grid",
+                          gap: 8,
+                        }}
+                      >
+                        {pools.length === 0 ? (
+                          <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>This draft is not in any pools yet.</p>
+                        ) : (
+                          <div style={{ display: "grid", gap: 6 }}>
+                            {pools.map((pool) => (
+                              <Link
+                                key={pool.id}
+                                href={`/pool/${pool.id}`}
+                                style={{
+                                  color: "inherit",
+                                  textDecoration: "none",
+                                  fontWeight: 700,
+                                  border: "1px solid var(--border-color)",
+                                  borderRadius: 8,
+                                  background: "var(--surface-muted)",
+                                  padding: "6px 8px",
+                                }}
+                              >
+                                {pool.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <Link
+                            href="/pools/new"
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border-color)",
+                              textDecoration: "none",
+                              fontWeight: 800,
+                              background: "var(--surface)",
+                            }}
+                          >
+                            Create Pool
+                          </Link>
+                          <Link
+                            href="/pools"
+                            style={{
+                              padding: "6px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border-color)",
+                              textDecoration: "none",
+                              fontWeight: 800,
+                              background: "var(--surface)",
+                            }}
+                          >
+                            Join Pool(s)
+                          </Link>
+                        </div>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {homeDraftsMessage ? (
+            <p
+              role="status"
+              aria-live="polite"
+              style={{
+                margin: 0,
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                padding: "10px 12px",
+                background: "var(--surface-muted)",
+                fontWeight: 700,
+              }}
+            >
+              {homeDraftsMessage}
+            </p>
+          ) : null}
+        </section>
 
         <div className="home-scores-right">
           <ScorePanel
@@ -1277,10 +1782,18 @@ function HomeFallback() {
             border: "1px solid var(--border-color)",
             borderRadius: 14,
             background: "var(--surface)",
+            padding: 14,
+            display: "grid",
+            gap: 10,
+            alignContent: "start",
             minHeight: 360,
           }}
-          aria-label="Reserved center space"
-        />
+          aria-label="My drafts"
+        >
+          <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
+          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>0/{MAX_HOME_DRAFTS} drafts created</p>
+          <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
+        </section>
 
         <div className="home-scores-right">
           <ScorePanel
