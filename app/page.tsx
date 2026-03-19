@@ -82,6 +82,12 @@ type PoolOption = {
   name: string;
 };
 
+type HomeDraftPool = {
+  id: string;
+  name: string;
+  place: number | null;
+};
+
 type HomeDraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = {
   draft_id: string;
@@ -98,7 +104,7 @@ type DraftPoolEntryPickRow = {
 };
 type DraftPoolLeaderboardRow = {
   entry_id: string;
-  user_id: string;
+  pool_id: string;
   total_score: number | null;
 };
 
@@ -157,6 +163,17 @@ function normalizeDraftName(value: string | null | undefined) {
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase();
+}
+
+function formatPlace(place: number | null) {
+  if (!place || place < 1) return "Place unavailable";
+  const mod100 = place % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${place}th place`;
+  const mod10 = place % 10;
+  if (mod10 === 1) return `${place}st place`;
+  if (mod10 === 2) return `${place}nd place`;
+  if (mod10 === 3) return `${place}rd place`;
+  return `${place}th place`;
 }
 
 function overlapCount(a: Iterable<string>, b: Set<string>) {
@@ -332,7 +349,7 @@ function isNcaaTournamentEvent(event: EspnEvent) {
   return false;
 }
 
-function sortPoolsByName(a: PoolOption, b: PoolOption) {
+function sortPoolsByName(a: { name: string }, b: { name: string }) {
   return a.name.localeCompare(b.name);
 }
 
@@ -628,7 +645,7 @@ function HomeContent() {
   const [homeDrafts, setHomeDrafts] = useState<HomeDraftRow[]>([]);
   const [homeDraftsLoading, setHomeDraftsLoading] = useState(false);
   const [homeDraftsMessage, setHomeDraftsMessage] = useState("");
-  const [homeDraftPoolsByDraft, setHomeDraftPoolsByDraft] = useState<Record<string, PoolOption[]>>({});
+  const [homeDraftPoolsByDraft, setHomeDraftPoolsByDraft] = useState<Record<string, HomeDraftPool[]>>({});
   const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
@@ -1009,7 +1026,7 @@ function HomeContent() {
         draftPicksByDraft.set(row.draft_id, picks);
       }
 
-      const draftPoolsRecord: Record<string, PoolOption[]> = {};
+      const draftPoolsRecord: Record<string, HomeDraftPool[]> = {};
       const draftPointsRecord: Record<string, number> = {};
       for (const draft of nextDrafts) {
         draftPoolsRecord[draft.id] = [];
@@ -1058,7 +1075,9 @@ function HomeContent() {
 
       const entryIds = entryRows.map((entry) => entry.id);
       const poolIds = Array.from(new Set(entryRows.map((entry) => entry.pool_id).filter(Boolean)));
+      const entryIdSet = new Set(entryIds);
       const scoreByEntryId = new Map<string, number>();
+      const placeByPoolAndEntry = new Map<string, number>();
 
       const poolsById = new Map<string, PoolOption>();
       if (poolIds.length > 0) {
@@ -1084,15 +1103,43 @@ function HomeContent() {
       }
 
       if (entryIds.length > 0) {
-        const leaderboardRes = await supabase
-          .from("pool_leaderboard")
-          .select("entry_id,user_id,total_score")
-          .eq("user_id", userId)
-          .in("entry_id", entryIds);
+        if (poolIds.length > 0) {
+          const leaderboardRes = await supabase
+            .from("pool_leaderboard")
+            .select("entry_id,pool_id,total_score")
+            .in("pool_id", poolIds);
 
-        if (!leaderboardRes.error) {
-          for (const row of (leaderboardRes.data ?? []) as DraftPoolLeaderboardRow[]) {
-            scoreByEntryId.set(row.entry_id, Number(row.total_score ?? 0));
+          if (!leaderboardRes.error) {
+            const rows = (leaderboardRes.data ?? []) as DraftPoolLeaderboardRow[];
+            const rowsByPool = new Map<string, DraftPoolLeaderboardRow[]>();
+            for (const row of rows) {
+              const list = rowsByPool.get(row.pool_id) ?? [];
+              list.push(row);
+              rowsByPool.set(row.pool_id, list);
+              if (entryIdSet.has(row.entry_id)) {
+                scoreByEntryId.set(row.entry_id, Number(row.total_score ?? 0));
+              }
+            }
+
+            for (const [poolId, poolRows] of rowsByPool.entries()) {
+              const sortedRows = poolRows
+                .map((row) => ({ entry_id: row.entry_id, score: Number(row.total_score ?? 0) }))
+                .sort((a, b) => {
+                  if (b.score !== a.score) return b.score - a.score;
+                  return a.entry_id.localeCompare(b.entry_id);
+                });
+
+              let rank = 0;
+              let previousScore: number | null = null;
+              for (let i = 0; i < sortedRows.length; i += 1) {
+                const row = sortedRows[i];
+                if (previousScore === null || row.score < previousScore) {
+                  rank = i + 1;
+                  previousScore = row.score;
+                }
+                placeByPoolAndEntry.set(`${poolId}:${row.entry_id}`, rank);
+              }
+            }
           }
         }
 
@@ -1213,19 +1260,37 @@ function HomeContent() {
         const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
         for (const draft of nextDrafts) {
           const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
-          const matchedPoolIds = new Set<string>();
+          const matchedPoolsById = new Map<
+            string,
+            HomeDraftPool & {
+              bestPoints: number;
+            }
+          >();
           let totalPoints = 0;
 
           for (const entryId of matchedEntries) {
             const entry = entryById.get(entryId);
             if (!entry) continue;
-            matchedPoolIds.add(entry.pool_id);
-            totalPoints += scoreByEntryId.get(entryId) ?? 0;
+            const points = scoreByEntryId.get(entryId) ?? 0;
+            totalPoints += points;
+
+            const pool = poolsById.get(entry.pool_id);
+            if (!pool) continue;
+
+            const place = placeByPoolAndEntry.get(`${entry.pool_id}:${entryId}`) ?? null;
+            const existing = matchedPoolsById.get(entry.pool_id);
+            if (!existing || points > existing.bestPoints) {
+              matchedPoolsById.set(entry.pool_id, {
+                id: pool.id,
+                name: pool.name,
+                place,
+                bestPoints: points,
+              });
+            }
           }
 
-          const poolList = Array.from(matchedPoolIds)
-            .map((poolId) => poolsById.get(poolId))
-            .filter((pool): pool is PoolOption => Boolean(pool))
+          const poolList = Array.from(matchedPoolsById.values())
+            .map(({ id, name, place }) => ({ id, name, place }))
             .sort(sortPoolsByName);
           draftPoolsRecord[draft.id] = poolList;
           draftPointsRecord[draft.id] = totalPoints;
@@ -1711,13 +1776,13 @@ function HomeContent() {
                           border: "none",
                           background: "transparent",
                           color: "inherit",
-                          fontWeight: 500,
+                          fontWeight: 400,
                           fontSize: 13,
                           cursor: "pointer",
                           padding: 0,
                         }}
                       >
-                        {expanded ? "Hide Pools ▴" : "Show Pools ▾"}
+                        {expanded ? "Hide Pools ^" : "Show Pools v"}
                       </button>
                     </div>
 
@@ -1733,22 +1798,30 @@ function HomeContent() {
                         {pools.length === 0 ? (
                           <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>This draft is not in any pools yet.</p>
                         ) : (
-                          <div style={{ display: "grid", gap: 6 }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                             {pools.map((pool) => (
                               <Link
                                 key={pool.id}
-                                href={`/pool/${pool.id}`}
+                                href="/pools"
                                 style={{
                                   color: "inherit",
                                   textDecoration: "none",
-                                  fontWeight: 700,
                                   border: "1px solid var(--border-color)",
                                   borderRadius: 8,
                                   background: "var(--surface-muted)",
                                   padding: "6px 8px",
+                                  display: "inline-flex",
+                                  flexDirection: "column",
+                                  alignItems: "flex-start",
+                                  gap: 2,
+                                  width: "fit-content",
                                 }}
+                                title={`View ${pool.name}`}
                               >
-                                {pool.name}
+                                <span style={{ fontWeight: 700, lineHeight: 1.1 }}>{pool.name}</span>
+                                <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.82, lineHeight: 1.1 }}>
+                                  {formatPlace(pool.place)}
+                                </span>
                               </Link>
                             ))}
                           </div>
