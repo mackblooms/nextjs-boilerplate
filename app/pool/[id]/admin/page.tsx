@@ -27,10 +27,48 @@ type PoolMemberRow = {
   full_name: string | null;
 };
 
-type PoolMemberWithPoolRow = {
+type PoolLeaderboardEntryRow = {
   pool_id: string;
+  entry_id: string;
   user_id: string;
   display_name: string | null;
+};
+
+type EntryNameRow = {
+  id: string;
+  entry_name: string | null;
+};
+
+type EntryIdOnlyRow = {
+  id: string;
+};
+
+type EntryPickRow = {
+  entry_id: string;
+  team_id: string;
+};
+
+type AdminPoolEntryRow = {
+  pool_id: string;
+  entry_id: string;
+  user_id: string;
+  display_name: string | null;
+  full_name: string | null;
+  entry_name: string | null;
+  picks_count: number;
+  pick_signature: string | null;
+};
+
+type AdminPoolEntryViewRow = AdminPoolEntryRow & {
+  duplicate_group_size: number;
+  duplicate_entry_ids: string[];
+};
+
+type AdminPoolEntrySummary = {
+  rows: AdminPoolEntryViewRow[];
+  total_entries: number;
+  duplicate_group_count: number;
+  duplicate_entry_count: number;
 };
 
 type ProfileNameRow = {
@@ -57,6 +95,64 @@ function memberSecondaryLabel(member: PoolMemberRow) {
 
 function sortMembersByLabel(a: PoolMemberRow, b: PoolMemberRow) {
   return memberPrimaryLabel(a).localeCompare(memberPrimaryLabel(b));
+}
+
+function isMissingEntryNameError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function summarizePoolEntries(rows: AdminPoolEntryRow[]): AdminPoolEntrySummary {
+  const duplicateIdsBySignature = new Map<string, string[]>();
+  for (const row of rows) {
+    if (!row.pick_signature || row.picks_count === 0) continue;
+    const list = duplicateIdsBySignature.get(row.pick_signature) ?? [];
+    list.push(row.entry_id);
+    duplicateIdsBySignature.set(row.pick_signature, list);
+  }
+
+  let duplicateGroupCount = 0;
+  let duplicateEntryCount = 0;
+  for (const ids of duplicateIdsBySignature.values()) {
+    if (ids.length > 1) {
+      duplicateGroupCount++;
+      duplicateEntryCount += ids.length;
+    }
+  }
+
+  const viewRows: AdminPoolEntryViewRow[] = rows
+    .map((row) => {
+      const ids = row.pick_signature ? (duplicateIdsBySignature.get(row.pick_signature) ?? []) : [];
+      const duplicateIds = ids.length > 1 ? ids.filter((id) => id !== row.entry_id) : [];
+      return {
+        ...row,
+        duplicate_group_size: duplicateIds.length > 0 ? duplicateIds.length + 1 : 0,
+        duplicate_entry_ids: duplicateIds,
+      };
+    })
+    .sort((a, b) => {
+      const duplicateDiff = b.duplicate_group_size - a.duplicate_group_size;
+      if (duplicateDiff !== 0) return duplicateDiff;
+
+      const nameA = a.entry_name?.trim() || "";
+      const nameB = b.entry_name?.trim() || "";
+      const nameDiff = nameA.localeCompare(nameB);
+      if (nameDiff !== 0) return nameDiff;
+
+      const ownerA = a.full_name?.trim() || a.display_name?.trim() || a.user_id;
+      const ownerB = b.full_name?.trim() || b.display_name?.trim() || b.user_id;
+      return ownerA.localeCompare(ownerB);
+    });
+
+  return {
+    rows: viewRows,
+    total_entries: rows.length,
+    duplicate_group_count: duplicateGroupCount,
+    duplicate_entry_count: duplicateEntryCount,
+  };
 }
 
 type AdminPoolRow = {
@@ -88,6 +184,7 @@ export default function AdminPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [adminPools, setAdminPools] = useState<AdminPoolRow[]>([]);
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
+  const [entriesByPool, setEntriesByPool] = useState<Record<string, AdminPoolEntryRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
@@ -137,6 +234,26 @@ export default function AdminPage() {
     if (!activePoolModal) return [];
     return membersByPool[activePoolModal.id] ?? [];
   }, [activePoolModal, membersByPool]);
+
+  const entrySummaryByPool = useMemo(() => {
+    const summary: Record<string, AdminPoolEntrySummary> = {};
+    for (const [targetPoolId, rows] of Object.entries(entriesByPool)) {
+      summary[targetPoolId] = summarizePoolEntries(rows);
+    }
+    return summary;
+  }, [entriesByPool]);
+
+  const activePoolModalEntrySummary = useMemo<AdminPoolEntrySummary>(() => {
+    if (!activePoolModal) {
+      return { rows: [], total_entries: 0, duplicate_group_count: 0, duplicate_entry_count: 0 };
+    }
+    return entrySummaryByPool[activePoolModal.id] ?? {
+      rows: [],
+      total_entries: 0,
+      duplicate_group_count: 0,
+      duplicate_entry_count: 0,
+    };
+  }, [activePoolModal, entrySummaryByPool]);
 
   const msgTone = useMemo<"success" | "error" | "info">(() => {
     const lower = msg.toLowerCase();
@@ -316,12 +433,12 @@ export default function AdminPage() {
       setPoolPasswordDrafts(Object.fromEntries(pools.map((pool) => [pool.id, ""])));
       await loadPoolPasswords(pools.map((pool) => pool.id));
 
-      let allMembersRows: PoolMemberWithPoolRow[] = [];
+      let allLeaderboardRows: PoolLeaderboardEntryRow[] = [];
       if (pools.length > 0) {
         const ids = pools.map((p) => p.id);
         const { data, error: allMembersErr } = await supabase
           .from("pool_leaderboard")
-          .select("pool_id,user_id,display_name")
+          .select("pool_id,entry_id,user_id,display_name")
           .in("pool_id", ids)
           .order("display_name", { ascending: true });
 
@@ -331,11 +448,11 @@ export default function AdminPage() {
           return;
         }
 
-        allMembersRows = (data ?? []) as PoolMemberWithPoolRow[];
+        allLeaderboardRows = (data ?? []) as PoolLeaderboardEntryRow[];
       }
 
       const allUserIds = Array.from(
-        new Set(allMembersRows.map((row) => row.user_id))
+        new Set(allLeaderboardRows.map((row) => row.user_id))
       );
 
       let fullNameByUser = new Map<string, string | null>();
@@ -353,22 +470,90 @@ export default function AdminPage() {
       }
 
       if (pools.length > 0) {
-        const grouped: Record<string, PoolMemberRow[]> = {};
-        for (const row of allMembersRows) {
-          if (!grouped[row.pool_id]) grouped[row.pool_id] = [];
-          grouped[row.pool_id].push({
+        const groupedMembers: Record<string, PoolMemberRow[]> = {};
+        const seenMembers = new Set<string>();
+        for (const row of allLeaderboardRows) {
+          const key = `${row.pool_id}:${row.user_id}`;
+          if (seenMembers.has(key)) continue;
+          seenMembers.add(key);
+
+          if (!groupedMembers[row.pool_id]) groupedMembers[row.pool_id] = [];
+          groupedMembers[row.pool_id].push({
             user_id: row.user_id,
             display_name: row.display_name,
             full_name: fullNameByUser.get(row.user_id) ?? null,
           });
         }
-        for (const id of Object.keys(grouped)) {
-          grouped[id].sort(sortMembersByLabel);
+        for (const id of Object.keys(groupedMembers)) {
+          groupedMembers[id].sort(sortMembersByLabel);
         }
-        setMembersByPool(grouped);
+        setMembersByPool(groupedMembers);
       } else {
         setMembersByPool({});
       }
+
+      const allEntryIds = Array.from(new Set(allLeaderboardRows.map((row) => row.entry_id)));
+
+      let entryNameById = new Map<string, string | null>();
+      if (allEntryIds.length > 0) {
+        const withName = await supabase
+          .from("entries")
+          .select("id,entry_name")
+          .in("id", allEntryIds);
+
+        if (!withName.error) {
+          entryNameById = new Map(
+            ((withName.data ?? []) as EntryNameRow[]).map((row) => [row.id, row.entry_name ?? null]),
+          );
+        } else if (isMissingEntryNameError(withName.error.message)) {
+          const fallback = await supabase
+            .from("entries")
+            .select("id")
+            .in("id", allEntryIds);
+
+          if (!fallback.error) {
+            entryNameById = new Map(
+              ((fallback.data ?? []) as EntryIdOnlyRow[]).map((row) => [row.id, null]),
+            );
+          }
+        }
+      }
+
+      const picksByEntry = new Map<string, Set<string>>();
+      if (allEntryIds.length > 0) {
+        const { data: pickRows, error: pickErr } = await supabase
+          .from("entry_picks")
+          .select("entry_id,team_id")
+          .in("entry_id", allEntryIds);
+
+        if (!pickErr) {
+          for (const row of (pickRows ?? []) as EntryPickRow[]) {
+            const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
+            picks.add(row.team_id);
+            picksByEntry.set(row.entry_id, picks);
+          }
+        }
+      }
+
+      const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
+      for (const row of allLeaderboardRows) {
+        const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
+        const pickSignature = picks.size > 0 ? Array.from(picks).sort().join("|") : null;
+
+        if (!groupedEntries[row.pool_id]) groupedEntries[row.pool_id] = [];
+        groupedEntries[row.pool_id].push({
+          pool_id: row.pool_id,
+          entry_id: row.entry_id,
+          user_id: row.user_id,
+          display_name: row.display_name,
+          full_name: fullNameByUser.get(row.user_id) ?? null,
+          entry_name: entryNameById.get(row.entry_id) ?? null,
+          picks_count: picks.size,
+          pick_signature: pickSignature,
+        });
+      }
+
+      setEntriesByPool(groupedEntries);
 
       setLoading(false);
     };
@@ -414,6 +599,13 @@ export default function AdminPage() {
         return {
           ...prev,
           [targetPoolId]: existing.filter((m) => m.user_id !== targetUserId),
+        };
+      });
+      setEntriesByPool((prev) => {
+        const existing = prev[targetPoolId] ?? [];
+        return {
+          ...prev,
+          [targetPoolId]: existing.filter((entry) => entry.user_id !== targetUserId),
         };
       });
 
@@ -488,6 +680,11 @@ export default function AdminPage() {
         return next;
       });
       setMembersByPool((prev) => {
+        const next = { ...prev };
+        delete next[targetPoolId];
+        return next;
+      });
+      setEntriesByPool((prev) => {
         const next = { ...prev };
         delete next[targetPoolId];
         return next;
@@ -1153,6 +1350,12 @@ export default function AdminPage() {
         <div style={{ display: "grid", gap: 12 }}>
           {filteredAdminPools.map((pool) => {
             const poolMembers = membersByPool[pool.id] ?? [];
+            const poolEntrySummary = entrySummaryByPool[pool.id] ?? {
+              rows: [],
+              total_entries: 0,
+              duplicate_group_count: 0,
+              duplicate_entry_count: 0,
+            };
             return (
               <div
                 key={pool.id}
@@ -1171,6 +1374,18 @@ export default function AdminPage() {
                 <div style={{ display: "grid", gap: 4, minWidth: 0, flex: "1 1 320px" }}>
                   <div style={{ fontWeight: 900 }}>{pool.name}</div>
                   <div style={{ fontSize: 13, opacity: 0.72 }}>Members: {poolMembers.length}</div>
+                  <div style={{ fontSize: 13, opacity: 0.72 }}>Draft entries: {poolEntrySummary.total_entries}</div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 800,
+                      color: poolEntrySummary.duplicate_entry_count > 0 ? "#b91c1c" : "#166534",
+                    }}
+                  >
+                    {poolEntrySummary.duplicate_entry_count > 0
+                      ? `Duplicates flagged: ${poolEntrySummary.duplicate_group_count} group${poolEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${poolEntrySummary.duplicate_entry_count} entries)`
+                      : "No duplicate drafts detected"}
+                  </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 240px", justifyContent: "end" }}>
                   <button
@@ -1283,6 +1498,18 @@ export default function AdminPage() {
               <div style={{ minWidth: 0 }}>
                 <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>{activePoolModal.name}</h2>
                 <p style={{ margin: "4px 0 0", opacity: 0.75 }}>Members: {activePoolModalMembers.length}</p>
+                <p style={{ margin: "4px 0 0", opacity: 0.75 }}>Draft entries: {activePoolModalEntrySummary.total_entries}</p>
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    fontWeight: 800,
+                    color: activePoolModalEntrySummary.duplicate_entry_count > 0 ? "#b91c1c" : "#166534",
+                  }}
+                >
+                  {activePoolModalEntrySummary.duplicate_entry_count > 0
+                    ? `Duplicates flagged: ${activePoolModalEntrySummary.duplicate_group_count} group${activePoolModalEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${activePoolModalEntrySummary.duplicate_entry_count} entries)`
+                    : "No duplicate drafts detected"}
+                </p>
               </div>
               <button
                 onClick={() => setActivePoolModalId(null)}
@@ -1418,6 +1645,90 @@ export default function AdminPage() {
                   {rotatingPasswordPoolId === activePoolModal.id ? "Updating..." : "Update password"}
                 </button>
               </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Pool drafts</h3>
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
+                Each row shows draft name, entry ID, and duplicate status based on identical pick sets.
+              </p>
+
+              {activePoolModalEntrySummary.rows.map((entry) => {
+                const draftLabel = entry.entry_name?.trim() || "Unnamed draft";
+                const ownerLabel =
+                  entry.full_name?.trim() ||
+                  entry.display_name?.trim() ||
+                  entry.user_id.slice(0, 8);
+                const duplicateFlag = entry.duplicate_group_size > 1;
+                return (
+                  <div
+                    key={`${entry.pool_id}:${entry.entry_id}`}
+                    style={{
+                      display: "grid",
+                      gap: 6,
+                      border: `1px solid ${duplicateFlag ? "#ef4444" : "var(--border-color)"}`,
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                      background: duplicateFlag ? "#fef2f2" : "var(--surface-muted)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ fontWeight: 800, minWidth: 0 }}>
+                        <span>{draftLabel}</span>
+                        <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, opacity: 0.75 }}>
+                          ({ownerLabel})
+                        </span>
+                      </div>
+                      {duplicateFlag ? (
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 900,
+                            color: "#991b1b",
+                            border: "1px solid #fca5a5",
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                            background: "#fee2e2",
+                          }}
+                        >
+                          Duplicate picks x{entry.duplicate_group_size}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#166534" }}>
+                          Unique picks
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ fontSize: 12, opacity: 0.9 }}>
+                      Entry ID:{" "}
+                      <code style={{ fontSize: 11, wordBreak: "break-all" }}>{entry.entry_id}</code>
+                    </div>
+                    <div style={{ fontSize: 12, opacity: 0.8 }}>Teams picked: {entry.picks_count}</div>
+
+                    {duplicateFlag ? (
+                      <div style={{ fontSize: 12, color: "#7f1d1d" }}>
+                        Matches entry IDs:{" "}
+                        <code style={{ fontSize: 11, wordBreak: "break-all" }}>
+                          {entry.duplicate_entry_ids.join(", ")}
+                        </code>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+
+              {activePoolModalEntrySummary.rows.length === 0 ? (
+                <p style={{ margin: 0 }}>No draft entries found in this pool.</p>
+              ) : null}
             </div>
 
             <div style={{ display: "grid", gap: 8 }}>
