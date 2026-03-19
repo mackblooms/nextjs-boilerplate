@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
@@ -624,6 +624,7 @@ function HomeContent() {
   const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
+  const homeDraftsLoadedRef = useRef(false);
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
@@ -695,6 +696,7 @@ function HomeContent() {
       setHomeDraftsMessage("");
       setRenamingDraftId(null);
       setHomeDraftsLoading(false);
+      homeDraftsLoadedRef.current = false;
       setPersonalizedLoaded(true);
     };
 
@@ -766,7 +768,7 @@ function HomeContent() {
 
     void loadUserPools();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session?.user) {
         resetAuthedHomeState();
         return;
@@ -775,7 +777,9 @@ function HomeContent() {
       if (canceled) return;
       setIsAuthenticated(true);
       setUserId(session.user.id);
-      void loadUserPools();
+      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        void loadUserPools();
+      }
     });
 
     return () => {
@@ -899,6 +903,7 @@ function HomeContent() {
       setHomeDraftsLoading(false);
       setHomeDraftsMessage("");
       setRenamingDraftId(null);
+      homeDraftsLoadedRef.current = false;
     };
 
     const loadHomeDrafts = async () => {
@@ -907,7 +912,10 @@ function HomeContent() {
         return;
       }
 
-      setHomeDraftsLoading(true);
+      const shouldShowLoadingState = !homeDraftsLoadedRef.current;
+      if (shouldShowLoadingState) {
+        setHomeDraftsLoading(true);
+      }
       setHomeDraftsMessage("");
 
       const draftRes = await supabase
@@ -928,6 +936,7 @@ function HomeContent() {
           setHomeDraftPointsByDraft({});
           setExpandedDraftPools({});
           setHomeDraftsLoading(false);
+          homeDraftsLoadedRef.current = true;
         }
         return;
       }
@@ -956,6 +965,7 @@ function HomeContent() {
           setHomeDraftPoolsByDraft({});
           setHomeDraftPointsByDraft({});
           setHomeDraftsLoading(false);
+          homeDraftsLoadedRef.current = true;
         }
         return;
       }
@@ -976,6 +986,7 @@ function HomeContent() {
           setHomeDraftPoolsByDraft({});
           setHomeDraftPointsByDraft({});
           setHomeDraftsLoading(false);
+          homeDraftsLoadedRef.current = true;
         }
         return;
       }
@@ -990,7 +1001,6 @@ function HomeContent() {
         draftPicksByDraft.set(row.draft_id, picks);
       }
 
-      const poolIds = memberPools.map((pool) => pool.id);
       const draftPoolsRecord: Record<string, PoolOption[]> = {};
       const draftPointsRecord: Record<string, number> = {};
       for (const draft of nextDrafts) {
@@ -998,55 +1008,79 @@ function HomeContent() {
         draftPointsRecord[draft.id] = 0;
       }
 
-      if (poolIds.length > 0) {
-        const entryWithNameRes = await supabase
+      const entryWithNameRes = await supabase
+        .from("entries")
+        .select("id,pool_id,entry_name")
+        .eq("user_id", userId);
+
+      let entryRows: DraftPoolEntryRow[] = [];
+      if (!entryWithNameRes.error) {
+        entryRows = (entryWithNameRes.data ?? []) as DraftPoolEntryRow[];
+      } else if (isMissingEntryNameError(entryWithNameRes.error.message)) {
+        const entryFallbackRes = await supabase
           .from("entries")
-          .select("id,pool_id,entry_name")
-          .eq("user_id", userId)
-          .in("pool_id", poolIds);
+          .select("id,pool_id")
+          .eq("user_id", userId);
 
-        let entryRows: DraftPoolEntryRow[] = [];
-        if (!entryWithNameRes.error) {
-          entryRows = (entryWithNameRes.data ?? []) as DraftPoolEntryRow[];
-        } else if (isMissingEntryNameError(entryWithNameRes.error.message)) {
-          const entryFallbackRes = await supabase
-            .from("entries")
-            .select("id,pool_id")
-            .eq("user_id", userId)
-            .in("pool_id", poolIds);
-
-          if (entryFallbackRes.error) {
-            if (!canceled) {
-              setHomeDraftsMessage(entryFallbackRes.error.message);
+        if (entryFallbackRes.error) {
+          if (!canceled) {
+            setHomeDraftsMessage(entryFallbackRes.error.message);
               setHomeDraftPoolsByDraft(draftPoolsRecord);
               setHomeDraftPointsByDraft(draftPointsRecord);
               setHomeDraftsLoading(false);
+              homeDraftsLoadedRef.current = true;
             }
             return;
           }
 
-          entryRows = ((entryFallbackRes.data ?? []) as Array<{ id: string; pool_id: string }>).map((entry) => ({
-            ...entry,
-            entry_name: null,
-          }));
-        } else {
+        entryRows = ((entryFallbackRes.data ?? []) as Array<{ id: string; pool_id: string }>).map((entry) => ({
+          ...entry,
+          entry_name: null,
+        }));
+      } else {
+        if (!canceled) {
+          setHomeDraftsMessage(entryWithNameRes.error.message);
+          setHomeDraftPoolsByDraft(draftPoolsRecord);
+          setHomeDraftPointsByDraft(draftPointsRecord);
+          setHomeDraftsLoading(false);
+          homeDraftsLoadedRef.current = true;
+        }
+        return;
+      }
+
+      const entryIds = entryRows.map((entry) => entry.id);
+      const poolIds = Array.from(new Set(entryRows.map((entry) => entry.pool_id).filter(Boolean)));
+      const scoreByEntryId = new Map<string, number>();
+
+      const poolsById = new Map<string, PoolOption>();
+      if (poolIds.length > 0) {
+        const poolsRes = await supabase
+          .from("pools")
+          .select("id,name")
+          .in("id", poolIds);
+
+        if (poolsRes.error) {
           if (!canceled) {
-            setHomeDraftsMessage(entryWithNameRes.error.message);
+            setHomeDraftsMessage(poolsRes.error.message);
             setHomeDraftPoolsByDraft(draftPoolsRecord);
             setHomeDraftPointsByDraft(draftPointsRecord);
             setHomeDraftsLoading(false);
+            homeDraftsLoadedRef.current = true;
           }
           return;
         }
 
-        const entryIds = entryRows.map((entry) => entry.id);
-        const scoreByEntryId = new Map<string, number>();
+        for (const pool of (poolsRes.data ?? []) as PoolOption[]) {
+          poolsById.set(pool.id, pool);
+        }
+      }
 
+      if (entryIds.length > 0) {
         const leaderboardRes = await supabase
           .from("pool_leaderboard")
           .select("entry_id,user_id,total_score")
           .eq("user_id", userId)
-          .in("pool_id", poolIds);
+          .in("entry_id", entryIds);
 
         if (!leaderboardRes.error) {
           for (const row of (leaderboardRes.data ?? []) as DraftPoolLeaderboardRow[]) {
@@ -1054,89 +1088,87 @@ function HomeContent() {
           }
         }
 
-        if (entryIds.length > 0) {
-          const entryPickRes = await supabase
-            .from("entry_picks")
-            .select("entry_id,team_id")
-            .in("entry_id", entryIds);
+        const entryPickRes = await supabase
+          .from("entry_picks")
+          .select("entry_id,team_id")
+          .in("entry_id", entryIds);
 
-          if (entryPickRes.error) {
-            if (!canceled) {
-              setHomeDraftsMessage(entryPickRes.error.message);
-              setHomeDraftPoolsByDraft(draftPoolsRecord);
-              setHomeDraftPointsByDraft(draftPointsRecord);
-              setHomeDraftsLoading(false);
-            }
-            return;
+        if (entryPickRes.error) {
+          if (!canceled) {
+            setHomeDraftsMessage(entryPickRes.error.message);
+            setHomeDraftPoolsByDraft(draftPoolsRecord);
+            setHomeDraftPointsByDraft(draftPointsRecord);
+            setHomeDraftsLoading(false);
+            homeDraftsLoadedRef.current = true;
           }
+          return;
+        }
 
-          const entryPicksByEntry = new Map<string, Set<string>>();
-          for (const entryId of entryIds) {
-            entryPicksByEntry.set(entryId, new Set<string>());
-          }
-          for (const row of (entryPickRes.data ?? []) as DraftPoolEntryPickRow[]) {
-            const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
-            picks.add(row.team_id);
-            entryPicksByEntry.set(row.entry_id, picks);
-          }
+        const entryPicksByEntry = new Map<string, Set<string>>();
+        for (const entryId of entryIds) {
+          entryPicksByEntry.set(entryId, new Set<string>());
+        }
+        for (const row of (entryPickRes.data ?? []) as DraftPoolEntryPickRow[]) {
+          const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
+          picks.add(row.team_id);
+          entryPicksByEntry.set(row.entry_id, picks);
+        }
 
-          const matchedEntryIdsByDraft = new Map<string, Set<string>>();
-          for (const draft of nextDrafts) {
-            matchedEntryIdsByDraft.set(draft.id, new Set<string>());
-          }
+        const matchedEntryIdsByDraft = new Map<string, Set<string>>();
+        for (const draft of nextDrafts) {
+          matchedEntryIdsByDraft.set(draft.id, new Set<string>());
+        }
 
-          const draftIdsByName = new Map<string, string[]>();
-          for (const draft of nextDrafts) {
-            const key = normalizeDraftName(draft.name);
-            if (!key) continue;
-            const list = draftIdsByName.get(key) ?? [];
-            list.push(draft.id);
-            draftIdsByName.set(key, list);
+        const draftIdsByName = new Map<string, string[]>();
+        for (const draft of nextDrafts) {
+          const key = normalizeDraftName(draft.name);
+          if (!key) continue;
+          const list = draftIdsByName.get(key) ?? [];
+          list.push(draft.id);
+          draftIdsByName.set(key, list);
+        }
+
+        for (const entry of entryRows) {
+          const entryNameKey = normalizeDraftName(entry.entry_name);
+          if (!entryNameKey) continue;
+          const matchingDraftIds = draftIdsByName.get(entryNameKey);
+          if (!matchingDraftIds || matchingDraftIds.length === 0) continue;
+          for (const draftId of matchingDraftIds) {
+            matchedEntryIdsByDraft.get(draftId)?.add(entry.id);
           }
+        }
+
+        for (const draft of nextDrafts) {
+          const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
+          if (draftPicks.size === 0) continue;
 
           for (const entry of entryRows) {
-            const entryNameKey = normalizeDraftName(entry.entry_name);
-            if (!entryNameKey) continue;
-            const matchingDraftIds = draftIdsByName.get(entryNameKey);
-            if (!matchingDraftIds || matchingDraftIds.length === 0) continue;
-            for (const draftId of matchingDraftIds) {
-              matchedEntryIdsByDraft.get(draftId)?.add(entry.id);
-            }
+            const entryPicks = entryPicksByEntry.get(entry.id);
+            if (!entryPicks || entryPicks.size === 0) continue;
+            if (!sameTeamSet(draftPicks, entryPicks)) continue;
+            matchedEntryIdsByDraft.get(draft.id)?.add(entry.id);
+          }
+        }
+
+        const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
+        for (const draft of nextDrafts) {
+          const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
+          const matchedPoolIds = new Set<string>();
+          let totalPoints = 0;
+
+          for (const entryId of matchedEntries) {
+            const entry = entryById.get(entryId);
+            if (!entry) continue;
+            matchedPoolIds.add(entry.pool_id);
+            totalPoints += scoreByEntryId.get(entryId) ?? 0;
           }
 
-          for (const draft of nextDrafts) {
-            const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
-            if (draftPicks.size === 0) continue;
-
-            for (const entry of entryRows) {
-              const entryPicks = entryPicksByEntry.get(entry.id);
-              if (!entryPicks || entryPicks.size === 0) continue;
-              if (!sameTeamSet(draftPicks, entryPicks)) continue;
-              matchedEntryIdsByDraft.get(draft.id)?.add(entry.id);
-            }
-          }
-
-          const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
-          const poolById = new Map(memberPools.map((pool) => [pool.id, pool]));
-          for (const draft of nextDrafts) {
-            const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
-            const matchedPoolIds = new Set<string>();
-            let totalPoints = 0;
-
-            for (const entryId of matchedEntries) {
-              const entry = entryById.get(entryId);
-              if (!entry) continue;
-              matchedPoolIds.add(entry.pool_id);
-              totalPoints += scoreByEntryId.get(entryId) ?? 0;
-            }
-
-            const poolList = Array.from(matchedPoolIds)
-              .map((poolId) => poolById.get(poolId))
-              .filter((pool): pool is PoolOption => Boolean(pool))
-              .sort(sortPoolsByName);
-            draftPoolsRecord[draft.id] = poolList;
-            draftPointsRecord[draft.id] = totalPoints;
-          }
+          const poolList = Array.from(matchedPoolIds)
+            .map((poolId) => poolsById.get(poolId))
+            .filter((pool): pool is PoolOption => Boolean(pool))
+            .sort(sortPoolsByName);
+          draftPoolsRecord[draft.id] = poolList;
+          draftPointsRecord[draft.id] = totalPoints;
         }
       }
 
@@ -1144,6 +1176,7 @@ function HomeContent() {
         setHomeDraftPoolsByDraft(draftPoolsRecord);
         setHomeDraftPointsByDraft(draftPointsRecord);
         setHomeDraftsLoading(false);
+        homeDraftsLoadedRef.current = true;
       }
     };
 
@@ -1152,7 +1185,7 @@ function HomeContent() {
     return () => {
       canceled = true;
     };
-  }, [isAuthenticated, memberPools, userId]);
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
     let canceled = false;
@@ -1528,7 +1561,7 @@ function HomeContent() {
             <p style={{ margin: 0, opacity: 0.82 }}>Log in to view your saved drafts.</p>
           ) : null}
 
-          {isAuthenticated === true && homeDraftsLoading ? (
+          {isAuthenticated === true && homeDraftsLoading && homeDrafts.length === 0 ? (
             <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
           ) : null}
 
@@ -1618,12 +1651,13 @@ function HomeContent() {
                           border: "none",
                           background: "transparent",
                           color: "inherit",
-                          fontWeight: 800,
+                          fontWeight: 500,
+                          fontSize: 13,
                           cursor: "pointer",
                           padding: 0,
                         }}
                       >
-                        {expanded ? "Hide Pools ^" : "Show Pools v"}
+                        {expanded ? "Hide Pools ▴" : "Show Pools ▾"}
                       </button>
                     </div>
 
