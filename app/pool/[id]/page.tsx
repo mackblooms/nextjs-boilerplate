@@ -121,6 +121,13 @@ function isSingleEntryPerPoolConstraintError(message?: string) {
   );
 }
 
+function normalizeDraftName(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 function lockedEntriesMessage(lockTime: string | null | undefined) {
   return `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime)}).`;
 }
@@ -766,19 +773,41 @@ export default function PoolPage() {
       nextPickMap.set(row.draft_id, picks);
     }
 
-    const entryRowsQuery = await supabase
+    const entryRowsWithNamesQuery = await supabase
       .from("entries")
-      .select("id")
+      .select("id,entry_name")
       .eq("pool_id", poolId)
       .eq("user_id", user.id);
 
-    if (entryRowsQuery.error) {
+    if (entryRowsWithNamesQuery.error && !isMissingEntryNameError(entryRowsWithNamesQuery.error.message)) {
       setDraftModalLoading(false);
-      setDraftModalMessage(entryRowsQuery.error.message);
+      setDraftModalMessage(entryRowsWithNamesQuery.error.message);
       return;
     }
 
-    const entryIds = ((entryRowsQuery.data ?? []) as Array<{ id: string }>).map((row) => row.id);
+    let entryRows: LeaveEntryRow[] = [];
+    if (entryRowsWithNamesQuery.error && isMissingEntryNameError(entryRowsWithNamesQuery.error.message)) {
+      const fallbackEntryRowsQuery = await supabase
+        .from("entries")
+        .select("id")
+        .eq("pool_id", poolId)
+        .eq("user_id", user.id);
+
+      if (fallbackEntryRowsQuery.error) {
+        setDraftModalLoading(false);
+        setDraftModalMessage(fallbackEntryRowsQuery.error.message);
+        return;
+      }
+
+      entryRows = ((fallbackEntryRowsQuery.data ?? []) as Array<{ id: string }>).map((row) => ({
+        id: row.id,
+        entry_name: null,
+      }));
+    } else {
+      entryRows = (entryRowsWithNamesQuery.data ?? []) as LeaveEntryRow[];
+    }
+
+    const entryIds = entryRows.map((row) => row.id);
     const entryPickMap = new Map<string, Set<string>>();
     if (entryIds.length > 0) {
       const entryPicksQuery = await supabase
@@ -801,6 +830,22 @@ export default function PoolPage() {
     }
 
     const enteredDrafts = new Set<string>();
+    const draftIdsByName = new Map<string, string[]>();
+    for (const draft of drafts) {
+      const key = normalizeDraftName(draft.name);
+      if (!key) continue;
+      const list = draftIdsByName.get(key) ?? [];
+      list.push(draft.id);
+      draftIdsByName.set(key, list);
+    }
+    for (const entry of entryRows) {
+      const matchingDraftIds = draftIdsByName.get(normalizeDraftName(entry.entry_name));
+      if (!matchingDraftIds) continue;
+      for (const draftId of matchingDraftIds) {
+        enteredDrafts.add(draftId);
+      }
+    }
+
     for (const draft of drafts) {
       const draftPicks = nextPickMap.get(draft.id) ?? new Set<string>();
       if (draftPicks.size === 0) continue;
@@ -1098,6 +1143,35 @@ export default function PoolPage() {
               return { ...entry, entry_name: matchedDraft.name.trim() };
             });
           }
+        }
+      }
+    }
+
+    const stillUnresolvedEntries = nextEntries.filter((entry) => !(entry.entry_name?.trim().length));
+    if (stillUnresolvedEntries.length > 0) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+
+      if (session) {
+        const draftNamesRes = await fetch(`/api/pools/draft-names?poolId=${encodeURIComponent(poolId)}`, {
+          headers: {
+            authorization: `Bearer ${session.access_token}`,
+          },
+          cache: "no-store",
+        });
+
+        if (draftNamesRes.ok) {
+          const body = (await draftNamesRes.json().catch(() => ({}))) as {
+            draftNamesByEntry?: Record<string, string>;
+          };
+
+          const draftNamesByEntry = body.draftNamesByEntry ?? {};
+          nextEntries = nextEntries.map((entry) => {
+            if (entry.entry_name?.trim().length) return entry;
+            const draftName = draftNamesByEntry[entry.id]?.trim();
+            if (!draftName) return entry;
+            return { ...entry, entry_name: draftName };
+          });
         }
       }
     }
