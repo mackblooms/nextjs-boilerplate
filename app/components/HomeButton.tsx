@@ -5,7 +5,13 @@ import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { DM_Sans } from "next/font/google";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+});
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
@@ -48,10 +54,7 @@ export default function HomeButton() {
         zIndex: 1000,
         color: "var(--foreground)",
         textDecoration: "none",
-        display: "inline-grid",
-        gridTemplateColumns: "auto auto",
-        columnGap: 4,
-        alignItems: "start",
+        display: "inline-block",
         transform: isHidden ? "translateY(-140%)" : "translateY(0)",
         opacity: isHidden ? 0 : 1,
         transition: "transform 180ms ease, opacity 180ms ease",
@@ -61,7 +64,9 @@ export default function HomeButton() {
       <span
         style={{
           display: "grid",
-          justifyItems: "center",
+          gridTemplateColumns: "auto auto",
+          alignItems: "baseline",
+          columnGap: 4,
           gap: 4,
         }}
       >
@@ -78,6 +83,20 @@ export default function HomeButton() {
         >
           bracketball
         </span>
+        <span
+          style={{
+            fontFamily: dmSans.style.fontFamily,
+            fontSize: 20,
+            lineHeight: 1,
+            letterSpacing: "0.01em",
+            textTransform: "lowercase",
+            fontWeight: 700,
+            color: "var(--foreground)",
+            opacity: 0.72,
+          }}
+        >
+          beta
+        </span>
         {showHomeLogo ? (
           <Image
             src="/pool-logo.svg?v=2"
@@ -87,28 +106,14 @@ export default function HomeButton() {
             height={32}
             priority
             style={{
+              gridColumn: 1,
+              justifySelf: "center",
               width: 88,
               height: "auto",
               filter: "var(--logo-filter)",
             }}
           />
         ) : null}
-      </span>
-      <span
-        style={{
-          alignSelf: "start",
-          marginTop: 2,
-          fontFamily: "Arial, Helvetica, sans-serif",
-          fontSize: 20,
-          lineHeight: 1,
-          letterSpacing: "0.01em",
-          textTransform: "lowercase",
-          fontWeight: 700,
-          color: "var(--foreground)",
-          opacity: 0.72,
-        }}
-      >
-        beta
       </span>
     </Link>
   );
