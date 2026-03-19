@@ -50,7 +50,7 @@ export default function HomeButton() {
         textDecoration: "none",
         display: "inline-grid",
         gridTemplateColumns: "auto auto",
-        columnGap: 8,
+        columnGap: 4,
         alignItems: "start",
         transform: isHidden ? "translateY(-140%)" : "translateY(0)",
         opacity: isHidden ? 0 : 1,
@@ -96,18 +96,16 @@ export default function HomeButton() {
       </span>
       <span
         style={{
-          alignSelf: "center",
-          marginTop: 1,
-          fontFamily:
-            "\"Arial Black\", Impact, Haettenschweiler, \"Segoe UI\", sans-serif",
-          fontSize: 22,
+          alignSelf: "start",
+          marginTop: 2,
+          fontFamily: "Arial, Helvetica, sans-serif",
+          fontSize: 20,
           lineHeight: 1,
-          letterSpacing: "0.03em",
+          letterSpacing: "0.01em",
           textTransform: "lowercase",
-          fontWeight: 900,
-          color: "#8f949a",
-          textShadow:
-            "-1px -1px 0 #2f3236, 1px -1px 0 #2f3236, -1px 1px 0 #2f3236, 1px 1px 0 #2f3236",
+          fontWeight: 700,
+          color: "var(--foreground)",
+          opacity: 0.72,
         }}
       >
         beta
