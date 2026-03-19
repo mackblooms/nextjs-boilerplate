@@ -5,13 +5,7 @@ import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { DM_Sans } from "next/font/google";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-});
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
@@ -85,7 +79,7 @@ export default function HomeButton() {
         </span>
         <span
           style={{
-            fontFamily: dmSans.style.fontFamily,
+            fontFamily: "\"Sea Dog Swift\", \"DM Sans\", Arial, sans-serif",
             fontSize: 20,
             lineHeight: 1,
             letterSpacing: "0.01em",
