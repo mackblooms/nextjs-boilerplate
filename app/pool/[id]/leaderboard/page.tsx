@@ -1060,11 +1060,11 @@ export default function LeaderboardPage() {
                       {r.rank_delta != null ? (
                         r.rank_delta > 0 ? (
                           <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
-                            up {r.rank_delta}
+                            ↑ {r.rank_delta}
                           </span>
                         ) : r.rank_delta < 0 ? (
                           <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
-                            down {Math.abs(r.rank_delta)}
+                            ↓ {Math.abs(r.rank_delta)}
                           </span>
                         ) : (
                           <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
