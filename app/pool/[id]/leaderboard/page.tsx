@@ -424,7 +424,6 @@ export default function LeaderboardPage() {
   const [isPoolOwner, setIsPoolOwner] = useState(false);
   const [showTeamInsights, setShowTeamInsights] = useState(false);
   const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
-  const [worstValueTeams, setWorstValueTeams] = useState<TeamValueRow[]>([]);
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -590,7 +589,6 @@ export default function LeaderboardPage() {
       setPoolName("");
       setShowTeamInsights(false);
       setBestValueTeams([]);
-      setWorstValueTeams([]);
       setPopularTeams([]);
 
       const { data: authData } = await supabase.auth.getUser();
@@ -872,15 +870,6 @@ export default function LeaderboardPage() {
           )
           .slice(0, BEST_WORST_LIMIT);
 
-        const worstRows = [...valueRows]
-          .sort(
-            (a, b) =>
-              a.roi - b.roi ||
-              a.points - b.points ||
-              a.team_name.localeCompare(b.team_name),
-          )
-          .slice(0, BEST_WORST_LIMIT);
-
         const popularRows = [...popularityRows]
           .sort(
             (a, b) =>
@@ -891,12 +880,10 @@ export default function LeaderboardPage() {
 
         setShowTeamInsights(true);
         setBestValueTeams(bestRows);
-        setWorstValueTeams(worstRows);
         setPopularTeams(popularRows);
       } else {
         setShowTeamInsights(false);
         setBestValueTeams([]);
-        setWorstValueTeams([]);
         setPopularTeams([]);
       }
 
@@ -1060,11 +1047,11 @@ export default function LeaderboardPage() {
                       {r.rank_delta != null ? (
                         r.rank_delta > 0 ? (
                           <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900 }}>
-                            ↑ {r.rank_delta}
+                            {`\u25B2 ${r.rank_delta}`}
                           </span>
                         ) : r.rank_delta < 0 ? (
                           <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900 }}>
-                            ↓ {Math.abs(r.rank_delta)}
+                            {`\u25BC ${Math.abs(r.rank_delta)}`}
                           </span>
                         ) : (
                           <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
@@ -1178,7 +1165,6 @@ export default function LeaderboardPage() {
             {showTeamInsights ? (
               <>
                 <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
-                <TeamValueTable title="Worst Value Teams" rows={worstValueTeams} />
                 <TeamPopularityTable rows={popularTeams} />
               </>
             ) : (
@@ -1203,7 +1189,7 @@ export default function LeaderboardPage() {
                 <div style={{ padding: "12px", opacity: 0.85 }}>
                   {!draftLocked
                     ? "Team value and popularity tables unlock after draft lock."
-                    : "Best value, worst value, and most popular teams appear once tournament games start."}
+                    : "Best value and most popular teams appear once tournament games start."}
                 </div>
               </section>
             )}
