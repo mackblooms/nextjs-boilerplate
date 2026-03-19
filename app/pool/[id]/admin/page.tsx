@@ -188,7 +188,7 @@ export default function AdminPage() {
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [entriesByPool, setEntriesByPool] = useState<Record<string, AdminPoolEntryRow[]>>({});
   const [creatorId, setCreatorId] = useState<string | null>(null);
-  const [removingMemberKey, setRemovingMemberKey] = useState<string | null>(null);
+  const [removingEntryKey, setRemovingEntryKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
   const [rotatingPasswordPoolId, setRotatingPasswordPoolId] = useState<string | null>(null);
@@ -203,7 +203,7 @@ export default function AdminPage() {
   const [activePoolModalId, setActivePoolModalId] = useState<string | null>(null);
   const [winnersModalOpen, setWinnersModalOpen] = useState(false);
 
-  const memberKey = (targetPoolId: string, userId: string) => `${targetPoolId}:${userId}`;
+  const entryKey = (targetPoolId: string, entryId: string) => `${targetPoolId}:${entryId}`;
 
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
@@ -563,11 +563,11 @@ export default function AdminPage() {
     load();
   }, [loadPoolPasswords, poolId]);
 
-  async function removeUserFromPool(targetPoolId: string, targetUserId: string) {
-    if (!targetPoolId || !targetUserId) return;
+  async function removeEntryFromPool(targetPoolId: string, targetEntryId: string) {
+    if (!targetPoolId || !targetEntryId) return;
 
-    const targetMemberKey = memberKey(targetPoolId, targetUserId);
-    setRemovingMemberKey(targetMemberKey);
+    const targetKey = entryKey(targetPoolId, targetEntryId);
+    setRemovingEntryKey(targetKey);
     setMsg("");
 
     const { data: authData, error: authErr } = await supabase.auth.getUser();
@@ -575,47 +575,55 @@ export default function AdminPage() {
 
     if (authErr || !currentUser) {
       setMsg("Not logged in (could not read user).");
-      setRemovingMemberKey(null);
+      setRemovingEntryKey(null);
       return;
     }
 
     try {
-      const res = await fetch("/api/admin/remove-member", {
+      const res = await fetch("/api/admin/remove-entry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           poolId: targetPoolId,
           userId: currentUser.id,
-          targetUserId,
+          targetEntryId,
         }),
       });
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMsg(`Remove failed: ${json.error ?? "Unknown error"}`);
+        setMsg(`Remove draft failed: ${json.error ?? "Unknown error"}`);
         return;
       }
 
-      setMembersByPool((prev) => {
-        const existing = prev[targetPoolId] ?? [];
-        return {
-          ...prev,
-          [targetPoolId]: existing.filter((m) => m.user_id !== targetUserId),
-        };
-      });
-      setEntriesByPool((prev) => {
-        const existing = prev[targetPoolId] ?? [];
-        return {
-          ...prev,
-          [targetPoolId]: existing.filter((entry) => entry.user_id !== targetUserId),
-        };
-      });
+      const existingEntries = entriesByPool[targetPoolId] ?? [];
+      const removedEntry = existingEntries.find((entry) => entry.entry_id === targetEntryId) ?? null;
+      const remainingEntries = existingEntries.filter((entry) => entry.entry_id !== targetEntryId);
 
-      setMsg("User removed from this pool.");
+      setEntriesByPool((prev) => ({
+        ...prev,
+        [targetPoolId]: remainingEntries,
+      }));
+
+      if (removedEntry) {
+        const stillHasEntries = remainingEntries.some((entry) => entry.user_id === removedEntry.user_id);
+        if (!stillHasEntries) {
+          setMembersByPool((prev) => {
+            const existingMembers = prev[targetPoolId] ?? [];
+            const nextMembers = existingMembers.filter((m) => m.user_id !== removedEntry.user_id);
+            return {
+              ...prev,
+              [targetPoolId]: nextMembers,
+            };
+          });
+        }
+      }
+
+      setMsg("Draft entry removed from this pool.");
     } catch (e: unknown) {
-      setMsg(`Remove failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+      setMsg(`Remove draft failed: ${e instanceof Error ? e.message : "Unknown error"}`);
     } finally {
-      setRemovingMemberKey(null);
+      setRemovingEntryKey(null);
     }
   }
 
@@ -1662,6 +1670,7 @@ export default function AdminPage() {
                   entry.display_name?.trim() ||
                   entry.user_id.slice(0, 8);
                 const duplicateFlag = entry.duplicate_group_size > 1;
+                const removing = removingEntryKey === entryKey(activePoolModal.id, entry.entry_id);
                 return (
                   <div
                     key={`${entry.pool_id}:${entry.entry_id}`}
@@ -1715,6 +1724,29 @@ export default function AdminPage() {
                       <code style={{ fontSize: 11, wordBreak: "break-all" }}>{entry.entry_id}</code>
                     </div>
                     <div style={{ fontSize: 12, opacity: 0.8 }}>Teams picked: {entry.picks_count}</div>
+                    <button
+                      disabled={removing}
+                      onClick={() => {
+                        const confirmed = window.confirm(
+                          `Remove draft "${draftLabel}" from this pool? This only removes entry ${entry.entry_id}.`
+                        );
+                        if (!confirmed) return;
+                        void removeEntryFromPool(activePoolModal.id, entry.entry_id);
+                      }}
+                      style={{
+                        padding: "6px 9px",
+                        minHeight: 44,
+                        borderRadius: 8,
+                        border: "1px solid #d33",
+                        background: "var(--surface)",
+                        color: "#a00",
+                        fontWeight: 700,
+                        cursor: removing ? "not-allowed" : "pointer",
+                        justifySelf: "start",
+                      }}
+                    >
+                      {removing ? "Removing draft..." : "Remove draft from pool"}
+                    </button>
 
                     {duplicateFlag ? (
                       <div style={{ fontSize: 12, color: "#7f1d1d" }}>
@@ -1761,23 +1793,6 @@ export default function AdminPage() {
                       </div>
                       {secondaryLabel ? <div style={{ fontSize: 12, opacity: 0.75 }}>{secondaryLabel}</div> : null}
                     </div>
-                    <button
-                      disabled={isCreator || removingMemberKey === memberKey(activePoolModal.id, m.user_id)}
-                      onClick={() => removeUserFromPool(activePoolModal.id, m.user_id)}
-                      style={{
-                        padding: "6px 9px",
-                        minHeight: 44,
-                        borderRadius: 8,
-                        border: "1px solid #d33",
-                        background: isCreator ? "var(--surface-elevated)" : "var(--surface)",
-                        color: isCreator ? "#888" : "#a00",
-                        fontWeight: 700,
-                        cursor: isCreator ? "not-allowed" : "pointer",
-                        flex: "1 1 120px",
-                      }}
-                    >
-                      {removingMemberKey === memberKey(activePoolModal.id, m.user_id) ? "Removing..." : "Remove"}
-                    </button>
                   </div>
                 );
               })}
