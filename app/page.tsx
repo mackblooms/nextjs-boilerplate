@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -387,6 +387,7 @@ function ScorePanel({
   emptyMessage,
   trackedEspnSet,
   trackedKeySet,
+  titleAccessory,
 }: {
   title: string;
   games: LiveScoreGame[];
@@ -395,13 +396,25 @@ function ScorePanel({
   emptyMessage: string;
   trackedEspnSet?: Set<string>;
   trackedKeySet?: Set<string>;
+  titleAccessory?: ReactNode;
 }) {
   const trackedEspn = trackedEspnSet ?? new Set<string>();
   const trackedKeys = trackedKeySet ?? new Set<string>();
 
   return (
     <aside style={scorePanelStyle}>
-      <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
+        {titleAccessory ? <div>{titleAccessory}</div> : null}
+      </div>
       {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
       {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
       {!loading && !error && games.length === 0 ? (
@@ -923,6 +936,56 @@ function HomeContent() {
   const liveAndUpcomingEmptyMessage = shouldFilterToMyTeams
     ? "No live or upcoming games for your teams today or tomorrow."
     : "No live or upcoming games for today or tomorrow.";
+  const renderScoreViewToggle = () => (
+    <div
+      role="group"
+      aria-label="Score view mode"
+      style={{
+        display: "inline-flex",
+        border: "1px solid var(--border-color)",
+        borderRadius: 999,
+        padding: 2,
+        background: "var(--surface-muted)",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setScoreViewMode("my-teams")}
+        aria-pressed={scoreViewMode === "my-teams"}
+        style={{
+          border: "none",
+          borderRadius: 999,
+          padding: "4px 10px",
+          fontWeight: 800,
+          cursor: "pointer",
+          background:
+            scoreViewMode === "my-teams" ? "var(--surface)" : "transparent",
+          color: "inherit",
+          fontSize: 12,
+        }}
+      >
+        My Teams
+      </button>
+      <button
+        type="button"
+        onClick={() => setScoreViewMode("all-scores")}
+        aria-pressed={scoreViewMode === "all-scores"}
+        style={{
+          border: "none",
+          borderRadius: 999,
+          padding: "4px 10px",
+          fontWeight: 800,
+          cursor: "pointer",
+          background:
+            scoreViewMode === "all-scores" ? "var(--surface)" : "transparent",
+          color: "inherit",
+          fontSize: 12,
+        }}
+      >
+        All Scores
+      </button>
+    </div>
+  );
 
   return (
     <main
@@ -942,6 +1005,7 @@ function HomeContent() {
             emptyMessage={recentFinalsEmptyMessage}
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>
 
@@ -973,53 +1037,6 @@ function HomeContent() {
 
           {isAuthenticated ? (
             <div style={{ display: "grid", gap: 10, justifyItems: "center" }}>
-              <div
-                role="group"
-                aria-label="Score view mode"
-                style={{
-                  display: "inline-flex",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 999,
-                  padding: 2,
-                  background: "var(--surface-muted)",
-                  minHeight: 40,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setScoreViewMode("my-teams")}
-                  aria-pressed={scoreViewMode === "my-teams"}
-                  style={{
-                    border: "none",
-                    borderRadius: 999,
-                    padding: "8px 14px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    background:
-                      scoreViewMode === "my-teams" ? "var(--surface)" : "transparent",
-                    color: "inherit",
-                  }}
-                >
-                  My Teams
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setScoreViewMode("all-scores")}
-                  aria-pressed={scoreViewMode === "all-scores"}
-                  style={{
-                    border: "none",
-                    borderRadius: 999,
-                    padding: "8px 14px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    background:
-                      scoreViewMode === "all-scores" ? "var(--surface)" : "transparent",
-                    color: "inherit",
-                  }}
-                >
-                  All Scores
-                </button>
-              </div>
               <div
                 style={{
                   margin: 0,
@@ -1132,6 +1149,7 @@ function HomeContent() {
             emptyMessage={liveAndUpcomingEmptyMessage}
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>
       </div>
