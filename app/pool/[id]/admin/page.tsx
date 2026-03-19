@@ -106,17 +106,18 @@ function isMissingEntryNameError(message?: string) {
 }
 
 function summarizePoolEntries(rows: AdminPoolEntryRow[]): AdminPoolEntrySummary {
-  const duplicateIdsBySignature = new Map<string, string[]>();
+  const duplicateIdsByUserSignature = new Map<string, string[]>();
   for (const row of rows) {
     if (!row.pick_signature || row.picks_count === 0) continue;
-    const list = duplicateIdsBySignature.get(row.pick_signature) ?? [];
+    const key = `${row.user_id}::${row.pick_signature}`;
+    const list = duplicateIdsByUserSignature.get(key) ?? [];
     list.push(row.entry_id);
-    duplicateIdsBySignature.set(row.pick_signature, list);
+    duplicateIdsByUserSignature.set(key, list);
   }
 
   let duplicateGroupCount = 0;
   let duplicateEntryCount = 0;
-  for (const ids of duplicateIdsBySignature.values()) {
+  for (const ids of duplicateIdsByUserSignature.values()) {
     if (ids.length > 1) {
       duplicateGroupCount++;
       duplicateEntryCount += ids.length;
@@ -125,7 +126,8 @@ function summarizePoolEntries(rows: AdminPoolEntryRow[]): AdminPoolEntrySummary 
 
   const viewRows: AdminPoolEntryViewRow[] = rows
     .map((row) => {
-      const ids = row.pick_signature ? (duplicateIdsBySignature.get(row.pick_signature) ?? []) : [];
+      const key = row.pick_signature ? `${row.user_id}::${row.pick_signature}` : "";
+      const ids = key ? (duplicateIdsByUserSignature.get(key) ?? []) : [];
       const duplicateIds = ids.length > 1 ? ids.filter((id) => id !== row.entry_id) : [];
       return {
         ...row,
@@ -1383,8 +1385,8 @@ export default function AdminPage() {
                     }}
                   >
                     {poolEntrySummary.duplicate_entry_count > 0
-                      ? `Duplicates flagged: ${poolEntrySummary.duplicate_group_count} group${poolEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${poolEntrySummary.duplicate_entry_count} entries)`
-                      : "No duplicate drafts detected"}
+                      ? `Same-user duplicates flagged: ${poolEntrySummary.duplicate_group_count} group${poolEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${poolEntrySummary.duplicate_entry_count} entries)`
+                      : "No same-user duplicate drafts detected"}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: "1 1 240px", justifyContent: "end" }}>
@@ -1507,8 +1509,8 @@ export default function AdminPage() {
                   }}
                 >
                   {activePoolModalEntrySummary.duplicate_entry_count > 0
-                    ? `Duplicates flagged: ${activePoolModalEntrySummary.duplicate_group_count} group${activePoolModalEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${activePoolModalEntrySummary.duplicate_entry_count} entries)`
-                    : "No duplicate drafts detected"}
+                    ? `Same-user duplicates flagged: ${activePoolModalEntrySummary.duplicate_group_count} group${activePoolModalEntrySummary.duplicate_group_count === 1 ? "" : "s"} (${activePoolModalEntrySummary.duplicate_entry_count} entries)`
+                    : "No same-user duplicate drafts detected"}
                 </p>
               </div>
               <button
@@ -1650,7 +1652,7 @@ export default function AdminPage() {
             <div style={{ display: "grid", gap: 8 }}>
               <h3 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Pool drafts</h3>
               <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>
-                Each row shows draft name, entry ID, and duplicate status based on identical pick sets.
+                Each row shows draft name, entry ID, and duplicate status based on identical pick sets within the same user&apos;s entries.
               </p>
 
               {activePoolModalEntrySummary.rows.map((entry) => {
@@ -1699,11 +1701,11 @@ export default function AdminPage() {
                             background: "#fee2e2",
                           }}
                         >
-                          Duplicate picks x{entry.duplicate_group_size}
+                          Same-user duplicate x{entry.duplicate_group_size}
                         </span>
                       ) : (
                         <span style={{ fontSize: 12, fontWeight: 800, color: "#166534" }}>
-                          Unique picks
+                          Unique picks for user
                         </span>
                       )}
                     </div>
@@ -1716,7 +1718,7 @@ export default function AdminPage() {
 
                     {duplicateFlag ? (
                       <div style={{ fontSize: 12, color: "#7f1d1d" }}>
-                        Matches entry IDs:{" "}
+                        Matches this user&apos;s entry IDs:{" "}
                         <code style={{ fontSize: 11, wordBreak: "break-all" }}>
                           {entry.duplicate_entry_ids.join(", ")}
                         </code>
