@@ -1097,7 +1097,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   let matchedByTeams = 0;
   let matchedByPlaceholder = 0;
   let scheduleUpdated = 0;
-  let skippedDuplicateSportsId = 0;
+  const skippedDuplicateSportsId = 0;
   let reassignedDuplicateSportsId = 0;
   let gameTeamsUpdated = 0;
   let espnFallbackMatchups = 0;
@@ -1148,6 +1148,8 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     let roundCode = roundToCode(g.Round ?? g.round);
     let region = bracketToRegion(g.Bracket ?? g.bracket);
     let slot = roundCode ? readSlot(g, roundCode) : null;
+    const homeLocal = localTeamBySports.get(Number(g.HomeTeamID));
+    const awayLocal = localTeamBySports.get(Number(g.AwayTeamID));
 
     if (gameId && !roundCode) {
       const fallback = placeholderFallback.get(gameId);
@@ -1165,59 +1167,56 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
     let ourGame: LocalGameRow | null = null;
 
-    if (slot) {
-      let slotQuery = supabaseAdmin
+    if (homeLocal && awayLocal) {
+      let teamQuery = supabaseAdmin
         .from("games")
         .select(gameSelectCols)
         .eq("round", roundCode)
-        .eq("slot", slot)
+        .or(
+          `and(team1_id.eq.${homeLocal},team2_id.eq.${awayLocal}),and(team1_id.eq.${awayLocal},team2_id.eq.${homeLocal})`
+        )
         .limit(2);
 
-      if (roundCode === "R64" || roundCode === "R32" || roundCode === "S16" || roundCode === "E8") {
-        if (region) slotQuery = slotQuery.eq("region", region);
+      if ((roundCode === "R64" || roundCode === "R32" || roundCode === "S16" || roundCode === "E8") && region) {
+        teamQuery = teamQuery.eq("region", region);
       }
 
-      const { data: slotMatches, error: slotErr } = await slotQuery;
-      if (slotErr) throw slotErr;
+      const { data: teamMatches, error: teamErr2 } = await teamQuery;
+      if (teamErr2) throw teamErr2;
 
-      if ((slotMatches?.length ?? 0) === 1) {
-        ourGame = slotMatches?.[0] as unknown as LocalGameRow;
-        if (placeholderFallback.has(gameId)) {
-          matchedByPlaceholder++;
-        } else {
-          matchedBySlot++;
-        }
-      } else if ((slotMatches?.length ?? 0) > 1) {
+      if ((teamMatches?.length ?? 0) === 1) {
+        ourGame = teamMatches?.[0] as unknown as LocalGameRow;
+        matchedByTeams++;
+      } else if ((teamMatches?.length ?? 0) > 1) {
         skippedAmbiguous++;
         continue;
       }
     }
 
     if (!ourGame) {
-      const homeLocal = localTeamBySports.get(Number(g.HomeTeamID));
-      const awayLocal = localTeamBySports.get(Number(g.AwayTeamID));
-
-      if (homeLocal && awayLocal) {
-        let teamQuery = supabaseAdmin
+      if (slot) {
+        let slotQuery = supabaseAdmin
           .from("games")
           .select(gameSelectCols)
           .eq("round", roundCode)
-          .or(
-            `and(team1_id.eq.${homeLocal},team2_id.eq.${awayLocal}),and(team1_id.eq.${awayLocal},team2_id.eq.${homeLocal})`
-          )
+          .eq("slot", slot)
           .limit(2);
 
-        if ((roundCode === "R64" || roundCode === "R32" || roundCode === "S16" || roundCode === "E8") && region) {
-          teamQuery = teamQuery.eq("region", region);
+        if (roundCode === "R64" || roundCode === "R32" || roundCode === "S16" || roundCode === "E8") {
+          if (region) slotQuery = slotQuery.eq("region", region);
         }
 
-        const { data: teamMatches, error: teamErr2 } = await teamQuery;
-        if (teamErr2) throw teamErr2;
+        const { data: slotMatches, error: slotErr } = await slotQuery;
+        if (slotErr) throw slotErr;
 
-        if ((teamMatches?.length ?? 0) === 1) {
-          ourGame = teamMatches?.[0] as unknown as LocalGameRow;
-          matchedByTeams++;
-        } else if ((teamMatches?.length ?? 0) > 1) {
+        if ((slotMatches?.length ?? 0) === 1) {
+          ourGame = slotMatches?.[0] as unknown as LocalGameRow;
+          if (placeholderFallback.has(gameId)) {
+            matchedByPlaceholder++;
+          } else {
+            matchedBySlot++;
+          }
+        } else if ((slotMatches?.length ?? 0) > 1) {
           skippedAmbiguous++;
           continue;
         }
@@ -1248,8 +1247,6 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
     const needsLink = ourGame.sportsdata_game_id !== gameId;
     const needsScheduleUpdate = scheduleColumnsAvailable;
-    const homeLocal = localTeamBySports.get(Number(g.HomeTeamID));
-    const awayLocal = localTeamBySports.get(Number(g.AwayTeamID));
     const hasGameTeams = !!homeLocal && !!awayLocal;
     let nextTeam1: string | null = null;
     let nextTeam2: string | null = null;
@@ -1321,12 +1318,6 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     espnFallbackMatchups = espnMatchups.length;
 
     if (espnMatchups.length > 0) {
-      const espnIds = Array.from(
-        new Set(
-          espnMatchups.flatMap((m) => [m.favorite.espnTeamId, m.underdog.espnTeamId]).filter((n) => Number.isFinite(n) && n > 0)
-        )
-      );
-
       const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
         .from("teams")
         .select("id,name,espn_team_id,seed,seed_in_region,region,cost,logo_url");

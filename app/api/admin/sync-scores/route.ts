@@ -58,6 +58,10 @@ function norm(s: unknown) {
   return String(s ?? "").trim().toLowerCase();
 }
 
+function teamPairKey(teamA: string, teamB: string) {
+  return teamA < teamB ? `${teamA}|${teamB}` : `${teamB}|${teamA}`;
+}
+
 function isMissingColumnError(message: string): boolean {
   const msg = message.toLowerCase();
   return msg.includes("column") && msg.includes("does not exist");
@@ -165,10 +169,8 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     id: String(g.id),
   }));
 
-  const byId = new Map<string, LocalBracketGame>();
   const byKey = new Map<string, LocalBracketGame>();
   for (const g of games) {
-    byId.set(g.id, g);
     const round = String(g.round ?? "").toUpperCase();
     const slot = Number(g.slot);
     if (!Number.isFinite(slot) || slot < 1 || !round) continue;
@@ -189,11 +191,23 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
   let advancedSlotsUpdated = 0;
   let advancedGamesTouched = 0;
   let clearedInvalidWinners = 0;
+  let clearedInvalidSourceWinners = 0;
   const touchedGameIds = new Set<string>();
 
   for (const source of sorted) {
-    const winnerId = source.winner_team_id ? String(source.winner_team_id) : null;
-    if (!winnerId) continue;
+    const sourceTeam1 = source.team1_id ? String(source.team1_id) : null;
+    const sourceTeam2 = source.team2_id ? String(source.team2_id) : null;
+    let winnerId = source.winner_team_id ? String(source.winner_team_id) : null;
+    if (winnerId && winnerId !== sourceTeam1 && winnerId !== sourceTeam2) {
+      const { error: clearSourceErr } = await supabaseAdmin
+        .from("games")
+        .update({ winner_team_id: null, last_synced_at: nowIso })
+        .eq("id", source.id);
+      if (clearSourceErr) throw clearSourceErr;
+      source.winner_team_id = null;
+      winnerId = null;
+      clearedInvalidSourceWinners++;
+    }
 
     const targetRef = nextTargetForWinner(source);
     if (!targetRef) continue;
@@ -201,18 +215,18 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
     if (!target) continue;
 
-    const nextTeam1 = targetRef.side === "team1_id" ? winnerId : (target.team1_id ? String(target.team1_id) : null);
-    const nextTeam2 = targetRef.side === "team2_id" ? winnerId : (target.team2_id ? String(target.team2_id) : null);
-
     const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };
-    if (targetRef.side === "team1_id" && String(target.team1_id ?? "") !== winnerId) {
+    if (targetRef.side === "team1_id" && (target.team1_id ? String(target.team1_id) : null) !== winnerId) {
       updatePayload.team1_id = winnerId;
       advancedSlotsUpdated++;
     }
-    if (targetRef.side === "team2_id" && String(target.team2_id ?? "") !== winnerId) {
+    if (targetRef.side === "team2_id" && (target.team2_id ? String(target.team2_id) : null) !== winnerId) {
       updatePayload.team2_id = winnerId;
       advancedSlotsUpdated++;
     }
+
+    const nextTeam1 = targetRef.side === "team1_id" ? winnerId : (target.team1_id ? String(target.team1_id) : null);
+    const nextTeam2 = targetRef.side === "team2_id" ? winnerId : (target.team2_id ? String(target.team2_id) : null);
 
     const existingWinner = target.winner_team_id ? String(target.winner_team_id) : null;
     if (existingWinner && existingWinner !== nextTeam1 && existingWinner !== nextTeam2) {
@@ -228,15 +242,26 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
       .eq("id", target.id);
     if (updErr) throw updErr;
 
-    if ("team1_id" in updatePayload) target.team1_id = String(updatePayload.team1_id);
-    if ("team2_id" in updatePayload) target.team2_id = String(updatePayload.team2_id);
+    if ("team1_id" in updatePayload) {
+      const value = updatePayload.team1_id;
+      target.team1_id = value == null ? null : String(value);
+    }
+    if ("team2_id" in updatePayload) {
+      const value = updatePayload.team2_id;
+      target.team2_id = value == null ? null : String(value);
+    }
     if ("winner_team_id" in updatePayload) target.winner_team_id = null;
 
     touchedGameIds.add(target.id);
   }
 
   advancedGamesTouched = touchedGameIds.size;
-  return { advancedSlotsUpdated, advancedGamesTouched, clearedInvalidWinners };
+  return {
+    advancedSlotsUpdated,
+    advancedGamesTouched,
+    clearedInvalidWinners,
+    clearedInvalidSourceWinners,
+  };
 }
 
 async function applyPlayInWinnersToR64Slots(
@@ -325,23 +350,44 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     localTeamBySports.set(Number(t.sportsdata_team_id), String(t.id));
   }
 
-  const sportsIds = Array.from(new Set(finals.map((f) => f.gameId)));
-  let localGames: Array<{ id: string; sportsdata_game_id: number | null; winner_team_id: string | null }> = [];
-  if (sportsIds.length > 0) {
-    const { data, error: localErr } = await supabaseAdmin
-      .from("games")
-      .select("id,sportsdata_game_id,winner_team_id")
-      .in("sportsdata_game_id", sportsIds);
-    if (localErr) throw localErr;
-    localGames = (data ?? []) as Array<{ id: string; sportsdata_game_id: number | null; winner_team_id: string | null }>;
-  }
+  const { data: allGameRows, error: allGamesErr } = await supabaseAdmin
+    .from("games")
+    .select("id,sportsdata_game_id,winner_team_id,team1_id,team2_id");
+  if (allGamesErr) throw allGamesErr;
 
-  const localBySportsGameId = new Map<number, { id: string; winner_team_id: string | null }>();
-  for (const g of localGames ?? []) {
-    localBySportsGameId.set(Number(g.sportsdata_game_id), {
-      id: String(g.id),
-      winner_team_id: g.winner_team_id ? String(g.winner_team_id) : null,
-    });
+  type LocalSyncGame = {
+    id: string;
+    sportsdata_game_id: number | null;
+    winner_team_id: string | null;
+    team1_id: string | null;
+    team2_id: string | null;
+  };
+
+  const allLocalGames: LocalSyncGame[] = ((allGameRows ?? []) as LocalSyncGame[]).map((g) => ({
+    id: String(g.id),
+    sportsdata_game_id: Number.isFinite(Number(g.sportsdata_game_id))
+      ? Math.trunc(Number(g.sportsdata_game_id))
+      : null,
+    winner_team_id: g.winner_team_id ? String(g.winner_team_id) : null,
+    team1_id: g.team1_id ? String(g.team1_id) : null,
+    team2_id: g.team2_id ? String(g.team2_id) : null,
+  }));
+
+  const gamesById = new Map<string, LocalSyncGame>();
+  const localBySportsGameId = new Map<number, LocalSyncGame>();
+  const gamesByTeamPair = new Map<string, string[]>();
+
+  for (const g of allLocalGames) {
+    gamesById.set(g.id, g);
+    if (g.sportsdata_game_id != null) {
+      localBySportsGameId.set(g.sportsdata_game_id, g);
+    }
+    if (g.team1_id && g.team2_id) {
+      const key = teamPairKey(g.team1_id, g.team2_id);
+      const bucket = gamesByTeamPair.get(key) ?? [];
+      bucket.push(g.id);
+      gamesByTeamPair.set(key, bucket);
+    }
   }
 
   let updatedGames = 0;
@@ -349,14 +395,12 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
   let skippedUnlinked = 0;
   let skippedNoTeamMap = 0;
   let skippedTie = 0;
+  let relinkedByTeamPair = 0;
+  let skippedPairNoMatch = 0;
+  let skippedPairAmbiguous = 0;
+  let skippedWinnerNotInGame = 0;
 
   for (const f of finals) {
-    const localGame = localBySportsGameId.get(f.gameId);
-    if (!localGame) {
-      skippedUnlinked++;
-      continue;
-    }
-
     if (f.homeScore === f.awayScore) {
       skippedTie++;
       continue;
@@ -369,7 +413,73 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
       continue;
     }
 
+    const expectedPair = teamPairKey(homeLocalId, awayLocalId);
+    const gameMatchesExpectedPair = (g: LocalSyncGame | null | undefined) => {
+      if (!g?.team1_id || !g.team2_id) return false;
+      return teamPairKey(g.team1_id, g.team2_id) === expectedPair;
+    };
+
+    let localGame = localBySportsGameId.get(f.gameId) ?? null;
+    if (!gameMatchesExpectedPair(localGame)) {
+      const candidateIds = gamesByTeamPair.get(expectedPair) ?? [];
+      if (candidateIds.length === 0) {
+        skippedPairNoMatch++;
+        skippedUnlinked++;
+        continue;
+      }
+      if (candidateIds.length > 1) {
+        skippedPairAmbiguous++;
+        skippedUnlinked++;
+        continue;
+      }
+
+      const candidate = gamesById.get(candidateIds[0]) ?? null;
+      if (!candidate) {
+        skippedUnlinked++;
+        continue;
+      }
+
+      const previousOwner = localBySportsGameId.get(f.gameId) ?? null;
+      if (previousOwner && previousOwner.id !== candidate.id) {
+        const { error: clearPrevErr } = await supabaseAdmin
+          .from("games")
+          .update({ sportsdata_game_id: null, last_synced_at: nowIso })
+          .eq("id", previousOwner.id)
+          .eq("sportsdata_game_id", f.gameId);
+        if (clearPrevErr) throw clearPrevErr;
+        previousOwner.sportsdata_game_id = null;
+      }
+
+      if (candidate.sportsdata_game_id !== f.gameId) {
+        const oldSportsId = candidate.sportsdata_game_id;
+        const { error: relinkErr } = await supabaseAdmin
+          .from("games")
+          .update({ sportsdata_game_id: f.gameId, last_synced_at: nowIso })
+          .eq("id", candidate.id);
+        if (relinkErr) throw relinkErr;
+
+        if (oldSportsId != null) {
+          localBySportsGameId.delete(oldSportsId);
+        }
+        candidate.sportsdata_game_id = f.gameId;
+        localBySportsGameId.set(f.gameId, candidate);
+        relinkedByTeamPair++;
+      }
+
+      localGame = candidate;
+    }
+
+    if (!localGame) {
+      skippedUnlinked++;
+      continue;
+    }
+
     const winnerLocalId = f.homeScore > f.awayScore ? homeLocalId : awayLocalId;
+    if (winnerLocalId !== localGame.team1_id && winnerLocalId !== localGame.team2_id) {
+      skippedWinnerNotInGame++;
+      continue;
+    }
+
     if (localGame.winner_team_id === winnerLocalId) {
       alreadySet++;
       continue;
@@ -401,6 +511,10 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     skippedUnlinked,
     skippedNoTeamMap,
     skippedTie,
+    relinkedByTeamPair,
+    skippedPairNoMatch,
+    skippedPairAmbiguous,
+    skippedWinnerNotInGame,
     ...playInResolution,
     ...propagation,
   };
