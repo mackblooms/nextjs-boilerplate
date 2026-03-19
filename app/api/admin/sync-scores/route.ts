@@ -14,6 +14,41 @@ type SportsGame = {
   AwayTeamScore?: number | null;
 };
 
+type EspnTeam = {
+  id?: string | number;
+};
+
+type EspnCompetitor = {
+  homeAway?: "home" | "away";
+  score?: string;
+  team?: EspnTeam;
+};
+
+type EspnCompetition = {
+  competitors?: EspnCompetitor[];
+  tournamentId?: number | string;
+  notes?: Array<{ headline?: string }>;
+  headlines?: Array<{ shortLinkText?: string; description?: string }>;
+};
+
+type EspnEvent = {
+  id?: string;
+  date?: string;
+  name?: string;
+  shortName?: string;
+  competitions?: EspnCompetition[];
+  status?: {
+    type?: {
+      state?: string;
+      completed?: boolean;
+    };
+  };
+};
+
+type EspnScoreboard = {
+  events?: EspnEvent[];
+};
+
 type FinalGame = {
   gameId: number;
   homeTeamId: number;
@@ -54,6 +89,19 @@ function ymd(d: Date) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function yyyymmdd(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+}
+
+function shiftDate(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
 function norm(s: unknown) {
   return String(s ?? "").trim().toLowerCase();
 }
@@ -74,6 +122,47 @@ function toSeason(value: unknown): number | null {
   const year = Math.trunc(n);
   if (year < 2000 || year > 2100) return null;
   return year;
+}
+
+function isNcaaTournamentEvent(event: EspnEvent) {
+  const comp = event.competitions?.[0];
+  if (!comp) return false;
+
+  const excludedPhrases = [
+    "nit",
+    "national invitation tournament",
+    "college basketball crown",
+    "cbi",
+    "college basketball invitational",
+    "the crown",
+  ];
+
+  const tournamentId = Number(comp.tournamentId);
+  if (Number.isFinite(tournamentId)) {
+    return tournamentId === 22;
+  }
+
+  const notesText = (comp.notes ?? [])
+    .map((n) => n.headline ?? "")
+    .join(" ")
+    .toLowerCase();
+
+  const headlineText = (comp.headlines ?? [])
+    .map((h) => `${h.shortLinkText ?? ""} ${h.description ?? ""}`)
+    .join(" ")
+    .toLowerCase();
+
+  const eventText = `${event.name ?? ""} ${event.shortName ?? ""}`.toLowerCase();
+  const combined = `${notesText} ${headlineText} ${eventText}`;
+  if (excludedPhrases.some((phrase) => combined.includes(phrase))) return false;
+
+  if (combined.includes("men's basketball championship")) return true;
+  if (combined.includes("mens basketball championship")) return true;
+  if (combined.includes("ncaa tournament")) return true;
+  if (combined.includes("ncaa men's tournament")) return true;
+  if (combined.includes("march madness")) return true;
+
+  return false;
 }
 
 function collectFinalGames(games: SportsGame[]): FinalGame[] {
@@ -334,6 +423,196 @@ async function fetchTournamentGames(season: number): Promise<SportsGame[]> {
   return [];
 }
 
+async function fetchEspnFinalGames(lookbackDays: number): Promise<FinalGame[]> {
+  const dateKeys: string[] = [];
+  for (let day = -lookbackDays; day <= 0; day++) {
+    dateKeys.push(yyyymmdd(shiftDate(day)));
+  }
+
+  const payloads = await Promise.all(
+    dateKeys.map(async (dateKey) => {
+      const endpoint =
+        `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}&groups=50&limit=500`;
+      const res = await fetch(endpoint, { cache: "no-store" });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`ESPN error ${res.status} (${dateKey}): ${text}`);
+      }
+      return (await res.json()) as EspnScoreboard;
+    })
+  );
+
+  const finals: FinalGame[] = [];
+  const seenEventIds = new Set<string>();
+
+  for (const payload of payloads) {
+    for (const event of payload.events ?? []) {
+      if (!isNcaaTournamentEvent(event)) continue;
+
+      const eventId = String(event.id ?? "").trim();
+      if (eventId && seenEventIds.has(eventId)) continue;
+      if (eventId) seenEventIds.add(eventId);
+
+      const isFinal =
+        norm(event.status?.type?.state) === "post" ||
+        event.status?.type?.completed === true;
+      if (!isFinal) continue;
+
+      const competitors = event.competitions?.[0]?.competitors ?? [];
+      const home = competitors.find((c) => c.homeAway === "home");
+      const away = competitors.find((c) => c.homeAway === "away");
+      if (!home || !away) continue;
+
+      const homeTeamId = Number(home.team?.id);
+      const awayTeamId = Number(away.team?.id);
+      const homeScore = Number(home.score);
+      const awayScore = Number(away.score);
+      if (!Number.isFinite(homeTeamId) || !Number.isFinite(awayTeamId)) continue;
+      if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) continue;
+
+      finals.push({
+        gameId: eventId && /^\d+$/.test(eventId) ? Number(eventId) : -(finals.length + 1),
+        homeTeamId: Math.trunc(homeTeamId),
+        awayTeamId: Math.trunc(awayTeamId),
+        homeScore: homeScore,
+        awayScore: awayScore,
+      });
+    }
+  }
+
+  return finals;
+}
+
+async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
+  const supabaseAdmin = getSupabaseAdmin();
+  const nowIso = new Date().toISOString();
+  const canWriteStatus = await hasStatusColumn(supabaseAdmin);
+
+  if (finals.length === 0) {
+    return {
+      espnFinalsSeen: 0,
+      espnUpdatedGames: 0,
+      espnAlreadySet: 0,
+      espnSkippedNoTeamMap: 0,
+      espnSkippedPairNoMatch: 0,
+      espnSkippedPairAmbiguous: 0,
+      espnSkippedTie: 0,
+      espnAdvancedSlotsUpdated: 0,
+      espnAdvancedGamesTouched: 0,
+      espnClearedInvalidWinners: 0,
+      espnClearedInvalidSourceWinners: 0,
+    };
+  }
+
+  const { data: teamRows, error: teamErr } = await supabaseAdmin
+    .from("teams")
+    .select("id,espn_team_id")
+    .not("espn_team_id", "is", null);
+  if (teamErr) throw teamErr;
+
+  const localTeamByEspn = new Map<number, string>();
+  for (const t of teamRows ?? []) {
+    const espnId = Number(t.espn_team_id);
+    if (!Number.isFinite(espnId)) continue;
+    localTeamByEspn.set(Math.trunc(espnId), String(t.id));
+  }
+
+  const { data: gameRows, error: gamesErr } = await supabaseAdmin
+    .from("games")
+    .select("id,team1_id,team2_id,winner_team_id");
+  if (gamesErr) throw gamesErr;
+
+  type LocalPairGame = {
+    id: string;
+    team1_id: string | null;
+    team2_id: string | null;
+    winner_team_id: string | null;
+  };
+  const gamesByPair = new Map<string, LocalPairGame[]>();
+  for (const g of (gameRows ?? []) as LocalPairGame[]) {
+    if (!g.team1_id || !g.team2_id) continue;
+    const key = teamPairKey(String(g.team1_id), String(g.team2_id));
+    const bucket = gamesByPair.get(key) ?? [];
+    bucket.push({
+      id: String(g.id),
+      team1_id: g.team1_id ? String(g.team1_id) : null,
+      team2_id: g.team2_id ? String(g.team2_id) : null,
+      winner_team_id: g.winner_team_id ? String(g.winner_team_id) : null,
+    });
+    gamesByPair.set(key, bucket);
+  }
+
+  let espnUpdatedGames = 0;
+  let espnAlreadySet = 0;
+  let espnSkippedNoTeamMap = 0;
+  let espnSkippedPairNoMatch = 0;
+  let espnSkippedPairAmbiguous = 0;
+  let espnSkippedTie = 0;
+
+  for (const f of finals) {
+    if (f.homeScore === f.awayScore) {
+      espnSkippedTie++;
+      continue;
+    }
+
+    const homeLocalId = localTeamByEspn.get(f.homeTeamId);
+    const awayLocalId = localTeamByEspn.get(f.awayTeamId);
+    if (!homeLocalId || !awayLocalId) {
+      espnSkippedNoTeamMap++;
+      continue;
+    }
+
+    const pair = teamPairKey(homeLocalId, awayLocalId);
+    const matches = gamesByPair.get(pair) ?? [];
+    if (matches.length === 0) {
+      espnSkippedPairNoMatch++;
+      continue;
+    }
+    if (matches.length > 1) {
+      espnSkippedPairAmbiguous++;
+      continue;
+    }
+
+    const localGame = matches[0];
+    const winnerLocalId = f.homeScore > f.awayScore ? homeLocalId : awayLocalId;
+    if (localGame.winner_team_id === winnerLocalId) {
+      espnAlreadySet++;
+      continue;
+    }
+
+    const updatePayload: Record<string, unknown> = {
+      winner_team_id: winnerLocalId,
+      last_synced_at: nowIso,
+    };
+    if (canWriteStatus) updatePayload.status = "Final";
+
+    const { error: updErr } = await supabaseAdmin
+      .from("games")
+      .update(updatePayload)
+      .eq("id", localGame.id);
+    if (updErr) throw updErr;
+
+    localGame.winner_team_id = winnerLocalId;
+    espnUpdatedGames++;
+  }
+
+  const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
+
+  return {
+    espnFinalsSeen: finals.length,
+    espnUpdatedGames,
+    espnAlreadySet,
+    espnSkippedNoTeamMap,
+    espnSkippedPairNoMatch,
+    espnSkippedPairAmbiguous,
+    espnSkippedTie,
+    espnAdvancedSlotsUpdated: propagation.advancedSlotsUpdated,
+    espnAdvancedGamesTouched: propagation.advancedGamesTouched,
+    espnClearedInvalidWinners: propagation.clearedInvalidWinners,
+    espnClearedInvalidSourceWinners: propagation.clearedInvalidSourceWinners,
+  };
+}
+
 async function applyFinalsToLocalGames(finals: FinalGame[]) {
   const supabaseAdmin = getSupabaseAdmin();
   const nowIso = new Date().toISOString();
@@ -533,11 +812,23 @@ async function runDailySync(lookbackDays: number) {
 
   const finals = collectFinalGames(allGames);
   const result = await applyFinalsToLocalGames(finals);
+  const espnFallback = await applyEspnFinalsToLocalGames(
+    await fetchEspnFinalGames(Math.max(lookbackDays, 1))
+  );
 
   return {
     mode: "daily" as const,
     dates,
     ...result,
+    updatedGames: result.updatedGames + espnFallback.espnUpdatedGames,
+    advancedSlotsUpdated:
+      Number(result.advancedSlotsUpdated ?? 0) +
+      Number(espnFallback.espnAdvancedSlotsUpdated ?? 0),
+    advancedGamesTouched: Math.max(
+      Number(result.advancedGamesTouched ?? 0),
+      Number(espnFallback.espnAdvancedGamesTouched ?? 0)
+    ),
+    espnFallback,
   };
 }
 
@@ -545,12 +836,24 @@ async function runTournamentSeasonSync(season: number) {
   const games = await fetchTournamentGames(season);
   const finals = collectFinalGames(games);
   const result = await applyFinalsToLocalGames(finals);
+  const espnFallback = await applyEspnFinalsToLocalGames(
+    await fetchEspnFinalGames(1)
+  );
 
   return {
     mode: "tournament" as const,
     season,
     totalGamesInPayload: games.length,
     ...result,
+    updatedGames: result.updatedGames + espnFallback.espnUpdatedGames,
+    advancedSlotsUpdated:
+      Number(result.advancedSlotsUpdated ?? 0) +
+      Number(espnFallback.espnAdvancedSlotsUpdated ?? 0),
+    advancedGamesTouched: Math.max(
+      Number(result.advancedGamesTouched ?? 0),
+      Number(espnFallback.espnAdvancedGamesTouched ?? 0)
+    ),
+    espnFallback,
   };
 }
 
