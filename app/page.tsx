@@ -159,6 +159,14 @@ function normalizeDraftName(value: string | null | undefined) {
     .toLowerCase();
 }
 
+function overlapCount(a: Iterable<string>, b: Set<string>) {
+  let out = 0;
+  for (const value of a) {
+    if (b.has(value)) out += 1;
+  }
+  return out;
+}
+
 function PenIcon() {
   return (
     <svg
@@ -1148,6 +1156,58 @@ function HomeContent() {
             if (!sameTeamSet(draftPicks, entryPicks)) continue;
             matchedEntryIdsByDraft.get(draft.id)?.add(entry.id);
           }
+        }
+
+        const matchedEntryIds = new Set<string>();
+        for (const matchedIds of matchedEntryIdsByDraft.values()) {
+          for (const entryId of matchedIds) matchedEntryIds.add(entryId);
+        }
+
+        // Fallback for older schemas (no entry_name) or when a draft changed
+        // after entering a pool: match the closest draft by team overlap.
+        for (const entry of entryRows) {
+          if (matchedEntryIds.has(entry.id)) continue;
+          const entryPicks = entryPicksByEntry.get(entry.id);
+          if (!entryPicks || entryPicks.size === 0) continue;
+
+          let bestDraftId: string | null = null;
+          let bestOverlap = 0;
+          let bestEntryShare = 0;
+          let bestUpdatedAt = Number.NEGATIVE_INFINITY;
+
+          for (const draft of nextDrafts) {
+            const draftPicks = draftPicksByDraft.get(draft.id);
+            if (!draftPicks || draftPicks.size === 0) continue;
+
+            const overlap = overlapCount(draftPicks, entryPicks);
+            if (overlap === 0) continue;
+
+            const entryShare = overlap / entryPicks.size;
+            const updatedAt = Date.parse(draft.updated_at);
+
+            const isBetter =
+              overlap > bestOverlap ||
+              (overlap === bestOverlap && entryShare > bestEntryShare) ||
+              (overlap === bestOverlap &&
+                entryShare === bestEntryShare &&
+                updatedAt > bestUpdatedAt);
+
+            if (isBetter) {
+              bestDraftId = draft.id;
+              bestOverlap = overlap;
+              bestEntryShare = entryShare;
+              bestUpdatedAt = Number.isFinite(updatedAt) ? updatedAt : Number.NEGATIVE_INFINITY;
+            }
+          }
+
+          if (!bestDraftId) continue;
+
+          const minimumOverlap = Math.min(3, entryPicks.size);
+          if (bestOverlap < minimumOverlap) continue;
+          if (bestEntryShare < 0.6) continue;
+
+          matchedEntryIdsByDraft.get(bestDraftId)?.add(entry.id);
+          matchedEntryIds.add(entry.id);
         }
 
         const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
