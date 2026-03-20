@@ -24,6 +24,11 @@ type SavedDraftPickRow = {
   team_id: string;
 };
 
+type EntryNameRow = {
+  id: string;
+  entry_name: string | null;
+};
+
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
@@ -38,6 +43,14 @@ function isMissingSavedDraftTablesError(error: { message?: string; code?: string
     error?.code === "42P01" ||
     message.includes("saved_drafts") ||
     message.includes("saved_draft_picks")
+  );
+}
+
+function isMissingEntryNameError(error: { message?: string } | null | undefined) {
+  const message = error?.message ?? "";
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
   );
 }
 
@@ -92,6 +105,24 @@ export async function GET(req: Request) {
 
     const entryIds = baseRows.map((row) => row.entry_id);
     const userIds = Array.from(new Set(baseRows.map((row) => row.user_id)));
+    const draftNamesByEntry = new Map<string, string>();
+
+    const entryNameById = new Map<string, string>();
+    const entryNameResult = await supabaseAdmin
+      .from("entries")
+      .select("id,entry_name")
+      .in("id", entryIds);
+    if (!entryNameResult.error) {
+      for (const row of (entryNameResult.data ?? []) as EntryNameRow[]) {
+        const trimmed = row.entry_name?.trim();
+        if (trimmed) {
+          entryNameById.set(row.id, trimmed);
+          draftNamesByEntry.set(row.id, trimmed);
+        }
+      }
+    } else if (!isMissingEntryNameError(entryNameResult.error)) {
+      return NextResponse.json({ error: entryNameResult.error.message }, { status: 400 });
+    }
 
     const { data: entryPickData, error: entryPickErr } = await supabaseAdmin
       .from("entry_picks")
@@ -155,8 +186,11 @@ export async function GET(req: Request) {
       draftsByUser.set(draft.user_id, list);
     }
 
-    const draftNamesByEntry = new Map<string, string>();
     for (const row of baseRows) {
+      if (entryNameById.has(row.entry_id)) {
+        continue;
+      }
+
       const userDrafts = draftsByUser.get(row.user_id) ?? [];
       if (userDrafts.length === 0) continue;
 
