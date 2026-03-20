@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -106,6 +107,10 @@ type DraftPoolLeaderboardRow = {
   entry_id: string;
   pool_id: string;
   total_score: number | null;
+};
+type DraftPoolTeamSeedRow = {
+  id: string;
+  seed_in_region: number | null;
 };
 
 type ScoreViewMode = "my-teams" | "all-scores";
@@ -1103,6 +1108,11 @@ function HomeContent() {
       }
 
       if (entryIds.length > 0) {
+        const entryPicksByEntry = new Map<string, Set<string>>();
+        for (const entryId of entryIds) {
+          entryPicksByEntry.set(entryId, new Set<string>());
+        }
+
         if (poolIds.length > 0) {
           const leaderboardRes = await supabase
             .from("pool_leaderboard")
@@ -1111,62 +1121,145 @@ function HomeContent() {
 
           if (!leaderboardRes.error) {
             const rows = (leaderboardRes.data ?? []) as DraftPoolLeaderboardRow[];
-            const rowsByPool = new Map<string, DraftPoolLeaderboardRow[]>();
-            for (const row of rows) {
-              const list = rowsByPool.get(row.pool_id) ?? [];
-              list.push(row);
-              rowsByPool.set(row.pool_id, list);
-              if (entryIdSet.has(row.entry_id)) {
-                scoreByEntryId.set(row.entry_id, Number(row.total_score ?? 0));
-              }
-            }
+            const allPoolEntryIds = Array.from(new Set(rows.map((row) => row.entry_id).filter(Boolean)));
 
-            for (const [poolId, poolRows] of rowsByPool.entries()) {
-              const sortedRows = poolRows
-                .map((row) => ({ entry_id: row.entry_id, score: Number(row.total_score ?? 0) }))
-                .sort((a, b) => {
-                  if (b.score !== a.score) return b.score - a.score;
-                  return a.entry_id.localeCompare(b.entry_id);
-                });
+            let usedLiveScoringForPlace = false;
+            if (allPoolEntryIds.length > 0) {
+              const allPoolEntryPickRes = await supabase
+                .from("entry_picks")
+                .select("entry_id,team_id")
+                .in("entry_id", allPoolEntryIds);
 
-              let rank = 0;
-              let previousScore: number | null = null;
-              for (let i = 0; i < sortedRows.length; i += 1) {
-                const row = sortedRows[i];
-                if (previousScore === null || row.score < previousScore) {
-                  rank = i + 1;
-                  previousScore = row.score;
+              if (!allPoolEntryPickRes.error) {
+                const allPoolEntryPickRows = (allPoolEntryPickRes.data ?? []) as DraftPoolEntryPickRow[];
+                for (const row of allPoolEntryPickRows) {
+                  if (!entryIdSet.has(row.entry_id)) continue;
+                  const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
+                  picks.add(row.team_id);
+                  entryPicksByEntry.set(row.entry_id, picks);
                 }
-                placeByPoolAndEntry.set(`${poolId}:${row.entry_id}`, rank);
+
+                const [teamRes, gameRes] = await Promise.all([
+                  supabase.from("teams").select("id,seed_in_region"),
+                  supabase.from("games").select("round,team1_id,team2_id,winner_team_id"),
+                ]);
+
+                if (!teamRes.error && !gameRes.error) {
+                  const teamSeedById = new Map<string, number | null>();
+                  for (const row of (teamRes.data ?? []) as DraftPoolTeamSeedRow[]) {
+                    teamSeedById.set(row.id, row.seed_in_region);
+                  }
+
+                  const picksByEntry = new Map<string, string[]>();
+                  for (const poolEntryId of allPoolEntryIds) {
+                    picksByEntry.set(poolEntryId, []);
+                  }
+                  for (const row of allPoolEntryPickRows) {
+                    const picks = picksByEntry.get(row.entry_id) ?? [];
+                    picks.push(row.team_id);
+                    picksByEntry.set(row.entry_id, picks);
+                  }
+
+                  const scoredEntries = scoreEntries(
+                    ((gameRes.data ?? []) as ScoringGame[]),
+                    teamSeedById,
+                    picksByEntry
+                  );
+
+                  const rowsByPool = new Map<string, Array<{ entry_id: string; score: number }>>();
+                  for (const row of rows) {
+                    const score = scoredEntries.totalScoreByEntryId.get(row.entry_id) ?? 0;
+                    const list = rowsByPool.get(row.pool_id) ?? [];
+                    list.push({ entry_id: row.entry_id, score });
+                    rowsByPool.set(row.pool_id, list);
+                    if (entryIdSet.has(row.entry_id)) {
+                      scoreByEntryId.set(row.entry_id, score);
+                    }
+                  }
+
+                  for (const [poolId, poolRows] of rowsByPool.entries()) {
+                    const sortedRows = [...poolRows].sort((a, b) => {
+                      if (b.score !== a.score) return b.score - a.score;
+                      return a.entry_id.localeCompare(b.entry_id);
+                    });
+
+                    let rank = 0;
+                    let previousScore: number | null = null;
+                    for (let i = 0; i < sortedRows.length; i += 1) {
+                      const row = sortedRows[i];
+                      if (previousScore === null || row.score < previousScore) {
+                        rank = i + 1;
+                        previousScore = row.score;
+                      }
+                      placeByPoolAndEntry.set(`${poolId}:${row.entry_id}`, rank);
+                    }
+                  }
+
+                  usedLiveScoringForPlace = true;
+                }
+              }
+            }
+
+            if (!usedLiveScoringForPlace) {
+              const rowsByPool = new Map<string, DraftPoolLeaderboardRow[]>();
+              for (const row of rows) {
+                const list = rowsByPool.get(row.pool_id) ?? [];
+                list.push(row);
+                rowsByPool.set(row.pool_id, list);
+                if (entryIdSet.has(row.entry_id)) {
+                  scoreByEntryId.set(row.entry_id, Number(row.total_score ?? 0));
+                }
+              }
+
+              for (const [poolId, poolRows] of rowsByPool.entries()) {
+                const sortedRows = poolRows
+                  .map((row) => ({ entry_id: row.entry_id, score: Number(row.total_score ?? 0) }))
+                  .sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.entry_id.localeCompare(b.entry_id);
+                  });
+
+                let rank = 0;
+                let previousScore: number | null = null;
+                for (let i = 0; i < sortedRows.length; i += 1) {
+                  const row = sortedRows[i];
+                  if (previousScore === null || row.score < previousScore) {
+                    rank = i + 1;
+                    previousScore = row.score;
+                  }
+                  placeByPoolAndEntry.set(`${poolId}:${row.entry_id}`, rank);
+                }
               }
             }
           }
         }
 
-        const entryPickRes = await supabase
-          .from("entry_picks")
-          .select("entry_id,team_id")
-          .in("entry_id", entryIds);
+        const missingEntryPickIds = Array.from(entryPicksByEntry.entries())
+          .filter(([, picks]) => picks.size === 0)
+          .map(([entryId]) => entryId);
 
-        if (entryPickRes.error) {
-          if (!canceled) {
-            setHomeDraftsMessage(entryPickRes.error.message);
-            setHomeDraftPoolsByDraft(draftPoolsRecord);
-            setHomeDraftPointsByDraft(draftPointsRecord);
-            setHomeDraftsLoading(false);
-            homeDraftsLoadedRef.current = true;
+        if (missingEntryPickIds.length > 0) {
+          const entryPickRes = await supabase
+            .from("entry_picks")
+            .select("entry_id,team_id")
+            .in("entry_id", missingEntryPickIds);
+
+          if (entryPickRes.error) {
+            if (!canceled) {
+              setHomeDraftsMessage(entryPickRes.error.message);
+              setHomeDraftPoolsByDraft(draftPoolsRecord);
+              setHomeDraftPointsByDraft(draftPointsRecord);
+              setHomeDraftsLoading(false);
+              homeDraftsLoadedRef.current = true;
+            }
+            return;
           }
-          return;
-        }
 
-        const entryPicksByEntry = new Map<string, Set<string>>();
-        for (const entryId of entryIds) {
-          entryPicksByEntry.set(entryId, new Set<string>());
-        }
-        for (const row of (entryPickRes.data ?? []) as DraftPoolEntryPickRow[]) {
-          const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
-          picks.add(row.team_id);
-          entryPicksByEntry.set(row.entry_id, picks);
+          for (const row of (entryPickRes.data ?? []) as DraftPoolEntryPickRow[]) {
+            const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
+            picks.add(row.team_id);
+            entryPicksByEntry.set(row.entry_id, picks);
+          }
         }
 
         const matchedEntryIdsByDraft = new Map<string, Set<string>>();
@@ -1260,9 +1353,14 @@ function HomeContent() {
         const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
         for (const draft of nextDrafts) {
           const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
+          const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
           const matchedPoolsById = new Map<
             string,
             HomeDraftPool & {
+              bestExact: boolean;
+              bestOverlap: number;
+              bestEntryShare: number;
+              bestDraftShare: number;
               bestPoints: number;
             }
           >();
@@ -1277,13 +1375,39 @@ function HomeContent() {
             const pool = poolsById.get(entry.pool_id);
             if (!pool) continue;
 
+            const entryPicks = entryPicksByEntry.get(entryId) ?? new Set<string>();
+            const overlap = overlapCount(draftPicks, entryPicks);
+            const entryShare = entryPicks.size > 0 ? overlap / entryPicks.size : 0;
+            const draftShare = draftPicks.size > 0 ? overlap / draftPicks.size : 0;
+            const exactMatch = draftPicks.size > 0 && sameTeamSet(draftPicks, entryPicks);
             const place = placeByPoolAndEntry.get(`${entry.pool_id}:${entryId}`) ?? null;
             const existing = matchedPoolsById.get(entry.pool_id);
-            if (!existing || points > existing.bestPoints) {
+            const isBetterMatch =
+              !existing ||
+              (exactMatch && !existing.bestExact) ||
+              (exactMatch === existing.bestExact && overlap > existing.bestOverlap) ||
+              (exactMatch === existing.bestExact &&
+                overlap === existing.bestOverlap &&
+                entryShare > existing.bestEntryShare) ||
+              (exactMatch === existing.bestExact &&
+                overlap === existing.bestOverlap &&
+                entryShare === existing.bestEntryShare &&
+                draftShare > existing.bestDraftShare) ||
+              (exactMatch === existing.bestExact &&
+                overlap === existing.bestOverlap &&
+                entryShare === existing.bestEntryShare &&
+                draftShare === existing.bestDraftShare &&
+                points > existing.bestPoints);
+
+            if (isBetterMatch) {
               matchedPoolsById.set(entry.pool_id, {
                 id: pool.id,
                 name: pool.name,
                 place,
+                bestExact: exactMatch,
+                bestOverlap: overlap,
+                bestEntryShare: entryShare,
+                bestDraftShare: draftShare,
                 bestPoints: points,
               });
             }
@@ -1782,7 +1906,7 @@ function HomeContent() {
                           padding: 0,
                         }}
                       >
-                        {expanded ? "Hide Pools ^" : "Show Pools v"}
+                        {expanded ? "Hide Pools ▴" : "Show Pools ▾"}
                       </button>
                     </div>
 
