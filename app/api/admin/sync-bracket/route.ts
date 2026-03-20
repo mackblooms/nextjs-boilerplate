@@ -844,6 +844,197 @@ async function hasScheduleColumns(supabaseAdmin: ReturnType<typeof getSupabaseAd
   throw new Error(msg);
 }
 
+type PickRemapStats = {
+  orphanPickTeamsDetected: number;
+  remapCandidates: number;
+  entryPicksRemapped: number;
+  entryPicksDuplicatesDropped: number;
+  draftPicksRemapped: number;
+  draftPicksDuplicatesDropped: number;
+};
+
+async function remapOrphanPickTeamsToActiveR64(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>
+): Promise<PickRemapStats> {
+  const stats: PickRemapStats = {
+    orphanPickTeamsDetected: 0,
+    remapCandidates: 0,
+    entryPicksRemapped: 0,
+    entryPicksDuplicatesDropped: 0,
+    draftPicksRemapped: 0,
+    draftPicksDuplicatesDropped: 0,
+  };
+
+  const { data: r64Rows, error: r64Err } = await supabaseAdmin
+    .from("games")
+    .select("team1_id,team2_id")
+    .eq("round", "R64");
+  if (r64Err) throw r64Err;
+
+  const activeTeamIds = Array.from(
+    new Set(
+      (r64Rows ?? [])
+        .flatMap((row) => [row.team1_id, row.team2_id])
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  if (activeTeamIds.length === 0) return stats;
+
+  const { data: activeTeams, error: activeTeamsErr } = await supabaseAdmin
+    .from("teams")
+    .select("id,region,seed,seed_in_region")
+    .in("id", activeTeamIds);
+  if (activeTeamsErr) throw activeTeamsErr;
+
+  const activeByRegionSeed = new Map<string, string>();
+  for (const row of activeTeams ?? []) {
+    if (!isRegionName(row.region)) continue;
+    const seed = toSeed(row.seed_in_region) ?? toSeed(row.seed);
+    if (seed == null) continue;
+    const key = `${row.region}|${seed}`;
+    if (!activeByRegionSeed.has(key)) {
+      activeByRegionSeed.set(key, String(row.id));
+    }
+  }
+  if (activeByRegionSeed.size === 0) return stats;
+
+  const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
+    .from("teams")
+    .select("id,region,seed,seed_in_region");
+  if (allTeamsErr) throw allTeamsErr;
+
+  const activeIdSet = new Set(activeTeamIds);
+  const remapByFromId = new Map<string, string>();
+  for (const row of allTeams ?? []) {
+    const id = String(row.id);
+    if (activeIdSet.has(id)) continue;
+    if (!isRegionName(row.region)) continue;
+    const seed = toSeed(row.seed_in_region) ?? toSeed(row.seed);
+    if (seed == null) continue;
+    const targetId = activeByRegionSeed.get(`${row.region}|${seed}`);
+    if (!targetId || targetId === id) continue;
+    remapByFromId.set(id, targetId);
+  }
+  if (remapByFromId.size === 0) return stats;
+
+  const fromIds = Array.from(remapByFromId.keys());
+
+  const { data: entryRows, error: entryRowsErr } = await supabaseAdmin
+    .from("entry_picks")
+    .select("entry_id,team_id")
+    .in("team_id", fromIds);
+  if (entryRowsErr) throw entryRowsErr;
+
+  const affectedEntryIds = Array.from(
+    new Set((entryRows ?? []).map((row) => String(row.entry_id)).filter(Boolean))
+  );
+  const targetTeamIdsForEntries = Array.from(
+    new Set(
+      (entryRows ?? [])
+        .map((row) => remapByFromId.get(String(row.team_id)) ?? null)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const existingEntryTargetPairs = new Set<string>();
+  if (affectedEntryIds.length > 0 && targetTeamIdsForEntries.length > 0) {
+    const { data: existingTargets, error: existingTargetsErr } = await supabaseAdmin
+      .from("entry_picks")
+      .select("entry_id,team_id")
+      .in("entry_id", affectedEntryIds)
+      .in("team_id", targetTeamIdsForEntries);
+    if (existingTargetsErr) throw existingTargetsErr;
+    for (const row of existingTargets ?? []) {
+      existingEntryTargetPairs.add(`${row.entry_id}|${row.team_id}`);
+    }
+  }
+
+  for (const row of entryRows ?? []) {
+    const fromId = String(row.team_id);
+    const toId = remapByFromId.get(fromId);
+    if (!toId) continue;
+
+    stats.orphanPickTeamsDetected++;
+
+    const { error: delErr } = await supabaseAdmin
+      .from("entry_picks")
+      .delete()
+      .eq("entry_id", String(row.entry_id))
+      .eq("team_id", fromId);
+    if (delErr) throw delErr;
+
+    const pairKey = `${row.entry_id}|${toId}`;
+    if (existingEntryTargetPairs.has(pairKey)) {
+      stats.entryPicksDuplicatesDropped++;
+      continue;
+    }
+
+    const { error: insErr } = await supabaseAdmin
+      .from("entry_picks")
+      .insert({ entry_id: String(row.entry_id), team_id: toId });
+    if (insErr) throw insErr;
+    existingEntryTargetPairs.add(pairKey);
+    stats.entryPicksRemapped++;
+  }
+
+  const { data: draftRows, error: draftRowsErr } = await supabaseAdmin
+    .from("saved_draft_picks")
+    .select("draft_id,team_id")
+    .in("team_id", fromIds);
+  if (draftRowsErr) throw draftRowsErr;
+
+  const affectedDraftIds = Array.from(
+    new Set((draftRows ?? []).map((row) => String(row.draft_id)).filter(Boolean))
+  );
+  const targetTeamIdsForDrafts = Array.from(
+    new Set(
+      (draftRows ?? [])
+        .map((row) => remapByFromId.get(String(row.team_id)) ?? null)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const existingDraftTargetPairs = new Set<string>();
+  if (affectedDraftIds.length > 0 && targetTeamIdsForDrafts.length > 0) {
+    const { data: existingDraftTargets, error: existingDraftTargetsErr } = await supabaseAdmin
+      .from("saved_draft_picks")
+      .select("draft_id,team_id")
+      .in("draft_id", affectedDraftIds)
+      .in("team_id", targetTeamIdsForDrafts);
+    if (existingDraftTargetsErr) throw existingDraftTargetsErr;
+    for (const row of existingDraftTargets ?? []) {
+      existingDraftTargetPairs.add(`${row.draft_id}|${row.team_id}`);
+    }
+  }
+
+  for (const row of draftRows ?? []) {
+    const fromId = String(row.team_id);
+    const toId = remapByFromId.get(fromId);
+    if (!toId) continue;
+
+    const { error: delErr } = await supabaseAdmin
+      .from("saved_draft_picks")
+      .delete()
+      .eq("draft_id", String(row.draft_id))
+      .eq("team_id", fromId);
+    if (delErr) throw delErr;
+
+    const pairKey = `${row.draft_id}|${toId}`;
+    if (existingDraftTargetPairs.has(pairKey)) {
+      stats.draftPicksDuplicatesDropped++;
+      continue;
+    }
+
+    const { error: insErr } = await supabaseAdmin
+      .from("saved_draft_picks")
+      .insert({ draft_id: String(row.draft_id), team_id: toId });
+    if (insErr) throw insErr;
+    existingDraftTargetPairs.add(pairKey);
+    stats.draftPicksRemapped++;
+  }
+
+  stats.remapCandidates = remapByFromId.size;
+  return stats;
+}
+
 async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   if (!KEY) throw new Error("Missing SportsData key. Set SPORTS_DATA_IO_KEY or SPORTSDATAIO_KEY.");
   const url = `${BASE}/v3/cbb/scores/json/Tournament/${season}?key=${encodeURIComponent(KEY)}`;
@@ -2232,6 +2423,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     if (incoming.seed == null) teamsWithoutSeed++;
     if (!incoming.logoUrl) teamsWithoutLogo++;
   }
+  const pickRemapStats = await remapOrphanPickTeamsToActiveR64(supabaseAdmin);
 
   return {
     season,
@@ -2268,6 +2460,12 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     r64Backfilled,
     teamsWithoutSeed,
     teamsWithoutLogo,
+    orphanPickTeamsDetected: pickRemapStats.orphanPickTeamsDetected,
+    orphanPickRemapCandidates: pickRemapStats.remapCandidates,
+    entryPicksRemapped: pickRemapStats.entryPicksRemapped,
+    entryPicksDuplicatesDropped: pickRemapStats.entryPicksDuplicatesDropped,
+    draftPicksRemapped: pickRemapStats.draftPicksRemapped,
+    draftPicksDuplicatesDropped: pickRemapStats.draftPicksDuplicatesDropped,
     sportsDataOnly,
     clearedR64Teams,
     skippedDuplicateSportsId,
