@@ -375,6 +375,9 @@ const SCHOOL_NAME_OVERRIDES: Record<string, string> = {
   "ohio state buckeyes": "Ohio State",
   "northern iowa panthers": "Northern Iowa",
   "furman paladins": "Furman",
+  "connecticut huskies": "UConn",
+  connecticut: "UConn",
+  "uconn huskies": "UConn",
   "miami hurricanes": "Miami (FL)",
   miami: "Miami (FL)",
   "miami redhawks": "Miami (OH)",
@@ -392,7 +395,10 @@ function toSchoolName(value: unknown): string | null {
 }
 
 function canonicalSchoolKey(value: string): string {
-  return normName(value.replace(/[()]/g, " ").replace(/\//g, " "));
+  return normName(value.replace(/[()]/g, " ").replace(/\//g, " ")).replace(
+    /\bconnecticut\b/g,
+    "uconn"
+  );
 }
 
 function miamiCampusKey(value: string): "fl" | "oh" | null {
@@ -580,6 +586,11 @@ type TeamBrandingOverride = {
 };
 
 const TEAM_BRANDING_OVERRIDES: TeamBrandingOverride[] = [
+  {
+    canonicalName: "UConn",
+    espnTeamId: 41,
+    aliases: ["uconn", "connecticut", "connecticut huskies", "uconn huskies"],
+  },
   {
     canonicalName: "Michigan",
     espnTeamId: 130,
