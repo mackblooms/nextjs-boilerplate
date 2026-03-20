@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { isDraftLocked } from "../../../../lib/draftLock";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -851,6 +852,7 @@ type PickRemapStats = {
   entryPicksDuplicatesDropped: number;
   draftPicksRemapped: number;
   draftPicksDuplicatesDropped: number;
+  skippedDueToDraftLock: boolean;
 };
 
 async function remapOrphanPickTeamsToActiveR64(
@@ -863,7 +865,14 @@ async function remapOrphanPickTeamsToActiveR64(
     entryPicksDuplicatesDropped: 0,
     draftPicksRemapped: 0,
     draftPicksDuplicatesDropped: 0,
+    skippedDueToDraftLock: false,
   };
+
+  // Never mutate user picks after official draft lock.
+  if (isDraftLocked(null)) {
+    stats.skippedDueToDraftLock = true;
+    return stats;
+  }
 
   const { data: r64Rows, error: r64Err } = await supabaseAdmin
     .from("games")
@@ -2466,6 +2475,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
     entryPicksDuplicatesDropped: pickRemapStats.entryPicksDuplicatesDropped,
     draftPicksRemapped: pickRemapStats.draftPicksRemapped,
     draftPicksDuplicatesDropped: pickRemapStats.draftPicksDuplicatesDropped,
+    pickRemapSkippedDueToDraftLock: pickRemapStats.skippedDueToDraftLock,
     sportsDataOnly,
     clearedR64Teams,
     skippedDuplicateSportsId,
