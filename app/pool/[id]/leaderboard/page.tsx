@@ -105,6 +105,7 @@ const ROUND_ORDER: Record<string, number> = {
   F4: 5,
   CHIP: 6,
 };
+const LEADERBOARD_REFRESH_MS = 60_000;
 
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
@@ -435,6 +436,7 @@ export default function LeaderboardPage() {
   const [archiveYears, setArchiveYears] = useState<ArchiveSeasonRow[]>([]);
   const [archiveSeason, setArchiveSeason] = useState<number | null>(null);
   const [archiveDetail, setArchiveDetail] = useState<ArchiveDetail | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const currentSeason = new Date().getUTCFullYear();
 
@@ -583,13 +585,34 @@ export default function LeaderboardPage() {
   }
 
   useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (!archiveOpen) {
+        setRefreshTick((value) => value + 1);
+      }
+    }, LEADERBOARD_REFRESH_MS);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [archiveOpen]);
+
+  useEffect(() => {
     const load = async () => {
-      setLoading(true);
+      const isBackgroundRefresh = refreshTick > 0;
+      if (!isBackgroundRefresh) {
+        setLoading(true);
+        setPoolName("");
+        setShowTeamInsights(false);
+        setBestValueTeams([]);
+        setPopularTeams([]);
+      }
       setMsg("");
-      setPoolName("");
-      setShowTeamInsights(false);
-      setBestValueTeams([]);
-      setPopularTeams([]);
+
+      try {
+        await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+      } catch {
+        // Live scores may be temporarily unavailable; continue loading leaderboard data.
+      }
 
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
@@ -969,7 +992,7 @@ export default function LeaderboardPage() {
     };
 
     void load();
-  }, [poolId]);
+  }, [poolId, refreshTick]);
 
   return (
     <main style={{ maxWidth: 1240, margin: "48px auto", padding: 16 }}>

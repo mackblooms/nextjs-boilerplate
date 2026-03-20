@@ -62,6 +62,10 @@ type LiveScoreRow = {
   homeScore: number | null;
 };
 
+const AUTO_SYNC_MIN_INTERVAL_MS = 60_000;
+let lastAutoSyncStartedAt = 0;
+let autoSyncInFlight: Promise<void> | null = null;
+
 function yyyymmdd(date: Date) {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -211,6 +215,32 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   };
 }
 
+function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
+  const hasFinalGame = rows.some((row) => row.state === "FINAL");
+  if (!hasFinalGame) return;
+  if (autoSyncInFlight) return;
+
+  const now = Date.now();
+  if (now - lastAutoSyncStartedAt < AUTO_SYNC_MIN_INTERVAL_MS) return;
+  lastAutoSyncStartedAt = now;
+
+  const origin = new URL(req.url).origin;
+  autoSyncInFlight = (async () => {
+    try {
+      await fetch(`${origin}/api/admin/sync-scores`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lookbackDays: 2 }),
+        cache: "no-store",
+      });
+    } catch {
+      // Best-effort background sync: ignore transient failures.
+    } finally {
+      autoSyncInFlight = null;
+    }
+  })();
+}
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
@@ -256,6 +286,8 @@ export async function GET(req: Request) {
       .map(normalizeEvent)
       .filter((row): row is LiveScoreRow => row !== null)
       .sort(sortScores);
+
+    queueAutoScoreSync(req, rows);
 
     return NextResponse.json({
       ok: true,

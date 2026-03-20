@@ -214,6 +214,31 @@ function matchLiveScoresToGames(
   return out;
 }
 
+function gameSignature(game: Game): string {
+  return [
+    game.id,
+    game.round,
+    game.region ?? "",
+    String(game.slot ?? ""),
+    game.status ?? "",
+    game.start_time ?? "",
+    game.game_date ?? "",
+    game.team1_id ?? "",
+    game.team2_id ?? "",
+    game.winner_team_id ?? "",
+  ].join("|");
+}
+
+function areGamesEquivalent(a: Game[], b: Game[]): boolean {
+  if (a.length !== b.length) return false;
+  const left = [...a].map(gameSignature).sort();
+  const right = [...b].map(gameSignature).sort();
+  for (let i = 0; i < left.length; i++) {
+    if (left[i] !== right[i]) return false;
+  }
+  return true;
+}
+
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -240,6 +265,7 @@ export default function BracketPage() {
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const playerEntryIdsRef = useRef<string[]>([]);
 
   const applyFitScale = useCallback(() => {
     const viewport = viewportRef.current;
@@ -255,6 +281,10 @@ export default function BracketPage() {
     for (const t of teams) m.set(t.id, t);
     return m;
   }, [teams]);
+
+  useEffect(() => {
+    playerEntryIdsRef.current = players.map((p) => p.entry_id);
+  }, [players]);
 
   const byRoundByRegion = useMemo(() => {
     const out: Record<Region, Record<RoundKey, Game[]>> = {
@@ -305,6 +335,69 @@ export default function BracketPage() {
     if (round === "S16") return (slot - 1) * 8 + 4;
     return 8;
   };
+
+  const refreshBracketState = useCallback(async () => {
+    let { data: gameRows, error: gameErr } = await supabase
+      .from("games")
+      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id");
+
+    if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
+      const fallback = await supabase
+        .from("games")
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+      gameRows = (fallback.data ?? []).map((row) => ({
+        ...row,
+        status: null,
+        start_time: null,
+        game_date: null,
+      })) as Game[];
+      gameErr = fallback.error;
+    }
+
+    if (gameErr) return;
+
+    const latestGames = ((gameRows ?? []) as Game[]).map((game) => ({
+      ...game,
+      slot: Number(game.slot),
+    }));
+
+    setGames((prev) => (areGamesEquivalent(prev, latestGames) ? prev : latestGames));
+
+    const entryIds = playerEntryIdsRef.current;
+    if (entryIds.length === 0) return;
+
+    const { data: pickRows, error: picksErr } = await supabase
+      .from("entry_picks")
+      .select("entry_id,team_id")
+      .in("entry_id", entryIds);
+    if (picksErr) return;
+
+    const teamSeedById = new Map(
+      teams.map((team) => [
+        team.id,
+        normalizeSeed(team.seed_in_region) ?? normalizeSeed(team.seed) ?? null,
+      ]),
+    );
+
+    const picksByEntry = new Map<string, string[]>();
+    for (const row of (pickRows ?? []) as { entry_id: string; team_id: string }[]) {
+      const entryPickIds = picksByEntry.get(row.entry_id) ?? [];
+      entryPickIds.push(row.team_id);
+      picksByEntry.set(row.entry_id, entryPickIds);
+    }
+
+    const scoredEntries = scoreEntries(latestGames, teamSeedById, picksByEntry);
+    setPlayers((prev) => {
+      let changed = false;
+      const next = prev.map((player) => {
+        const totalScore = scoredEntries.totalScoreByEntryId.get(player.entry_id) ?? 0;
+        if (totalScore === player.total_score) return player;
+        changed = true;
+        return { ...player, total_score: totalScore };
+      });
+      return changed ? next : prev;
+    });
+  }, [teams]);
 
   useEffect(() => {
     const load = async () => {
@@ -627,6 +720,8 @@ export default function BracketPage() {
 
             return next;
           });
+
+          await refreshBracketState();
         }
       } catch {
         if (!canceled) {
@@ -642,7 +737,7 @@ export default function BracketPage() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, [espnTeamIdByLocalId, games, teamById]);
+  }, [espnTeamIdByLocalId, games, refreshBracketState, teamById]);
 
   useEffect(() => {
     if (!fitMode || loading) return;
