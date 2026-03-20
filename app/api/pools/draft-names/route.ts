@@ -29,6 +29,14 @@ type EntryNameRow = {
   entry_name: string | null;
 };
 
+function overlapCount(a: Set<string>, b: Set<string>) {
+  let overlap = 0;
+  for (const value of a) {
+    if (b.has(value)) overlap += 1;
+  }
+  return overlap;
+}
+
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
   if (!authHeader) return null;
@@ -187,17 +195,13 @@ export async function GET(req: Request) {
     }
 
     for (const row of baseRows) {
-      if (entryNameById.has(row.entry_id)) {
-        continue;
-      }
-
       const userDrafts = draftsByUser.get(row.user_id) ?? [];
       if (userDrafts.length === 0) continue;
 
-      const entryPicks = entryPicksByEntry.get(row.entry_id);
+      const entryPicks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
       let resolvedDraftName: string | null = null;
 
-      if (entryPicks && entryPicks.size > 0) {
+      if (entryPicks.size > 0) {
         for (const draft of userDrafts) {
           const draftPicks = draftPicksByDraft.get(draft.id);
           if (!draftPicks || draftPicks.size === 0) continue;
@@ -211,9 +215,52 @@ export async function GET(req: Request) {
       }
 
       if (!resolvedDraftName) {
-        const latestNamedDraft = userDrafts.find((draft) => draft.name.trim().length > 0);
-        if (latestNamedDraft) {
-          resolvedDraftName = latestNamedDraft.name.trim();
+        let bestOverlap = 0;
+        let bestEntryShare = 0;
+        let bestDraftShare = 0;
+        let bestUpdatedAt = Number.NEGATIVE_INFINITY;
+
+        if (entryPicks.size > 0) {
+          for (const draft of userDrafts) {
+            const trimmed = draft.name.trim();
+            if (!trimmed) continue;
+
+            const draftPicks = draftPicksByDraft.get(draft.id);
+            if (!draftPicks || draftPicks.size === 0) continue;
+
+            const overlap = overlapCount(entryPicks, draftPicks);
+            if (overlap === 0) continue;
+
+            const entryShare = overlap / entryPicks.size;
+            const draftShare = overlap / draftPicks.size;
+            const updatedAt = Date.parse(draft.updated_at);
+
+            const isBetter =
+              overlap > bestOverlap ||
+              (overlap === bestOverlap && entryShare > bestEntryShare) ||
+              (overlap === bestOverlap &&
+                entryShare === bestEntryShare &&
+                draftShare > bestDraftShare) ||
+              (overlap === bestOverlap &&
+                entryShare === bestEntryShare &&
+                draftShare === bestDraftShare &&
+                updatedAt > bestUpdatedAt);
+
+            if (isBetter) {
+              bestOverlap = overlap;
+              bestEntryShare = entryShare;
+              bestDraftShare = draftShare;
+              bestUpdatedAt = updatedAt;
+              resolvedDraftName = trimmed;
+            }
+          }
+        }
+      }
+
+      if (!resolvedDraftName) {
+        const storedName = entryNameById.get(row.entry_id);
+        if (storedName) {
+          resolvedDraftName = storedName;
         }
       }
 
