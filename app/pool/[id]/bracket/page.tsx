@@ -683,7 +683,7 @@ export default function BracketPage() {
 
     const loadLiveScores = async () => {
       try {
-        const lookbackDays = 2;
+        const lookbackDays = 30;
         const lookaheadDays = 2;
         const res = await fetch(
           `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,

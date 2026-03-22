@@ -32,9 +32,11 @@ type DraftedTeam = {
 type TeamSeedRow = {
   id: string;
   seed_in_region: number | null;
+  region: string | null;
   name: string | null;
   cost: number | null;
   logo_url: string | null;
+  espn_team_id: string | number | null;
 };
 type PickRow = { entry_id: string; team_id: string };
 type ScoringGameWithDate = ScoringGame & {
@@ -236,6 +238,30 @@ function apiErrorMessage(payload: unknown, fallback: string) {
     if (typeof error === "string" && error.trim()) return error;
   }
   return fallback;
+}
+
+function normalizeTeamIdentityName(name: string | null | undefined) {
+  return (name ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[.']/g, "")
+    .replace(/\bcalifornia\b/g, "ca")
+    .replace(/\bcal\b/g, "ca")
+    .replace(/\bstate\b/g, "st")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function teamIdentityKey(
+  name: string | null | undefined,
+  seed: number | null | undefined,
+  region: string | null | undefined,
+) {
+  const normalizedName = normalizeTeamIdentityName(name);
+  if (!normalizedName) return null;
+  const seedPart = typeof seed === "number" ? String(seed) : "";
+  const regionPart = (region ?? "").toLowerCase().trim();
+  return `${normalizedName}|${seedPart}|${regionPart}`;
 }
 
 function formatArchiveRound(round: string | null) {
@@ -768,7 +794,7 @@ export default function LeaderboardPage() {
 
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,seed_in_region,name,cost,logo_url");
+        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -776,12 +802,8 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const teamSeedById = new Map(
-        ((teamRows as TeamSeedRow[] | null) ?? []).map((t) => [
-          t.id,
-          t.seed_in_region,
-        ]),
-      );
+      const teamRowsList = ((teamRows as TeamSeedRow[] | null) ?? []);
+      const teamSeedById = new Map(teamRowsList.map((t) => [t.id, t.seed_in_region]));
 
       let gameRows: ScoringGameWithDate[] = [];
       const gameQuery = await supabase
@@ -813,6 +835,60 @@ export default function LeaderboardPage() {
       }
 
       let picksByEntry = new Map<string, string[]>();
+
+      const gameTeamIds = new Set<string>();
+      for (const game of gameRows) {
+        if (game.team1_id) gameTeamIds.add(game.team1_id);
+        if (game.team2_id) gameTeamIds.add(game.team2_id);
+        if (game.winner_team_id) gameTeamIds.add(game.winner_team_id);
+      }
+
+      const inGameTeamIdByEspnId = new Map<string, string>();
+      const inGameTeamIdByIdentity = new Map<string, string>();
+      for (const row of teamRowsList) {
+        if (!gameTeamIds.has(row.id)) continue;
+
+        if (row.espn_team_id != null) {
+          const espnKey = String(row.espn_team_id).trim();
+          if (espnKey && !inGameTeamIdByEspnId.has(espnKey)) {
+            inGameTeamIdByEspnId.set(espnKey, row.id);
+          }
+        }
+
+        const identityWithRegion = teamIdentityKey(row.name, row.seed_in_region, row.region);
+        if (identityWithRegion && !inGameTeamIdByIdentity.has(identityWithRegion)) {
+          inGameTeamIdByIdentity.set(identityWithRegion, row.id);
+        }
+
+        const identityNoRegion = teamIdentityKey(row.name, row.seed_in_region, null);
+        if (identityNoRegion && !inGameTeamIdByIdentity.has(identityNoRegion)) {
+          inGameTeamIdByIdentity.set(identityNoRegion, row.id);
+        }
+      }
+
+      const canonicalTeamIdById = new Map<string, string>();
+      for (const row of teamRowsList) {
+        let canonicalTeamId = row.id;
+        if (!gameTeamIds.has(row.id)) {
+          if (row.espn_team_id != null) {
+            const espnKey = String(row.espn_team_id).trim();
+            const byEspn = espnKey ? inGameTeamIdByEspnId.get(espnKey) : null;
+            if (byEspn) canonicalTeamId = byEspn;
+          }
+
+          if (canonicalTeamId === row.id) {
+            const identityWithRegion = teamIdentityKey(row.name, row.seed_in_region, row.region);
+            const identityNoRegion = teamIdentityKey(row.name, row.seed_in_region, null);
+            canonicalTeamId =
+              (identityWithRegion ? inGameTeamIdByIdentity.get(identityWithRegion) : null) ??
+              (identityNoRegion ? inGameTeamIdByIdentity.get(identityNoRegion) : null) ??
+              row.id;
+          }
+        }
+
+        canonicalTeamIdById.set(row.id, canonicalTeamId);
+      }
+
       if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
@@ -828,7 +904,7 @@ export default function LeaderboardPage() {
         picksByEntry = new Map<string, string[]>();
         for (const row of (pickRows ?? []) as PickRow[]) {
           const arr = picksByEntry.get(row.entry_id) ?? [];
-          arr.push(row.team_id);
+          arr.push(canonicalTeamIdById.get(row.team_id) ?? row.team_id);
           picksByEntry.set(row.entry_id, arr);
         }
       }
@@ -851,9 +927,7 @@ export default function LeaderboardPage() {
 
       const gamesStarted = hasGamesStarted(gameRows);
       const shouldShowInsights = isLocked && gamesStarted;
-      const teamMetaById = new Map(
-        ((teamRows as TeamSeedRow[] | null) ?? []).map((row) => [row.id, row]),
-      );
+      const teamMetaById = new Map(teamRowsList.map((row) => [row.id, row]));
 
       if (shouldShowInsights) {
         const BEST_WORST_LIMIT = 6;

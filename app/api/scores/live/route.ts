@@ -63,6 +63,7 @@ type LiveScoreRow = {
 };
 
 const AUTO_SYNC_MIN_INTERVAL_MS = 60_000;
+const SCOREBOARD_WINDOW_DAYS = 3;
 let lastAutoSyncStartedAt = 0;
 let autoSyncInFlight: Promise<void> | null = null;
 
@@ -244,31 +245,32 @@ function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const lookbackDays = toBoundedInt(url.searchParams.get("lookbackDays"), 1, 0, 7);
-    const lookaheadDays = toBoundedInt(url.searchParams.get("lookaheadDays"), 1, 0, 7);
-
-    const dateKeys: string[] = [];
-    for (let day = -lookbackDays; day <= lookaheadDays; day++) {
-      dateKeys.push(yyyymmdd(shiftDate(day)));
+    const lookbackDays = toBoundedInt(url.searchParams.get("lookbackDays"), 1, 0, 45);
+    const lookaheadDays = toBoundedInt(url.searchParams.get("lookaheadDays"), 1, 0, 14);
+    const rangeParams: string[] = [];
+    for (let day = -lookbackDays; day <= lookaheadDays; day += SCOREBOARD_WINDOW_DAYS) {
+      const endDay = Math.min(day + SCOREBOARD_WINDOW_DAYS - 1, lookaheadDays);
+      const startDate = yyyymmdd(shiftDate(day));
+      const endDate = yyyymmdd(shiftDate(endDay));
+      rangeParams.push(startDate === endDate ? startDate : `${startDate}-${endDate}`);
     }
 
-    const responses = await Promise.all(
-      dateKeys.map(async (dateKey) => {
+    const payloads = await Promise.all(
+      rangeParams.map(async (dateParam) => {
         const endpoint =
-          `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateKey}&groups=50&limit=500`;
+          `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateParam}&groups=50&limit=500`;
         const res = await fetch(endpoint, { cache: "no-store" });
         if (!res.ok) {
           const text = await res.text();
-          throw new Error(`ESPN error ${res.status} (${dateKey}): ${text}`);
+          throw new Error(`ESPN error ${res.status} (${dateParam}): ${text}`);
         }
-
         return (await res.json()) as EspnScoreboard;
       })
     );
 
     const rawEvents: EspnEvent[] = [];
     const seenIds = new Set<string>();
-    for (const payload of responses) {
+    for (const payload of payloads) {
       for (const event of payload.events ?? []) {
         if (!isNcaaTournamentEvent(event)) continue;
         const id = event.id;
