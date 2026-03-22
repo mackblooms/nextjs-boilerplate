@@ -241,6 +241,29 @@ function apiErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
+function normalizeTeamAliasName(name: string | null | undefined) {
+  return (name ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[.']/g, "")
+    .replace(/\bcalifornia\b/g, "ca")
+    .replace(/\bcal\b/g, "ca")
+    .replace(/\bnorth\b/g, "n")
+    .replace(/\bsouth\b/g, "s")
+    .replace(/\beast\b/g, "e")
+    .replace(/\bwest\b/g, "w")
+    .replace(/\bstate\b/g, "st")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function teamAliasKey(name: string | null | undefined, region: string | null | undefined) {
+  const normalized = normalizeTeamAliasName(name);
+  const regionKey = (region ?? "").toLowerCase().trim();
+  if (!normalized || !regionKey) return null;
+  return `${normalized}|${regionKey}`;
+}
+
 function formatArchiveRound(round: string | null) {
   if (!round) return "Did not make tournament";
   if (round === "R64") return "Round of 64";
@@ -859,6 +882,14 @@ export default function LeaderboardPage() {
       const gamesStarted = hasGamesStarted(gameRows);
       const shouldShowInsights = isLocked && gamesStarted;
       const teamMetaById = new Map(teamRowsList.map((row) => [row.id, row]));
+      const inBracketSeedByAliasKey = new Map<string, number>();
+      for (const row of teamRowsList) {
+        if (!gameTeamIds.has(row.id)) continue;
+        if (typeof row.seed_in_region !== "number") continue;
+        const key = teamAliasKey(row.name, row.region);
+        if (!key || inBracketSeedByAliasKey.has(key)) continue;
+        inBracketSeedByAliasKey.set(key, row.seed_in_region);
+      }
 
       if (shouldShowInsights) {
         const BEST_WORST_LIMIT = 6;
@@ -946,11 +977,20 @@ export default function LeaderboardPage() {
             .map((teamId) => {
               const teamMeta = teamMetaById.get(teamId);
               const isInBracket = gameTeamIds.has(teamId);
+              const aliasSeed =
+                !isInBracket
+                  ? inBracketSeedByAliasKey.get(
+                      teamAliasKey(teamMeta?.name ?? null, teamMeta?.region ?? null) ?? "",
+                    ) ?? null
+                  : null;
               return {
                 team_id: teamId,
                 team_name: teamMeta?.name?.trim() || "Unknown team",
-                // Only trust/display seed values for teams present in bracket game data.
-                seed: isInBracket ? (teamMeta?.seed_in_region ?? null) : null,
+                // Use bracket-verified seed when possible; fallback to alias-matched bracket seed.
+                seed:
+                  (isInBracket ? (teamMeta?.seed_in_region ?? null) : null) ??
+                  aliasSeed ??
+                  null,
                 logo_url: teamMeta?.logo_url ?? null,
                 // Treat teams missing from bracket game data as not alive.
                 is_active: isInBracket && !eliminatedTeamIds.has(teamId),
