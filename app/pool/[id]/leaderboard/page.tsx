@@ -240,30 +240,6 @@ function apiErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
-function normalizeTeamIdentityName(name: string | null | undefined) {
-  return (name ?? "")
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[.']/g, "")
-    .replace(/\bcalifornia\b/g, "ca")
-    .replace(/\bcal\b/g, "ca")
-    .replace(/\bstate\b/g, "st")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function teamIdentityKey(
-  name: string | null | undefined,
-  seed: number | null | undefined,
-  region: string | null | undefined,
-) {
-  const normalizedName = normalizeTeamIdentityName(name);
-  if (!normalizedName) return null;
-  const seedPart = typeof seed === "number" ? String(seed) : "";
-  const regionPart = (region ?? "").toLowerCase().trim();
-  return `${normalizedName}|${seedPart}|${regionPart}`;
-}
-
 function formatArchiveRound(round: string | null) {
   if (!round) return "Did not make tournament";
   if (round === "R64") return "Round of 64";
@@ -843,52 +819,6 @@ export default function LeaderboardPage() {
         if (game.winner_team_id) gameTeamIds.add(game.winner_team_id);
       }
 
-      const inGameTeamIdByEspnId = new Map<string, string>();
-      const inGameTeamIdByIdentity = new Map<string, string>();
-      for (const row of teamRowsList) {
-        if (!gameTeamIds.has(row.id)) continue;
-
-        if (row.espn_team_id != null) {
-          const espnKey = String(row.espn_team_id).trim();
-          if (espnKey && !inGameTeamIdByEspnId.has(espnKey)) {
-            inGameTeamIdByEspnId.set(espnKey, row.id);
-          }
-        }
-
-        const identityWithRegion = teamIdentityKey(row.name, row.seed_in_region, row.region);
-        if (identityWithRegion && !inGameTeamIdByIdentity.has(identityWithRegion)) {
-          inGameTeamIdByIdentity.set(identityWithRegion, row.id);
-        }
-
-        const identityNoRegion = teamIdentityKey(row.name, row.seed_in_region, null);
-        if (identityNoRegion && !inGameTeamIdByIdentity.has(identityNoRegion)) {
-          inGameTeamIdByIdentity.set(identityNoRegion, row.id);
-        }
-      }
-
-      const canonicalTeamIdById = new Map<string, string>();
-      for (const row of teamRowsList) {
-        let canonicalTeamId = row.id;
-        if (!gameTeamIds.has(row.id)) {
-          if (row.espn_team_id != null) {
-            const espnKey = String(row.espn_team_id).trim();
-            const byEspn = espnKey ? inGameTeamIdByEspnId.get(espnKey) : null;
-            if (byEspn) canonicalTeamId = byEspn;
-          }
-
-          if (canonicalTeamId === row.id) {
-            const identityWithRegion = teamIdentityKey(row.name, row.seed_in_region, row.region);
-            const identityNoRegion = teamIdentityKey(row.name, row.seed_in_region, null);
-            canonicalTeamId =
-              (identityWithRegion ? inGameTeamIdByIdentity.get(identityWithRegion) : null) ??
-              (identityNoRegion ? inGameTeamIdByIdentity.get(identityNoRegion) : null) ??
-              row.id;
-          }
-        }
-
-        canonicalTeamIdById.set(row.id, canonicalTeamId);
-      }
-
       if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
@@ -904,7 +834,7 @@ export default function LeaderboardPage() {
         picksByEntry = new Map<string, string[]>();
         for (const row of (pickRows ?? []) as PickRow[]) {
           const arr = picksByEntry.get(row.entry_id) ?? [];
-          arr.push(canonicalTeamIdById.get(row.team_id) ?? row.team_id);
+          arr.push(row.team_id);
           picksByEntry.set(row.entry_id, arr);
         }
       }
@@ -1390,7 +1320,6 @@ export default function LeaderboardPage() {
                                     textOverflow: "ellipsis",
                                   }}
                                 >
-                                  {team.seed != null ? `#${team.seed} ` : ""}
                                   {team.team_name}
                                 </span>
                               </div>
