@@ -27,6 +27,7 @@ type DraftedTeam = {
   seed: number | null;
   logo_url: string | null;
   is_active: boolean;
+  is_in_bracket: boolean;
 };
 
 type TeamSeedRow = {
@@ -944,18 +945,22 @@ export default function LeaderboardPage() {
           const draftedTeams = entryTeamIds
             .map((teamId) => {
               const teamMeta = teamMetaById.get(teamId);
+              const isInBracket = gameTeamIds.has(teamId);
               return {
                 team_id: teamId,
                 team_name: teamMeta?.name?.trim() || "Unknown team",
-                seed: teamMeta?.seed_in_region ?? null,
+                // Only trust/display seed values for teams present in bracket game data.
+                seed: isInBracket ? (teamMeta?.seed_in_region ?? null) : null,
                 logo_url: teamMeta?.logo_url ?? null,
                 // Treat teams missing from bracket game data as not alive.
-                is_active: gameTeamIds.has(teamId) && !eliminatedTeamIds.has(teamId),
+                is_active: isInBracket && !eliminatedTeamIds.has(teamId),
+                is_in_bracket: isInBracket,
               };
             })
             .sort(
               (a, b) =>
                 Number(b.is_active) - Number(a.is_active) ||
+                Number(b.is_in_bracket) - Number(a.is_in_bracket) ||
                 (a.seed ?? 99) - (b.seed ?? 99) ||
                 a.team_name.localeCompare(b.team_name),
             );
@@ -1320,6 +1325,7 @@ export default function LeaderboardPage() {
                                     textOverflow: "ellipsis",
                                   }}
                                 >
+                                  {team.seed != null ? `#${team.seed} ` : ""}
                                   {team.team_name}
                                 </span>
                               </div>
