@@ -1019,7 +1019,8 @@ export default function LeaderboardPage() {
                 team_name: teamMeta?.name?.trim() || "Unknown team",
                 seed: teamMeta?.seed_in_region ?? null,
                 logo_url: teamMeta?.logo_url ?? null,
-                is_active: !eliminatedTeamIds.has(teamId),
+                // Treat teams missing from bracket game data as not alive.
+                is_active: gameTeamIds.has(teamId) && !eliminatedTeamIds.has(teamId),
               };
             })
             .sort(
