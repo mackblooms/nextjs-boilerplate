@@ -15,8 +15,18 @@ type Row = {
   full_name: string | null;
   avatar_url: string;
   total_score: number;
+  active_team_count: number;
+  drafted_teams: DraftedTeam[];
   rank: number;
   rank_delta: number | null;
+};
+
+type DraftedTeam = {
+  team_id: string;
+  team_name: string;
+  seed: number | null;
+  logo_url: string | null;
+  is_active: boolean;
 };
 
 type TeamSeedRow = {
@@ -426,6 +436,7 @@ export default function LeaderboardPage() {
   const [showTeamInsights, setShowTeamInsights] = useState(false);
   const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
+  const [expandedTeamsByEntry, setExpandedTeamsByEntry] = useState<Record<string, boolean>>({});
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -822,6 +833,18 @@ export default function LeaderboardPage() {
         }
       }
 
+      const eliminatedTeamIds = new Set<string>();
+      for (const game of gameRows) {
+        if (!game.winner_team_id) continue;
+        if (game.team1_id && game.team2_id) {
+          if (game.winner_team_id === game.team1_id) {
+            eliminatedTeamIds.add(game.team2_id);
+          } else if (game.winner_team_id === game.team2_id) {
+            eliminatedTeamIds.add(game.team1_id);
+          }
+        }
+      }
+
       const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry);
       const teamScores = scoredEntries.teamScoresByTeamId;
       const currentRoundReachedByTeam = roundReachedOrderByTeam(gameRows);
@@ -914,6 +937,27 @@ export default function LeaderboardPage() {
         .map((r) => {
           const totalScore = scoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0;
           const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
+          const draftedTeams = entryTeamIds
+            .map((teamId) => {
+              const teamMeta = teamMetaById.get(teamId);
+              return {
+                team_id: teamId,
+                team_name: teamMeta?.name?.trim() || "Unknown team",
+                seed: teamMeta?.seed_in_region ?? null,
+                logo_url: teamMeta?.logo_url ?? null,
+                is_active: !eliminatedTeamIds.has(teamId),
+              };
+            })
+            .sort(
+              (a, b) =>
+                Number(b.is_active) - Number(a.is_active) ||
+                (a.seed ?? 99) - (b.seed ?? 99) ||
+                a.team_name.localeCompare(b.team_name),
+            );
+          const activeTeamCount = draftedTeams.reduce(
+            (sum, team) => sum + (team.is_active ? 1 : 0),
+            0,
+          );
           const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
             return sum + ((currentRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
           }, 0);
@@ -930,6 +974,8 @@ export default function LeaderboardPage() {
               profileByUser.get(r.user_id)?.avatar_url ?? null,
             ),
             total_score: totalScore,
+            active_team_count: activeTeamCount,
+            drafted_teams: draftedTeams,
             final_four_count: finalFourCount,
             championship_count: championshipCount,
             rank_delta: null,
@@ -987,6 +1033,7 @@ export default function LeaderboardPage() {
         return { ...row, rank_delta };
       });
 
+      setExpandedTeamsByEntry({});
       setRows(ranked);
       setLoading(false);
     };
@@ -1046,6 +1093,8 @@ export default function LeaderboardPage() {
 
               {rows.map((r) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
+                const canViewTeams = draftLocked || r.user_id === myUserId;
+                const teamsExpanded = Boolean(expandedTeamsByEntry[r.entry_id]);
                 const draftLabel = r.entry_name?.trim() || "Unnamed draft";
                 const profileLabel =
                   r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
@@ -1054,123 +1103,227 @@ export default function LeaderboardPage() {
                   <div
                     key={r.entry_id}
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "80px 1fr 140px",
-                      padding: "10px 12px",
                       borderBottom: "1px solid var(--border-color)",
-                      alignItems: "center",
                       background:
                         r.user_id === myUserId
                           ? "var(--surface-elevated)"
                           : "transparent",
                     }}
                   >
-                    <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
-                      <span>{r.rank}</span>
-                      {r.rank_delta != null ? (
-                        r.rank_delta > 0 ? (
-                          <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            <svg
-                              aria-hidden="true"
-                              width="10"
-                              height="10"
-                              viewBox="0 0 10 10"
-                              style={{ display: "block" }}
-                            >
-                              <path d="M5 0L10 9H0L5 0Z" fill="currentColor" />
-                            </svg>
-                            <span>{r.rank_delta}</span>
-                          </span>
-                        ) : r.rank_delta < 0 ? (
-                          <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            <svg
-                              aria-hidden="true"
-                              width="10"
-                              height="10"
-                              viewBox="0 0 10 10"
-                              style={{ display: "block" }}
-                            >
-                              <path d="M0 1H10L5 10L0 1Z" fill="currentColor" />
-                            </svg>
-                            <span>{Math.abs(r.rank_delta)}</span>
-                          </span>
-                        ) : (
-                          <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
-                            -
-                          </span>
-                        )
-                      ) : null}
-                    </div>
-                    <div style={{ fontWeight: 800 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <img
-                          src={r.avatar_url}
-                          alt={profileLabel}
-                          width={36}
-                          height={36}
-                          style={{
-                            borderRadius: 9999,
-                            objectFit: "cover",
-                            border: "1px solid var(--border-color)",
-                            flexShrink: 0,
-                          }}
-                        />
-                        <div>
-                          {canOpenBracket ? (
-                            <a
-                              href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                              style={{ textDecoration: "none", display: "inline-block" }}
-                            >
-                              <div
-                                style={{
-                                  fontWeight: 800,
-                                  color: "var(--foreground)",
-                                  fontSize: 17,
-                                }}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "80px 1fr 140px",
+                        padding: "10px 12px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+                        <span>{r.rank}</span>
+                        {r.rank_delta != null ? (
+                          r.rank_delta > 0 ? (
+                            <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <svg
+                                aria-hidden="true"
+                                width="10"
+                                height="10"
+                                viewBox="0 0 10 10"
+                                style={{ display: "block" }}
                               >
-                                {draftLabel}
-                                {r.user_id === myUserId ? " (You)" : ""}
-                              </div>
-                              <div
-                                style={{
-                                  color: "var(--foreground)",
-                                  opacity: 0.72,
-                                  fontSize: 13,
-                                  marginTop: 2,
-                                }}
+                                <path d="M5 0L10 9H0L5 0Z" fill="currentColor" />
+                              </svg>
+                              <span>{r.rank_delta}</span>
+                            </span>
+                          ) : r.rank_delta < 0 ? (
+                            <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <svg
+                                aria-hidden="true"
+                                width="10"
+                                height="10"
+                                viewBox="0 0 10 10"
+                                style={{ display: "block" }}
                               >
-                                {profileLabel}
-                              </div>
-                            </a>
+                                <path d="M0 1H10L5 10L0 1Z" fill="currentColor" />
+                              </svg>
+                              <span>{Math.abs(r.rank_delta)}</span>
+                            </span>
                           ) : (
-                            <>
-                              <div
-                                style={{
-                                  fontWeight: 800,
-                                  color: "var(--foreground)",
-                                  fontSize: 17,
-                                }}
+                            <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
+                              -
+                            </span>
+                          )
+                        ) : null}
+                      </div>
+                      <div style={{ fontWeight: 800 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <img
+                            src={r.avatar_url}
+                            alt={profileLabel}
+                            width={36}
+                            height={36}
+                            style={{
+                              borderRadius: 9999,
+                              objectFit: "cover",
+                              border: "1px solid var(--border-color)",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <div>
+                            {canOpenBracket ? (
+                              <a
+                                href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                                style={{ textDecoration: "none", display: "inline-block" }}
                               >
-                                {draftLabel}
-                              </div>
-                              <div
-                                style={{
-                                  color: "var(--foreground)",
-                                  opacity: 0.72,
-                                  fontSize: 13,
-                                  marginTop: 2,
-                                }}
-                              >
-                                {profileLabel}
-                              </div>
-                            </>
-                          )}
+                                <div
+                                  style={{
+                                    fontWeight: 800,
+                                    color: "var(--foreground)",
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  {draftLabel}
+                                  {r.user_id === myUserId ? " (You)" : ""}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "var(--foreground)",
+                                    opacity: 0.72,
+                                    fontSize: 13,
+                                    marginTop: 2,
+                                  }}
+                                >
+                                  {profileLabel}
+                                </div>
+                              </a>
+                            ) : (
+                              <>
+                                <div
+                                  style={{
+                                    fontWeight: 800,
+                                    color: "var(--foreground)",
+                                    fontSize: 17,
+                                  }}
+                                >
+                                  {draftLabel}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "var(--foreground)",
+                                    opacity: 0.72,
+                                    fontSize: 13,
+                                    marginTop: 2,
+                                  }}
+                                >
+                                  {profileLabel}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
+                      <div
+                        style={{
+                          textAlign: "right",
+                          display: "grid",
+                          justifyItems: "end",
+                          gap: 2,
+                        }}
+                      >
+                        <div style={{ fontWeight: 900, fontSize: 18 }}>{r.total_score}</div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            opacity: 0.78,
+                          }}
+                        >
+                          {canViewTeams ? `${r.active_team_count} alive` : "Hidden"}
+                        </div>
+                        <button
+                          type="button"
+                          aria-expanded={teamsExpanded}
+                          aria-controls={`entry-teams-${r.entry_id}`}
+                          onClick={() => {
+                            setExpandedTeamsByEntry((prev) => ({
+                              ...prev,
+                              [r.entry_id]: !prev[r.entry_id],
+                            }));
+                          }}
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            color: "inherit",
+                            fontWeight: 400,
+                            fontSize: 13,
+                            cursor: "pointer",
+                            padding: 0,
+                          }}
+                        >
+                          {teamsExpanded ? "Teams \u25B4" : "Teams \u25BE"}
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ textAlign: "right", fontWeight: 900 }}>
-                      {r.total_score}
-                    </div>
+
+                    {teamsExpanded ? (
+                      <div
+                        id={`entry-teams-${r.entry_id}`}
+                        style={{
+                          borderTop: "1px solid var(--border-color)",
+                          padding: "10px 12px",
+                        }}
+                      >
+                        {!canViewTeams ? (
+                          <div style={{ fontSize: 13, opacity: 0.78 }}>
+                            Teams are hidden until draft lock.
+                          </div>
+                        ) : r.drafted_teams.length === 0 ? (
+                          <div style={{ fontSize: 13, opacity: 0.78 }}>
+                            No drafted teams found for this entry.
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {r.drafted_teams.map((team) => (
+                              <div
+                                key={team.team_id}
+                                style={{
+                                  border: "1px solid var(--border-color)",
+                                  borderRadius: 9999,
+                                  background: "var(--surface-muted)",
+                                  padding: "6px 10px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  maxWidth: "100%",
+                                  opacity: team.is_active ? 1 : 0.45,
+                                }}
+                              >
+                                {team.logo_url ? (
+                                  <img
+                                    src={team.logo_url}
+                                    alt=""
+                                    width={18}
+                                    height={18}
+                                    style={{ objectFit: "contain", flexShrink: 0 }}
+                                  />
+                                ) : null}
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                  }}
+                                >
+                                  {team.seed != null ? `#${team.seed} ` : ""}
+                                  {team.team_name}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
