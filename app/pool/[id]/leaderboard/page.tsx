@@ -264,6 +264,50 @@ function teamAliasKey(name: string | null | undefined, region: string | null | u
   return `${normalized}|${regionKey}`;
 }
 
+type AliasDisplayMeta = {
+  normalized_name: string;
+  seed: number;
+  logo_url: string | null;
+};
+
+function resolveAliasDisplayMeta(
+  name: string | null | undefined,
+  region: string | null | undefined,
+  exactByKey: Map<string, AliasDisplayMeta>,
+  byRegion: Map<string, AliasDisplayMeta[]>,
+) {
+  const exactKey = teamAliasKey(name, region);
+  if (exactKey) {
+    const exact = exactByKey.get(exactKey);
+    if (exact) return exact;
+  }
+
+  const normalized = normalizeTeamAliasName(name);
+  const regionKey = (region ?? "").toLowerCase().trim();
+  if (!normalized || !regionKey) return null;
+
+  const candidates = byRegion.get(regionKey) ?? [];
+  if (candidates.length === 0) return null;
+
+  const prefixMatches = candidates.filter(
+    (candidate) =>
+      candidate.normalized_name.startsWith(normalized) ||
+      normalized.startsWith(candidate.normalized_name),
+  );
+  if (prefixMatches.length === 1) return prefixMatches[0];
+
+  const sourceTokens = normalized.split(" ").filter(Boolean);
+  const tokenMatches = candidates.filter((candidate) => {
+    const candidateTokens = candidate.normalized_name.split(" ").filter(Boolean);
+    const sourceInCandidate = sourceTokens.every((token) => candidateTokens.includes(token));
+    const candidateInSource = candidateTokens.every((token) => sourceTokens.includes(token));
+    return sourceInCandidate || candidateInSource;
+  });
+  if (tokenMatches.length === 1) return tokenMatches[0];
+
+  return null;
+}
+
 function formatArchiveRound(round: string | null) {
   if (!round) return "Did not make tournament";
   if (round === "R64") return "Round of 64";
@@ -882,13 +926,28 @@ export default function LeaderboardPage() {
       const gamesStarted = hasGamesStarted(gameRows);
       const shouldShowInsights = isLocked && gamesStarted;
       const teamMetaById = new Map(teamRowsList.map((row) => [row.id, row]));
-      const inBracketSeedByAliasKey = new Map<string, number>();
+      const inBracketAliasMetaByKey = new Map<string, AliasDisplayMeta>();
+      const inBracketAliasMetaByRegion = new Map<string, AliasDisplayMeta[]>();
       for (const row of teamRowsList) {
         if (!gameTeamIds.has(row.id)) continue;
         if (typeof row.seed_in_region !== "number") continue;
+        const normalized = normalizeTeamAliasName(row.name);
+        const regionKey = (row.region ?? "").toLowerCase().trim();
+        if (!normalized || !regionKey) continue;
+        const meta: AliasDisplayMeta = {
+          normalized_name: normalized,
+          seed: row.seed_in_region,
+          logo_url: row.logo_url ?? null,
+        };
         const key = teamAliasKey(row.name, row.region);
-        if (!key || inBracketSeedByAliasKey.has(key)) continue;
-        inBracketSeedByAliasKey.set(key, row.seed_in_region);
+        if (key && !inBracketAliasMetaByKey.has(key)) {
+          inBracketAliasMetaByKey.set(key, meta);
+        }
+        const regionRows = inBracketAliasMetaByRegion.get(regionKey) ?? [];
+        if (!regionRows.some((existing) => existing.normalized_name === normalized)) {
+          regionRows.push(meta);
+          inBracketAliasMetaByRegion.set(regionKey, regionRows);
+        }
       }
 
       if (shouldShowInsights) {
@@ -977,21 +1036,23 @@ export default function LeaderboardPage() {
             .map((teamId) => {
               const teamMeta = teamMetaById.get(teamId);
               const isInBracket = gameTeamIds.has(teamId);
-              const aliasSeed =
-                !isInBracket
-                  ? inBracketSeedByAliasKey.get(
-                      teamAliasKey(teamMeta?.name ?? null, teamMeta?.region ?? null) ?? "",
-                    ) ?? null
-                  : null;
+              const aliasMeta = !isInBracket
+                ? resolveAliasDisplayMeta(
+                    teamMeta?.name ?? null,
+                    teamMeta?.region ?? null,
+                    inBracketAliasMetaByKey,
+                    inBracketAliasMetaByRegion,
+                  )
+                : null;
               return {
                 team_id: teamId,
                 team_name: teamMeta?.name?.trim() || "Unknown team",
                 // Use bracket-verified seed when possible; fallback to alias-matched bracket seed.
                 seed:
                   (isInBracket ? (teamMeta?.seed_in_region ?? null) : null) ??
-                  aliasSeed ??
+                  aliasMeta?.seed ??
                   null,
-                logo_url: teamMeta?.logo_url ?? null,
+                logo_url: teamMeta?.logo_url ?? aliasMeta?.logo_url ?? null,
                 // Treat teams missing from bracket game data as not alive.
                 is_active: isInBracket && !eliminatedTeamIds.has(teamId),
                 is_in_bracket: isInBracket,
@@ -1000,7 +1061,6 @@ export default function LeaderboardPage() {
             .sort(
               (a, b) =>
                 Number(b.is_active) - Number(a.is_active) ||
-                Number(b.is_in_bracket) - Number(a.is_in_bracket) ||
                 (a.seed ?? 99) - (b.seed ?? 99) ||
                 a.team_name.localeCompare(b.team_name),
             );
