@@ -1094,6 +1094,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
   }
 
   const supabaseAdmin = getSupabaseAdmin();
+  const expectedEspnIdByRegionSeed = new Map<string, number>();
   const scheduleColumnsAvailable = await hasScheduleColumns(supabaseAdmin);
   const gameSelectCols = scheduleColumnsAvailable
     ? "id,sportsdata_game_id,team1_id,team2_id,status,start_time,game_date"
@@ -1552,6 +1553,10 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
       for (const matchup of espnMatchups) {
         for (const side of [matchup.favorite, matchup.underdog]) {
+          if (side.seed != null && Number.isFinite(side.seed)) {
+            expectedEspnIdByRegionSeed.set(`${matchup.region}:${side.seed}`, side.espnTeamId);
+          }
+
           const espnId = side.espnTeamId;
           const existing =
             byEspn.get(espnId) ??
@@ -1997,7 +2002,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
     const { data: allTeams, error: allTeamsErr } = await supabaseAdmin
       .from("teams")
-      .select("id,name,region,seed,seed_in_region,cost");
+      .select("id,name,region,seed,seed_in_region,cost,sportsdata_team_id,espn_team_id,logo_url");
     if (allTeamsErr) throw allTeamsErr;
 
     const r64ByKey = new Map<string, Record<string, unknown>>();
@@ -2028,24 +2033,50 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
       region: RegionName
     ): Promise<string> => {
       const exactKey = team.name.toLowerCase();
-      let chosen: TeamIdentityRow | null = byExact.get(exactKey) ?? null;
+      const canonicalNorm = normName(team.name);
+      const expectedEspnId = expectedEspnIdByRegionSeed.get(`${region}:${team.seed}`) ?? null;
+      const rankedCandidates = teamRows
+        .filter((candidate) => {
+          if (claimedTeamIds.has(String(candidate.id))) return false;
 
-      if (!chosen) {
-        chosen =
-          teamRows.find((t) => !claimedTeamIds.has(String(t.id)) && !!t.name && nameLooksLikeCanonical(t.name, team.name)) ??
-          null;
-      }
+          const candidateName = toText(candidate.name);
+          const isExact = (candidateName ?? "").toLowerCase() === exactKey;
+          const isNameLike = !!candidateName && nameLooksLikeCanonical(candidateName, team.name);
+          const sameRegionSeed =
+            isRegionName(candidate.region) &&
+            candidate.region === region &&
+            (toSeed(candidate.seed_in_region) ?? toSeed(candidate.seed)) === team.seed;
 
-      if (!chosen) {
-        chosen =
-          teamRows.find(
-            (t) =>
-              !claimedTeamIds.has(String(t.id)) &&
-              isRegionName(t.region) &&
-              t.region === region &&
-              (toSeed(t.seed_in_region) ?? toSeed(t.seed)) === team.seed
-          ) ?? null;
-      }
+          return isExact || isNameLike || sameRegionSeed;
+        })
+        .sort((a, b) => {
+          const score = (row: TeamIdentityRow) => {
+            const name = toText(row.name);
+            const nameNorm = normName(name);
+            let out = 0;
+            if (nameNorm === canonicalNorm) out += 8;
+            if (name && nameLooksLikeCanonical(name, team.name)) out += 5;
+            if (isRegionName(row.region) && row.region === region) out += 3;
+            if ((toSeed(row.seed_in_region) ?? toSeed(row.seed)) === team.seed) out += 3;
+            if (row.sportsdata_team_id != null) out += 12;
+            if (row.espn_team_id != null) out += 12;
+            if (expectedEspnId != null) {
+              const rowEspnId = Number(row.espn_team_id);
+              if (Number.isFinite(rowEspnId) && rowEspnId === expectedEspnId) {
+                out += 20;
+              } else if (row.espn_team_id != null) {
+                out -= 8;
+              }
+            }
+            if (isPlayInPlaceholderName(name)) out -= 30;
+            return out;
+          };
+
+          const scoreDiff = score(b) - score(a);
+          if (scoreDiff !== 0) return scoreDiff;
+          return String(a.id).localeCompare(String(b.id));
+        });
+      let chosen: TeamIdentityRow | null = rankedCandidates[0] ?? null;
 
       if (!chosen) {
         const { data: inserted, error: insertErr } = await supabaseAdmin

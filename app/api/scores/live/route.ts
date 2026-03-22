@@ -230,7 +230,7 @@ function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
       await fetch(`${origin}/api/admin/sync-scores`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lookbackDays: 2 }),
+        body: JSON.stringify({ lookbackDays: 3 }),
         cache: "no-store",
       });
     } catch {

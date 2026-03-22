@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
-const DEFAULT_LOOKBACK_DAYS = 1;
+const DEFAULT_LOOKBACK_DAYS = 3;
 
 type SportsGame = {
   Status?: string;
@@ -510,11 +510,15 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
     .not("espn_team_id", "is", null);
   if (teamErr) throw teamErr;
 
-  const localTeamByEspn = new Map<number, string>();
+  const localTeamIdsByEspn = new Map<number, string[]>();
   for (const t of teamRows ?? []) {
     const espnId = Number(t.espn_team_id);
     if (!Number.isFinite(espnId)) continue;
-    localTeamByEspn.set(Math.trunc(espnId), String(t.id));
+    const key = Math.trunc(espnId);
+    const list = localTeamIdsByEspn.get(key) ?? [];
+    const localId = String(t.id);
+    if (!list.includes(localId)) list.push(localId);
+    localTeamIdsByEspn.set(key, list);
   }
 
   const { data: gameRows, error: gamesErr } = await supabaseAdmin
@@ -555,15 +559,24 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
       continue;
     }
 
-    const homeLocalId = localTeamByEspn.get(f.homeTeamId);
-    const awayLocalId = localTeamByEspn.get(f.awayTeamId);
-    if (!homeLocalId || !awayLocalId) {
+    const homeLocalIds = localTeamIdsByEspn.get(f.homeTeamId) ?? [];
+    const awayLocalIds = localTeamIdsByEspn.get(f.awayTeamId) ?? [];
+    if (homeLocalIds.length === 0 || awayLocalIds.length === 0) {
       espnSkippedNoTeamMap++;
       continue;
     }
 
-    const pair = teamPairKey(homeLocalId, awayLocalId);
-    const matches = gamesByPair.get(pair) ?? [];
+    const matchedGamesById = new Map<string, LocalPairGame>();
+    for (const homeLocalId of homeLocalIds) {
+      for (const awayLocalId of awayLocalIds) {
+        if (homeLocalId === awayLocalId) continue;
+        const pair = teamPairKey(homeLocalId, awayLocalId);
+        for (const candidate of gamesByPair.get(pair) ?? []) {
+          matchedGamesById.set(candidate.id, candidate);
+        }
+      }
+    }
+    const matches = [...matchedGamesById.values()];
     if (matches.length === 0) {
       espnSkippedPairNoMatch++;
       continue;
@@ -574,6 +587,25 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
     }
 
     const localGame = matches[0];
+    const homeIdSet = new Set(homeLocalIds);
+    const awayIdSet = new Set(awayLocalIds);
+    const homeLocalId =
+      localGame.team1_id && homeIdSet.has(localGame.team1_id)
+        ? localGame.team1_id
+        : localGame.team2_id && homeIdSet.has(localGame.team2_id)
+        ? localGame.team2_id
+        : null;
+    const awayLocalId =
+      localGame.team1_id && awayIdSet.has(localGame.team1_id)
+        ? localGame.team1_id
+        : localGame.team2_id && awayIdSet.has(localGame.team2_id)
+        ? localGame.team2_id
+        : null;
+    if (!homeLocalId || !awayLocalId || homeLocalId === awayLocalId) {
+      espnSkippedPairAmbiguous++;
+      continue;
+    }
+
     const winnerLocalId = f.homeScore > f.awayScore ? homeLocalId : awayLocalId;
     if (localGame.winner_team_id === winnerLocalId) {
       espnAlreadySet++;
@@ -837,7 +869,7 @@ async function runTournamentSeasonSync(season: number) {
   const finals = collectFinalGames(games);
   const result = await applyFinalsToLocalGames(finals);
   const espnFallback = await applyEspnFinalsToLocalGames(
-    await fetchEspnFinalGames(1)
+    await fetchEspnFinalGames(Math.max(DEFAULT_LOOKBACK_DAYS, 3))
   );
 
   return {
