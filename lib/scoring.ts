@@ -5,6 +5,26 @@ export type ScoringGame = {
   winner_team_id: string | null;
 };
 
+export type TeamWinScoreEvent = {
+  gameIndex: number;
+  round: string;
+  teamId: string;
+  opponentTeamId: string | null;
+  winnerSeed: number | null;
+  opponentSeed: number | null;
+  basePoints: number;
+  seedMultiplier: number;
+  scaledBasePoints: number;
+  upsetBonus: number;
+  historicBonus: number;
+  pointsAwarded: number;
+};
+
+export type TeamWinScoringResult = {
+  teamScoresByTeamId: Map<string, number>;
+  eventsByTeamId: Map<string, TeamWinScoreEvent[]>;
+};
+
 export type ScoreEntriesResult = {
   teamScoresByTeamId: Map<string, number>;
   totalScoreByEntryId: Map<string, number>;
@@ -36,22 +56,27 @@ function calcUpsetBonus(teamSeed: number | null | undefined, opponentSeed: numbe
   return Math.max(0, 4 * (teamSeed - opponentSeed));
 }
 
-export function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {
+export function scoreTeamWinsDetailed(
+  games: ScoringGame[],
+  teamSeedById: Map<string, number | null>,
+): TeamWinScoringResult {
   const totals = new Map<string, number>();
+  const eventsByTeamId = new Map<string, TeamWinScoreEvent[]>();
   const historicAwarded = new Set<string>();
 
-  for (const g of games) {
+  games.forEach((g, index) => {
     const winnerId = g.winner_team_id;
-    if (!winnerId) continue;
+    if (!winnerId) return;
 
     const base = BASE_POINTS_BY_ROUND[g.round] ?? 0;
-    if (!base) continue;
+    if (!base) return;
 
     const winnerSeed = teamSeedById.get(winnerId) ?? null;
     const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
     const opponentSeed = opponentId ? (teamSeedById.get(opponentId) ?? null) : null;
 
-    const scaledBase = base * seedMultiplier(winnerSeed);
+    const multiplier = seedMultiplier(winnerSeed);
+    const scaledBase = base * multiplier;
     const upsetBonus = calcUpsetBonus(winnerSeed, opponentSeed);
 
     let historicBonus = 0;
@@ -62,9 +87,32 @@ export function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, nu
 
     const winScore = Math.round(scaledBase + upsetBonus + historicBonus);
     totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
-  }
+    const teamEvents = eventsByTeamId.get(winnerId) ?? [];
+    teamEvents.push({
+      gameIndex: index,
+      round: g.round,
+      teamId: winnerId,
+      opponentTeamId: opponentId ?? null,
+      winnerSeed,
+      opponentSeed,
+      basePoints: base,
+      seedMultiplier: multiplier,
+      scaledBasePoints: scaledBase,
+      upsetBonus,
+      historicBonus,
+      pointsAwarded: winScore,
+    });
+    eventsByTeamId.set(winnerId, teamEvents);
+  });
 
-  return totals;
+  return {
+    teamScoresByTeamId: totals,
+    eventsByTeamId,
+  };
+}
+
+export function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {
+  return scoreTeamWinsDetailed(games, teamSeedById).teamScoresByTeamId;
 }
 
 export function scoreEntries(
