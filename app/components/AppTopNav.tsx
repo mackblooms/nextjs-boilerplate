@@ -292,6 +292,12 @@ export default function AppTopNav() {
       </div>
       <div
         ref={menuRef}
+        onMouseEnter={() => setMenuOpen(true)}
+        onMouseLeave={() => {
+          if (!settingsOpen) {
+            setMenuOpen(false);
+          }
+        }}
         style={{
           position: "absolute",
           right: 16,
