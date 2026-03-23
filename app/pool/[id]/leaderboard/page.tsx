@@ -1420,9 +1420,9 @@ export default function LeaderboardPage() {
                                 role="tooltip"
                                 style={{
                                   position: "absolute",
-                                  left: "50%",
+                                  left: "calc(100% + 8px)",
                                   bottom: "calc(100% + 8px)",
-                                  transform: "translateX(-50%)",
+                                  transform: "none",
                                   width: 220,
                                   maxWidth: "min(220px, 80vw)",
                                   padding: "8px 10px",
@@ -1437,6 +1437,7 @@ export default function LeaderboardPage() {
                                   textAlign: "left",
                                   boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
                                   zIndex: 20,
+                                  pointerEvents: "none",
                                 }}
                               >
                                 Rank movement from the previous completed round to the latest completed round.
