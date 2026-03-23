@@ -563,6 +563,7 @@ export default function LeaderboardPage() {
   const [expandedTeamsByEntry, setExpandedTeamsByEntry] = useState<Record<string, boolean>>({});
   const [breakdownByEntry, setBreakdownByEntry] = useState<Record<string, EntryScoreBreakdown>>({});
   const [openBreakdownEntryId, setOpenBreakdownEntryId] = useState<string | null>(null);
+  const [hoveredMovementEntryId, setHoveredMovementEntryId] = useState<string | null>(null);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -1371,7 +1372,18 @@ export default function LeaderboardPage() {
                       <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
                         <span>{r.rank}</span>
                         {r.rank_delta != null ? (
-                          <span title="Rank movement from the previous completed round to the latest completed round.">
+                          <span
+                            style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+                            onMouseEnter={() => setHoveredMovementEntryId(r.entry_id)}
+                            onMouseLeave={() =>
+                              setHoveredMovementEntryId((prev) => (prev === r.entry_id ? null : prev))
+                            }
+                            onFocus={() => setHoveredMovementEntryId(r.entry_id)}
+                            onBlur={() =>
+                              setHoveredMovementEntryId((prev) => (prev === r.entry_id ? null : prev))
+                            }
+                            tabIndex={0}
+                          >
                             {r.rank_delta > 0 ? (
                               <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
                                 <svg
@@ -1403,6 +1415,33 @@ export default function LeaderboardPage() {
                                 -
                               </span>
                             )}
+                            {hoveredMovementEntryId === r.entry_id ? (
+                              <span
+                                role="tooltip"
+                                style={{
+                                  position: "absolute",
+                                  left: "50%",
+                                  bottom: "calc(100% + 8px)",
+                                  transform: "translateX(-50%)",
+                                  width: 220,
+                                  maxWidth: "min(220px, 80vw)",
+                                  padding: "8px 10px",
+                                  borderRadius: 8,
+                                  border: "1px solid var(--border-color)",
+                                  background: "var(--surface-elevated)",
+                                  color: "var(--foreground)",
+                                  fontSize: 12,
+                                  lineHeight: 1.35,
+                                  fontWeight: 700,
+                                  whiteSpace: "normal",
+                                  textAlign: "left",
+                                  boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
+                                  zIndex: 20,
+                                }}
+                              >
+                                Rank movement from the previous completed round to the latest completed round.
+                              </span>
+                            ) : null}
                           </span>
                         ) : null}
                       </div>
