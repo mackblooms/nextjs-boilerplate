@@ -1423,11 +1423,29 @@ export default function LeaderboardPage() {
                                     whiteSpace: "nowrap",
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
+                                    textDecoration: team.is_active ? "none" : "line-through",
                                   }}
                                 >
                                   {team.seed != null ? `#${team.seed} ` : ""}
                                   {team.team_name}
                                 </span>
+                                {!team.is_active ? (
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 800,
+                                      textTransform: "uppercase",
+                                      letterSpacing: 0.2,
+                                      padding: "2px 6px",
+                                      borderRadius: 9999,
+                                      border: "1px solid var(--border-color)",
+                                      background: "var(--surface)",
+                                      opacity: 0.85,
+                                    }}
+                                  >
+                                    Inactive
+                                  </span>
+                                ) : null}
                               </div>
                             ))}
                           </div>

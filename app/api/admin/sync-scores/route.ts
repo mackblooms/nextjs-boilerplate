@@ -115,6 +115,21 @@ function isMissingColumnError(message: string): boolean {
   return msg.includes("column") && msg.includes("does not exist");
 }
 
+function describeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return "Unknown error";
+  }
+}
+
+function isSportsDataQuotaError(message: string): boolean {
+  const msg = message.toLowerCase();
+  return msg.includes("out of call volume quota") || msg.includes("quota");
+}
+
 function toSeason(value: unknown): number | null {
   if (value == null) return null;
   const n = Number(String(value).trim());
@@ -834,12 +849,28 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
 async function runDailySync(lookbackDays: number) {
   const dates: string[] = [];
   const allGames: SportsGame[] = [];
+  const sportsDataWarnings: string[] = [];
+  let stopSportsDataFetch = !KEY;
+
+  if (!KEY) {
+    sportsDataWarnings.push("SPORTS_DATA_IO_KEY missing; using ESPN fallback only.");
+  }
 
   for (let i = 0; i <= lookbackDays; i++) {
     const date = ymd(new Date(Date.now() - i * 24 * 60 * 60 * 1000));
     dates.push(date);
-    const games = await fetchGamesByDateFinal(date);
-    allGames.push(...games);
+    if (stopSportsDataFetch) continue;
+
+    try {
+      const games = await fetchGamesByDateFinal(date);
+      allGames.push(...games);
+    } catch (error: unknown) {
+      const message = describeError(error);
+      sportsDataWarnings.push(`${date}: ${message}`);
+      if (isSportsDataQuotaError(message)) {
+        stopSportsDataFetch = true;
+      }
+    }
   }
 
   const finals = collectFinalGames(allGames);
@@ -860,12 +891,25 @@ async function runDailySync(lookbackDays: number) {
       Number(result.advancedGamesTouched ?? 0),
       Number(espnFallback.espnAdvancedGamesTouched ?? 0)
     ),
+    sportsDataWarnings,
     espnFallback,
   };
 }
 
 async function runTournamentSeasonSync(season: number) {
-  const games = await fetchTournamentGames(season);
+  let games: SportsGame[] = [];
+  const sportsDataWarnings: string[] = [];
+
+  if (!KEY) {
+    sportsDataWarnings.push("SPORTS_DATA_IO_KEY missing; using ESPN fallback only.");
+  } else {
+    try {
+      games = await fetchTournamentGames(season);
+    } catch (error: unknown) {
+      sportsDataWarnings.push(describeError(error));
+    }
+  }
+
   const finals = collectFinalGames(games);
   const result = await applyFinalsToLocalGames(finals);
   const espnFallback = await applyEspnFinalsToLocalGames(
@@ -885,6 +929,7 @@ async function runTournamentSeasonSync(season: number) {
       Number(result.advancedGamesTouched ?? 0),
       Number(espnFallback.espnAdvancedGamesTouched ?? 0)
     ),
+    sportsDataWarnings,
     espnFallback,
   };
 }
@@ -913,8 +958,6 @@ async function parseSyncParams(req: Request) {
 }
 
 async function handleSync(req: Request) {
-  if (!KEY) throw new Error("SPORTS_DATA_IO_KEY is missing");
-
   const { season, lookbackDays } = await parseSyncParams(req);
   if (season) return runTournamentSeasonSync(season);
   return runDailySync(lookbackDays);
