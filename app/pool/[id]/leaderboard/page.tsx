@@ -1153,41 +1153,48 @@ export default function LeaderboardPage() {
       });
 
       const rankedNow = rankRows(computed);
-      const todayEt = etDayKey(new Date());
 
-      const priorGames: ScoringGame[] = [];
-      for (const game of gameRows) {
-        if (!game.winner_team_id) continue;
-        const day = gameDayKey(game);
-        if (!day || day < todayEt) {
-          priorGames.push(game);
-        }
-      }
+      // Rank movement is tracked round-to-round:
+      // baseline = standings before the latest round that has at least one final winner.
+      const completedRoundOrders = gameRows
+        .filter((game) => Boolean(game.winner_team_id))
+        .map((game) => ROUND_ORDER[game.round] ?? 0)
+        .filter((order) => order > 0);
+      const latestCompletedRoundOrder =
+        completedRoundOrders.length > 0 ? Math.max(...completedRoundOrders) : 0;
 
       const priorRankByEntry = new Map<string, number>();
-      const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
-      const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
-      const priorComputed = baseRows.map((r) => {
-        const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
-        const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
-          return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
-        }, 0);
-        const championshipCount = entryTeamIds.reduce((sum, teamId) => {
-          return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
-        }, 0);
+      if (latestCompletedRoundOrder > 0) {
+        const priorGames: ScoringGame[] = gameRows.filter((game) => {
+          if (!game.winner_team_id) return false;
+          const order = ROUND_ORDER[game.round] ?? 0;
+          return order > 0 && order < latestCompletedRoundOrder;
+        });
 
-        return {
-          entry_id: r.entry_id,
-          display_name: r.display_name,
-          entry_name: draftNameByEntry.get(r.entry_id) ?? null,
-          total_score: priorScoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0,
-          final_four_count: finalFourCount,
-          championship_count: championshipCount,
-        };
-      });
+        const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
+        const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
+        const priorComputed = baseRows.map((r) => {
+          const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
+          const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
+          }, 0);
+          const championshipCount = entryTeamIds.reduce((sum, teamId) => {
+            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
+          }, 0);
 
-      for (const row of rankRows(priorComputed)) {
-        priorRankByEntry.set(row.entry_id, row.rank);
+          return {
+            entry_id: r.entry_id,
+            display_name: r.display_name,
+            entry_name: draftNameByEntry.get(r.entry_id) ?? null,
+            total_score: priorScoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0,
+            final_four_count: finalFourCount,
+            championship_count: championshipCount,
+          };
+        });
+
+        for (const row of rankRows(priorComputed)) {
+          priorRankByEntry.set(row.entry_id, row.rank);
+        }
       }
 
       const ranked: Row[] = rankedNow.map((row) => {
