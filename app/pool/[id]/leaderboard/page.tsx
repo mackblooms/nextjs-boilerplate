@@ -1371,37 +1371,39 @@ export default function LeaderboardPage() {
                       <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
                         <span>{r.rank}</span>
                         {r.rank_delta != null ? (
-                          r.rank_delta > 0 ? (
-                            <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                              <svg
-                                aria-hidden="true"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 10 10"
-                                style={{ display: "block" }}
-                              >
-                                <path d="M5 0L10 9H0L5 0Z" fill="currentColor" />
-                              </svg>
-                              <span>{r.rank_delta}</span>
-                            </span>
-                          ) : r.rank_delta < 0 ? (
-                            <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                              <svg
-                                aria-hidden="true"
-                                width="10"
-                                height="10"
-                                viewBox="0 0 10 10"
-                                style={{ display: "block" }}
-                              >
-                                <path d="M0 1H10L5 10L0 1Z" fill="currentColor" />
-                              </svg>
-                              <span>{Math.abs(r.rank_delta)}</span>
-                            </span>
-                          ) : (
-                            <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
-                              -
-                            </span>
-                          )
+                          <span title="Rank movement from the previous completed round to the latest completed round.">
+                            {r.rank_delta > 0 ? (
+                              <span style={{ color: "#15803d", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                <svg
+                                  aria-hidden="true"
+                                  width="10"
+                                  height="10"
+                                  viewBox="0 0 10 10"
+                                  style={{ display: "block" }}
+                                >
+                                  <path d="M5 0L10 9H0L5 0Z" fill="currentColor" />
+                                </svg>
+                                <span>{r.rank_delta}</span>
+                              </span>
+                            ) : r.rank_delta < 0 ? (
+                              <span style={{ color: "#b91c1c", fontSize: 13, fontWeight: 900, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                <svg
+                                  aria-hidden="true"
+                                  width="10"
+                                  height="10"
+                                  viewBox="0 0 10 10"
+                                  style={{ display: "block" }}
+                                >
+                                  <path d="M0 1H10L5 10L0 1Z" fill="currentColor" />
+                                </svg>
+                                <span>{Math.abs(r.rank_delta)}</span>
+                              </span>
+                            ) : (
+                              <span style={{ color: "var(--foreground)", opacity: 0.6, fontSize: 13, fontWeight: 800 }}>
+                                -
+                              </span>
+                            )}
+                          </span>
                         ) : null}
                       </div>
                       <div style={{ fontWeight: 800 }}>
