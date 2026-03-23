@@ -266,6 +266,8 @@ export default function BracketPage() {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const playerEntryIdsRef = useRef<string[]>([]);
+  const forcedSyncInFlightRef = useRef<Promise<void> | null>(null);
+  const lastForcedSyncAtRef = useRef(0);
 
   const applyFitScale = useCallback(() => {
     const viewport = viewportRef.current;
@@ -696,6 +698,30 @@ export default function BracketPage() {
           const nextScores = payload.games ?? [];
           setLiveScores(nextScores);
 
+          const hasAnyFinal = nextScores.some((game) => game.state === "FINAL");
+          if (hasAnyFinal) {
+            const now = Date.now();
+            const canForceSync = now - lastForcedSyncAtRef.current >= 15_000;
+
+            if (canForceSync && !forcedSyncInFlightRef.current) {
+              lastForcedSyncAtRef.current = now;
+              forcedSyncInFlightRef.current = fetch("/api/admin/sync-scores", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lookbackDays: 3 }),
+              })
+                .then(() => undefined)
+                .catch(() => undefined)
+                .finally(() => {
+                  forcedSyncInFlightRef.current = null;
+                });
+            }
+
+            if (forcedSyncInFlightRef.current) {
+              await forcedSyncInFlightRef.current;
+            }
+          }
+
           const nextLiveByGameId = matchLiveScoresToGames(
             games,
             nextScores,
@@ -731,7 +757,7 @@ export default function BracketPage() {
     };
 
     void loadLiveScores();
-    const interval = window.setInterval(loadLiveScores, 45_000);
+    const interval = window.setInterval(loadLiveScores, 20_000);
 
     return () => {
       canceled = true;

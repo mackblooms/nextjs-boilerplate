@@ -62,7 +62,7 @@ type LiveScoreRow = {
   homeScore: number | null;
 };
 
-const AUTO_SYNC_MIN_INTERVAL_MS = 60_000;
+const AUTO_SYNC_MIN_INTERVAL_MS = 20_000;
 const SCOREBOARD_WINDOW_DAYS = 3;
 let lastAutoSyncStartedAt = 0;
 let autoSyncInFlight: Promise<void> | null = null;
