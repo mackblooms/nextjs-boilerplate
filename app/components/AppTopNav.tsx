@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { withAvatarFallback } from "../../lib/avatar";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Pool = { id: string; name: string; created_by: string };
@@ -27,6 +28,7 @@ export default function AppTopNav() {
   const [homeHref, setHomeHref] = useState("/");
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const isHidden = useAutoHideOnScroll();
 
   const poolIdFromPath = useMemo(() => {
@@ -43,6 +45,7 @@ export default function AppTopNav() {
       setHomeHref("/");
       setActivePoolId(null);
       setActivePool(null);
+      setProfileAvatarUrl(null);
     };
 
     const syncAuth = async () => {
@@ -87,6 +90,39 @@ export default function AppTopNav() {
       sub.subscription.unsubscribe();
     };
   }, [supabase]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadAvatar = async () => {
+      if (!supabase || !userId) {
+        if (!canceled) setProfileAvatarUrl(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (canceled) return;
+
+      if (error) {
+        setProfileAvatarUrl(withAvatarFallback(userId, null));
+        return;
+      }
+
+      const row = (data as { avatar_url: string | null } | null) ?? null;
+      setProfileAvatarUrl(withAvatarFallback(userId, row?.avatar_url ?? null));
+    };
+
+    void loadAvatar();
+
+    return () => {
+      canceled = true;
+    };
+  }, [supabase, userId]);
 
   useEffect(() => {
     let canceled = false;
@@ -139,6 +175,7 @@ export default function AppTopNav() {
     setUserId(null);
     setActivePoolId(null);
     setActivePool(null);
+    setProfileAvatarUrl(null);
 
     if (supabase) {
       try {
@@ -163,6 +200,7 @@ export default function AppTopNav() {
     fontSize: 14,
     whiteSpace: "nowrap",
   };
+  const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
 
   return (
     <div
@@ -203,9 +241,35 @@ export default function AppTopNav() {
         {activePoolId && activePool?.created_by === userId ? (
           <Link href={`/pool/${activePoolId}/admin`} style={pillStyle}>Admin</Link>
         ) : null}
-        <Link href="/profile" style={pillStyle}>Profile</Link>
         <button onClick={signOut} style={{ ...pillStyle, background: "transparent", cursor: "pointer" }}>Sign out</button>
       </div>
+      <Link
+        href="/profile"
+        aria-label="Profile"
+        style={{
+          position: "absolute",
+          right: 16,
+          top: 8,
+          width: 42,
+          height: 42,
+          borderRadius: 9999,
+          border: "1px solid var(--border-color)",
+          overflow: "hidden",
+          background: "var(--surface)",
+          display: "grid",
+          placeItems: "center",
+          pointerEvents: "auto",
+          textDecoration: "none",
+        }}
+      >
+        <img
+          src={resolvedAvatarUrl}
+          alt="Profile"
+          width={42}
+          height={42}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </Link>
     </div>
   );
 }
