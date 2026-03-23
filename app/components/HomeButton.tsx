@@ -13,6 +13,14 @@ const russoOne = Russo_One({
   weight: "400",
 });
 
+function notifyHomeButtonHover(hovered: boolean) {
+  window.dispatchEvent(
+    new CustomEvent("bb:home-button-hover", {
+      detail: { hovered },
+    })
+  );
+}
+
 export default function HomeButton() {
   const [href, setHref] = useState("/");
   const pathname = usePathname();
@@ -40,13 +48,21 @@ export default function HomeButton() {
       setHref("/");
     };
 
-    loadDestination();
+    void loadDestination();
+
+    return () => {
+      notifyHomeButtonHover(false);
+    };
   }, []);
 
   return (
     <Link
       href={href}
       aria-label="Go to bracketball home"
+      onMouseEnter={() => notifyHomeButtonHover(true)}
+      onMouseLeave={() => notifyHomeButtonHover(false)}
+      onFocus={() => notifyHomeButtonHover(true)}
+      onBlur={() => notifyHomeButtonHover(false)}
       style={{
         position: "fixed",
         top: 18,

@@ -43,6 +43,7 @@ export default function AppTopNav() {
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [homeButtonHovered, setHomeButtonHovered] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const menuRef = useRef<HTMLDivElement | null>(null);
   const isHidden = useAutoHideOnScroll();
@@ -216,6 +217,18 @@ export default function AppTopNav() {
     };
   }, [poolIdFromPath, supabase, userId]);
 
+  useEffect(() => {
+    const onHomeButtonHover = (event: Event) => {
+      const customEvent = event as CustomEvent<{ hovered?: boolean }>;
+      setHomeButtonHovered(Boolean(customEvent.detail?.hovered));
+    };
+
+    window.addEventListener("bb:home-button-hover", onHomeButtonHover as EventListener);
+    return () => {
+      window.removeEventListener("bb:home-button-hover", onHomeButtonHover as EventListener);
+    };
+  }, []);
+
   async function signOut() {
     // Hide authed nav immediately, then clear auth/session.
     setUserId(null);
@@ -244,11 +257,13 @@ export default function AppTopNav() {
     border: "1px solid var(--border-color)",
     borderRadius: 10,
     textDecoration: "none",
+    color: "var(--foreground)",
     fontWeight: 700,
     fontSize: 14,
     whiteSpace: "nowrap",
   };
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
+  const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
 
   return (
     <div
@@ -268,6 +283,7 @@ export default function AppTopNav() {
       }}
     >
       <div
+        className={`app-top-nav-pills${shouldDeemphasizeNavPills ? " app-top-nav-pills--deemphasized" : ""}`}
         style={{
           display: "flex",
           gap: 8,
@@ -281,13 +297,13 @@ export default function AppTopNav() {
           pointerEvents: "auto",
         }}
       >
-        <Link href={homeHref} style={pillStyle}>Home</Link>
-        <Link href="/how-it-works" style={pillStyle}>How it works</Link>
-        <Link href="/drafts" style={pillStyle}>Drafts</Link>
-        <Link href="/pools" style={pillStyle}>Pools</Link>
-        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} style={pillStyle}>Bracket</Link> : null}
+        <Link href={homeHref} className="app-top-nav-link" style={pillStyle}>Home</Link>
+        <Link href="/how-it-works" className="app-top-nav-link" style={pillStyle}>How it works</Link>
+        <Link href="/drafts" className="app-top-nav-link" style={pillStyle}>Drafts</Link>
+        <Link href="/pools" className="app-top-nav-link" style={pillStyle}>Pools</Link>
+        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" style={pillStyle}>Bracket</Link> : null}
         {activePoolId && activePool?.created_by === userId ? (
-          <Link href={`/pool/${activePoolId}/admin`} style={pillStyle}>Admin</Link>
+          <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" style={pillStyle}>Admin</Link>
         ) : null}
       </div>
       <div
@@ -309,6 +325,7 @@ export default function AppTopNav() {
       >
         <button
           type="button"
+          className="app-top-nav-avatar-button"
           aria-label="Open profile menu"
           aria-haspopup="menu"
           aria-expanded={menuOpen}

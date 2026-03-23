@@ -1844,7 +1844,6 @@ function HomeContent() {
                           className="home-draft-link"
                           style={{
                             color: "inherit",
-                            textDecoration: "none",
                             fontWeight: 900,
                             fontSize: 18,
                             whiteSpace: "nowrap",
