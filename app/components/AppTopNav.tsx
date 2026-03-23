@@ -289,7 +289,6 @@ export default function AppTopNav() {
         {activePoolId && activePool?.created_by === userId ? (
           <Link href={`/pool/${activePoolId}/admin`} style={pillStyle}>Admin</Link>
         ) : null}
-        <button onClick={signOut} style={{ ...pillStyle, background: "transparent", cursor: "pointer" }}>Sign out</button>
       </div>
       <div
         ref={menuRef}
