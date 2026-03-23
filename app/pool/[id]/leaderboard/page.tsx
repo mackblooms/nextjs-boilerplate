@@ -190,6 +190,11 @@ function gameDayKey(game: { game_date: string | null; start_time: string | null 
   if (game.game_date) {
     const day = game.game_date.slice(0, 10);
     if (/^\d{4}-\d{2}-\d{2}$/.test(day)) return day;
+
+    const gameDateMs = Date.parse(game.game_date);
+    if (Number.isFinite(gameDateMs)) {
+      return etDayKey(new Date(gameDateMs));
+    }
   }
 
   if (!game.start_time) return null;
@@ -1150,46 +1155,39 @@ export default function LeaderboardPage() {
       const rankedNow = rankRows(computed);
       const todayEt = etDayKey(new Date());
 
-      let missingGameDays = false;
       const priorGames: ScoringGame[] = [];
       for (const game of gameRows) {
         if (!game.winner_team_id) continue;
         const day = gameDayKey(game);
-        if (!day) {
-          missingGameDays = true;
-          break;
-        }
-        if (day < todayEt) {
+        if (!day || day < todayEt) {
           priorGames.push(game);
         }
       }
 
       const priorRankByEntry = new Map<string, number>();
-      if (!missingGameDays) {
-        const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
-        const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
-        const priorComputed = baseRows.map((r) => {
-          const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
-          const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
-            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
-          }, 0);
-          const championshipCount = entryTeamIds.reduce((sum, teamId) => {
-            return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
-          }, 0);
+      const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
+      const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
+      const priorComputed = baseRows.map((r) => {
+        const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
+        const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
+          return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);
+        }, 0);
+        const championshipCount = entryTeamIds.reduce((sum, teamId) => {
+          return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.CHIP ? 1 : 0);
+        }, 0);
 
-          return {
-            entry_id: r.entry_id,
-            display_name: r.display_name,
-            entry_name: draftNameByEntry.get(r.entry_id) ?? null,
-            total_score: priorScoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0,
-            final_four_count: finalFourCount,
-            championship_count: championshipCount,
-          };
-        });
+        return {
+          entry_id: r.entry_id,
+          display_name: r.display_name,
+          entry_name: draftNameByEntry.get(r.entry_id) ?? null,
+          total_score: priorScoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0,
+          final_four_count: finalFourCount,
+          championship_count: championshipCount,
+        };
+      });
 
-        for (const row of rankRows(priorComputed)) {
-          priorRankByEntry.set(row.entry_id, row.rank);
-        }
+      for (const row of rankRows(priorComputed)) {
+        priorRankByEntry.set(row.entry_id, row.rank);
       }
 
       const ranked: Row[] = rankedNow.map((row) => {
