@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
-import ThemeSwitch from "./components/ThemeSwitch";
 import InstructionsModal from "./components/InstructionsModal";
 import "./globals.css";
 
@@ -20,7 +19,6 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <HomeButton />
-        <ThemeSwitch />
         <AppTopNav />
         <Suspense fallback={null}>
           <InstructionsModal />

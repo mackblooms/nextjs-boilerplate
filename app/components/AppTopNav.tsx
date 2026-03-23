@@ -3,11 +3,23 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { withAvatarFallback } from "../../lib/avatar";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Pool = { id: string; name: string; created_by: string };
+type Theme = "light" | "dark";
+
+function getPreferredTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+
+  const stored = window.localStorage.getItem("theme");
+  if (stored === "light" || stored === "dark") return stored;
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -29,7 +41,12 @@ export default function AppTopNav() {
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const isHidden = useAutoHideOnScroll();
+  const isDark = theme === "dark";
 
   const poolIdFromPath = useMemo(() => {
     const match = pathname.match(/^\/pool\/([^/]+)/);
@@ -90,6 +107,35 @@ export default function AppTopNav() {
       sub.subscription.unsubscribe();
     };
   }, [supabase]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    window.localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (menuRef.current.contains(event.target as Node)) return;
+      setMenuOpen(false);
+    };
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setSettingsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     let canceled = false;
@@ -176,6 +222,8 @@ export default function AppTopNav() {
     setActivePoolId(null);
     setActivePool(null);
     setProfileAvatarUrl(null);
+    setMenuOpen(false);
+    setSettingsOpen(false);
 
     if (supabase) {
       try {
@@ -243,33 +291,272 @@ export default function AppTopNav() {
         ) : null}
         <button onClick={signOut} style={{ ...pillStyle, background: "transparent", cursor: "pointer" }}>Sign out</button>
       </div>
-      <Link
-        href="/profile"
-        aria-label="Profile"
+      <div
+        ref={menuRef}
         style={{
           position: "absolute",
           right: 16,
           top: 8,
-          width: 42,
-          height: 42,
-          borderRadius: 9999,
-          border: "1px solid var(--border-color)",
-          overflow: "hidden",
-          background: "var(--surface)",
           display: "grid",
-          placeItems: "center",
+          justifyItems: "end",
           pointerEvents: "auto",
-          textDecoration: "none",
         }}
       >
-        <img
-          src={resolvedAvatarUrl}
-          alt="Profile"
-          width={42}
-          height={42}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      </Link>
+        <button
+          type="button"
+          aria-label="Open profile menu"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 9999,
+            border: "1px solid var(--border-color)",
+            overflow: "hidden",
+            background: "var(--surface)",
+            display: "grid",
+            placeItems: "center",
+            padding: 0,
+            cursor: "pointer",
+          }}
+        >
+          <img
+            src={resolvedAvatarUrl}
+            alt="Profile"
+            width={42}
+            height={42}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </button>
+
+        {menuOpen ? (
+          <section
+            role="menu"
+            aria-label="Profile quick menu"
+            style={{
+              marginTop: 10,
+              width: "min(360px, calc(100vw - 28px))",
+              border: "1px solid var(--border-color)",
+              borderRadius: 14,
+              background: "var(--surface)",
+              padding: 10,
+              boxShadow: "0 12px 30px rgba(0,0,0,0.28)",
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push("/");
+                }}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  textAlign: "left",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Scores
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  router.push("/drafts");
+                }}
+                style={{
+                  gridColumn: 2,
+                  gridRow: "1 / span 2",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  textAlign: "center",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                Drafts
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setSettingsOpen(true);
+                }}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  padding: "10px 12px",
+                  textAlign: "left",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Settings
+              </button>
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link
+                href="/profile"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  flex: 1,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: "9px 12px",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                  color: "var(--foreground)",
+                  background: "var(--surface)",
+                }}
+              >
+                Profile
+              </Link>
+              <button
+                type="button"
+                onClick={signOut}
+                style={{
+                  flex: 1,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: "9px 12px",
+                  background: "var(--surface)",
+                  cursor: "pointer",
+                  fontWeight: 800,
+                }}
+              >
+                Log out
+              </button>
+            </div>
+          </section>
+        ) : null}
+      </div>
+
+      {settingsOpen ? (
+        <div
+          role="presentation"
+          onClick={() => setSettingsOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 2000,
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+            pointerEvents: "auto",
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(420px, 100%)",
+              border: "1px solid var(--border-color)",
+              borderRadius: 14,
+              background: "var(--surface)",
+              padding: 14,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Settings</h2>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 8,
+                  padding: "6px 9px",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                background: "var(--surface-muted)",
+                padding: 12,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 900 }}>Dark Mode</div>
+                <div style={{ fontSize: 13, opacity: 0.76 }}>
+                  Toggle the app theme for this device.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                role="switch"
+                aria-checked={isDark}
+                style={{
+                  width: 64,
+                  height: 34,
+                  borderRadius: 9999,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  cursor: "pointer",
+                  position: "relative",
+                }}
+              >
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 3,
+                    left: isDark ? 33 : 3,
+                    width: 26,
+                    height: 26,
+                    borderRadius: "50%",
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface-elevated)",
+                    transition: "left 150ms ease",
+                  }}
+                />
+              </button>
+            </div>
+
+            <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
+              More settings options will be added here next.
+            </p>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
