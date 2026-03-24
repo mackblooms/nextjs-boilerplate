@@ -573,6 +573,51 @@ export default function AppTopNav() {
               </button>
             </div>
 
+            <div
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                background: "var(--surface-muted)",
+                padding: 12,
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div style={{ fontWeight: 900 }}>Legal</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <Link
+                  href="/terms"
+                  onClick={() => setSettingsOpen(false)}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    textDecoration: "none",
+                    color: "var(--foreground)",
+                    fontWeight: 700,
+                    background: "var(--surface)",
+                  }}
+                >
+                  Terms of Service
+                </Link>
+                <Link
+                  href="/privacy"
+                  onClick={() => setSettingsOpen(false)}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    textDecoration: "none",
+                    color: "var(--foreground)",
+                    fontWeight: 700,
+                    background: "var(--surface)",
+                  }}
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+            </div>
+
             <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
               More settings options will be added here next.
             </p>

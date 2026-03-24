@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
@@ -12,6 +13,7 @@ export default function LoginClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "sending" | "error" | "success"
   >("idle");
@@ -102,6 +104,11 @@ export default function LoginClient() {
         setMsg("Passwords do not match.");
         return;
       }
+      if (!acceptedLegal) {
+        setStatus("error");
+        setMsg("You must agree to the Terms of Service and Privacy Policy.");
+        return;
+      }
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -177,7 +184,11 @@ export default function LoginClient() {
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         <button
           type="button"
-          onClick={() => setMode("sign-in")}
+          onClick={() => {
+            setMode("sign-in");
+            setMsg("");
+            setStatus("idle");
+          }}
           style={{
             flex: 1,
             padding: "10px 12px",
@@ -193,7 +204,11 @@ export default function LoginClient() {
         </button>
         <button
           type="button"
-          onClick={() => setMode("sign-up")}
+          onClick={() => {
+            setMode("sign-up");
+            setMsg("");
+            setStatus("idle");
+          }}
           style={{
             flex: 1,
             padding: "10px 12px",
@@ -263,28 +278,64 @@ export default function LoginClient() {
         ) : null}
 
         {mode === "sign-up" ? (
-          <button
-            type="button"
-            onClick={onGeneratePassword}
-            disabled={status === "sending"}
+          <div
             style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid var(--border-color)",
-              cursor: "pointer",
-              fontWeight: 600,
-              background: "transparent",
+              display: "grid",
+              gap: 10,
               marginBottom: 12,
             }}
           >
-            Generate strong password
-          </button>
+            <button
+              type="button"
+              onClick={onGeneratePassword}
+              disabled={status === "sending"}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid var(--border-color)",
+                cursor: "pointer",
+                fontWeight: 600,
+                background: "transparent",
+              }}
+            >
+              Generate strong password
+            </button>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                fontSize: 14,
+                lineHeight: 1.35,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={acceptedLegal}
+                onChange={(event) => setAcceptedLegal(event.target.checked)}
+                style={{ marginTop: 2 }}
+              />
+              <span>
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
+          </div>
         ) : null}
 
         <button
           type="submit"
-          disabled={status === "sending"}
+          disabled={
+            status === "sending" || (mode === "sign-up" && !acceptedLegal)
+          }
           style={{
             width: "100%",
             padding: "12px 14px",
