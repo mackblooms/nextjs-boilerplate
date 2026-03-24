@@ -62,6 +62,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   padding-top: 110px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-main {
+  flex: 1 0 auto;
+}
+
+.site-disclaimer {
+  margin: 36px auto 20px;
+  max-width: 1100px;
+  padding: 0 16px;
+  color: var(--foreground);
+  opacity: 0.8;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .home-layout {

@@ -24,7 +24,14 @@ export default function RootLayout({
           <InstructionsModal />
         </Suspense>
 
-        {children}
+        <main className="site-main">{children}</main>
+        <footer className="site-disclaimer" role="contentinfo">
+          bracketball is an independent, unofficial platform and is not
+          affiliated with, endorsed by, or sponsored by the NCAA or any
+          college or university. All team names, trademarks, and other
+          intellectual property are the property of their respective owners and
+          are used solely for identification purposes.
+        </footer>
       </body>
     </html>
   );
