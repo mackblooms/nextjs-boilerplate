@@ -514,15 +514,44 @@ export default function LoginClient() {
                   lineHeight: 1.45,
                 }}
               >
-                By continuing, you agree to the{" "}
-                <Link href="/terms" target="_blank" rel="noreferrer">
-                  Terms of Service
-                </Link>{" "}
-                and acknowledge the{" "}
-                <Link href="/privacy" target="_blank" rel="noreferrer">
-                  Privacy Policy
-                </Link>
-                .
+                <div style={{ fontWeight: 800, marginBottom: 8 }}>Review documents:</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid #2563eb",
+                      background: "#eff6ff",
+                      color: "#1d4ed8",
+                      fontWeight: 800,
+                      textDecoration: "underline",
+                      textUnderlineOffset: 2,
+                    }}
+                  >
+                    Terms of Service
+                  </Link>
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      border: "1px solid #2563eb",
+                      background: "#eff6ff",
+                      color: "#1d4ed8",
+                      fontWeight: 800,
+                      textDecoration: "underline",
+                      textUnderlineOffset: 2,
+                    }}
+                  >
+                    Privacy Policy
+                  </Link>
+                </div>
+                By checking the box below, you agree to these documents.
               </div>
 
               <label
