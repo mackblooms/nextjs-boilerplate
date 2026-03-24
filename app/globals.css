@@ -83,10 +83,11 @@ body {
 }
 
 .site-disclaimer-links {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-top: 8px;
   font-size: 0.82rem;
   font-weight: 700;
 }

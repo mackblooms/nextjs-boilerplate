@@ -27,16 +27,16 @@ export default function RootLayout({
 
         <main className="site-main">{children}</main>
         <footer className="site-disclaimer" role="contentinfo">
-          <nav aria-label="Legal links" className="site-disclaimer-links">
-            <Link href="/terms">Terms of Service</Link>
-            <span aria-hidden="true">|</span>
-            <Link href="/privacy">Privacy Policy</Link>
-          </nav>
           bracketball is an independent, unofficial platform and is not
           affiliated with, endorsed by, or sponsored by the NCAA or any
           college or university. All team names, trademarks, and other
           intellectual property are the property of their respective owners and
           are used solely for identification purposes.
+          <nav aria-label="Legal links" className="site-disclaimer-links">
+            <Link href="/terms">Terms of Service</Link>
+            <span aria-hidden="true">|</span>
+            <Link href="/privacy">Privacy Policy</Link>
+          </nav>
         </footer>
       </body>
     </html>
