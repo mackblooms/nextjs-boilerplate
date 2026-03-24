@@ -23,7 +23,7 @@ export default function HowItWorksPage() {
   return (
     <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
       <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
-        Bracketball: How It Works
+        bracketball: How It Works
       </h1>
 
       <p style={{ marginTop: 0, lineHeight: 1.6 }}>
@@ -265,3 +265,4 @@ export default function HowItWorksPage() {
     </main>
   );
 }
+

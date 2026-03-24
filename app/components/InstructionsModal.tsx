@@ -321,7 +321,7 @@ export default function InstructionsModal() {
       <section
         role="dialog"
         aria-modal="true"
-        aria-label="Bracketball tutorial"
+        aria-label="bracketball tutorial"
         onClick={(event) => event.stopPropagation()}
         style={{
           width: "min(900px, 100%)",
@@ -455,3 +455,4 @@ export default function InstructionsModal() {
     </div>
   );
 }
+

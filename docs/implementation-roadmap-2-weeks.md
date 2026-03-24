@@ -1,4 +1,4 @@
-# Bracketball 2-Week Implementation Roadmap
+# bracketball 2-Week Implementation Roadmap
 
 Date: 2026-03-12  
 Owner: Mack + Codex
@@ -101,3 +101,4 @@ Owner: Mack + Codex
 ## Reporting Cadence
 - Daily: close completed tickets, open blockers, confirm next-day P0.
 - End of week: compare funnel conversion before/after instrumentation.
+
