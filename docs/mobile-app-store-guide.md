@@ -83,3 +83,12 @@ Apple can reject apps that are only thin website wrappers. Add mobile value befo
 - Privacy policy URL is live and added to App Store Connect.
 - App icon set includes all required iOS sizes.
 - TestFlight build tested on real device(s).
+
+## 8) Working split: Windows vs Mac
+
+Use these companion checklists to keep momentum when you only have Windows access:
+
+- `docs/windows-daytime-checklist.md`
+- `docs/app-store-connect-metadata-template.md`
+- `docs/app-privacy-data-inventory.md`
+- `docs/mac-release-day-checklist.md`
