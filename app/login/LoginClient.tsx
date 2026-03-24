@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
@@ -14,6 +14,8 @@ export default function LoginClient() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [legalModalOpen, setLegalModalOpen] = useState(false);
+  const [continueSignUpAfterLegal, setContinueSignUpAfterLegal] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "sending" | "error" | "success"
   >("idle");
@@ -39,10 +41,35 @@ export default function LoginClient() {
       return `/profile?${params.toString()}`;
     })();
 
+  useEffect(() => {
+    if (!legalModalOpen) return;
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setLegalModalOpen(false);
+      setContinueSignUpAfterLegal(false);
+    };
+
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [legalModalOpen]);
+
   function buildAuthCallbackUrl(nextPath: string) {
     const params = new URLSearchParams({ next: nextPath });
     if (invitePoolId) params.set("invitePoolId", invitePoolId);
     return `${window.location.origin}/auth/callback?${params.toString()}`;
+  }
+
+  function openLegalModal(continueAfterAccept: boolean) {
+    setLegalModalOpen(true);
+    setContinueSignUpAfterLegal(continueAfterAccept);
+  }
+
+  function closeLegalModal() {
+    setLegalModalOpen(false);
+    setContinueSignUpAfterLegal(false);
   }
 
   async function resendConfirmation() {
@@ -93,60 +120,50 @@ export default function LoginClient() {
     );
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submitSignUp() {
     setStatus("sending");
     setMsg("");
 
-    if (mode === "sign-up") {
-      if (password !== confirmPassword) {
-        setStatus("error");
-        setMsg("Passwords do not match.");
-        return;
-      }
-      if (!acceptedLegal) {
-        setStatus("error");
-        setMsg("You must agree to the Terms of Service and Privacy Policy.");
-        return;
-      }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
+      },
+    });
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
-        },
-      });
-
-      if (error) {
-        setStatus("error");
-        setMsg(error.message);
-        return;
-      }
-
-      const hasIdentity = Boolean(
-        data.user?.identities && data.user.identities.length > 0,
-      );
-      const hasSession = Boolean(data.session);
-
-      setStatus("success");
-      if (hasSession) {
-        setMsg("Account created and signed in. Redirecting...");
-        window.location.href = profileSetupNext;
-        return;
-      }
-
-      if (hasIdentity) {
-        setMsg(
-          "Account created. We sent a confirmation email. Open it to activate your account.",
-        );
-      } else {
-        setMsg(
-          "If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'.",
-        );
-      }
+    if (error) {
+      setStatus("error");
+      setMsg(error.message);
       return;
     }
+
+    const hasIdentity = Boolean(
+      data.user?.identities && data.user.identities.length > 0,
+    );
+    const hasSession = Boolean(data.session);
+
+    setStatus("success");
+    if (hasSession) {
+      setMsg("Account created and signed in. Redirecting...");
+      window.location.href = profileSetupNext;
+      return;
+    }
+
+    if (hasIdentity) {
+      setMsg(
+        "Account created. We sent a confirmation email. Open it to activate your account.",
+      );
+    } else {
+      setMsg(
+        "If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'.",
+      );
+    }
+  }
+
+  async function submitSignIn() {
+    setStatus("sending");
+    setMsg("");
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -164,12 +181,48 @@ export default function LoginClient() {
     window.location.href = profileSetupNext;
   }
 
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (mode === "sign-up") {
+      setMsg("");
+
+      if (password !== confirmPassword) {
+        setStatus("error");
+        setMsg("Passwords do not match.");
+        return;
+      }
+      if (!acceptedLegal) {
+        setStatus("idle");
+        openLegalModal(true);
+        return;
+      }
+
+      await submitSignUp();
+      return;
+    }
+
+    await submitSignIn();
+  }
+
   function onGeneratePassword() {
     const suggestedPassword = generateStrongPassword();
     setPassword(suggestedPassword);
     setConfirmPassword(suggestedPassword);
     setStatus("idle");
     setMsg("Strong password generated. You can use it as-is.");
+  }
+
+  function onAgreeToLegal() {
+    if (!acceptedLegal) return;
+
+    const shouldContinue = continueSignUpAfterLegal;
+    setLegalModalOpen(false);
+    setContinueSignUpAfterLegal(false);
+
+    if (shouldContinue) {
+      void submitSignUp();
+    }
   }
 
   return (
@@ -186,6 +239,7 @@ export default function LoginClient() {
           type="button"
           onClick={() => {
             setMode("sign-in");
+            closeLegalModal();
             setMsg("");
             setStatus("idle");
           }}
@@ -206,6 +260,7 @@ export default function LoginClient() {
           type="button"
           onClick={() => {
             setMode("sign-up");
+            closeLegalModal();
             setMsg("");
             setStatus("idle");
           }}
@@ -301,41 +356,42 @@ export default function LoginClient() {
             >
               Generate strong password
             </button>
-            <label
+            <div
               style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-                fontSize: 14,
-                lineHeight: 1.35,
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                padding: "10px 12px",
+                background: acceptedLegal ? "var(--success-bg)" : "var(--surface-muted)",
+                display: "grid",
+                gap: 6,
               }}
             >
-              <input
-                type="checkbox"
-                checked={acceptedLegal}
-                onChange={(event) => setAcceptedLegal(event.target.checked)}
-                style={{ marginTop: 2 }}
-              />
-              <span>
-                I agree to the{" "}
-                <Link href="/terms" target="_blank" rel="noreferrer">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" target="_blank" rel="noreferrer">
-                  Privacy Policy
-                </Link>
-                .
-              </span>
-            </label>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>
+                {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
+              </div>
+              <button
+                type="button"
+                onClick={() => openLegalModal(false)}
+                disabled={status === "sending"}
+                style={{
+                  justifySelf: "start",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                {acceptedLegal ? "Review agreement" : "Review and agree"}
+              </button>
+            </div>
           </div>
         ) : null}
 
         <button
           type="submit"
-          disabled={
-            status === "sending" || (mode === "sign-up" && !acceptedLegal)
-          }
+          disabled={status === "sending"}
           style={{
             width: "100%",
             padding: "12px 14px",
@@ -401,6 +457,132 @@ export default function LoginClient() {
 
       {msg ? (
         <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p>
+      ) : null}
+
+      {mode === "sign-up" && legalModalOpen ? (
+        <div
+          role="presentation"
+          onClick={closeLegalModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.55)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 3000,
+            padding: 16,
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Accept legal agreement"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(560px, 100%)",
+              borderRadius: 14,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              boxShadow: "0 20px 42px rgba(0,0,0,0.3)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "14px 16px",
+                borderBottom: "1px solid var(--border-color)",
+                background:
+                  "linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%)",
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
+                Before you create your account
+              </h2>
+              <p style={{ margin: "6px 0 0", fontSize: 14, opacity: 0.82, lineHeight: 1.4 }}>
+                Please review and accept the legal terms for using bracketball.
+              </p>
+            </div>
+
+            <div style={{ padding: 16, display: "grid", gap: 12 }}>
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: 12,
+                  background: "var(--surface-muted)",
+                  fontSize: 14,
+                  lineHeight: 1.45,
+                }}
+              >
+                By continuing, you agree to the{" "}
+                <Link href="/terms" target="_blank" rel="noreferrer">
+                  Terms of Service
+                </Link>{" "}
+                and acknowledge the{" "}
+                <Link href="/privacy" target="_blank" rel="noreferrer">
+                  Privacy Policy
+                </Link>
+                .
+              </div>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  background: acceptedLegal ? "var(--success-bg)" : "var(--surface)",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={acceptedLegal}
+                  onChange={(event) => setAcceptedLegal(event.target.checked)}
+                  style={{ marginTop: 2 }}
+                />
+                <span style={{ fontSize: 14, lineHeight: 1.35 }}>
+                  I agree to bracketball&apos;s Terms of Service and Privacy Policy.
+                </span>
+              </label>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={closeLegalModal}
+                  disabled={status === "sending"}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface)",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  Not now
+                </button>
+                <button
+                  type="button"
+                  onClick={onAgreeToLegal}
+                  disabled={!acceptedLegal || status === "sending"}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface-elevated)",
+                    cursor: !acceptedLegal || status === "sending" ? "not-allowed" : "pointer",
+                    fontWeight: 800,
+                    opacity: !acceptedLegal || status === "sending" ? 0.65 : 1,
+                  }}
+                >
+                  {continueSignUpAfterLegal ? "Agree and create account" : "Agree"}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
       ) : null}
     </main>
   );
