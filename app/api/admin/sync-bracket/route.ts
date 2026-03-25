@@ -714,9 +714,9 @@ async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
           `https://a.espncdn.com/i/teamlogos/ncaa/500/${Math.trunc(teamId)}.png`;
 
         const displayName =
-          toText(team.shortDisplayName) ??
-          toText(team.location) ??
           toText(team.displayName) ??
+          toText(team.location) ??
+          toText(team.shortDisplayName) ??
           toText(team.name) ??
           `Team ${Math.trunc(teamId)}`;
         const schoolName = toSchoolName(displayName) ?? displayName;

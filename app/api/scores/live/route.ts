@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 type EspnTeam = {
   id?: string | number;
   displayName?: string;
-  abbreviation?: string;
   logos?: Array<{ href?: string }>;
   logo?: string;
 };
@@ -54,8 +53,6 @@ type LiveScoreRow = {
   homeTeamId: string | null;
   awayTeamName: string;
   homeTeamName: string;
-  awayLogoUrl: string | null;
-  homeLogoUrl: string | null;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -95,22 +92,11 @@ function toBoundedInt(
 }
 
 function toLabel(c: EspnCompetitor | undefined, fallback: string) {
-  return c?.team?.abbreviation?.trim() || c?.team?.displayName?.trim() || fallback;
+  return c?.team?.displayName?.trim() || fallback;
 }
 
 function toDisplayName(c: EspnCompetitor | undefined, fallback: string) {
-  return c?.team?.displayName?.trim() || c?.team?.abbreviation?.trim() || fallback;
-}
-
-function toLogoUrl(c: EspnCompetitor | undefined): string | null {
-  const fromPayload = c?.team?.logo?.trim() || c?.team?.logos?.[0]?.href?.trim() || null;
-  if (fromPayload) {
-    return fromPayload.replace(/^http:\/\//i, "https://");
-  }
-
-  const teamId = c?.team?.id ? String(c.team.id) : null;
-  if (!teamId) return null;
-  return `https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`;
+  return c?.team?.displayName?.trim() || fallback;
 }
 
 function toScore(raw: string | undefined): number | null {
@@ -187,8 +173,8 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   const home = competitors.find((c) => c.homeAway === "home");
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
-  const awayLabel = toLabel(away, "AWAY");
-  const homeLabel = toLabel(home, "HOME");
+  const awayLabel = toLabel(away, "Away Team");
+  const homeLabel = toLabel(home, "Home Team");
   const awayName = toDisplayName(away, awayLabel);
   const homeName = toDisplayName(home, homeLabel);
 
@@ -207,8 +193,6 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
     homeTeamId: home.team?.id ? String(home.team.id) : null,
     awayTeamName: awayName,
     homeTeamName: homeName,
-    awayLogoUrl: toLogoUrl(away),
-    homeLogoUrl: toLogoUrl(home),
     awayTeam: awayLabel,
     homeTeam: homeLabel,
     awayScore: toScore(away.score),

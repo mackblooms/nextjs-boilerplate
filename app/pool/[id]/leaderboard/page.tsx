@@ -445,15 +445,6 @@ function TeamValueTable({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                {row.logo_url ? (
-                  <img
-                    src={row.logo_url}
-                    alt=""
-                    width={18}
-                    height={18}
-                    style={{ objectFit: "contain", flexShrink: 0 }}
-                  />
-                ) : null}
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {row.team_name}
                 </span>
@@ -523,15 +514,6 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                {row.logo_url ? (
-                  <img
-                    src={row.logo_url}
-                    alt=""
-                    width={18}
-                    height={18}
-                    style={{ objectFit: "contain", flexShrink: 0 }}
-                  />
-                ) : null}
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {row.team_name}
                 </span>
@@ -1613,15 +1595,6 @@ export default function LeaderboardPage() {
                                   opacity: team.is_active ? 1 : 0.45,
                                 }}
                               >
-                                {team.logo_url ? (
-                                  <img
-                                    src={team.logo_url}
-                                    alt=""
-                                    width={18}
-                                    height={18}
-                                    style={{ objectFit: "contain", flexShrink: 0 }}
-                                  />
-                                ) : null}
                                 <span
                                   style={{
                                     fontSize: 13,
@@ -1854,15 +1827,6 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        {team.logo_url ? (
-                          <img
-                            src={team.logo_url}
-                            alt=""
-                            width={18}
-                            height={18}
-                            style={{ objectFit: "contain", flexShrink: 0 }}
-                          />
-                        ) : null}
                         <span
                           style={{
                             fontWeight: 700,
@@ -1934,15 +1898,6 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        {event.logo_url ? (
-                          <img
-                            src={event.logo_url}
-                            alt=""
-                            width={16}
-                            height={16}
-                            style={{ objectFit: "contain", flexShrink: 0 }}
-                          />
-                        ) : null}
                         <span
                           style={{
                             fontWeight: 700,
@@ -2225,15 +2180,6 @@ export default function LeaderboardPage() {
                   >
                     <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {team.logo_url ? (
-                        <img
-                          src={team.logo_url}
-                          alt=""
-                          width={22}
-                          height={22}
-                          style={{ objectFit: "contain", flexShrink: 0 }}
-                        />
-                      ) : null}
                       <div style={{ fontWeight: 800 }}>{team.team_name}</div>
                     </div>
                     <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>

@@ -20,8 +20,6 @@ type LiveScoreGame = {
   homeTeamId: string | null;
   awayTeamName: string;
   homeTeamName: string;
-  awayLogoUrl: string | null;
-  homeLogoUrl: string | null;
   awayTeam: string;
   homeTeam: string;
   awayScore: number | null;
@@ -37,7 +35,6 @@ type LiveScoresResponse = {
 type EspnTeam = {
   id?: string | number;
   displayName?: string;
-  abbreviation?: string;
   logos?: Array<{ href?: string }>;
   logo?: string;
 };
@@ -257,17 +254,6 @@ function toScore(raw: string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function toLogoUrl(c: EspnCompetitor | undefined): string | null {
-  const fromPayload = c?.team?.logo?.trim() || c?.team?.logos?.[0]?.href?.trim() || null;
-  if (fromPayload) {
-    return fromPayload.replace(/^http:\/\//i, "https://");
-  }
-
-  const teamId = c?.team?.id ? String(c.team.id) : null;
-  if (!teamId) return null;
-  return `https://a.espncdn.com/i/teamlogos/ncaa/500/${teamId}.png`;
-}
-
 function etDayKey(date: Date) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
@@ -387,10 +373,10 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
 
-  const awayDisplayName = away.team?.displayName?.trim() || away.team?.abbreviation?.trim() || "Away";
-  const homeDisplayName = home.team?.displayName?.trim() || home.team?.abbreviation?.trim() || "Home";
-  const awayLabel = away.team?.abbreviation?.trim() || awayDisplayName;
-  const homeLabel = home.team?.abbreviation?.trim() || homeDisplayName;
+  const awayDisplayName = away.team?.displayName?.trim() || "Away Team";
+  const homeDisplayName = home.team?.displayName?.trim() || "Home Team";
+  const awayLabel = awayDisplayName;
+  const homeLabel = homeDisplayName;
 
   const eventId = event.id?.trim() || null;
   const boxScoreUrl = eventId && /^\d+$/.test(eventId)
@@ -407,8 +393,6 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
     homeTeamId: home.team?.id ? String(home.team.id) : null,
     awayTeamName: awayDisplayName,
     homeTeamName: homeDisplayName,
-    awayLogoUrl: toLogoUrl(away),
-    homeLogoUrl: toLogoUrl(home),
     awayTeam: awayLabel,
     homeTeam: homeLabel,
     awayScore: toScore(away.score),
@@ -554,19 +538,8 @@ function ScorePanel({
                   title={game.awayTeamName}
                 >
                   {awayTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  {game.awayLogoUrl ? (
-                    <img
-                      src={game.awayLogoUrl}
-                      alt={game.awayTeamName}
-                      width={20}
-                      height={20}
-                      style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                  )}
                   <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.awayTeam}
+                    {game.awayTeamName}
                   </span>
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
@@ -587,19 +560,8 @@ function ScorePanel({
                   title={game.homeTeamName}
                 >
                   {homeTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  {game.homeLogoUrl ? (
-                    <img
-                      src={game.homeLogoUrl}
-                      alt={game.homeTeamName}
-                      width={20}
-                      height={20}
-                      style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                  )}
                   <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.homeTeam}
+                    {game.homeTeamName}
                   </span>
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>

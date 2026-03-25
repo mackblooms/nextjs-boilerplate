@@ -13,7 +13,6 @@ type PickRow = {
   cost: number | null;
   round_reached: string | null;
   total_team_score: number | null;
-  logo_url?: string | null;
 };
 
 export default function PicksPage() {
@@ -163,13 +162,12 @@ export default function PicksPage() {
         return;
       }
 
-      let logoById = new Map<string, string | null>();
       let seedById = new Map<string, number | null>();
 
       if (teamIds.length > 0) {
         const { data: teamRows, error: teamErr } = await supabase
           .from("teams")
-          .select("id,logo_url,seed_in_region")
+          .select("id,seed_in_region")
           .in("id", teamIds);
 
         if (teamErr) {
@@ -178,7 +176,6 @@ export default function PicksPage() {
           return;
         }
 
-        logoById = new Map((teamRows ?? []).map((t) => [t.id, t.logo_url ?? null]));
         seedById = new Map(
           (teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]),
         );
@@ -197,7 +194,6 @@ export default function PicksPage() {
       const merged = (pickRows ?? []).map((p) => ({
         ...p,
         total_team_score: computedTeamScores.get(p.team_id) ?? 0,
-        logo_url: logoById.get(p.team_id) ?? null,
       }));
 
       const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
@@ -301,18 +297,6 @@ export default function PicksPage() {
                     minWidth: 0,
                   }}
                 >
-                  {p.logo_url ? (
-                    <img
-                      src={p.logo_url}
-                      alt={p.team_name}
-                      width={18}
-                      height={18}
-                      style={{ objectFit: "contain", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <span style={{ width: 18, height: 18, flexShrink: 0 }} />
-                  )}
-
                   <span
                     style={{
                       overflow: "hidden",

@@ -23,9 +23,7 @@ type DraftRow = {
   user_id: string;
 };
 
-type TeamRow = DraftableTeam & {
-  logo_url: string | null;
-};
+type TeamRow = DraftableTeam;
 
 type GameRow = {
   round: string;
@@ -147,7 +145,7 @@ export default function DraftDetailPage() {
         )
       );
 
-      let teamQuery = supabase.from("teams").select("id,name,seed,cost,logo_url");
+      let teamQuery = supabase.from("teams").select("id,name,seed,cost");
       if (r64TeamIds.length > 0) {
         teamQuery = teamQuery.in("id", r64TeamIds);
       }
@@ -384,19 +382,6 @@ export default function DraftDetailPage() {
                     onChange={() => toggleTeam(team.id)}
                     disabled={draftsLocked || saving}
                   />
-
-                  {team.logo_url ? (
-                    <img
-                      src={team.logo_url}
-                      alt={team.name}
-                      width={20}
-                      height={20}
-                      style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                  )}
-
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>{team.name}</div>
                     <div style={{ fontSize: 12, opacity: 0.75 }}>Seed {team.seed}</div>

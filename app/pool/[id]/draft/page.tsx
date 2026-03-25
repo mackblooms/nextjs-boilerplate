@@ -30,9 +30,7 @@ type PoolRow = {
   lock_time: string | null;
 };
 
-type TeamRow = DraftableTeam & {
-  logo_url: string | null;
-};
+type TeamRow = DraftableTeam;
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 
@@ -236,7 +234,7 @@ export default function PoolDraftPage() {
       )
     );
 
-    let teamQuery = supabase.from("teams").select("id,name,seed,cost,logo_url");
+    let teamQuery = supabase.from("teams").select("id,name,seed,cost");
     if (r64TeamIds.length > 0) {
       teamQuery = teamQuery.in("id", r64TeamIds);
     }
@@ -974,17 +972,6 @@ export default function PoolDraftPage() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                    {team.logo_url ? (
-                      <img
-                        src={team.logo_url}
-                        alt={team.name}
-                        width={20}
-                        height={20}
-                        style={{ width: 20, height: 20, objectFit: "contain", flexShrink: 0 }}
-                      />
-                    ) : (
-                      <span style={{ width: 20, height: 20, flexShrink: 0 }} />
-                    )}
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       ({team.seed}) {team.name}
                     </span>

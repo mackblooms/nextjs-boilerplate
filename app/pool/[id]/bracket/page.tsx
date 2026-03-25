@@ -21,7 +21,6 @@ type Team = {
   seed: number | null;
   seed_in_region: number | null;
   region: string | null;
-  logo_url?: string | null;
   espn_team_id?: string | number | null;
 };
 
@@ -452,14 +451,14 @@ export default function BracketPage() {
 
       const teamQuery = await supabase
         .from("teams")
-        .select("id,name,region,seed,seed_in_region,logo_url,espn_team_id");
+        .select("id,name,region,seed,seed_in_region,espn_team_id");
       let teamRows = (teamQuery.data ?? []) as Team[];
       let teamErr = teamQuery.error;
 
       if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
         const fallback = await supabase
           .from("teams")
-          .select("id,name,region,seed,seed_in_region,logo_url");
+          .select("id,name,region,seed,seed_in_region");
         teamRows = (fallback.data ?? []).map((row) => ({
           ...row,
           espn_team_id: null,
@@ -977,8 +976,6 @@ export default function BracketPage() {
 
     const t = teamById.get(teamId);
     const displaySeed = teamSeedForDisplay(teamId);
-    const espnId = t?.espn_team_id ? String(t.espn_team_id).trim() : "";
-    const logoSrc = t?.logo_url || (espnId ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${espnId}.png` : null);
     const isHighlighted = highlightTeamIds.has(teamId);
     const isWinner = winnerId === teamId;
 
@@ -1017,18 +1014,6 @@ export default function BracketPage() {
           >
             {displaySeed ?? ""}
           </span>
-          {logoSrc ? (
-            <Image
-              src={logoSrc}
-              alt={t?.name ?? "Team"}
-              width={16}
-              height={16}
-              style={{ objectFit: "contain", flexShrink: 0 }}
-              unoptimized
-            />
-          ) : (
-            <span style={{ width: 16, height: 16, flexShrink: 0 }} />
-          )}
           <span
             style={{
               overflow: "hidden",

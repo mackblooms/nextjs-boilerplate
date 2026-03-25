@@ -1,13 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { type ReactNode, useMemo } from "react";
 
 export type BracketBoardTeam = {
   id: string;
   name: string;
   seed_in_region: number | null;
-  logo_url?: string | null;
 };
 
 export type BracketBoardGame = {
@@ -180,18 +178,6 @@ export function BracketBoard({
             minWidth: 0,
           }}
         >
-          {t?.logo_url ? (
-            <Image
-              src={t.logo_url}
-              alt={t.name ?? "Team"}
-              width={18}
-              height={18}
-              style={{ objectFit: "contain", flexShrink: 0 }}
-              unoptimized
-            />
-          ) : (
-            <span style={{ width: 18, height: 18, flexShrink: 0 }} />
-          )}
           <span
             style={{
               overflow: "hidden",
