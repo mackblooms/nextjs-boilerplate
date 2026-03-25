@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
   type ReactNode,
   useCallback,
@@ -208,6 +207,7 @@ export default function BracketPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
+  const [showViewingBanner, setShowViewingBanner] = useState(false);
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(
     new Set(),
   );
@@ -267,6 +267,10 @@ export default function BracketPage() {
   useEffect(() => {
     playerEntryIdsRef.current = players.map((p) => p.entry_id);
   }, [players]);
+
+  useEffect(() => {
+    setShowViewingBanner(Boolean(selectedEntryId));
+  }, [selectedEntryId]);
 
   const byRoundByRegion = useMemo(() => {
     const out: Record<Region, Record<RoundKey, Game[]>> = {
@@ -1180,7 +1184,7 @@ export default function BracketPage() {
         </h1>
       </div>
 
-      {selectedEntryId ? (
+      {selectedEntryId && showViewingBanner ? (
         <div
           style={{
             marginTop: 12,
@@ -1198,19 +1202,23 @@ export default function BracketPage() {
           }}
         >
           <div>Viewing a player&apos;s bracket (highlighting their teams)</div>
-          <Link
-            href={`/pool/${poolId}/bracket`}
+          <button
+            type="button"
+            onClick={() => setShowViewingBanner(false)}
+            aria-label="Dismiss viewing banner"
             style={{
+              border: "none",
+              background: "transparent",
               fontWeight: 900,
-              textDecoration: "none",
-              border: "1px solid var(--highlight-border)",
-              padding: "8px 10px",
-              borderRadius: 10,
-              background: "var(--surface)",
+              fontSize: 20,
+              lineHeight: 1,
+              color: "inherit",
+              cursor: "pointer",
+              padding: "0 2px",
             }}
           >
-            Clear
-          </Link>
+            x
+          </button>
         </div>
       ) : null}
 
