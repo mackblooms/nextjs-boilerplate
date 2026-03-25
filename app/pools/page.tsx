@@ -923,8 +923,9 @@ export default function PoolsPage() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main style={{ maxWidth: 960, margin: "90px auto", padding: 16, display: "grid", gap: 18 }}>
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 960, marginTop: 90 }}>
       <section
+        className="page-surface"
         style={{
           border: "1px solid var(--border-color)",
           borderRadius: 14,

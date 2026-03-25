@@ -107,7 +107,7 @@ export default function NewPoolPage() {
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
+    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
         Create a Pool
       </h1>
@@ -120,9 +120,10 @@ export default function NewPoolPage() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 8,
             marginBottom: 12,
+            background: "var(--surface-muted)",
           }}
         />
         <input
@@ -134,9 +135,10 @@ export default function NewPoolPage() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 8,
             marginBottom: 12,
+            background: "var(--surface-muted)",
           }}
         />
         <input
@@ -148,9 +150,10 @@ export default function NewPoolPage() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 8,
             marginBottom: 12,
+            background: "var(--surface-muted)",
           }}
         />
         <button
@@ -159,7 +162,8 @@ export default function NewPoolPage() {
           style={{
             padding: "12px 14px",
             borderRadius: 8,
-            border: "none",
+            border: "1px solid var(--border-color)",
+            background: "var(--surface-elevated)",
             cursor: "pointer",
             fontWeight: 800,
           }}

@@ -65,7 +65,7 @@ export default function HomeButton() {
       onBlur={() => notifyHomeButtonHover(false)}
       style={{
         position: "fixed",
-        top: 18,
+        top: 14,
         left: 20,
         zIndex: 1000,
         color: "var(--foreground)",
@@ -81,18 +81,24 @@ export default function HomeButton() {
         style={{
           display: "grid",
           gridTemplateColumns: "auto auto",
-          alignItems: "baseline",
-          columnGap: 4,
-          gap: 4,
+          alignItems: "center",
+          columnGap: 6,
+          rowGap: 5,
+          background: "var(--surface-glass)",
+          border: "1px solid var(--border-color)",
+          borderRadius: 12,
+          boxShadow: "var(--shadow-sm)",
+          backdropFilter: "blur(8px)",
+          padding: "8px 10px",
         }}
       >
         <span
           style={{
             fontFamily:
-              "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
-            fontSize: 28,
-            letterSpacing: "0.18em",
-            fontWeight: 500,
+              "var(--font-brand-display), var(--font-app-sans), 'Avenir Next', sans-serif",
+            fontSize: 23,
+            letterSpacing: "0.08em",
+            fontWeight: 700,
             lineHeight: 1,
             textTransform: "lowercase",
           }}
@@ -102,13 +108,17 @@ export default function HomeButton() {
         <span
           style={{
             fontFamily: russoOne.style.fontFamily,
-            fontSize: 20,
+            fontSize: 14,
             lineHeight: 1,
-            letterSpacing: "0.01em",
+            letterSpacing: "0.06em",
             textTransform: "lowercase",
             fontWeight: 400,
-            color: "var(--foreground)",
-            opacity: 0.72,
+            color: "var(--focus-ring)",
+            border: "1px solid var(--highlight-border)",
+            borderRadius: 9999,
+            padding: "3px 8px 2px",
+            background: "var(--surface-elevated)",
+            opacity: 0.92,
           }}
         >
           beta
@@ -124,9 +134,10 @@ export default function HomeButton() {
             style={{
               gridColumn: 1,
               justifySelf: "center",
-              width: 88,
+              width: 84,
               height: "auto",
               filter: "var(--logo-filter)",
+              opacity: 0.94,
             }}
           />
         ) : null}

@@ -5,7 +5,13 @@ export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>Loading…</main>}>
+    <Suspense
+      fallback={
+        <main className="page-shell page-card" style={{ maxWidth: 520 }}>
+          Loading...
+        </main>
+      }
+    >
       <LoginClient />
     </Suspense>
   );

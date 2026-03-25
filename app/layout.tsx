@@ -1,13 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
 import InstructionsModal from "./components/InstructionsModal";
 import "./globals.css";
 
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-app-sans",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-app-mono",
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-brand-display",
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "bracketball",
+  title: "Bracketball",
   description: "bracketball pool for March Madness",
 };
 
@@ -18,7 +39,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body
+        className={`${manrope.variable} ${ibmPlexMono.variable} ${spaceGrotesk.variable} antialiased`}
+      >
         <HomeButton />
         <AppTopNav />
         <Suspense fallback={null}>

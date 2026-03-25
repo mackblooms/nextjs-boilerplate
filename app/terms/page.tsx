@@ -8,30 +8,21 @@ export const metadata: Metadata = {
 
 const containerStyle = {
   maxWidth: 900,
-  margin: "40px auto",
-  padding: "0 16px",
-  lineHeight: 1.6,
-};
-
-const sectionStyle = {
-  marginTop: 24,
-  padding: 16,
-  border: "1px solid var(--border-color)",
-  borderRadius: 12,
-  background: "var(--surface)",
 };
 
 export default function TermsPage() {
   return (
-    <main style={containerStyle}>
-      <h1 style={{ margin: 0, fontSize: 34, fontWeight: 900 }}>Terms of Service</h1>
+    <main className="page-shell legal-doc" style={containerStyle}>
+      <h1 className="page-title" style={{ fontSize: 34, fontWeight: 900 }}>
+        Terms of Service
+      </h1>
       <p style={{ marginTop: 8, opacity: 0.8 }}>Effective Date: March 24, 2026</p>
       <p style={{ marginTop: 18 }}>
         Welcome to bracketball. By accessing or using the platform, you agree to these Terms of
         Service.
       </p>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>1. Use of the Platform</h2>
         <p>
           bracketball provides a sports-related draft and bracket competition platform. You agree to
@@ -39,7 +30,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>2. Eligibility</h2>
         <p style={{ marginBottom: 0 }}>
           You must be at least 13 years old to use bracketball. By using the platform, you confirm
@@ -47,7 +38,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>3. Accounts</h2>
         <p>
           You may need to create an account to use some features. You are responsible for
@@ -58,7 +49,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>4. Acceptable Use</h2>
         <p>You agree not to misuse the platform, including attempts to:</p>
         <ul style={{ marginBottom: 0 }}>
@@ -69,7 +60,7 @@ export default function TermsPage() {
         </ul>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>5. Game Rules and Scoring</h2>
         <p>
           bracketball gameplay, scoring, and contest structure are described on the{" "}
@@ -101,7 +92,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>6. Competition Integrity</h2>
         <p>
           bracketball may investigate activity that may compromise fair competition, including
@@ -113,7 +104,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>7. Intellectual Property and No Affiliation</h2>
         <p>
           bracketball is independent and is not affiliated with, endorsed by, or sponsored by the
@@ -125,7 +116,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>8. Platform Availability</h2>
         <p>
           bracketball is provided for entertainment on an &quot;as is&quot; and &quot;as
@@ -136,7 +127,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>9. Competitions and Liability Limits</h2>
         <p>
           Competitions, rankings, and standings on bracketball are for recreational purposes unless
@@ -153,7 +144,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>10. Changes to These Terms</h2>
         <p>
           We may revise these Terms from time to time. Continued use after updates are posted means
@@ -161,7 +152,7 @@ export default function TermsPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>11. Contact</h2>
         <p>
           If you have questions about these Terms, contact{" "}

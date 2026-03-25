@@ -210,8 +210,10 @@ export default function PicksPage() {
 
   if (!hasRouteParams) {
     return (
-      <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Player Picks</h1>
+      <main className="page-shell page-shell--stack" style={{ maxWidth: 900 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+          Player Picks
+        </h1>
         <p style={{ marginTop: 12 }}>
           Missing poolId or entryId in the URL. This usually means the folder name
           for the route does not match the param name (e.g., [entryId] vs [entryid]).
@@ -224,9 +226,9 @@ export default function PicksPage() {
   }
 
   return (
-    <main style={{ maxWidth: 1000, margin: "48px auto", padding: 16 }}>
+    <main className="page-shell" style={{ maxWidth: 1000 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           {displayName}&apos;s Picks
         </h1>
       </div>
@@ -254,9 +256,10 @@ export default function PicksPage() {
           </div>
 
           <div
+            className="page-card"
             style={{
               marginTop: 16,
-              border: "1px solid #ddd",
+              border: "1px solid var(--border-color)",
               borderRadius: 12,
               overflow: "hidden",
             }}
@@ -267,8 +270,8 @@ export default function PicksPage() {
                 gridTemplateColumns: "1fr 80px 80px 120px 120px",
                 padding: "10px 12px",
                 fontWeight: 900,
-                background: "#fafafa",
-                borderBottom: "1px solid #eee",
+                background: "var(--surface-muted)",
+                borderBottom: "1px solid var(--border-color)",
               }}
             >
               <div>Team</div>
@@ -285,7 +288,7 @@ export default function PicksPage() {
                   display: "grid",
                   gridTemplateColumns: "1fr 80px 80px 120px 120px",
                   padding: "10px 12px",
-                  borderBottom: "1px solid #f1f1f1",
+                  borderBottom: "1px solid var(--border-color)",
                   alignItems: "center",
                 }}
               >

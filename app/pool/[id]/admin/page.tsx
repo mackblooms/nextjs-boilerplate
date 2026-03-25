@@ -1093,8 +1093,10 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 1100, margin: "28px auto", padding: 12 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Commissioner Admin</h1>
+      <main className="page-shell page-shell--stack page-shell--compact" style={{ maxWidth: 1100 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+          Commissioner Admin
+        </h1>
         <p style={{ marginTop: 12 }}>Loading...</p>
       </main>
     );
@@ -1111,8 +1113,9 @@ export default function AdminPage() {
         : "Only this pool's creator can view its password.";
 
   return (
-    <main style={{ maxWidth: 1200, margin: "28px auto", padding: 12 }}>
+    <main className="page-shell page-shell--stack page-shell--compact" style={{ maxWidth: 1200 }}>
       <div
+        className="page-surface"
         style={{
           display: "grid",
           gap: 12,

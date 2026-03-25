@@ -1292,9 +1292,9 @@ export default function LeaderboardPage() {
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
 
   return (
-    <main style={{ maxWidth: 1240, margin: "48px auto", padding: 16 }}>
+    <main className="page-shell" style={{ maxWidth: 1240 }}>
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           {poolName ? `Leaderboard - ${poolName}` : "Leaderboard"}
         </h1>
       </div>
@@ -1306,6 +1306,7 @@ export default function LeaderboardPage() {
         <div className="leaderboard-layout" style={{ marginTop: 16 }}>
           <section>
             <div
+              className="page-card"
               style={{
                 border: "1px solid var(--border-color)",
                 borderRadius: 12,

@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: "64px auto", padding: 16 }}>
+    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Reset password</h1>
       <p style={{ marginBottom: 24 }}>Enter your new password below.</p>
 
@@ -59,9 +59,10 @@ export default function ResetPasswordPage() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 8,
             marginBottom: 12,
+            background: "var(--surface-muted)",
           }}
         />
 
@@ -76,9 +77,10 @@ export default function ResetPasswordPage() {
           style={{
             width: "100%",
             padding: "12px 14px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--border-color)",
             borderRadius: 8,
             marginBottom: 12,
+            background: "var(--surface-muted)",
           }}
         />
 
@@ -107,7 +109,8 @@ export default function ResetPasswordPage() {
             width: "100%",
             padding: "12px 14px",
             borderRadius: 8,
-            border: "none",
+            border: "1px solid var(--border-color)",
+            background: "var(--surface-elevated)",
             cursor: "pointer",
             fontWeight: 700,
           }}
@@ -120,3 +123,5 @@ export default function ResetPasswordPage() {
     </main>
   );
 }
+
+

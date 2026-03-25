@@ -21,8 +21,8 @@ const SEED_COSTS: Array<[number, number]> = [
 
 export default function HowItWorksPage() {
   return (
-    <main style={{ maxWidth: 900, margin: "48px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
+    <main className="page-shell legal-doc" style={{ maxWidth: 900 }}>
+      <h1 className="page-title" style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
         bracketball: How It Works
       </h1>
 
@@ -46,7 +46,7 @@ export default function HowItWorksPage() {
         </Link>
       </div>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>
           1) Draft Budget: 100 Total Points
         </h2>
@@ -98,7 +98,7 @@ export default function HowItWorksPage() {
         </p>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>2) Base Points Per Win</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
           Scoring is <b>per game won</b>. Every tournament win by a team you
@@ -154,14 +154,14 @@ export default function HowItWorksPage() {
         </p>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Upset Bonus</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
           Upset Bonus = <b>4 x (Team Seed - Opponent Seed)</b>, minimum 0.
         </p>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>4) Seed Multiplier</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
           Base points are multiplied by seed value from 1.00x (1-seed) up to
@@ -169,7 +169,7 @@ export default function HowItWorksPage() {
         </p>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>
           5) Historic Upset Bonus
         </h2>
@@ -186,7 +186,7 @@ export default function HowItWorksPage() {
         </ul>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>
           6) Perfect Round of 64 Bonus
         </h2>
@@ -211,7 +211,7 @@ export default function HowItWorksPage() {
         </ul>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>7) Draft Caps</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Max 2 one-seeds</li>
@@ -220,7 +220,7 @@ export default function HowItWorksPage() {
         </ul>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>8) Tie-breakers</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Total points (obviously).</li>
@@ -230,7 +230,7 @@ export default function HowItWorksPage() {
         </ul>
       </section>
 
-      <section style={{ marginTop: 24 }}>
+      <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>9) FAQ / Edge Cases</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>

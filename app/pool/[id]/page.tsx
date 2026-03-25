@@ -1452,7 +1452,7 @@ export default function PoolPage() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main style={{ maxWidth: 1320, margin: "28px auto", padding: 12 }}>
+    <main className="page-shell page-shell--compact" style={{ maxWidth: 1320 }}>
       <div className="pool-hero-layout">
         <div className="pool-scores-left">
           <ScoreSidebar
@@ -1465,7 +1465,7 @@ export default function PoolPage() {
         </div>
 
         <div
-          className="pool-main-card"
+          className="pool-main-card page-surface"
           style={{
             display: "grid",
             gap: 16,

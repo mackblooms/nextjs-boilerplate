@@ -253,14 +253,16 @@ export default function AppTopNav() {
   if (!userId) return null;
 
   const pillStyle: CSSProperties = {
-    padding: "8px 10px",
+    padding: "8px 12px",
     border: "1px solid var(--border-color)",
-    borderRadius: 10,
+    borderRadius: 9999,
     textDecoration: "none",
     color: "var(--foreground)",
-    fontWeight: 700,
-    fontSize: 14,
+    fontWeight: 800,
+    fontSize: 13,
+    letterSpacing: "0.02em",
     whiteSpace: "nowrap",
+    background: "var(--surface)",
   };
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
   const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
@@ -269,13 +271,13 @@ export default function AppTopNav() {
     <div
       style={{
         position: "fixed",
-        top: 56,
+        top: 62,
         left: 0,
         right: 0,
         zIndex: 999,
         display: "flex",
         justifyContent: "center",
-        padding: "8px 16px",
+        padding: "8px 18px",
         pointerEvents: "none",
         transform: isHidden ? "translateY(-140%)" : "translateY(0)",
         opacity: isHidden ? 0 : 1,
@@ -290,10 +292,11 @@ export default function AppTopNav() {
           alignItems: "center",
           flexWrap: "wrap",
           justifyContent: "center",
-          background: "var(--surface)",
+          background: "var(--surface-glass)",
           border: "1px solid var(--border-color)",
-          borderRadius: 12,
+          borderRadius: 9999,
           padding: 8,
+          boxShadow: "var(--shadow-sm)",
           pointerEvents: "auto",
         }}
       >
@@ -317,7 +320,7 @@ export default function AppTopNav() {
         style={{
           position: "absolute",
           right: 16,
-          top: 8,
+          top: 7,
           display: "grid",
           justifyItems: "end",
           pointerEvents: "auto",
@@ -336,10 +339,11 @@ export default function AppTopNav() {
             borderRadius: 9999,
             border: "1px solid var(--border-color)",
             overflow: "hidden",
-            background: "var(--surface)",
+            background: "var(--surface-glass)",
             display: "grid",
             placeItems: "center",
             padding: 0,
+            boxShadow: "var(--shadow-sm)",
             cursor: "pointer",
           }}
         >
@@ -361,9 +365,9 @@ export default function AppTopNav() {
               width: "min(360px, calc(100vw - 28px))",
               border: "1px solid var(--border-color)",
               borderRadius: 14,
-              background: "var(--surface)",
+              background: "var(--surface-glass)",
               padding: 10,
-              boxShadow: "0 12px 30px rgba(0,0,0,0.28)",
+              boxShadow: "var(--shadow-lg)",
               display: "grid",
               gap: 10,
             }}
@@ -384,7 +388,7 @@ export default function AppTopNav() {
                 style={{
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
-                  background: "var(--surface-muted)",
+                  background: "var(--surface-elevated)",
                   padding: "10px 12px",
                   textAlign: "left",
                   fontWeight: 800,
@@ -404,7 +408,7 @@ export default function AppTopNav() {
                   gridRow: "1 / span 2",
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
-                  background: "var(--surface-muted)",
+                  background: "var(--surface-elevated)",
                   padding: "10px 12px",
                   textAlign: "center",
                   fontWeight: 900,
@@ -422,7 +426,7 @@ export default function AppTopNav() {
                 style={{
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
-                  background: "var(--surface-muted)",
+                  background: "var(--surface-elevated)",
                   padding: "10px 12px",
                   textAlign: "left",
                   fontWeight: 800,
@@ -445,7 +449,7 @@ export default function AppTopNav() {
                   textDecoration: "none",
                   fontWeight: 800,
                   color: "var(--foreground)",
-                  background: "var(--surface)",
+                  background: "var(--surface-elevated)",
                 }}
               >
                 Profile
@@ -458,7 +462,7 @@ export default function AppTopNav() {
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
                   padding: "9px 12px",
-                  background: "var(--surface)",
+                  background: "var(--surface-elevated)",
                   cursor: "pointer",
                   fontWeight: 800,
                 }}
@@ -498,6 +502,7 @@ export default function AppTopNav() {
               padding: 14,
               display: "grid",
               gap: 12,
+              boxShadow: "var(--shadow-lg)",
             }}
           >
             <div
@@ -525,12 +530,12 @@ export default function AppTopNav() {
             </div>
 
             <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                background: "var(--surface-muted)",
-                padding: 12,
-                display: "flex",
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-elevated)",
+                  padding: 12,
+                  display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 12,
@@ -574,12 +579,12 @@ export default function AppTopNav() {
             </div>
 
             <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                background: "var(--surface-muted)",
-                padding: 12,
-                display: "grid",
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-elevated)",
+                  padding: 12,
+                  display: "grid",
                 gap: 8,
               }}
             >

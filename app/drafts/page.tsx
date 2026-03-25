@@ -210,16 +210,19 @@ export default function DraftsPage() {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 960, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>My Drafts</h1>
+      <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
+        <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900 }}>
+          My Drafts
+        </h1>
         <p style={{ marginTop: 12 }}>Loading drafts...</p>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 960, margin: "48px auto", padding: 16, display: "grid", gap: 16 }}>
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
       <section
+        className="page-surface"
         style={{
           border: "1px solid var(--border-color)",
           borderRadius: 14,
@@ -290,6 +293,7 @@ export default function DraftsPage() {
         <section style={{ display: "grid", gap: 10 }}>
           {drafts.map((draft) => (
             <article
+              className="page-card"
               key={draft.id}
               style={{
                 border: "1px solid var(--border-color)",
@@ -367,6 +371,7 @@ export default function DraftsPage() {
         </section>
       ) : (
         <section
+          className="page-card"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 12,

@@ -102,8 +102,10 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <main style={{ maxWidth: 720, margin: "64px auto", padding: 16 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 800 }}>{status}</h1>
+    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 720 }}>
+      <h1 className="page-title" style={{ fontSize: 22, fontWeight: 800 }}>
+        {status}
+      </h1>
       {details ? (
         <pre style={{ marginTop: 12, whiteSpace: "pre-wrap" }}>{details}</pre>
       ) : (

@@ -491,7 +491,7 @@ function ScorePanel({
   const trackedKeys = trackedKeySet ?? new Set<string>();
 
   return (
-    <aside style={scorePanelStyle}>
+    <aside className="home-score-panel" style={scorePanelStyle}>
       <div
         style={{
           display: "flex",
@@ -530,6 +530,7 @@ function ScorePanel({
 
           const row = (
             <article
+              className="home-score-row"
               style={{
                 ...scoreRowStyle,
                 border: gameHasTrackedTeam
@@ -1661,6 +1662,7 @@ function HomeContent() {
 
   return (
     <main
+      className="page-shell"
       style={{
         maxWidth: 1240,
         margin: "40px auto",
@@ -1788,7 +1790,7 @@ function HomeContent() {
         </div>
 
         <section
-          className="home-center"
+          className="home-center home-primary-panel"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
@@ -1827,6 +1829,7 @@ function HomeContent() {
 
                 return (
                   <article
+                    className="home-draft-card"
                     key={draft.id}
                     style={{
                       border: "1px solid var(--border-color)",
@@ -2098,6 +2101,7 @@ function HomeContent() {
 function HomeFallback() {
   return (
     <main
+      className="page-shell"
       style={{
         maxWidth: 1240,
         margin: "40px auto",
@@ -2150,7 +2154,7 @@ function HomeFallback() {
         </div>
 
         <section
-          className="home-center"
+          className="home-center home-primary-panel"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,

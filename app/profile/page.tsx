@@ -274,7 +274,7 @@ export default function ProfilePage() {
     : avatarUrl.trim();
 
   return (
-    <main style={{ maxWidth: 560, margin: "64px auto", padding: 16 }}>
+    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 560 }}>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
         {onboarding ? "Set up your profile" : "Profile"}
       </h1>

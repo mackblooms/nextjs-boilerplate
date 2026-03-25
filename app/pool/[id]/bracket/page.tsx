@@ -1233,8 +1233,10 @@ export default function BracketPage() {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 1200, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
+      <main className="page-shell page-shell--stack" style={{ maxWidth: 1200 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+          Bracket
+        </h1>
         {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
         <p style={{ marginTop: 12, opacity: 0.8 }}>Loading…</p>
       </main>
@@ -1242,7 +1244,7 @@ export default function BracketPage() {
   }
 
   return (
-    <main style={{ maxWidth: "100%", margin: "48px auto", padding: 16 }}>
+    <main className="page-shell" style={{ maxWidth: "100%" }}>
       <div
         style={{
           display: "flex",
@@ -1253,7 +1255,9 @@ export default function BracketPage() {
           margin: "0 auto",
         }}
       >
-        <h1 style={{ fontSize: 28, fontWeight: 900 }}>Bracket</h1>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+          Bracket
+        </h1>
       </div>
 
       {selectedEntryId ? (

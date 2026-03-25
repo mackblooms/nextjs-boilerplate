@@ -8,30 +8,21 @@ export const metadata: Metadata = {
 
 const containerStyle = {
   maxWidth: 900,
-  margin: "40px auto",
-  padding: "0 16px",
-  lineHeight: 1.6,
-};
-
-const sectionStyle = {
-  marginTop: 24,
-  padding: 16,
-  border: "1px solid var(--border-color)",
-  borderRadius: 12,
-  background: "var(--surface)",
 };
 
 export default function PrivacyPage() {
   return (
-    <main style={containerStyle}>
-      <h1 style={{ margin: 0, fontSize: 34, fontWeight: 900 }}>Privacy Policy</h1>
+    <main className="page-shell legal-doc" style={containerStyle}>
+      <h1 className="page-title" style={{ fontSize: 34, fontWeight: 900 }}>
+        Privacy Policy
+      </h1>
       <p style={{ marginTop: 8, opacity: 0.8 }}>Effective Date: March 24, 2026</p>
       <p style={{ marginTop: 18 }}>
         bracketball values your privacy. This policy explains how we collect, use, share, and
         protect your information when you use the platform.
       </p>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>1. Information We Collect</h2>
         <p>Depending on your use of the platform, we may collect:</p>
         <p style={{ marginBottom: 0 }}>
@@ -46,7 +37,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>2. How We Use Information</h2>
         <p>We use information to:</p>
         <ul style={{ marginBottom: 0 }}>
@@ -58,7 +49,7 @@ export default function PrivacyPage() {
         </ul>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>3. Sharing of Information</h2>
         <p>
           We do not sell your personal information. We may share limited information with service
@@ -70,7 +61,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>4. Cookies and Similar Technologies</h2>
         <p>
           We may use cookies, local storage, and similar technologies to keep you signed in, store
@@ -82,7 +73,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>5. Data Security</h2>
         <p>
           We use reasonable administrative, technical, and organizational safeguards to protect
@@ -94,7 +85,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>6. Data Retention</h2>
         <p>
           We retain information as needed to operate bracketball, maintain competition history,
@@ -106,7 +97,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>7. Your Rights and Choices</h2>
         <p>
           Subject to applicable law, you may request access to, correction of, or deletion of your
@@ -118,7 +109,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>8. Children&apos;s Privacy</h2>
         <p>
           bracketball is not intended for children under 13, and we do not knowingly collect
@@ -130,7 +121,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>9. Changes to This Policy</h2>
         <p style={{ marginBottom: 0 }}>
           We may update this Privacy Policy periodically. Continued use of bracketball after updates
@@ -138,7 +129,7 @@ export default function PrivacyPage() {
         </p>
       </section>
 
-      <section style={sectionStyle}>
+      <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>10. Contact</h2>
         <p>
           For privacy questions or requests, contact{" "}

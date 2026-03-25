@@ -280,16 +280,19 @@ export default function DraftDetailPage() {
 
   if (loading) {
     return (
-      <main style={{ maxWidth: 1050, margin: "48px auto", padding: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>Draft</h1>
+      <main className="page-shell page-shell--stack" style={{ maxWidth: 1050 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
+          Draft
+        </h1>
         <p style={{ marginTop: 12 }}>Loading...</p>
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 1100, margin: "48px auto", padding: 16, display: "grid", gap: 16 }}>
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 1100 }}>
       <section
+        className="page-surface"
         style={{
           border: "1px solid var(--border-color)",
           borderRadius: 14,
@@ -384,6 +387,7 @@ export default function DraftDetailPage() {
 
       <section className="draft-editor-layout">
         <div
+          className="page-card"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
@@ -442,7 +446,7 @@ export default function DraftDetailPage() {
         </div>
 
         <aside
-          className="draft-editor-summary"
+          className="draft-editor-summary page-card"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
