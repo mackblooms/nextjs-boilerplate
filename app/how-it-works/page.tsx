@@ -129,9 +129,9 @@ export default function HowItWorksPage() {
           {[
             ["Round of 64", "12"],
             ["Round of 32", "36"],
-            ["Sweet 16", "84"],
-            ["Elite 8", "180"],
-            ["Final Four", "300"],
+            ["Round of 16", "84"],
+            ["Round of 8", "180"],
+            ["Round of 4", "300"],
             ["Championship", "360"],
           ].map(([label, pts]) => (
             <div
@@ -224,7 +224,7 @@ export default function HowItWorksPage() {
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>8) Tie-breakers</h2>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
           <li>Total points (obviously).</li>
-          <li>If tied: most Final Four teams drafted.</li>
+          <li>If tied: most Round of 4 teams drafted.</li>
           <li>If still tied: most Championship teams drafted.</li>
           <li>If still tied: split pot (or commissioner decides).</li>
         </ul>

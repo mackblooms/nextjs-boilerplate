@@ -358,9 +358,9 @@ function formatArchiveRound(round: string | null) {
   if (!round) return "Did not make tournament";
   if (round === "R64") return "Round of 64";
   if (round === "R32") return "Round of 32";
-  if (round === "S16") return "Sweet 16";
-  if (round === "E8") return "Elite 8";
-  if (round === "F4") return "Final Four";
+  if (round === "S16") return "Round of 16";
+  if (round === "E8") return "Round of 8";
+  if (round === "F4") return "Round of 4";
   if (round === "CHIP") return "Championship";
   return round;
 }

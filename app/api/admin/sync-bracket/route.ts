@@ -149,6 +149,7 @@ function bracketToRegion(bracket: unknown): "East" | "West" | "South" | "Midwest
 
 function roundToCode(roundValue: unknown): "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP" | null {
   const roundText = norm(roundValue);
+  const compactRoundText = roundText.replace(/\s+/g, "");
   const asNum = Number(roundValue);
 
   if (!Number.isNaN(asNum)) {
@@ -167,7 +168,12 @@ function roundToCode(roundValue: unknown): "R64" | "R32" | "S16" | "E8" | "F4" |
   if (roundText.includes("32")) return "R32";
   if (roundText.includes("16") || roundText.includes("sweet")) return "S16";
   if (roundText.includes("elite")) return "E8";
-  if (roundText.includes("final four") || roundText === "f4" || roundText.includes("semifinal")) return "F4";
+  if (
+    compactRoundText.includes("roundof4") ||
+    compactRoundText.includes("finalfour") ||
+    roundText === "f4" ||
+    roundText.includes("semifinal")
+  ) return "F4";
   if (roundText.includes("champ")) return "CHIP";
 
   return null;

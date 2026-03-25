@@ -332,13 +332,13 @@ export function BracketBoard({
             <>
               {renderRoundColumn("Round of 64", "R64")}
               {renderRoundColumn("Round of 32", "R32")}
-              {renderRoundColumn("Sweet 16", "S16")}
-              {renderRoundColumn("Elite 8", "E8")}
+              {renderRoundColumn("Round of 16", "S16")}
+              {renderRoundColumn("Round of 8", "E8")}
             </>
           ) : (
             <>
-              {renderRoundColumn("Elite 8", "E8")}
-              {renderRoundColumn("Sweet 16", "S16")}
+              {renderRoundColumn("Round of 8", "E8")}
+              {renderRoundColumn("Round of 16", "S16")}
               {renderRoundColumn("Round of 32", "R32")}
               {renderRoundColumn("Round of 64", "R64")}
             </>
@@ -389,7 +389,7 @@ export function BracketBoard({
               textAlign: "center",
             }}
           >
-            Final Four
+            Round of 4
           </div>
           <div
             style={{
