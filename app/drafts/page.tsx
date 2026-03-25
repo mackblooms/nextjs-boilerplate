@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
+import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = { draft_id: string };
@@ -239,24 +239,17 @@ export default function DraftsPage() {
               {draftsLocked ? lockMessage : "Create multiple drafts here, then open one to edit teams and save."}
             </p>
           </div>
-          <Link
+          <UiLinkButton
             href="/pools"
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              textDecoration: "none",
-              fontWeight: 800,
-              background: "var(--surface)",
-              height: "fit-content",
-            }}
+            variant="secondary"
+            style={{ height: "fit-content" }}
           >
             Open Pools
-          </Link>
+          </UiLinkButton>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input
+          <UiInput
             value={newDraftName}
             onChange={(event) => setNewDraftName(event.target.value)}
             disabled={draftsLocked || creating}
@@ -264,42 +257,26 @@ export default function DraftsPage() {
             style={{
               flex: "1 1 300px",
               minWidth: 220,
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-muted)",
             }}
           />
-          <button
+          <UiButton
             type="button"
             onClick={() => void createDraft()}
             disabled={creating || draftsLocked}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              fontWeight: 800,
-              cursor: creating || draftsLocked ? "not-allowed" : "pointer",
-              opacity: creating || draftsLocked ? 0.7 : 1,
-            }}
+            variant={draftsLocked ? "ghost" : "primary"}
           >
             {creating ? "Creating..." : draftsLocked ? "Drafts Locked" : "Create Draft"}
-          </button>
+          </UiButton>
         </div>
       </section>
 
       {hasDrafts ? (
         <section style={{ display: "grid", gap: 10 }}>
           {drafts.map((draft) => (
-            <article
-              className="page-card"
+            <UiCard
+              as="article"
               key={draft.id}
               style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                background: "var(--surface)",
-                padding: 12,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -317,70 +294,42 @@ export default function DraftsPage() {
               </div>
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Link
+                <UiLinkButton
                   href={`/drafts/${draft.id}`}
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
                 >
                   {draftsLocked ? "View" : "Edit"}
-                </Link>
-                <Link
+                </UiLinkButton>
+                <UiLinkButton
                   href="/pools"
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
                 >
                   Join Pool(s)
-                </Link>
-                <button
+                </UiLinkButton>
+                <UiButton
                   type="button"
                   onClick={() => void deleteDraft(draft.id, draft.name)}
                   disabled={deletingDraftId === draft.id || draftsLocked}
                   aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
                   title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
+                  variant="danger"
+                  size="sm"
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
-                    border: "1px solid #dc2626",
-                    background: "rgba(220,38,38,0.12)",
-                    color: "#dc2626",
-                    cursor: deletingDraftId === draft.id || draftsLocked ? "not-allowed" : "pointer",
-                    opacity: deletingDraftId === draft.id || draftsLocked ? 0.7 : 1,
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
                   <TrashIcon />
-                </button>
+                </UiButton>
               </div>
-            </article>
+            </UiCard>
           ))}
         </section>
       ) : (
-        <section
-          className="page-card"
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            background: "var(--surface)",
-            padding: 14,
-          }}
-        >
+        <UiCard>
           No drafts yet. Create one above.
-        </section>
+        </UiCard>
       )}
 
       {message ? (

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { UiButton, UiInput } from "../../components/ui/primitives";
 
 export default function NewPoolPage() {
   const router = useRouter();
@@ -113,63 +114,36 @@ export default function NewPoolPage() {
       </h1>
 
       <form onSubmit={createPool}>
-        <input
+        <UiInput
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., bracketball - Friends 2026"
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            marginBottom: 12,
-            background: "var(--surface-muted)",
-          }}
+          style={{ marginBottom: 12 }}
         />
-        <input
+        <UiInput
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Pool password (required)"
           minLength={4}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            marginBottom: 12,
-            background: "var(--surface-muted)",
-          }}
+          style={{ marginBottom: 12 }}
         />
-        <input
+        <UiInput
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Confirm pool password"
           minLength={4}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            marginBottom: 12,
-            background: "var(--surface-muted)",
-          }}
+          style={{ marginBottom: 12 }}
         />
-        <button
+        <UiButton
           type="submit"
           disabled={saving}
-          style={{
-            padding: "12px 14px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            background: "var(--surface-elevated)",
-            cursor: "pointer",
-            fontWeight: 800,
-          }}
+          variant="primary"
+          size="lg"
         >
           {saving ? "Creating..." : "Create pool"}
-        </button>
+        </UiButton>
       </form>
 
       <p style={{ marginTop: 12, opacity: 0.75, fontSize: 13 }}>

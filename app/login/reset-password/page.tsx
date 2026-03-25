@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../../lib/accountPassword";
+import { UiButton, UiInput } from "../../components/ui/primitives";
 
 export default function LoginResetPasswordPage() {
   const router = useRouter();
@@ -117,7 +118,7 @@ export default function LoginResetPasswordPage() {
 
       {ready ? (
         <form onSubmit={onSubmit}>
-          <input
+          <UiInput
             type="password"
             placeholder="New password"
             value={password}
@@ -125,17 +126,10 @@ export default function LoginResetPasswordPage() {
             minLength={PASSWORD_MIN_LENGTH}
             autoComplete="new-password"
             required
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 8,
-              marginBottom: 12,
-              background: "var(--surface-muted)",
-            }}
+            style={{ marginBottom: 12 }}
           />
 
-          <input
+          <UiInput
             type="password"
             placeholder="Confirm new password"
             value={confirmPassword}
@@ -143,49 +137,29 @@ export default function LoginResetPasswordPage() {
             minLength={PASSWORD_MIN_LENGTH}
             autoComplete="new-password"
             required
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 8,
-              marginBottom: 12,
-              background: "var(--surface-muted)",
-            }}
+            style={{ marginBottom: 12 }}
           />
 
-          <button
+          <UiButton
             type="button"
             onClick={onGeneratePassword}
             disabled={saving}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid var(--border-color)",
-              cursor: "pointer",
-              fontWeight: 600,
-              background: "transparent",
-              marginBottom: 12,
-            }}
+            variant="ghost"
+            fullWidth
+            style={{ marginBottom: 12 }}
           >
             Generate strong password
-          </button>
+          </UiButton>
 
-          <button
+          <UiButton
             type="submit"
             disabled={saving}
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 8,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-elevated)",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
+            variant="primary"
+            size="lg"
+            fullWidth
           >
             {saving ? "Saving..." : "Save new password"}
-          </button>
+          </UiButton>
         </form>
       ) : null}
 

@@ -28,8 +28,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Bracketball",
-  description: "bracketball pool for March Madness",
+  title: "bracketball",
+  description: "bracketball pool for march madness",
 };
 
 export default function RootLayout({

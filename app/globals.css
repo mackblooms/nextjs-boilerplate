@@ -99,6 +99,7 @@ body {
   display: flex;
   flex-direction: column;
   text-rendering: optimizeLegibility;
+  text-transform: lowercase;
 }
 
 a {
@@ -233,6 +234,128 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  text-transform: lowercase;
+}
+
+.ui-card {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 14px;
+}
+
+.ui-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ui-btn {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  min-height: 42px;
+}
+
+.ui-btn--sm {
+  padding: 8px 10px;
+  min-height: 36px;
+  font-size: 0.86rem;
+}
+
+.ui-btn--md {
+  padding: 10px 12px;
+}
+
+.ui-btn--lg {
+  padding: 12px 14px;
+  min-height: 46px;
+}
+
+.ui-btn--full {
+  width: 100%;
+}
+
+.ui-btn--primary {
+  background: var(--surface-elevated);
+}
+
+.ui-btn--secondary {
+  background: var(--surface);
+}
+
+.ui-btn--ghost {
+  background: transparent;
+}
+
+.ui-btn--danger {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+.ui-btn--success {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.14);
+  color: #166534;
+}
+
+.ui-btn:hover,
+.ui-btn:focus-visible {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.ui-btn:disabled,
+.ui-btn[aria-disabled="true"] {
+  opacity: 0.64;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ui-control {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 42px;
+  background: var(--surface-muted);
+}
+
+.ui-control--full {
+  width: 100%;
+}
+
+.ui-select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--foreground) 50%),
+    linear-gradient(135deg, var(--foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+}
+
+.ui-textarea {
+  min-height: 96px;
+  resize: vertical;
 }
 
 .site-disclaimer {

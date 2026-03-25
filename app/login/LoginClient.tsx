@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
+import { UiButton, UiInput } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -235,7 +236,7 @@ export default function LoginClient() {
       </p>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        <button
+        <UiButton
           type="button"
           onClick={() => {
             setMode("sign-in");
@@ -243,20 +244,15 @@ export default function LoginClient() {
             setMsg("");
             setStatus("idle");
           }}
+          variant={mode === "sign-in" ? "primary" : "ghost"}
+          fullWidth
           style={{
             flex: 1,
-            padding: "10px 12px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            background:
-              mode === "sign-in" ? "var(--surface-elevated)" : "transparent",
-            fontWeight: 700,
-            cursor: "pointer",
           }}
         >
           Sign in
-        </button>
-        <button
+        </UiButton>
+        <UiButton
           type="button"
           onClick={() => {
             setMode("sign-up");
@@ -264,40 +260,28 @@ export default function LoginClient() {
             setMsg("");
             setStatus("idle");
           }}
+          variant={mode === "sign-up" ? "primary" : "ghost"}
+          fullWidth
           style={{
             flex: 1,
-            padding: "10px 12px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            background:
-              mode === "sign-up" ? "var(--surface-elevated)" : "transparent",
-            fontWeight: 700,
-            cursor: "pointer",
           }}
         >
           Create account
-        </button>
+        </UiButton>
       </div>
 
       <form onSubmit={onSubmit}>
-        <input
+        <UiInput
           type="email"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           required
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            marginBottom: 12,
-            background: "var(--surface-muted)",
-          }}
+          style={{ marginBottom: 12 }}
         />
 
-        <input
+        <UiInput
           type="password"
           placeholder={mode === "sign-up" ? "New password" : "Password"}
           value={password}
@@ -305,18 +289,11 @@ export default function LoginClient() {
           required
           minLength={PASSWORD_MIN_LENGTH}
           autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 8,
-            marginBottom: 12,
-            background: "var(--surface-muted)",
-          }}
+          style={{ marginBottom: 12 }}
         />
 
         {mode === "sign-up" ? (
-          <input
+          <UiInput
             type="password"
             placeholder="Confirm new password"
             value={confirmPassword}
@@ -324,14 +301,7 @@ export default function LoginClient() {
             required
             minLength={PASSWORD_MIN_LENGTH}
             autoComplete="new-password"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid var(--border-color)",
-              borderRadius: 8,
-              marginBottom: 12,
-              background: "var(--surface-muted)",
-            }}
+            style={{ marginBottom: 12 }}
           />
         ) : null}
 
@@ -343,22 +313,15 @@ export default function LoginClient() {
               marginBottom: 12,
             }}
           >
-            <button
+            <UiButton
               type="button"
               onClick={onGeneratePassword}
               disabled={status === "sending"}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid var(--border-color)",
-                cursor: "pointer",
-                fontWeight: 600,
-                background: "transparent",
-              }}
+              variant="ghost"
+              fullWidth
             >
               Generate strong password
-            </button>
+            </UiButton>
             <div
               style={{
                 border: "1px solid var(--border-color)",
@@ -372,85 +335,64 @@ export default function LoginClient() {
               <div style={{ fontSize: 13, fontWeight: 700 }}>
                 {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
               </div>
-              <button
+              <UiButton
                 type="button"
                 onClick={() => openLegalModal(false)}
                 disabled={status === "sending"}
+                size="sm"
                 style={{
                   justifySelf: "start",
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  cursor: "pointer",
-                  fontWeight: 700,
                 }}
               >
                 {acceptedLegal ? "Review agreement" : "Review and agree"}
-              </button>
+              </UiButton>
             </div>
           </div>
         ) : null}
 
-        <button
+        <UiButton
           type="submit"
           disabled={status === "sending"}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            background: "var(--surface-elevated)",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
+          variant="primary"
+          size="lg"
+          fullWidth
         >
           {status === "sending"
             ? "Working..."
             : mode === "sign-up"
               ? "Create account"
               : "Sign in"}
-        </button>
+        </UiButton>
       </form>
 
       {mode === "sign-in" ? (
-        <button
+        <UiButton
           type="button"
           onClick={sendPasswordReset}
           disabled={status === "sending"}
+          variant="ghost"
+          fullWidth
           style={{
             marginTop: 10,
-            width: "100%",
-            padding: "10px 12px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: "transparent",
           }}
         >
           Forgot password?
-        </button>
+        </UiButton>
       ) : null}
 
       {mode === "sign-up" ? (
-        <button
+        <UiButton
           type="button"
           onClick={resendConfirmation}
           disabled={status === "sending" || !email}
+          variant="ghost"
+          fullWidth
           style={{
             marginTop: 10,
-            width: "100%",
-            padding: "10px 12px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: "transparent",
           }}
         >
           Resend confirmation email
-        </button>
+        </UiButton>
       ) : null}
 
       <p style={{ marginTop: 12, opacity: 0.8, fontSize: 14 }}>
@@ -581,37 +523,21 @@ export default function LoginClient() {
               </label>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
-                <button
+                <UiButton
                   type="button"
                   onClick={closeLegalModal}
                   disabled={status === "sending"}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
                 >
                   Not now
-                </button>
-                <button
+                </UiButton>
+                <UiButton
                   type="button"
                   onClick={onAgreeToLegal}
                   disabled={!acceptedLegal || status === "sending"}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface-elevated)",
-                    cursor: !acceptedLegal || status === "sending" ? "not-allowed" : "pointer",
-                    fontWeight: 800,
-                    opacity: !acceptedLegal || status === "sending" ? 0.65 : 1,
-                  }}
+                  variant="primary"
                 >
                   {continueSignUpAfterLegal ? "Agree and create account" : "Agree"}
-                </button>
+                </UiButton>
               </div>
             </div>
           </section>

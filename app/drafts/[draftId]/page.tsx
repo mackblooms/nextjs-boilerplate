@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
@@ -15,6 +14,7 @@ import {
   type DraftableTeam,
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
+import { UiButton, UiCard, UiInput, UiLinkButton } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -318,41 +318,21 @@ export default function DraftDetailPage() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link
+            <UiLinkButton
               href="/drafts"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                textDecoration: "none",
-                fontWeight: 800,
-                background: "var(--surface)",
-              }}
             >
               Back to Drafts
-            </Link>
-            <Link
+            </UiLinkButton>
+            <UiLinkButton
               href="/pools"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                textDecoration: "none",
-                fontWeight: 800,
-                background: "var(--surface)",
-              }}
             >
               Open Pools
-            </Link>
+            </UiLinkButton>
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input
+          <UiInput
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             disabled={draftsLocked || saving}
@@ -360,39 +340,23 @@ export default function DraftDetailPage() {
             style={{
               width: "100%",
               maxWidth: 400,
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-muted)",
             }}
           />
-          <button
+          <UiButton
             type="button"
             onClick={() => void saveDraft()}
             disabled={saving || draftsLocked || !hasUnsavedChanges || !summary.isValid}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              fontWeight: 800,
-              cursor: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
-              opacity: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
-            }}
+            variant={draftsLocked ? "ghost" : "primary"}
           >
             {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
-          </button>
+          </UiButton>
         </div>
       </section>
 
       <section className="draft-editor-layout">
-        <div
-          className="page-card"
+        <UiCard
+          as="div"
           style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 14,
-            background: "var(--surface)",
-            padding: 14,
             display: "grid",
             gap: 8,
           }}
@@ -443,15 +407,11 @@ export default function DraftDetailPage() {
               </label>
             );
           })}
-        </div>
+        </UiCard>
 
         <aside
-          className="draft-editor-summary page-card"
+          className="draft-editor-summary ui-card"
           style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 14,
-            background: "var(--surface)",
-            padding: 14,
             display: "grid",
             gap: 10,
             position: "sticky",
@@ -502,23 +462,16 @@ export default function DraftDetailPage() {
             {summary.isValid ? "Draft is valid" : summary.error ?? "Draft is invalid"}
           </div>
 
-          <button
+          <UiButton
             type="button"
             onClick={() => void saveDraft()}
             disabled={saving || draftsLocked || !hasUnsavedChanges || !summary.isValid}
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              fontWeight: 900,
-              cursor: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? "not-allowed" : "pointer",
-              opacity: saving || draftsLocked || !hasUnsavedChanges || !summary.isValid ? 0.7 : 1,
-            }}
+            variant={draftsLocked ? "ghost" : "primary"}
+            size="lg"
+            fullWidth
           >
             {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
-          </button>
+          </UiButton>
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
             Rules: budget {DRAFT_BUDGET}, max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max{" "}

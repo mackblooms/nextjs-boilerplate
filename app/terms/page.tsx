@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | bracketball",
-  description: "Terms of Service for using bracketball.",
+  title: "terms of service | bracketball",
+  description: "terms of service for using bracketball.",
 };
 
 const containerStyle = {
