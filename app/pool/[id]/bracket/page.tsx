@@ -77,11 +77,6 @@ type MatchedLiveGame = {
   team2Score: number | null;
 };
 
-type UpsetSnapshot = {
-  underdogLead: number;
-  detail: string;
-};
-
 type RoundKey = "R64" | "R32" | "S16" | "E8";
 
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
@@ -126,44 +121,6 @@ function expectedSeedsForR64Slot(slot: number): [number, number] | null {
     8: [2, 15],
   };
   return map[slot] ?? null;
-}
-
-function parseSecondHalfMinutesRemaining(detail: string | null | undefined): number | null {
-  if (!detail) return null;
-  const match = detail.match(/2nd(?:\s*half)?[^0-9]*(\d{1,2}):(\d{2})/i);
-  if (!match) return null;
-
-  const minutes = Number(match[1]);
-  const seconds = Number(match[2]);
-  if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return null;
-  if (minutes < 0 || seconds < 0 || seconds >= 60) return null;
-
-  return minutes + seconds / 60;
-}
-
-function getUpsetSnapshot(
-  game: Game,
-  live: MatchedLiveGame | undefined,
-  teamById: Map<string, Team>,
-): UpsetSnapshot | null {
-  if (!live || !game.team1_id || !game.team2_id) return null;
-  if (typeof live.team1Score !== "number" || typeof live.team2Score !== "number") {
-    return null;
-  }
-
-  const team1Seed = teamById.get(game.team1_id)?.seed_in_region;
-  const team2Seed = teamById.get(game.team2_id)?.seed_in_region;
-  const normalizedTeam1Seed = normalizeSeed(team1Seed);
-  const normalizedTeam2Seed = normalizeSeed(team2Seed);
-  if (normalizedTeam1Seed == null || normalizedTeam2Seed == null) return null;
-  if (normalizedTeam1Seed === normalizedTeam2Seed) return null;
-
-  const underdogLead =
-    normalizedTeam1Seed > normalizedTeam2Seed
-      ? live.team1Score - live.team2Score
-      : live.team2Score - live.team1Score;
-
-  return { underdogLead, detail: live.detail };
 }
 
 function matchLiveScoresToGames(
@@ -258,10 +215,10 @@ export default function BracketPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
-  const [maxUpsetLeadByGameId, setMaxUpsetLeadByGameId] = useState<Record<string, number>>({});
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
+  const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -269,12 +226,35 @@ export default function BracketPage() {
   const forcedSyncInFlightRef = useRef<Promise<void> | null>(null);
   const lastForcedSyncAtRef = useRef(0);
 
+  const syncContentSize = useCallback(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const width = content.scrollWidth;
+    const height = content.scrollHeight;
+    if (!width || !height) return;
+
+    setContentSize((prev) =>
+      prev.width === width && prev.height === height ? prev : { width, height },
+    );
+  }, []);
+
   const applyFitScale = useCallback(() => {
     const viewport = viewportRef.current;
     const content = contentRef.current;
     if (!viewport || !content) return;
 
-    const next = Math.min(1, viewport.clientWidth / content.scrollWidth);
+    const contentWidth = content.scrollWidth;
+    const contentHeight = content.scrollHeight;
+    if (!contentWidth || !contentHeight) return;
+
+    setContentSize((prev) =>
+      prev.width === contentWidth && prev.height === contentHeight
+        ? prev
+        : { width: contentWidth, height: contentHeight },
+    );
+
+    const next = Math.min(1, viewport.clientWidth / contentWidth);
     setScale(Math.max(0.35, next));
   }, []);
 
@@ -722,31 +702,6 @@ export default function BracketPage() {
             }
           }
 
-          const nextLiveByGameId = matchLiveScoresToGames(
-            games,
-            nextScores,
-            espnTeamIdByLocalId,
-          );
-
-          setMaxUpsetLeadByGameId((prev) => {
-            const validGameIds = new Set(games.map((g) => g.id));
-            const next: Record<string, number> = {};
-
-            for (const [gameId, lead] of Object.entries(prev)) {
-              if (validGameIds.has(gameId)) {
-                next[gameId] = lead;
-              }
-            }
-
-            for (const g of games) {
-              const snapshot = getUpsetSnapshot(g, nextLiveByGameId.get(g.id), teamById);
-              if (!snapshot || snapshot.underdogLead <= 0) continue;
-              next[g.id] = Math.max(next[g.id] ?? 0, snapshot.underdogLead);
-            }
-
-            return next;
-          });
-
           await refreshBracketState();
         }
       } catch {
@@ -777,6 +732,20 @@ export default function BracketPage() {
     return () => window.removeEventListener("resize", runFit);
   }, [applyFitScale, fitMode, loading]);
 
+  useEffect(() => {
+    if (loading) return;
+
+    syncContentSize();
+    const content = contentRef.current;
+    if (!content || typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      syncContentSize();
+    });
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [loading, syncContentSize]);
+
   const setFit = () => {
     setFitMode(true);
     window.requestAnimationFrame(applyFitScale);
@@ -785,6 +754,11 @@ export default function BracketPage() {
     setFitMode(false);
     setScale(1);
   };
+
+  const scaledContentWidth =
+    contentSize.width > 0 ? Math.ceil(contentSize.width * scale) : null;
+  const scaledContentHeight =
+    contentSize.height > 0 ? Math.ceil(contentSize.height * scale) : null;
 
   const liveByGameId = useMemo(() => {
     return matchLiveScoresToGames(games, liveScores, espnTeamIdByLocalId);
@@ -834,32 +808,6 @@ export default function BracketPage() {
     return formatGameTimeEst(g);
   }, [formatGameTimeEst, liveByGameId]);
 
-  const upsetWatchGameIds = useMemo(() => {
-    const out = new Set<string>();
-
-    for (const g of games) {
-      const snapshot = getUpsetSnapshot(g, liveByGameId.get(g.id), teamById);
-      if (!snapshot) continue;
-
-      const minutesRemaining = parseSecondHalfMinutesRemaining(snapshot.detail);
-      const isLateSecondHalfLead =
-        snapshot.underdogLead > 0 &&
-        minutesRemaining !== null &&
-        minutesRemaining < 10;
-      const hasFifteenPointLead =
-        Math.max(
-          maxUpsetLeadByGameId[g.id] ?? 0,
-          snapshot.underdogLead > 0 ? snapshot.underdogLead : 0,
-        ) >= 15;
-
-      if (isLateSecondHalfLead || hasFifteenPointLead) {
-        out.add(g.id);
-      }
-    }
-
-    return out;
-  }, [games, liveByGameId, maxUpsetLeadByGameId, teamById]);
-
   const selectedPlayer = useMemo(
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
@@ -867,9 +815,6 @@ export default function BracketPage() {
   const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
   const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
   const championshipLive = championship ? liveByGameId.get(championship.id) : undefined;
-  const finalFourTopUpset = finalFour[0] ? upsetWatchGameIds.has(finalFour[0].id) : false;
-  const finalFourBottomUpset = finalFour[1] ? upsetWatchGameIds.has(finalFour[1].id) : false;
-  const championshipUpset = championship ? upsetWatchGameIds.has(championship.id) : false;
 
   const r64SeedByTeamId = useMemo(() => {
     const out = new Map<string, number>();
@@ -1054,19 +999,14 @@ export default function BracketPage() {
   const renderGameBox = (
     children: ReactNode,
     meta?: string | null,
-    upsetWatch = false,
   ) => (
     <div
       style={{
-        border: upsetWatch
-          ? "2px solid #d97706"
-          : "1px solid var(--border-color)",
+        border: "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 4,
         background: "var(--surface)",
-        boxShadow: upsetWatch
-          ? "0 0 0 2px rgba(217,119,6,0.16)"
-          : "0 1px 0 rgba(0,0,0,0.03)",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
         height: "100%",
         overflow: "hidden",
         display: "flex",
@@ -1102,19 +1042,14 @@ export default function BracketPage() {
     teamId: string | null,
     winnerId: string | null,
     score?: number | null,
-    upsetWatch = false,
   ) => (
     <div
       style={{
-        border: upsetWatch
-          ? "2px solid #d97706"
-          : "1px solid var(--border-color)",
+        border: "1px solid var(--border-color)",
         borderRadius: 14,
         padding: 4,
         background: "var(--surface)",
-        boxShadow: upsetWatch
-          ? "0 0 0 2px rgba(217,119,6,0.16)"
-          : "0 1px 0 rgba(0,0,0,0.03)",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
       }}
     >
       {renderTeam(teamId, winnerId, score)}
@@ -1160,7 +1095,6 @@ export default function BracketPage() {
                       {renderTeam(bottomRow.teamId, g.winner_team_id, bottomRow.score)}
                     </>,
                     meta,
-                    upsetWatchGameIds.has(g.id),
                   )}
                 </div>
               );
@@ -1490,150 +1424,153 @@ export default function BracketPage() {
         }}
       >
         <div
-          ref={contentRef}
           style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-            width: "max-content",
+            width: scaledContentWidth != null ? `${scaledContentWidth}px` : "max-content",
+            height: scaledContentHeight != null ? `${scaledContentHeight}px` : undefined,
+            overflow: "hidden",
             margin: "0 auto",
           }}
         >
           <div
+            ref={contentRef}
             style={{
-              display: "flex",
-              gap: 18,
-              alignItems: "center",
-              minWidth: 3200,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              width: "max-content",
             }}
           >
-            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-              {renderRegionBracket("East")}
-              {renderRegionBracket("South")}
-            </div>
-
             <div
               style={{
                 display: "flex",
+                gap: 18,
                 alignItems: "center",
-                justifyContent: "center",
-                minWidth: 860,
+                minWidth: 3200,
               }}
             >
-              <section
+              <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+                {renderRegionBracket("East")}
+                {renderRegionBracket("South")}
+              </div>
+
+              <div
                 style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 16,
-                  padding: 14,
-                  background: "var(--surface)",
-                  width: 860,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 860,
                 }}
               >
-                <div
+                <section
                   style={{
-                    fontWeight: 900,
-                    marginBottom: 12,
-                    fontSize: 16,
-                    textAlign: "center",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 16,
+                    padding: 14,
+                    background: "var(--surface)",
+                    width: 860,
                   }}
                 >
-                  Final Four
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
-                    gridTemplateRows:
-                      "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
-                    columnGap: 18,
-                    rowGap: 20,
-                    alignItems: "center",
-                  }}
-                >
-                  <div style={{ gridColumn: 1, gridRow: 1 }}>
-                    {renderSingleTeamBox(
-                      finalFour[0]?.team1_id ?? null,
-                      finalFour[0]?.winner_team_id ?? null,
-                      scoreForDisplay(finalFourTopLive, "team1"),
-                      finalFourTopUpset,
-                    )}
-                  </div>
-                  <div style={{ gridColumn: 3, gridRow: 1 }}>
-                    {renderSingleTeamBox(
-                      finalFour[0]?.team2_id ?? null,
-                      finalFour[0]?.winner_team_id ?? null,
-                      scoreForDisplay(finalFourTopLive, "team2"),
-                      finalFourTopUpset,
-                    )}
-                  </div>
-                  <div style={{ gridColumn: 1, gridRow: 3 }}>
-                    {renderSingleTeamBox(
-                      finalFour[1]?.team1_id ?? null,
-                      finalFour[1]?.winner_team_id ?? null,
-                      scoreForDisplay(finalFourBottomLive, "team1"),
-                      finalFourBottomUpset,
-                    )}
-                  </div>
-                  <div style={{ gridColumn: 3, gridRow: 3 }}>
-                    {renderSingleTeamBox(
-                      finalFour[1]?.team2_id ?? null,
-                      finalFour[1]?.winner_team_id ?? null,
-                      scoreForDisplay(finalFourBottomLive, "team2"),
-                      finalFourBottomUpset,
-                    )}
-                  </div>
-
                   <div
                     style={{
-                      gridColumn: 2,
-                      gridRow: 2,
-                      alignSelf: "center",
-                      justifySelf: "center",
-                      width: "100%",
+                      fontWeight: 900,
+                      marginBottom: 12,
+                      fontSize: 16,
+                      textAlign: "center",
                     }}
                   >
+                    Final Four
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr minmax(280px, 320px) 1fr",
+                      gridTemplateRows:
+                        "minmax(56px, auto) minmax(96px, auto) minmax(56px, auto)",
+                      columnGap: 18,
+                      rowGap: 20,
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ gridColumn: 1, gridRow: 1 }}>
+                      {renderSingleTeamBox(
+                        finalFour[0]?.team1_id ?? null,
+                        finalFour[0]?.winner_team_id ?? null,
+                        scoreForDisplay(finalFourTopLive, "team1"),
+                      )}
+                    </div>
+                    <div style={{ gridColumn: 3, gridRow: 1 }}>
+                      {renderSingleTeamBox(
+                        finalFour[0]?.team2_id ?? null,
+                        finalFour[0]?.winner_team_id ?? null,
+                        scoreForDisplay(finalFourTopLive, "team2"),
+                      )}
+                    </div>
+                    <div style={{ gridColumn: 1, gridRow: 3 }}>
+                      {renderSingleTeamBox(
+                        finalFour[1]?.team1_id ?? null,
+                        finalFour[1]?.winner_team_id ?? null,
+                        scoreForDisplay(finalFourBottomLive, "team1"),
+                      )}
+                    </div>
+                    <div style={{ gridColumn: 3, gridRow: 3 }}>
+                      {renderSingleTeamBox(
+                        finalFour[1]?.team2_id ?? null,
+                        finalFour[1]?.winner_team_id ?? null,
+                        scoreForDisplay(finalFourBottomLive, "team2"),
+                      )}
+                    </div>
+
                     <div
                       style={{
-                        fontWeight: 900,
-                        marginBottom: 10,
-                        opacity: 0.9,
-                        fontSize: 12,
-                        textAlign: "center",
+                        gridColumn: 2,
+                        gridRow: 2,
+                        alignSelf: "center",
+                        justifySelf: "center",
+                        width: "100%",
                       }}
                     >
-                      Championship
+                      <div
+                        style={{
+                          fontWeight: 900,
+                          marginBottom: 10,
+                          opacity: 0.9,
+                          fontSize: 12,
+                          textAlign: "center",
+                        }}
+                      >
+                        Championship
+                      </div>
+                      {(() => {
+                        const [topRow, bottomRow] = orderBySeedForDisplay(
+                          championship?.team1_id ?? null,
+                          championship?.team2_id ?? null,
+                          scoreForDisplay(championshipLive, "team1"),
+                          scoreForDisplay(championshipLive, "team2"),
+                        );
+                        return renderGameBox(
+                          <>
+                            {renderTeam(
+                              topRow.teamId,
+                              championship?.winner_team_id ?? null,
+                              topRow.score,
+                            )}
+                            {renderTeam(
+                              bottomRow.teamId,
+                              championship?.winner_team_id ?? null,
+                              bottomRow.score,
+                            )}
+                          </>,
+                          formatGameMeta(championship),
+                        );
+                      })()}
                     </div>
-                    {(() => {
-                      const [topRow, bottomRow] = orderBySeedForDisplay(
-                        championship?.team1_id ?? null,
-                        championship?.team2_id ?? null,
-                        scoreForDisplay(championshipLive, "team1"),
-                        scoreForDisplay(championshipLive, "team2"),
-                      );
-                      return renderGameBox(
-                        <>
-                          {renderTeam(
-                            topRow.teamId,
-                            championship?.winner_team_id ?? null,
-                            topRow.score,
-                          )}
-                          {renderTeam(
-                            bottomRow.teamId,
-                            championship?.winner_team_id ?? null,
-                            bottomRow.score,
-                          )}
-                        </>,
-                        formatGameMeta(championship),
-                        championshipUpset,
-                      );
-                    })()}
                   </div>
-                </div>
-              </section>
-            </div>
+                </section>
+              </div>
 
-            <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
-              {renderRegionBracket("West", true)}
-              {renderRegionBracket("Midwest", true)}
+              <div style={{ display: "grid", gap: 18, alignContent: "start" }}>
+                {renderRegionBracket("West", true)}
+                {renderRegionBracket("Midwest", true)}
+              </div>
             </div>
           </div>
         </div>
