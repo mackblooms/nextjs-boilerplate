@@ -1363,9 +1363,6 @@ export default function BracketPage() {
             </option>
           ))}
         </select>
-        <div style={{ fontSize: 12, opacity: 0.7 }}>
-          Highlighted teams show in <b>yellow</b>.
-        </div>
       </div>
 
       <div
