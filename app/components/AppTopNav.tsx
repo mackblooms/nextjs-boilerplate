@@ -44,6 +44,7 @@ export default function AppTopNav() {
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [homeButtonHovered, setHomeButtonHovered] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const [isCompact, setIsCompact] = useState(false);
@@ -135,9 +136,10 @@ export default function AppTopNav() {
   }, []);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !settingsOpen && !helpOpen) return;
 
     const onPointerDown = (event: MouseEvent) => {
+      if (!menuOpen) return;
       if (!menuRef.current) return;
       if (menuRef.current.contains(event.target as Node)) return;
       setMenuOpen(false);
@@ -147,6 +149,7 @@ export default function AppTopNav() {
       if (event.key === "Escape") {
         setMenuOpen(false);
         setSettingsOpen(false);
+        setHelpOpen(false);
       }
     };
 
@@ -156,7 +159,7 @@ export default function AppTopNav() {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onEscape);
     };
-  }, [menuOpen]);
+  }, [helpOpen, menuOpen, settingsOpen]);
 
   useEffect(() => {
     let canceled = false;
@@ -257,6 +260,7 @@ export default function AppTopNav() {
     setProfileAvatarUrl(null);
     setMenuOpen(false);
     setSettingsOpen(false);
+    setHelpOpen(false);
 
     if (supabase) {
       try {
@@ -375,7 +379,7 @@ export default function AppTopNav() {
         ref={menuRef}
         onMouseEnter={() => setMenuOpen(true)}
         onMouseLeave={() => {
-          if (!settingsOpen) {
+          if (!settingsOpen && !helpOpen) {
             setMenuOpen(false);
           }
         }}
@@ -466,14 +470,12 @@ export default function AppTopNav() {
                   router.push("/drafts");
                 }}
                 style={{
-                  gridColumn: 2,
-                  gridRow: "1 / span 2",
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
                   background: "var(--surface-elevated)",
                   padding: "10px 12px",
-                  textAlign: "center",
-                  fontWeight: 900,
+                  textAlign: "left",
+                  fontWeight: 800,
                   cursor: "pointer",
                 }}
               >
@@ -496,6 +498,24 @@ export default function AppTopNav() {
                 }}
               >
                 Settings
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setHelpOpen(true);
+                }}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-elevated)",
+                  padding: "10px 12px",
+                  textAlign: "left",
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Help
               </button>
             </div>
 
@@ -687,6 +707,84 @@ export default function AppTopNav() {
 
             <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
               More settings options will be added here next.
+            </p>
+          </section>
+        </div>
+      ) : null}
+
+      {helpOpen ? (
+        <div
+          role="presentation"
+          onClick={() => setHelpOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 2000,
+            display: "grid",
+            placeItems: "center",
+            padding: 16,
+            pointerEvents: "auto",
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Help"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(520px, 100%)",
+              border: "1px solid var(--border-color)",
+              borderRadius: 14,
+              background: "var(--surface)",
+              padding: 16,
+              display: "grid",
+              gap: 12,
+              boxShadow: "var(--shadow-lg)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Help & Support</h2>
+              <button
+                type="button"
+                onClick={() => setHelpOpen(false)}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 8,
+                  padding: "6px 9px",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.9 }}>
+              For now, please direct all questions, bug reports, and support requests
+              to{" "}
+              <a
+                href="mailto:mack@bracketball.io"
+                style={{ fontWeight: 800, color: "var(--foreground)" }}
+              >
+                mack@bracketball.io
+              </a>
+              . If possible, include your pool name, device, and a screenshot so issues
+              can be diagnosed quickly.
+            </p>
+
+            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.82 }}>
+              A more comprehensive Help Center is planned, including FAQs,
+              troubleshooting guides, and in-app support resources as bracketball
+              continues to grow.
             </p>
           </section>
         </div>
