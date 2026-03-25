@@ -291,6 +291,39 @@ export default function AppTopNav() {
   };
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
   const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
+  const activePoolPathId = poolIdFromPath ?? activePoolId;
+  const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
+
+  const isHomeActive = pathname === "/";
+  const isHowItWorksActive = pathname === "/how-it-works";
+  const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
+  const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
+  const isLeaderboardActive = activePoolBasePath
+    ? pathname === `${activePoolBasePath}/leaderboard` ||
+      pathname.startsWith(`${activePoolBasePath}/leaderboard/`)
+    : false;
+  const isAdminActive = activePoolBasePath
+    ? pathname === `${activePoolBasePath}/admin` ||
+      pathname.startsWith(`${activePoolBasePath}/admin/`)
+    : false;
+  const isBracketActive = activePoolBasePath
+    ? (pathname === activePoolBasePath || pathname.startsWith(`${activePoolBasePath}/`)) &&
+      !isLeaderboardActive &&
+      !isAdminActive
+    : false;
+
+  const getNavPillStyle = (isActive: boolean): CSSProperties => {
+    if (!isActive) return pillStyle;
+
+    return {
+      ...pillStyle,
+      background: "var(--surface-elevated)",
+      borderColor: "var(--highlight-border)",
+      boxShadow: "var(--shadow-sm)",
+      color: "var(--focus-ring)",
+      fontWeight: 900,
+    };
+  };
 
   return (
     <div
@@ -328,14 +361,14 @@ export default function AppTopNav() {
           scrollbarWidth: "none",
         }}
       >
-        <Link href={homeHref} className="app-top-nav-link" style={pillStyle}>Home</Link>
-        <Link href="/how-it-works" className="app-top-nav-link" style={pillStyle}>How it works</Link>
-        <Link href="/drafts" className="app-top-nav-link" style={pillStyle}>Drafts</Link>
-        <Link href="/pools" className="app-top-nav-link" style={pillStyle}>Pools</Link>
-        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" style={pillStyle}>Bracket</Link> : null}
-        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" style={pillStyle}>Leaderboard</Link> : null}
+        <Link href={homeHref} className="app-top-nav-link" aria-current={isHomeActive ? "page" : undefined} style={getNavPillStyle(isHomeActive)}>Home</Link>
+        <Link href="/how-it-works" className="app-top-nav-link" aria-current={isHowItWorksActive ? "page" : undefined} style={getNavPillStyle(isHowItWorksActive)}>How it works</Link>
+        <Link href="/drafts" className="app-top-nav-link" aria-current={isDraftsActive ? "page" : undefined} style={getNavPillStyle(isDraftsActive)}>Drafts</Link>
+        <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
+        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
+        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" aria-current={isLeaderboardActive ? "page" : undefined} style={getNavPillStyle(isLeaderboardActive)}>Leaderboard</Link> : null}
         {activePoolId && activePool?.created_by === userId ? (
-          <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" style={pillStyle}>Admin</Link>
+          <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" aria-current={isAdminActive ? "page" : undefined} style={getNavPillStyle(isAdminActive)}>Admin</Link>
         ) : null}
       </div>
       <div
