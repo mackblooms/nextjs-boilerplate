@@ -7,6 +7,7 @@ import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
 type Pool = {
@@ -60,7 +61,10 @@ type LiveScoresResponse = {
 
 type EspnTeam = {
   id?: string | number;
+  location?: string;
+  shortDisplayName?: string;
   displayName?: string;
+  name?: string;
   logos?: Array<{ href?: string }>;
   logo?: string;
 };
@@ -220,8 +224,22 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
 
-  const awayDisplayName = away.team?.displayName?.trim() || "Away Team";
-  const homeDisplayName = home.team?.displayName?.trim() || "Home Team";
+  const awayDisplayName =
+    toSchoolDisplayName(
+      away.team?.location?.trim() ??
+      away.team?.shortDisplayName?.trim() ??
+      away.team?.displayName?.trim() ??
+      away.team?.name?.trim() ??
+      "Away Team"
+    ) || "Away Team";
+  const homeDisplayName =
+    toSchoolDisplayName(
+      home.team?.location?.trim() ??
+      home.team?.shortDisplayName?.trim() ??
+      home.team?.displayName?.trim() ??
+      home.team?.name?.trim() ??
+      "Home Team"
+    ) || "Home Team";
   const awayLabel = awayDisplayName;
   const homeLabel = homeDisplayName;
 
@@ -574,7 +592,7 @@ export default function PoolPage() {
       const keySet = new Set<string>();
       for (const row of teamRows ?? []) {
         if (row.espn_team_id != null) espnIdSet.add(String(row.espn_team_id));
-        for (const variant of teamNameVariants(String(row.name ?? ""))) {
+        for (const variant of teamNameVariants(toSchoolDisplayName(String(row.name ?? "")))) {
           if (variant) keySet.add(variant);
         }
       }

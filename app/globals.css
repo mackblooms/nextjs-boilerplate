@@ -94,7 +94,7 @@ body {
   font-family: var(--font-app-sans), "Avenir Next", "Segoe UI", sans-serif;
   line-height: 1.45;
   letter-spacing: 0.01em;
-  padding-top: 114px;
+  padding-top: 108px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -451,7 +451,55 @@ textarea::placeholder {
 
 @media (max-width: 780px) {
   body {
-    padding-top: 126px;
+    padding-top: 102px;
+  }
+
+  .site-main {
+    padding-inline: 8px;
+  }
+
+  .home-page-shell {
+    margin: 16px auto !important;
+    padding: 8px !important;
+  }
+
+  .home-cta-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px !important;
+  }
+
+  .home-cta-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .home-pool-context {
+    align-items: flex-start !important;
+  }
+
+  .home-primary-panel {
+    min-height: 0 !important;
+  }
+
+  .home-score-panel {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .home-draft-head {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .home-draft-meta {
+    width: 100%;
+  }
+
+  .home-draft-points {
+    white-space: normal !important;
   }
 }
 
@@ -518,6 +566,10 @@ textarea::placeholder {
   transition: filter 170ms ease, opacity 170ms ease, box-shadow 180ms ease;
   box-shadow: var(--shadow-sm);
   backdrop-filter: saturate(130%) blur(12px);
+}
+
+.app-top-nav-pills::-webkit-scrollbar {
+  display: none;
 }
 
 .app-top-nav-pills--deemphasized {

@@ -10,6 +10,7 @@ import {
   scoreTeamWinsDetailed,
   type ScoringGame,
 } from "../../../../lib/scoring";
+import { toSchoolDisplayName } from "../../../../lib/teamNames";
 
 type Row = {
   entry_id: string;
@@ -446,7 +447,7 @@ function TeamValueTable({
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {row.team_name}
+                  {toSchoolDisplayName(row.team_name)}
                 </span>
               </div>
               <div style={{ textAlign: "right", fontWeight: 700 }}>{row.cost}</div>
@@ -515,7 +516,7 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {row.team_name}
+                  {toSchoolDisplayName(row.team_name)}
                 </span>
               </div>
               <div style={{ textAlign: "right", fontWeight: 900 }}>{row.selections}</div>
@@ -1009,7 +1010,7 @@ export default function LeaderboardPage() {
         const popularityRows: TeamPopularityRow[] = [];
         for (const [teamId, selections] of selectionCountByTeam.entries()) {
           const teamMeta = teamMetaById.get(teamId);
-          const teamName = teamMeta?.name?.trim() || "Unknown team";
+          const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
           const logoUrl = teamMeta?.logo_url ?? null;
           popularityRows.push({
             team_id: teamId,
@@ -1029,7 +1030,7 @@ export default function LeaderboardPage() {
         const valueRows: TeamValueRow[] = [];
         for (const teamId of startedTeamIds) {
           const teamMeta = teamMetaById.get(teamId);
-          const teamName = teamMeta?.name?.trim() || "Unknown team";
+          const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
           const logoUrl = teamMeta?.logo_url ?? null;
           const cost = teamMeta?.cost;
           if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) continue;
@@ -1089,7 +1090,7 @@ export default function LeaderboardPage() {
                 : null;
               return {
                 team_id: teamId,
-                team_name: teamMeta?.name?.trim() || "Unknown team",
+                team_name: toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team",
                 // Use bracket-verified seed when possible; fallback to alias-matched bracket seed.
                 seed:
                   (isInBracket ? (teamMeta?.seed_in_region ?? null) : null) ??
@@ -1199,7 +1200,7 @@ export default function LeaderboardPage() {
             const teamMeta = teamMetaById.get(teamId);
             return {
               team_id: teamId,
-              team_name: drafted?.team_name ?? teamMeta?.name?.trim() ?? "Unknown team",
+              team_name: toSchoolDisplayName(drafted?.team_name ?? teamMeta?.name?.trim()) || "Unknown team",
               seed: drafted?.seed ?? teamMeta?.seed_in_region ?? null,
               logo_url: drafted?.logo_url ?? teamMeta?.logo_url ?? null,
               points: teamScores.get(teamId) ?? 0,
@@ -1219,7 +1220,7 @@ export default function LeaderboardPage() {
             events.push({
               id: `${team.team_id}-${event.gameIndex}-${event.round}-${event.pointsAwarded}`,
               team_id: team.team_id,
-              team_name: team.team_name,
+              team_name: toSchoolDisplayName(team.team_name) || "Unknown team",
               seed: team.seed,
               logo_url: team.logo_url,
               round: event.round,
@@ -1605,7 +1606,7 @@ export default function LeaderboardPage() {
                                   }}
                                 >
                                   {team.seed != null ? `#${team.seed} ` : ""}
-                                  {team.team_name}
+                                  {toSchoolDisplayName(team.team_name)}
                                 </span>
                               </div>
                             ))}
@@ -1836,7 +1837,7 @@ export default function LeaderboardPage() {
                           }}
                         >
                           {team.seed != null ? `#${team.seed} ` : ""}
-                          {team.team_name}
+                          {toSchoolDisplayName(team.team_name)}
                         </span>
                       </div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>{team.points}</div>
@@ -1907,7 +1908,7 @@ export default function LeaderboardPage() {
                           }}
                         >
                           {event.seed != null ? `#${event.seed} ` : ""}
-                          {event.team_name}
+                          {toSchoolDisplayName(event.team_name)}
                         </span>
                       </div>
                       <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
@@ -2180,7 +2181,7 @@ export default function LeaderboardPage() {
                   >
                     <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <div style={{ fontWeight: 800 }}>{team.team_name}</div>
+                      <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
                     </div>
                     <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>
                     <div style={{ textAlign: "right", fontWeight: 900 }}>{team.total_team_score}</div>

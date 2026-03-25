@@ -14,6 +14,7 @@ import {
   type DraftableTeam,
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../../components/ui/primitives";
 
 type DraftRow = {
@@ -383,7 +384,9 @@ export default function DraftDetailPage() {
                     disabled={draftsLocked || saving}
                   />
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>{team.name}</div>
+                    <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {toSchoolDisplayName(team.name)}
+                    </div>
                     <div style={{ fontSize: 12, opacity: 0.75 }}>Seed {team.seed}</div>
                   </div>
                 </div>
@@ -479,7 +482,7 @@ export default function DraftDetailPage() {
                   }}
                 >
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    ({team.seed}) {team.name}
+                    ({team.seed}) {toSchoolDisplayName(team.name)}
                   </span>
                   <b style={{ marginLeft: 8 }}>{team.cost}</b>
                 </div>

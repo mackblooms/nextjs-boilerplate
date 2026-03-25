@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 
 type EspnTeam = {
   id?: string | number;
+  location?: string;
+  shortDisplayName?: string;
   displayName?: string;
+  name?: string;
   logos?: Array<{ href?: string }>;
   logo?: string;
 };
@@ -92,11 +96,23 @@ function toBoundedInt(
 }
 
 function toLabel(c: EspnCompetitor | undefined, fallback: string) {
-  return c?.team?.displayName?.trim() || fallback;
+  return toSchoolDisplayName(
+    c?.team?.location?.trim() ??
+    c?.team?.shortDisplayName?.trim() ??
+    c?.team?.displayName?.trim() ??
+    c?.team?.name?.trim() ??
+    fallback
+  ) || fallback;
 }
 
 function toDisplayName(c: EspnCompetitor | undefined, fallback: string) {
-  return c?.team?.displayName?.trim() || fallback;
+  return toSchoolDisplayName(
+    c?.team?.location?.trim() ??
+    c?.team?.shortDisplayName?.trim() ??
+    c?.team?.displayName?.trim() ??
+    c?.team?.name?.trim() ??
+    fallback
+  ) || fallback;
 }
 
 function toScore(raw: string | undefined): number | null {

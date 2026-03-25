@@ -14,6 +14,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 import { scoreEntries } from "../../../../lib/scoring";
+import { toSchoolDisplayName } from "../../../../lib/teamNames";
 
 type Team = {
   id: string;
@@ -1021,7 +1022,7 @@ export default function BracketPage() {
               whiteSpace: "nowrap",
             }}
           >
-            {t?.name ?? "Unknown"}
+            {toSchoolDisplayName(t?.name) || "Unknown"}
           </span>
         </span>
         <span

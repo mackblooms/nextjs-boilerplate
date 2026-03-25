@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../../lib/draftLock";
 import { scoreEntries, type ScoringGame } from "../../../../../lib/scoring";
+import { toSchoolDisplayName } from "../../../../../lib/teamNames";
 
 type PickRow = {
   team_id: string;
@@ -304,7 +305,7 @@ export default function PicksPage() {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {p.team_name}
+                    {toSchoolDisplayName(p.team_name)}
                   </span>
                 </div>
 

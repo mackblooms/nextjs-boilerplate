@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -34,7 +35,10 @@ type LiveScoresResponse = {
 
 type EspnTeam = {
   id?: string | number;
+  location?: string;
+  shortDisplayName?: string;
   displayName?: string;
+  name?: string;
   logos?: Array<{ href?: string }>;
   logo?: string;
 };
@@ -373,8 +377,22 @@ function normalizeEspnEvent(event: EspnEvent): LiveScoreGame | null {
   const away = competitors.find((c) => c.homeAway === "away");
   if (!home || !away) return null;
 
-  const awayDisplayName = away.team?.displayName?.trim() || "Away Team";
-  const homeDisplayName = home.team?.displayName?.trim() || "Home Team";
+  const awayDisplayName =
+    toSchoolDisplayName(
+      away.team?.location?.trim() ??
+      away.team?.shortDisplayName?.trim() ??
+      away.team?.displayName?.trim() ??
+      away.team?.name?.trim() ??
+      "Away Team"
+    ) || "Away Team";
+  const homeDisplayName =
+    toSchoolDisplayName(
+      home.team?.location?.trim() ??
+      home.team?.shortDisplayName?.trim() ??
+      home.team?.displayName?.trim() ??
+      home.team?.name?.trim() ??
+      "Home Team"
+    ) || "Home Team";
   const awayLabel = awayDisplayName;
   const homeLabel = homeDisplayName;
 
@@ -864,7 +882,7 @@ function HomeContent() {
       const keySet = new Set<string>();
       for (const row of teamRows) {
         if (row.espn_team_id != null) espnSet.add(String(row.espn_team_id));
-        for (const variant of teamNameVariants(row.name ?? "")) {
+        for (const variant of teamNameVariants(toSchoolDisplayName(row.name ?? ""))) {
           if (variant) keySet.add(variant);
         }
       }
@@ -1624,7 +1642,7 @@ function HomeContent() {
 
   return (
     <main
-      className="page-shell"
+      className="page-shell home-page-shell"
       style={{
         maxWidth: 1240,
         margin: "40px auto",
@@ -1640,6 +1658,7 @@ function HomeContent() {
       >
         {isAuthenticated ? (
           <div
+            className="home-pool-context"
             style={{
               margin: 0,
               fontSize: 14,
@@ -1683,6 +1702,7 @@ function HomeContent() {
           </div>
         ) : (
           <div
+            className="home-cta-row"
             style={{
               display: "flex",
               gap: 12,
@@ -1691,6 +1711,7 @@ function HomeContent() {
           >
             <Link
               href="/how-it-works"
+              className="home-cta-button"
               style={buttonStyle}
               onClick={() =>
                 trackEvent({
@@ -1704,6 +1725,7 @@ function HomeContent() {
             {isAuthenticated === false ? (
               <Link
                 href={loginHref}
+                className="home-cta-button"
                 style={buttonStyle}
                 onClick={() =>
                   trackEvent({
@@ -1802,8 +1824,11 @@ function HomeContent() {
                       gap: 8,
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: 1 }}>
+                    <div
+                      className="home-draft-head"
+                      style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}
+                    >
+                      <div className="home-draft-meta" style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: 1 }}>
                         <Link
                           href={`/drafts/${draft.id}`}
                           className="home-draft-link"
@@ -1842,7 +1867,7 @@ function HomeContent() {
                           <PenIcon />
                         </button>
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
+                      <div className="home-draft-points" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
                         {currentPoints} pts
                       </div>
                     </div>
@@ -2063,7 +2088,7 @@ function HomeContent() {
 function HomeFallback() {
   return (
     <main
-      className="page-shell"
+      className="page-shell home-page-shell"
       style={{
         maxWidth: 1240,
         margin: "40px auto",
@@ -2071,6 +2096,7 @@ function HomeFallback() {
       }}
     >
       <div
+        className="home-cta-row"
         style={{
           marginBottom: 16,
           display: "flex",
@@ -2080,6 +2106,7 @@ function HomeFallback() {
       >
         <Link
           href="/how-it-works"
+          className="home-cta-button"
           style={buttonStyle}
           onClick={() =>
             trackEvent({
@@ -2092,6 +2119,7 @@ function HomeFallback() {
         </Link>
         <Link
           href="/login"
+          className="home-cta-button"
           style={buttonStyle}
           onClick={() =>
             trackEvent({

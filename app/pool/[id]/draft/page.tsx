@@ -22,6 +22,7 @@ import {
   type SavedDraftPickRow,
   type SavedDraftRow,
 } from "@/lib/savedDrafts";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 
 type PoolRow = {
   id: string;
@@ -973,7 +974,7 @@ export default function PoolDraftPage() {
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      ({team.seed}) {team.name}
+                      ({team.seed}) {toSchoolDisplayName(team.name)}
                     </span>
                   </div>
                   <b>{team.cost}</b>

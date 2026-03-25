@@ -12,6 +12,7 @@ const russoOne = Russo_One({
   subsets: ["latin"],
   weight: "400",
 });
+const COMPACT_HEADER_QUERY = "(max-width: 780px)";
 
 function notifyHomeButtonHover(hovered: boolean) {
   window.dispatchEvent(
@@ -23,9 +24,11 @@ function notifyHomeButtonHover(hovered: boolean) {
 
 export default function HomeButton() {
   const [href, setHref] = useState("/");
+  const [isCompact, setIsCompact] = useState(false);
   const pathname = usePathname();
   const isHidden = useAutoHideOnScroll();
   const showHomeLogo = pathname === "/";
+  const showBrandLogo = showHomeLogo && !isCompact;
 
   useEffect(() => {
     const loadDestination = async () => {
@@ -55,6 +58,24 @@ export default function HomeButton() {
     };
   }, []);
 
+  useEffect(() => {
+    const media = window.matchMedia(COMPACT_HEADER_QUERY);
+    const syncCompact = () => setIsCompact(media.matches);
+    syncCompact();
+
+    const onChange = (event: MediaQueryListEvent) => {
+      setIsCompact(event.matches);
+    };
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
+
   return (
     <Link
       href={href}
@@ -65,8 +86,8 @@ export default function HomeButton() {
       onBlur={() => notifyHomeButtonHover(false)}
       style={{
         position: "fixed",
-        top: 14,
-        left: 20,
+        top: isCompact ? 10 : 14,
+        left: isCompact ? 10 : 20,
         zIndex: 1000,
         color: "var(--foreground)",
         textDecoration: "none",
@@ -89,14 +110,14 @@ export default function HomeButton() {
           borderRadius: 12,
           boxShadow: "var(--shadow-sm)",
           backdropFilter: "blur(8px)",
-          padding: "8px 10px",
+          padding: isCompact ? "7px 9px" : "8px 10px",
         }}
       >
         <span
           style={{
             fontFamily:
               "var(--font-brand-display), var(--font-app-sans), 'Avenir Next', sans-serif",
-            fontSize: 23,
+            fontSize: isCompact ? 18 : 23,
             letterSpacing: "0.08em",
             fontWeight: 700,
             lineHeight: 1,
@@ -108,7 +129,7 @@ export default function HomeButton() {
         <span
           style={{
             fontFamily: russoOne.style.fontFamily,
-            fontSize: 14,
+            fontSize: isCompact ? 11 : 14,
             lineHeight: 1,
             letterSpacing: "0.06em",
             textTransform: "lowercase",
@@ -116,14 +137,14 @@ export default function HomeButton() {
             color: "var(--focus-ring)",
             border: "1px solid var(--highlight-border)",
             borderRadius: 9999,
-            padding: "3px 8px 2px",
+            padding: isCompact ? "2px 7px" : "3px 8px 2px",
             background: "var(--surface-elevated)",
             opacity: 0.92,
           }}
         >
           beta
         </span>
-        {showHomeLogo ? (
+        {showBrandLogo ? (
           <Image
             src="/pool-logo.svg?v=2"
             alt=""

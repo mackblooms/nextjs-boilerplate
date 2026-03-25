@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { isDraftLocked } from "../../../../lib/draftLock";
+import { toSchoolDisplayName } from "../../../../lib/teamNames";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -392,7 +393,7 @@ function toSchoolName(value: unknown): string | null {
   const text = toText(value);
   if (!text) return null;
   const override = SCHOOL_NAME_OVERRIDES[normName(text)];
-  return override ?? text;
+  return override ?? toSchoolDisplayName(text);
 }
 
 function canonicalSchoolKey(value: string): string {
@@ -714,8 +715,8 @@ async function fetchEspnR64Matchups(season: number): Promise<EspnR64Matchup[]> {
           `https://a.espncdn.com/i/teamlogos/ncaa/500/${Math.trunc(teamId)}.png`;
 
         const displayName =
-          toText(team.displayName) ??
           toText(team.location) ??
+          toText(team.displayName) ??
           toText(team.shortDisplayName) ??
           toText(team.name) ??
           `Team ${Math.trunc(teamId)}`;

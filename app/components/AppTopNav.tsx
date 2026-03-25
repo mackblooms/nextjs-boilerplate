@@ -9,6 +9,7 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
+const COMPACT_NAV_QUERY = "(max-width: 780px)";
 
 function getPreferredTheme(): Theme {
   if (typeof window === "undefined") return "light";
@@ -45,6 +46,7 @@ export default function AppTopNav() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [homeButtonHovered, setHomeButtonHovered] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
+  const [isCompact, setIsCompact] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const isHidden = useAutoHideOnScroll();
   const isDark = theme === "dark";
@@ -113,6 +115,24 @@ export default function AppTopNav() {
     document.documentElement.setAttribute("data-theme", theme);
     window.localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const media = window.matchMedia(COMPACT_NAV_QUERY);
+    const syncCompact = () => setIsCompact(media.matches);
+    syncCompact();
+
+    const onChange = (event: MediaQueryListEvent) => {
+      setIsCompact(event.matches);
+    };
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -252,17 +272,22 @@ export default function AppTopNav() {
 
   if (!userId) return null;
 
+  const avatarSize = isCompact ? 38 : 42;
   const pillStyle: CSSProperties = {
-    padding: "8px 12px",
+    padding: isCompact ? "8px 10px" : "8px 12px",
     border: "1px solid var(--border-color)",
     borderRadius: 9999,
     textDecoration: "none",
     color: "var(--foreground)",
     fontWeight: 800,
-    fontSize: 13,
+    fontSize: isCompact ? 12 : 13,
     letterSpacing: "0.02em",
     whiteSpace: "nowrap",
     background: "var(--surface)",
+    minHeight: isCompact ? 36 : 38,
+    display: "inline-flex",
+    alignItems: "center",
+    flexShrink: 0,
   };
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
   const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
@@ -271,13 +296,13 @@ export default function AppTopNav() {
     <div
       style={{
         position: "fixed",
-        top: 62,
+        top: isCompact ? 56 : 62,
         left: 0,
         right: 0,
         zIndex: 999,
         display: "flex",
         justifyContent: "center",
-        padding: "8px 18px",
+        padding: isCompact ? "6px 10px" : "8px 18px",
         pointerEvents: "none",
         transform: isHidden ? "translateY(-140%)" : "translateY(0)",
         opacity: isHidden ? 0 : 1,
@@ -288,16 +313,19 @@ export default function AppTopNav() {
         className={`app-top-nav-pills${shouldDeemphasizeNavPills ? " app-top-nav-pills--deemphasized" : ""}`}
         style={{
           display: "flex",
-          gap: 8,
+          gap: isCompact ? 6 : 8,
           alignItems: "center",
-          flexWrap: "wrap",
-          justifyContent: "center",
+          flexWrap: isCompact ? "nowrap" : "wrap",
+          justifyContent: isCompact ? "flex-start" : "center",
           background: "var(--surface-glass)",
           border: "1px solid var(--border-color)",
           borderRadius: 9999,
-          padding: 8,
+          padding: isCompact ? 6 : 8,
           boxShadow: "var(--shadow-sm)",
           pointerEvents: "auto",
+          maxWidth: isCompact ? "calc(100vw - 72px)" : "min(980px, calc(100vw - 170px))",
+          overflowX: isCompact ? "auto" : "visible",
+          scrollbarWidth: "none",
         }}
       >
         <Link href={homeHref} className="app-top-nav-link" style={pillStyle}>Home</Link>
@@ -319,8 +347,8 @@ export default function AppTopNav() {
         }}
         style={{
           position: "absolute",
-          right: 16,
-          top: 7,
+          right: isCompact ? 10 : 16,
+          top: isCompact ? 6 : 7,
           display: "grid",
           justifyItems: "end",
           pointerEvents: "auto",
@@ -334,8 +362,8 @@ export default function AppTopNav() {
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((open) => !open)}
           style={{
-            width: 42,
-            height: 42,
+            width: avatarSize,
+            height: avatarSize,
             borderRadius: 9999,
             border: "1px solid var(--border-color)",
             overflow: "hidden",
@@ -350,8 +378,8 @@ export default function AppTopNav() {
           <img
             src={resolvedAvatarUrl}
             alt="Profile"
-            width={42}
-            height={42}
+            width={avatarSize}
+            height={avatarSize}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </button>
@@ -362,7 +390,7 @@ export default function AppTopNav() {
             aria-label="Profile quick menu"
             style={{
               marginTop: 10,
-              width: "min(360px, calc(100vw - 28px))",
+              width: isCompact ? "min(320px, calc(100vw - 20px))" : "min(360px, calc(100vw - 28px))",
               border: "1px solid var(--border-color)",
               borderRadius: 14,
               background: "var(--surface-glass)",

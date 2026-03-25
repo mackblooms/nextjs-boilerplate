@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo } from "react";
+import { toSchoolDisplayName } from "@/lib/teamNames";
 
 export type BracketBoardTeam = {
   id: string;
@@ -185,7 +186,7 @@ export function BracketBoard({
               whiteSpace: "nowrap",
             }}
           >
-            {t?.name ?? "Unknown"}
+            {toSchoolDisplayName(t?.name) || "Unknown"}
           </span>
         </span>
         <span
