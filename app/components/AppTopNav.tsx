@@ -333,6 +333,7 @@ export default function AppTopNav() {
         <Link href="/drafts" className="app-top-nav-link" style={pillStyle}>Drafts</Link>
         <Link href="/pools" className="app-top-nav-link" style={pillStyle}>Pools</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" style={pillStyle}>Bracket</Link> : null}
+        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" style={pillStyle}>Leaderboard</Link> : null}
         {activePoolId && activePool?.created_by === userId ? (
           <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" style={pillStyle}>Admin</Link>
         ) : null}
