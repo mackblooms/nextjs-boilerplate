@@ -327,15 +327,50 @@ export default function AppTopNav() {
     };
   };
 
-  function openHowItWorksGuide() {
+  function openHowItWorksModal() {
     setMenuOpen(false);
     setSettingsOpen(false);
     setHelpOpen(false);
-    window.dispatchEvent(new CustomEvent("bb:open-tutorial"));
+    window.dispatchEvent(new CustomEvent("bb:open-how-it-works"));
   }
 
   return (
-    <div
+    <>
+      <div
+        style={{
+          position: "fixed",
+          top: "env(safe-area-inset-top)",
+          right: "env(safe-area-inset-right)",
+          zIndex: 1205,
+          pointerEvents: "auto",
+        }}
+      >
+        <button
+          type="button"
+          className="app-top-nav-how-it-works-button"
+          onClick={openHowItWorksModal}
+          aria-haspopup="dialog"
+          aria-label="Open how it works details"
+          style={{
+            border: "1px solid var(--border-color)",
+            borderRadius: 9999,
+            background: "var(--surface-glass)",
+            color: "var(--foreground)",
+            fontWeight: 800,
+            fontSize: isCompact ? 11 : 12,
+            letterSpacing: "0.02em",
+            minHeight: isCompact ? 30 : 32,
+            padding: isCompact ? "6px 10px" : "6px 12px",
+            boxShadow: "var(--shadow-sm)",
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}
+        >
+          How it works
+        </button>
+      </div>
+
+      <div
       style={{
         position: "fixed",
         top: isCompact ? 56 : 62,
@@ -365,7 +400,7 @@ export default function AppTopNav() {
           padding: isCompact ? 6 : 8,
           boxShadow: "var(--shadow-sm)",
           pointerEvents: "auto",
-          maxWidth: isCompact ? "calc(100vw - 136px)" : "min(980px, calc(100vw - 200px))",
+          maxWidth: isCompact ? "calc(100vw - 72px)" : "min(980px, calc(100vw - 170px))",
           overflowX: isCompact ? "auto" : "visible",
           scrollbarWidth: "none",
         }}
@@ -387,34 +422,9 @@ export default function AppTopNav() {
           top: isCompact ? 6 : 7,
           display: "grid",
           justifyItems: "end",
-          gap: isCompact ? 6 : 8,
           pointerEvents: "auto",
         }}
       >
-        <button
-          type="button"
-          className="app-top-nav-how-it-works-button"
-          onClick={openHowItWorksGuide}
-          aria-haspopup="dialog"
-          aria-label="Open how it works tutorial"
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 9999,
-            background: "var(--surface-glass)",
-            color: "var(--foreground)",
-            fontWeight: 800,
-            fontSize: isCompact ? 11 : 12,
-            letterSpacing: "0.02em",
-            minHeight: isCompact ? 30 : 32,
-            padding: isCompact ? "6px 10px" : "6px 12px",
-            boxShadow: "var(--shadow-sm)",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
-          How it works
-        </button>
-
         <div
           onMouseEnter={() => setMenuOpen(true)}
           onMouseLeave={() => {
@@ -823,5 +833,6 @@ export default function AppTopNav() {
         </div>
       ) : null}
     </div>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
 import InstructionsModal from "./components/InstructionsModal";
+import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -47,6 +48,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <InstructionsModal />
         </Suspense>
+        <HowItWorksRulesModal />
 
         <main className="site-main">{children}</main>
         <footer className="site-disclaimer" role="contentinfo">
