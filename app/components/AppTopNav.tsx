@@ -279,7 +279,7 @@ export default function AppTopNav() {
   const avatarSize = isCompact ? 38 : 42;
   const pillStyle: CSSProperties = {
     padding: isCompact ? "8px 10px" : "8px 12px",
-    border: "1px solid var(--border-color)",
+    border: "none",
     borderRadius: 9999,
     textDecoration: "none",
     color: "var(--foreground)",
@@ -322,7 +322,6 @@ export default function AppTopNav() {
     return {
       ...pillStyle,
       background: "var(--surface-elevated)",
-      borderColor: "var(--highlight-border)",
       boxShadow: "var(--shadow-sm)",
       color: "var(--focus-ring)",
       fontWeight: 900,
