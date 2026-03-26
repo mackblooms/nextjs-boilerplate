@@ -339,7 +339,7 @@ export default function AppTopNav() {
       <div
         style={{
           position: "fixed",
-          top: "env(safe-area-inset-top)",
+          top: isCompact ? 10 : 14,
           right: "env(safe-area-inset-right)",
           zIndex: 1205,
           pointerEvents: "auto",
