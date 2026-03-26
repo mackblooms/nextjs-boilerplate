@@ -299,7 +299,6 @@ export default function AppTopNav() {
   const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
 
   const isHomeActive = pathname === "/";
-  const isHowItWorksActive = pathname === "/how-it-works";
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
   const isLeaderboardActive = activePoolBasePath
@@ -327,6 +326,13 @@ export default function AppTopNav() {
       fontWeight: 900,
     };
   };
+
+  function openHowItWorksGuide() {
+    setMenuOpen(false);
+    setSettingsOpen(false);
+    setHelpOpen(false);
+    window.dispatchEvent(new CustomEvent("bb:open-tutorial"));
+  }
 
   return (
     <div
@@ -359,13 +365,12 @@ export default function AppTopNav() {
           padding: isCompact ? 6 : 8,
           boxShadow: "var(--shadow-sm)",
           pointerEvents: "auto",
-          maxWidth: isCompact ? "calc(100vw - 72px)" : "min(980px, calc(100vw - 170px))",
+          maxWidth: isCompact ? "calc(100vw - 136px)" : "min(980px, calc(100vw - 200px))",
           overflowX: isCompact ? "auto" : "visible",
           scrollbarWidth: "none",
         }}
       >
         <Link href={homeHref} className="app-top-nav-link" aria-current={isHomeActive ? "page" : undefined} style={getNavPillStyle(isHomeActive)}>Home</Link>
-        <Link href="/how-it-works" className="app-top-nav-link" aria-current={isHowItWorksActive ? "page" : undefined} style={getNavPillStyle(isHowItWorksActive)}>How it works</Link>
         <Link href="/drafts" className="app-top-nav-link" aria-current={isDraftsActive ? "page" : undefined} style={getNavPillStyle(isDraftsActive)}>Drafts</Link>
         <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
         {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
@@ -376,183 +381,212 @@ export default function AppTopNav() {
       </div>
       <div
         ref={menuRef}
-        onMouseEnter={() => setMenuOpen(true)}
-        onMouseLeave={() => {
-          if (!settingsOpen && !helpOpen) {
-            setMenuOpen(false);
-          }
-        }}
         style={{
           position: "absolute",
           right: isCompact ? 10 : 16,
           top: isCompact ? 6 : 7,
           display: "grid",
           justifyItems: "end",
+          gap: isCompact ? 6 : 8,
           pointerEvents: "auto",
         }}
       >
         <button
           type="button"
-          className="app-top-nav-avatar-button"
-          aria-label="Open profile menu"
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
+          className="app-top-nav-how-it-works-button"
+          onClick={openHowItWorksGuide}
+          aria-haspopup="dialog"
+          aria-label="Open how it works tutorial"
           style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: 9999,
             border: "1px solid var(--border-color)",
-            overflow: "hidden",
+            borderRadius: 9999,
             background: "var(--surface-glass)",
-            display: "grid",
-            placeItems: "center",
-            padding: 0,
+            color: "var(--foreground)",
+            fontWeight: 800,
+            fontSize: isCompact ? 11 : 12,
+            letterSpacing: "0.02em",
+            minHeight: isCompact ? 30 : 32,
+            padding: isCompact ? "6px 10px" : "6px 12px",
             boxShadow: "var(--shadow-sm)",
             cursor: "pointer",
+            whiteSpace: "nowrap",
           }}
         >
-          <img
-            src={resolvedAvatarUrl}
-            alt="Profile"
-            width={avatarSize}
-            height={avatarSize}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          How it works
         </button>
 
-        {menuOpen ? (
-          <section
-            role="menu"
-            aria-label="Profile quick menu"
+        <div
+          onMouseEnter={() => setMenuOpen(true)}
+          onMouseLeave={() => {
+            if (!settingsOpen && !helpOpen) {
+              setMenuOpen(false);
+            }
+          }}
+          style={{ display: "grid", justifyItems: "end" }}
+        >
+          <button
+            type="button"
+            className="app-top-nav-avatar-button"
+            aria-label="Open profile menu"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
             style={{
-              marginTop: 10,
-              width: isCompact ? "min(320px, calc(100vw - 20px))" : "min(360px, calc(100vw - 28px))",
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: 9999,
               border: "1px solid var(--border-color)",
-              borderRadius: 14,
+              overflow: "hidden",
               background: "var(--surface-glass)",
-              padding: 10,
-              boxShadow: "var(--shadow-lg)",
               display: "grid",
-              gap: 10,
+              placeItems: "center",
+              padding: 0,
+              boxShadow: "var(--shadow-sm)",
+              cursor: "pointer",
             }}
           >
-            <div
+            <img
+              src={resolvedAvatarUrl}
+              alt="Profile"
+              width={avatarSize}
+              height={avatarSize}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </button>
+
+          {menuOpen ? (
+            <section
+              role="menu"
+              aria-label="Profile quick menu"
               style={{
+                marginTop: 10,
+                width: isCompact ? "min(320px, calc(100vw - 20px))" : "min(360px, calc(100vw - 28px))",
+                border: "1px solid var(--border-color)",
+                borderRadius: 14,
+                background: "var(--surface-glass)",
+                padding: 10,
+                boxShadow: "var(--shadow-lg)",
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 8,
+                gap: 10,
               }}
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push("/");
-                }}
+              <div
                 style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  fontWeight: 800,
-                  cursor: "pointer",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 8,
                 }}
               >
-                Scores
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  router.push("/drafts");
-                }}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                Drafts
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setSettingsOpen(true);
-                }}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                Settings
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  setHelpOpen(true);
-                }}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
-              >
-                Help
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/");
+                  }}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    background: "var(--surface-elevated)",
+                    padding: "10px 12px",
+                    textAlign: "left",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Scores
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/drafts");
+                  }}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    background: "var(--surface-elevated)",
+                    padding: "10px 12px",
+                    textAlign: "left",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Drafts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setSettingsOpen(true);
+                  }}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    background: "var(--surface-elevated)",
+                    padding: "10px 12px",
+                    textAlign: "left",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setHelpOpen(true);
+                  }}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    background: "var(--surface-elevated)",
+                    padding: "10px 12px",
+                    textAlign: "left",
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Help
+                </button>
+              </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <Link
-                href="/profile"
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  flex: 1,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "9px 12px",
-                  textDecoration: "none",
-                  fontWeight: 800,
-                  color: "var(--foreground)",
-                  background: "var(--surface-elevated)",
-                }}
-              >
-                Profile
-              </Link>
-              <button
-                type="button"
-                onClick={signOut}
-                style={{
-                  flex: 1,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "9px 12px",
-                  background: "var(--surface-elevated)",
-                  cursor: "pointer",
-                  fontWeight: 800,
-                }}
-              >
-                Log out
-              </button>
-            </div>
-          </section>
-        ) : null}
+              <div style={{ display: "flex", gap: 8 }}>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    flex: 1,
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    padding: "9px 12px",
+                    textDecoration: "none",
+                    fontWeight: 800,
+                    color: "var(--foreground)",
+                    background: "var(--surface-elevated)",
+                  }}
+                >
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  style={{
+                    flex: 1,
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    padding: "9px 12px",
+                    background: "var(--surface-elevated)",
+                    cursor: "pointer",
+                    fontWeight: 800,
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            </section>
+          ) : null}
+        </div>
       </div>
 
       {settingsOpen ? (

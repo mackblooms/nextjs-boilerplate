@@ -256,6 +256,21 @@ export default function InstructionsModal() {
   }, [isManualTutorialOpen, isReady, shouldForceOpen, shouldSuppressModal]);
 
   useEffect(() => {
+    if (!isReady || shouldSuppressModal) return;
+
+    const onManualOpen = () => {
+      setDontShowAgain(readTutorialOptOut());
+      setCurrentStepIndex(0);
+      setIsOpen(true);
+    };
+
+    window.addEventListener("bb:open-tutorial", onManualOpen);
+    return () => {
+      window.removeEventListener("bb:open-tutorial", onManualOpen);
+    };
+  }, [isReady, shouldSuppressModal]);
+
+  useEffect(() => {
     if (!isOpen) return;
     const existingOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
