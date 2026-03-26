@@ -1358,6 +1358,13 @@ export default function LeaderboardPage() {
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const forecastModeOn = leaderboardMode === "forecast";
+
+  useEffect(() => {
+    if (forecastModeOn && openBreakdownEntryId) {
+      setOpenBreakdownEntryId(null);
+    }
+  }, [forecastModeOn, openBreakdownEntryId]);
+
   const displayRows = useMemo(() => {
     if (!forecastModeOn || Object.keys(forecastByEntry).length === 0) {
       return rows.map((row) => ({
@@ -1754,11 +1761,7 @@ export default function LeaderboardPage() {
                             opacity: 0.78,
                           }}
                         >
-                          {forecastModeOn
-                            ? forecast
-                              ? `${formatPointsDelta(forecast.expected_add)} expected today`
-                              : "Forecast unavailable"
-                            : canViewTeams
+                          {canViewTeams
                             ? `${r.active_team_count} alive`
                             : "Hidden"}
                         </div>
@@ -1795,7 +1798,7 @@ export default function LeaderboardPage() {
                         >
                           {teamsExpanded ? "Teams \u25B4" : "Teams \u25BE"}
                         </button>
-                        {canViewBreakdown ? (
+                        {!forecastModeOn && canViewBreakdown ? (
                           <button
                             type="button"
                             onClick={() => {
@@ -1813,11 +1816,11 @@ export default function LeaderboardPage() {
                           >
                             Breakdown
                           </button>
-                        ) : (
+                        ) : !forecastModeOn ? (
                           <div style={{ fontSize: 12, opacity: 0.7 }}>
                             Breakdown hidden
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
 
