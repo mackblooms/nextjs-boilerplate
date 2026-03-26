@@ -9,7 +9,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 import { scoreEntries } from "../../../../lib/scoring";
@@ -47,6 +48,11 @@ type PlayerOption = {
   favorite_team: string | null;
   avatar_url: string | null;
   bio: string | null;
+};
+
+type PoolOption = {
+  id: string;
+  name: string;
 };
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -197,6 +203,7 @@ function areGamesEquivalent(a: Game[], b: Game[]): boolean {
 
 export default function BracketPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const poolId = params.id;
   const searchParams = useSearchParams();
   const entryId = searchParams.get("entry");
@@ -205,6 +212,7 @@ export default function BracketPage() {
   const [msg, setMsg] = useState("");
   const [teams, setTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
+  const [memberPools, setMemberPools] = useState<PoolOption[]>([]);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
   const [showViewingBanner, setShowViewingBanner] = useState(false);
@@ -393,29 +401,60 @@ export default function BracketPage() {
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
       if (!user) {
+        setMemberPools([]);
         setMsg("Please log in first.");
         setLoading(false);
         return;
       }
 
-      const { data: mem, error: memErr } = await supabase
+      const { data: memberships, error: memErr } = await supabase
         .from("pool_members")
         .select("pool_id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id);
 
       if (memErr) {
+        setMemberPools([]);
         setMsg(memErr.message);
         setLoading(false);
         return;
       }
 
-      if (!mem) {
+      const membershipPoolIds = Array.from(
+        new Set((memberships ?? []).map((membership) => membership.pool_id).filter(Boolean)),
+      );
+
+      if (membershipPoolIds.length === 0) {
+        setMemberPools([]);
+        setMsg("Join a pool to view brackets.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: memberPoolRows, error: memberPoolErr } = await supabase
+        .from("pools")
+        .select("id,name")
+        .in("id", membershipPoolIds)
+        .order("name", { ascending: true });
+
+      if (memberPoolErr) {
+        setMemberPools([]);
+        setMsg(memberPoolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const joinedPools = ((memberPoolRows ?? []) as PoolOption[]).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+      setMemberPools(joinedPools);
+
+      if (!membershipPoolIds.includes(poolId)) {
         setMsg("Join this pool to view brackets.");
         setLoading(false);
         return;
       }
+
+      setStoredActivePoolId(poolId);
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
@@ -816,6 +855,7 @@ export default function BracketPage() {
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
   );
+  const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
   const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
   const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
   const championshipLive = championship ? liveByGameId.get(championship.id) : undefined;
@@ -1182,6 +1222,35 @@ export default function BracketPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Bracket
         </h1>
+        {memberPools.length > 0 ? (
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+            <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
+            <select
+              value={poolSelectorValue}
+              onChange={(event) => {
+                const nextPoolId = event.target.value;
+                if (!nextPoolId || nextPoolId === poolId) return;
+                setStoredActivePoolId(nextPoolId);
+                router.push(`/pool/${nextPoolId}/bracket`);
+              }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+                fontWeight: 700,
+                minHeight: 38,
+              }}
+            >
+              {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
+              {memberPools.map((pool) => (
+                <option key={pool.id} value={pool.id}>
+                  {pool.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
 
       {selectedEntryId && showViewingBanner ? (
@@ -1367,7 +1436,7 @@ export default function BracketPage() {
           ) : null}
           {players.map((p) => (
             <option key={p.entry_id} value={p.entry_id}>
-              {(p.entry_name ?? p.display_name ?? p.user_id.slice(0, 8)) + ` (${p.total_score} pts)`}
+              {(p.entry_name?.trim() || "Unnamed draft") + ` (${p.total_score} pts)`}
             </option>
           ))}
         </select>

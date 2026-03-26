@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { getStoredActivePoolId, setStoredActivePoolId } from "@/lib/activePool";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
@@ -767,11 +768,13 @@ function HomeContent() {
         .order("name", { ascending: true });
 
       const nextPools = ((poolsRes.data ?? []) as PoolOption[]).sort(sortPoolsByName);
+      const storedPoolId = getStoredActivePoolId();
 
       if (!canceled) {
         setMemberPools(nextPools);
         setSelectedPoolId((prev) => {
           if (prev && nextPools.some((pool) => pool.id === prev)) return prev;
+          if (storedPoolId && nextPools.some((pool) => pool.id === storedPoolId)) return storedPoolId;
           return nextPools[0]?.id ?? "";
         });
       }
@@ -798,6 +801,11 @@ function HomeContent() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated !== true || !selectedPoolId) return;
+    setStoredActivePoolId(selectedPoolId);
+  }, [isAuthenticated, selectedPoolId]);
 
   useEffect(() => {
     let canceled = false;

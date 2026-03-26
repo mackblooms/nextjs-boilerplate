@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
@@ -113,6 +114,11 @@ type TeamPopularityRow = {
   team_name: string;
   logo_url: string | null;
   selections: number;
+};
+
+type PoolOption = {
+  id: string;
+  name: string;
 };
 
 type EntryBreakdownTeamTotal = {
@@ -556,12 +562,14 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
 
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const poolId = params.id;
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState("");
   const [poolName, setPoolName] = useState("");
+  const [memberPools, setMemberPools] = useState<PoolOption[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
@@ -773,6 +781,7 @@ export default function LeaderboardPage() {
 
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
+        setMemberPools([]);
         setMsg("Please log in first.");
         setLoading(false);
         return;
@@ -780,24 +789,54 @@ export default function LeaderboardPage() {
       const user = authData.user;
       setMyUserId(user.id);
 
-      const { data: memberRow, error: memberErr } = await supabase
+      const { data: memberships, error: memberErr } = await supabase
         .from("pool_members")
         .select("pool_id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id);
 
       if (memberErr) {
+        setMemberPools([]);
         setMsg(memberErr.message);
         setLoading(false);
         return;
       }
 
-      if (!memberRow) {
+      const membershipPoolIds = Array.from(
+        new Set((memberships ?? []).map((membership) => membership.pool_id).filter(Boolean)),
+      );
+
+      if (membershipPoolIds.length === 0) {
+        setMemberPools([]);
+        setMsg("Join a pool to view the leaderboard.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: memberPoolRows, error: memberPoolErr } = await supabase
+        .from("pools")
+        .select("id,name")
+        .in("id", membershipPoolIds)
+        .order("name", { ascending: true });
+
+      if (memberPoolErr) {
+        setMemberPools([]);
+        setMsg(memberPoolErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const joinedPools = ((memberPoolRows ?? []) as PoolOption[]).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+      setMemberPools(joinedPools);
+
+      if (!membershipPoolIds.includes(poolId)) {
         setMsg("Join this pool to view the leaderboard.");
         setLoading(false);
         return;
       }
+
+      setStoredActivePoolId(poolId);
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
@@ -1358,6 +1397,7 @@ export default function LeaderboardPage() {
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const forecastModeOn = leaderboardMode === "forecast";
+  const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
 
   useEffect(() => {
     if (forecastModeOn && openBreakdownEntryId) {
@@ -1407,10 +1447,47 @@ export default function LeaderboardPage() {
 
   return (
     <main className="page-shell" style={{ maxWidth: 1240 }}>
-      <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           {poolName ? `Leaderboard - ${poolName}` : "Leaderboard"}
         </h1>
+        {memberPools.length > 0 ? (
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+            <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
+            <select
+              value={poolSelectorValue}
+              onChange={(event) => {
+                const nextPoolId = event.target.value;
+                if (!nextPoolId || nextPoolId === poolId) return;
+                setStoredActivePoolId(nextPoolId);
+                router.push(`/pool/${nextPoolId}/leaderboard`);
+              }}
+              style={{
+                padding: "8px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+                fontWeight: 700,
+                minHeight: 38,
+              }}
+            >
+              {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
+              {memberPools.map((pool) => (
+                <option key={pool.id} value={pool.id}>
+                  {pool.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}

@@ -4,6 +4,11 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  ACTIVE_POOL_CHANGED_EVENT,
+  getStoredActivePoolId,
+  setStoredActivePoolId,
+} from "../../lib/activePool";
 import { withAvatarFallback } from "../../lib/avatar";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
@@ -215,8 +220,14 @@ export default function AppTopNav() {
       if (canceled) return;
 
       const membershipPoolIds = (memberships ?? []).map((m) => m.pool_id);
-      const selectedPoolId = poolIdFromPath ?? membershipPoolIds[0] ?? null;
+      const storedPoolId = getStoredActivePoolId();
+      const selectedPoolId =
+        poolIdFromPath ??
+        (storedPoolId && membershipPoolIds.includes(storedPoolId) ? storedPoolId : null) ??
+        membershipPoolIds[0] ??
+        null;
       setActivePoolId(selectedPoolId);
+      setStoredActivePoolId(selectedPoolId);
 
       if (!selectedPoolId) {
         setActivePool(null);
@@ -237,6 +248,41 @@ export default function AppTopNav() {
 
     return () => {
       canceled = true;
+    };
+  }, [poolIdFromPath, supabase, userId]);
+
+  useEffect(() => {
+    if (poolIdFromPath || !supabase || !userId) return;
+
+    let canceled = false;
+
+    const onActivePoolChanged = async (event: Event) => {
+      const customEvent = event as CustomEvent<{ poolId?: string | null }>;
+      const nextPoolId = customEvent.detail?.poolId?.trim() ?? null;
+
+      if (canceled) return;
+      setActivePoolId(nextPoolId);
+
+      if (!nextPoolId) {
+        setActivePool(null);
+        return;
+      }
+
+      const { data: poolData } = await supabase
+        .from("pools")
+        .select("id,name,created_by")
+        .eq("id", nextPoolId)
+        .single();
+
+      if (canceled) return;
+      setActivePool(poolData ?? null);
+    };
+
+    window.addEventListener(ACTIVE_POOL_CHANGED_EVENT, onActivePoolChanged as EventListener);
+
+    return () => {
+      canceled = true;
+      window.removeEventListener(ACTIVE_POOL_CHANGED_EVENT, onActivePoolChanged as EventListener);
     };
   }, [poolIdFromPath, supabase, userId]);
 
