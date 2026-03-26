@@ -1526,11 +1526,10 @@ export default function LeaderboardPage() {
                   padding: "10px 12px",
                   borderBottom: "1px solid var(--border-color)",
                   background: "var(--surface)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  flexWrap: "wrap",
+                  display: "grid",
+                  justifyItems: "center",
+                  gap: 8,
+                  textAlign: "center",
                 }}
               >
                 <div
@@ -1591,6 +1590,7 @@ export default function LeaderboardPage() {
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
+                      justifyContent: "center",
                       gap: 10,
                       flexWrap: "wrap",
                     }}
