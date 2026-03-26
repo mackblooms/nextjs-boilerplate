@@ -133,15 +133,18 @@ export default function HowItWorksRulesContent() {
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Upset Bonus</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-          Upset Bonus = <b>4 x (Team Seed - Opponent Seed)</b>, minimum 0.
+          When your team wins as an underdog, you earn an extra upset bonus on
+          top of base points. Bigger upsets generally earn more than smaller
+          upsets.
         </p>
       </section>
 
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>4) Seed Multiplier</h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-          Base points are multiplied by seed value from 1.00x (1-seed) up to
-          1.525x (16-seed). Multipliers apply to base points only.
+          Each seed has a weighting factor that adjusts base win points.
+          Underdog seeds receive a stronger boost than top seeds. This is
+          applied automatically by the scoring system.
         </p>
       </section>
 
@@ -149,17 +152,12 @@ export default function HowItWorksRulesContent() {
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>
           5) Historic Upset Bonus
         </h2>
-        <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-          <li>
-            14-seed first Round of 64 win: <b>+24</b>
-          </li>
-          <li>
-            15-seed first Round of 64 win: <b>+40</b>
-          </li>
-          <li>
-            16-seed first Round of 64 win: <b>+56</b>
-          </li>
-        </ul>
+        <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+          Certain rare first-round underdog outcomes can trigger an additional
+          one-time bonus for <b>14-, 15-, and 16-seeds</b>. Lower seeds earn a
+          larger historic upset bonus than higher seeds (for example, a
+          16-seed bonus is larger than a 14-seed bonus).
+        </p>
       </section>
 
       <section className="legal-doc-section">
@@ -168,21 +166,15 @@ export default function HowItWorksRulesContent() {
         </h2>
         <p style={{ marginTop: 10, lineHeight: 1.6 }}>
           If <b>all</b> of your drafted teams win in the Round of 64, you earn a
-          bonus equal to the sum of your teams&apos; seeds. This applies to Round
-          of 64 only.
+          one-time perfect-round bonus. The bonus is based on the overall risk
+          profile of your draft.
         </p>
         <p style={{ marginTop: 10, lineHeight: 1.6, opacity: 0.85 }}>
           Your draft does not need to spend exactly 100 points. Any valid draft
           at or under the 100-point budget can qualify.
         </p>
         <ul style={{ marginTop: 10, lineHeight: 1.6 }}>
-          <li>
-            Example draft: <b>1, 1, 2, 2, 9, 10, 12, 14</b>
-          </li>
-          <li>
-            Perfect Round of 64 bonus:{" "}
-            <b>1 + 1 + 2 + 2 + 9 + 10 + 12 + 14 = 51 points</b>
-          </li>
+          <li>This applies to the Round of 64 only.</li>
           <li>If any drafted team loses in that round, no bonus is awarded.</li>
         </ul>
       </section>
