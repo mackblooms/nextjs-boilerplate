@@ -15,7 +15,7 @@ import {
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 import { toSchoolDisplayName } from "@/lib/teamNames";
-import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
+import { UiButton, UiCard, UiInput, UiLinkButton } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -34,14 +34,6 @@ type GameRow = {
 
 type DraftPickRow = {
   team_id: string;
-};
-
-type MembershipRow = {
-  pool_id: string;
-};
-
-type PoolNameRow = {
-  name: string;
 };
 
 function sameSet(a: Set<string>, b: Set<string>) {
@@ -70,9 +62,6 @@ export default function DraftDetailPage() {
   const [savedSelected, setSavedSelected] = useState<Set<string>>(new Set());
 
   const [saving, setSaving] = useState(false);
-  const [bracketPoolId, setBracketPoolId] = useState<string | null>(null);
-  const [bracketPoolName, setBracketPoolName] = useState("");
-  const [showBracketModal, setShowBracketModal] = useState(false);
   const draftsLocked = isDraftLibraryLocked();
   const lockMessage = draftLibraryLockMessage();
 
@@ -109,27 +98,6 @@ export default function DraftDetailPage() {
         setLoading(false);
         setMessage("Please log in first.");
         return;
-      }
-
-      const { data: membershipRows } = await supabase
-        .from("pool_members")
-        .select("pool_id")
-        .eq("user_id", user.id)
-        .order("joined_at", { ascending: true })
-        .limit(1);
-
-      const defaultPoolId = ((membershipRows ?? []) as MembershipRow[])[0]?.pool_id ?? null;
-      setBracketPoolId(defaultPoolId);
-      setBracketPoolName("");
-
-      if (defaultPoolId) {
-        const { data: poolRow } = await supabase
-          .from("pools")
-          .select("name")
-          .eq("id", defaultPoolId)
-          .maybeSingle();
-        const typedPool = (poolRow as PoolNameRow | null) ?? null;
-        setBracketPoolName(typedPool?.name ?? "");
       }
 
       const { data: draftRow, error: draftErr } = await supabase
@@ -215,15 +183,6 @@ export default function DraftDetailPage() {
 
     void load();
   }, [draftId]);
-
-  useEffect(() => {
-    if (!showBracketModal) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showBracketModal]);
 
   function toggleTeam(teamId: string) {
     if (isDraftLibraryLocked()) {
@@ -357,18 +316,18 @@ export default function DraftDetailPage() {
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
           </div>
-          <UiButton
-            type="button"
-            onClick={() => setShowBracketModal(true)}
-            disabled={!bracketPoolId}
-            title={
-              bracketPoolId
-                ? `Open bracket${bracketPoolName ? ` for ${bracketPoolName}` : ""}`
-                : "Join a pool to view a bracket"
-            }
-          >
-            Bracket
-          </UiButton>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <UiLinkButton
+              href="/drafts"
+            >
+              Back to Drafts
+            </UiLinkButton>
+            <UiLinkButton
+              href="/pools"
+            >
+              Open Pools
+            </UiLinkButton>
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -535,95 +494,6 @@ export default function DraftDetailPage() {
           </div>
         </aside>
       </section>
-
-      {showBracketModal ? (
-        <div
-          role="presentation"
-          onClick={() => setShowBracketModal(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 2300,
-            background: "rgba(0,0,0,0.58)",
-            padding: 12,
-            display: "grid",
-            placeItems: "center",
-          }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-label="Bracket"
-            onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(1880px, 100%)",
-              height: "min(92vh, 1150px)",
-              border: "1px solid var(--border-color)",
-              borderRadius: 14,
-              background: "var(--surface)",
-              boxShadow: "var(--shadow-lg)",
-              display: "grid",
-              gridTemplateRows: "auto 1fr",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
-                borderBottom: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
-            >
-              <div style={{ fontWeight: 900, fontSize: 16, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                Bracket{bracketPoolName ? ` - ${bracketPoolName}` : ""}
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBracketModal(false)}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                  padding: "6px 10px",
-                }}
-              >
-                Close
-              </button>
-            </div>
-            {bracketPoolId ? (
-              <iframe
-                title={bracketPoolName ? `${bracketPoolName} bracket` : "Pool bracket"}
-                src={`/pool/${bracketPoolId}/bracket`}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                  background: "var(--surface)",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  placeItems: "center",
-                  padding: 16,
-                  textAlign: "center",
-                  fontWeight: 700,
-                  opacity: 0.85,
-                }}
-              >
-                Join a pool to view a bracket.
-              </div>
-            )}
-          </section>
-        </div>
-      ) : null}
 
       {message ? (
         <p
