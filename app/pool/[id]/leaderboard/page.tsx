@@ -1457,7 +1457,7 @@ export default function LeaderboardPage() {
         }}
       >
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
-          {poolName ? `Leaderboard - ${poolName}` : "Leaderboard"}
+          Leaderboard
         </h1>
         {memberPools.length > 0 ? (
           <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
