@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
@@ -51,6 +52,7 @@ export default function RootLayout({
         <HowItWorksRulesModal />
 
         <main className="site-main">{children}</main>
+        <Analytics />
         <footer className="site-disclaimer" role="contentinfo">
           bracketball is an independent, unofficial platform and is not
           affiliated with, endorsed by, or sponsored by the NCAA or any
