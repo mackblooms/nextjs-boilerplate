@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
@@ -275,6 +276,7 @@ export default function DraftsPage() {
           {drafts.map((draft) => (
             <UiCard
               as="article"
+              className="drafts-draft-card"
               key={draft.id}
               style={{
                 display: "flex",
@@ -285,20 +287,27 @@ export default function DraftsPage() {
               }}
             >
               <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
-                <div style={{ fontWeight: 900, fontSize: 18, overflow: "hidden", textOverflow: "ellipsis" }}>
+                <Link
+                  href={`/drafts/${draft.id}`}
+                  className="drafts-draft-link"
+                  title={`Open ${draft.name}`}
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 18,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    color: "inherit",
+                  }}
+                >
                   {draft.name}
-                </div>
+                </Link>
                 <div style={{ fontSize: 13, opacity: 0.75 }}>
                   {pickCountByDraft[draft.id] ?? 0} teams selected - updated {formatUpdatedAt(draft.updated_at)}
                 </div>
               </div>
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <UiLinkButton
-                  href={`/drafts/${draft.id}`}
-                >
-                  {draftsLocked ? "View" : "Edit"}
-                </UiLinkButton>
                 <UiLinkButton
                   href="/pools"
                 >

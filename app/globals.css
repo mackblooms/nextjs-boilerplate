@@ -562,6 +562,32 @@ textarea::placeholder {
   opacity: 0.98;
 }
 
+.drafts-draft-card {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.drafts-draft-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.drafts-draft-link {
+  text-decoration: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: color 140ms ease, text-decoration-color 140ms ease, opacity 140ms ease;
+}
+
+.drafts-draft-link:hover,
+.drafts-draft-link:focus-visible,
+.drafts-draft-card:hover .drafts-draft-link {
+  color: var(--focus-ring);
+  text-decoration: underline;
+  opacity: 0.98;
+}
+
 .app-top-nav-pills {
   transition: filter 170ms ease, opacity 170ms ease, box-shadow 180ms ease;
   box-shadow: var(--shadow-sm);
