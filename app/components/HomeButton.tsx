@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Russo_One } from "next/font/google";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
@@ -25,10 +23,7 @@ function notifyHomeButtonHover(hovered: boolean) {
 export default function HomeButton() {
   const [href, setHref] = useState("/");
   const [isCompact, setIsCompact] = useState(false);
-  const pathname = usePathname();
   const isHidden = useAutoHideOnScroll();
-  const showHomeLogo = pathname === "/";
-  const showBrandLogo = showHomeLogo && !isCompact;
 
   useEffect(() => {
     const loadDestination = async () => {
@@ -144,24 +139,6 @@ export default function HomeButton() {
         >
           beta
         </span>
-        {showBrandLogo ? (
-          <Image
-            src="/pool-logo.svg?v=2"
-            alt=""
-            aria-hidden
-            width={88}
-            height={32}
-            priority
-            style={{
-              gridColumn: 1,
-              justifySelf: "center",
-              width: 84,
-              height: "auto",
-              filter: "var(--logo-filter)",
-              opacity: 0.94,
-            }}
-          />
-        ) : null}
       </span>
     </Link>
   );
