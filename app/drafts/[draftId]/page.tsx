@@ -15,7 +15,7 @@ import {
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 import { toSchoolDisplayName } from "@/lib/teamNames";
-import { UiButton, UiCard, UiInput, UiLinkButton } from "../../components/ui/primitives";
+import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -315,18 +315,6 @@ export default function DraftDetailPage() {
             <p style={{ margin: 0, opacity: 0.8 }}>
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <UiLinkButton
-              href="/drafts"
-            >
-              Back to Drafts
-            </UiLinkButton>
-            <UiLinkButton
-              href="/pools"
-            >
-              Open Pools
-            </UiLinkButton>
           </div>
         </div>
 
