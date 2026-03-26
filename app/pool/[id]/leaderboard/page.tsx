@@ -2287,7 +2287,7 @@ export default function LeaderboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 90px 1.3fr 80px",
+                      gridTemplateColumns: "1fr 110px 80px",
                       gap: 8,
                       padding: "9px 12px",
                       borderBottom: "1px solid var(--border-color)",
@@ -2297,7 +2297,6 @@ export default function LeaderboardPage() {
                   >
                     <div>Team</div>
                     <div>Round</div>
-                    <div>Formula</div>
                     <div style={{ textAlign: "right" }}>Points</div>
                   </div>
                   {activeBreakdown.events.map((event) => (
@@ -2305,7 +2304,7 @@ export default function LeaderboardPage() {
                       key={event.id}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 90px 1.3fr 80px",
+                        gridTemplateColumns: "1fr 110px 80px",
                         gap: 8,
                         padding: "10px 12px",
                         borderBottom: "1px solid var(--border-color)",
@@ -2326,13 +2325,6 @@ export default function LeaderboardPage() {
                         </span>
                       </div>
                       <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
-                      <div style={{ fontSize: 13, opacity: 0.86 }}>
-                        Base {event.base_points} x {event.seed_multiplier.toFixed(3)}{" "}
-                        = {event.scaled_base_points.toFixed(1)}
-                        {event.opponent_seed != null ? `, upset vs #${event.opponent_seed}` : ""}
-                        , upset {formatPointsDelta(event.upset_bonus)}, historic{" "}
-                        {formatPointsDelta(event.historic_bonus)}
-                      </div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>
                         {formatPointsDelta(event.points_awarded)}
                       </div>
@@ -2342,7 +2334,7 @@ export default function LeaderboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 90px 1.3fr 80px",
+                        gridTemplateColumns: "1fr 110px 80px",
                         gap: 8,
                         padding: "10px 12px",
                         borderBottom: "1px solid var(--border-color)",
@@ -2352,9 +2344,6 @@ export default function LeaderboardPage() {
                     >
                       <div style={{ fontWeight: 800 }}>Perfect R64 Bonus</div>
                       <div style={{ fontWeight: 700 }}>Bonus</div>
-                      <div style={{ fontSize: 13, opacity: 0.86 }}>
-                        Awarded because all drafted teams won in Round of 64.
-                      </div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>
                         {formatPointsDelta(activeBreakdown.perfect_r64_bonus)}
                       </div>
