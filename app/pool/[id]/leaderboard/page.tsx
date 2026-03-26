@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
@@ -149,6 +149,35 @@ type EntryScoreBreakdown = {
   perfect_r64_bonus: number;
   team_totals: EntryBreakdownTeamTotal[];
   events: EntryBreakdownEvent[];
+};
+
+type LeaderboardMode = "live" | "forecast";
+
+type ForecastEntry = {
+  entry_id: string;
+  current_score: number;
+  current_rank: number;
+  expected_score: number;
+  expected_add: number;
+  projected_score_most_likely: number;
+  projected_add_most_likely: number;
+  projected_rank_most_likely: number;
+  expected_rank: number;
+  first_place_prob: number;
+};
+
+type ForecastGame = {
+  event_id: string;
+  state: string;
+  detail: string | null;
+  round: string | null;
+  prob_source: string;
+  away_team_name: string;
+  home_team_name: string;
+  away_win_prob: number;
+  home_win_prob: number;
+  away_points_if_win: number | null;
+  home_points_if_win: number | null;
 };
 
 const ROUND_ORDER: Record<string, number> = {
@@ -384,6 +413,17 @@ function formatPointsDelta(value: number) {
   return String(value);
 }
 
+function formatExpectedScore(value: number) {
+  if (!Number.isFinite(value)) return "-";
+  if (Math.abs(value - Math.round(value)) < 0.05) return String(Math.round(value));
+  return value.toFixed(1);
+}
+
+function formatPercent(value: number) {
+  if (!Number.isFinite(value)) return "-";
+  return `${value.toFixed(1)}%`;
+}
+
 function TeamValueTable({
   title,
   rows,
@@ -528,6 +568,79 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
   );
 }
 
+function ForecastGamesCard({
+  games,
+  updatedAt,
+}: {
+  games: ForecastGame[];
+  updatedAt: string | null;
+}) {
+  return (
+    <section
+      style={{
+        border: "1px solid var(--border-color)",
+        borderRadius: 12,
+        overflow: "hidden",
+        background: "var(--surface)",
+      }}
+    >
+      <div
+        style={{
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--border-color)",
+          fontWeight: 900,
+          background: "var(--surface-muted)",
+        }}
+      >
+        Tonight&apos;s Forecast
+      </div>
+      <div style={{ padding: "10px 12px", opacity: 0.82, fontSize: 12 }}>
+        {updatedAt ? `Updated ${formatWhen(updatedAt)}` : "Updating forecast..."}
+      </div>
+
+      {games.length === 0 ? (
+        <div style={{ padding: "0 12px 12px 12px", opacity: 0.82 }}>
+          No tournament games found for today.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: 8, padding: "0 12px 12px 12px" }}>
+          {games.map((game) => (
+            <div
+              key={game.event_id}
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                padding: "8px 10px",
+                background: "var(--surface-muted)",
+              }}
+            >
+              <div style={{ fontSize: 12, opacity: 0.78, marginBottom: 6 }}>
+                {game.detail ?? "Scheduled"}
+              </div>
+              <div style={{ display: "grid", gap: 3 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ fontWeight: 700 }}>{toSchoolDisplayName(game.away_team_name)}</span>
+                  <span style={{ fontWeight: 800 }}>
+                    {formatPercent(game.away_win_prob)}
+                    {game.away_points_if_win != null ? ` | +${game.away_points_if_win}` : ""}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ fontWeight: 700 }}>{toSchoolDisplayName(game.home_team_name)}</span>
+                  <span style={{ fontWeight: 800 }}>
+                    {formatPercent(game.home_win_prob)}
+                    {game.home_points_if_win != null ? ` | +${game.home_points_if_win}` : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -547,6 +660,12 @@ export default function LeaderboardPage() {
   const [breakdownByEntry, setBreakdownByEntry] = useState<Record<string, EntryScoreBreakdown>>({});
   const [openBreakdownEntryId, setOpenBreakdownEntryId] = useState<string | null>(null);
   const [hoveredMovementEntryId, setHoveredMovementEntryId] = useState<string | null>(null);
+  const [leaderboardMode, setLeaderboardMode] = useState<LeaderboardMode>("live");
+  const [forecastByEntry, setForecastByEntry] = useState<Record<string, ForecastEntry>>({});
+  const [forecastGames, setForecastGames] = useState<ForecastGame[]>([]);
+  const [forecastUpdatedAt, setForecastUpdatedAt] = useState<string | null>(null);
+  const [forecastMsg, setForecastMsg] = useState("");
+  const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -728,8 +847,12 @@ export default function LeaderboardPage() {
         setPopularTeams([]);
         setBreakdownByEntry({});
         setOpenBreakdownEntryId(null);
+        setForecastByEntry({});
+        setForecastGames([]);
+        setForecastUpdatedAt(null);
       }
       setMsg("");
+      setForecastMsg("");
 
       try {
         await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
@@ -1265,6 +1388,60 @@ export default function LeaderboardPage() {
       setBreakdownByEntry(nextBreakdownByEntry);
       setOpenBreakdownEntryId((prev) => (prev && nextBreakdownByEntry[prev] ? prev : null));
       setRows(ranked);
+
+      if (token) {
+        try {
+          const forecastRes = await fetch(
+            `/api/pools/forecast?poolId=${encodeURIComponent(poolId)}`,
+            {
+              headers: {
+                authorization: `Bearer ${token}`,
+              },
+              cache: "no-store",
+            },
+          );
+
+          const forecastPayload = (await forecastRes.json().catch(() => ({}))) as {
+            entries?: ForecastEntry[];
+            games?: ForecastGame[];
+            generated_at?: string;
+            error?: string;
+          };
+
+          if (!forecastRes.ok) {
+            throw new Error(
+              apiErrorMessage(forecastPayload, "Forecast is temporarily unavailable."),
+            );
+          }
+
+          const entries = Array.isArray(forecastPayload.entries)
+            ? forecastPayload.entries
+            : [];
+          const nextForecastByEntry: Record<string, ForecastEntry> = {};
+          for (const entry of entries) {
+            nextForecastByEntry[entry.entry_id] = entry;
+          }
+
+          setForecastByEntry(nextForecastByEntry);
+          setForecastGames(Array.isArray(forecastPayload.games) ? forecastPayload.games : []);
+          setForecastUpdatedAt(forecastPayload.generated_at ?? null);
+          setForecastMsg("");
+        } catch (error: unknown) {
+          setForecastMsg(
+            error instanceof Error ? error.message : "Forecast is temporarily unavailable.",
+          );
+          if (!isBackgroundRefresh) {
+            setForecastByEntry({});
+            setForecastGames([]);
+            setForecastUpdatedAt(null);
+          }
+        }
+      } else if (!isBackgroundRefresh) {
+        setForecastByEntry({});
+        setForecastGames([]);
+        setForecastUpdatedAt(null);
+      }
+
       setLoading(false);
     };
 
@@ -1273,6 +1450,46 @@ export default function LeaderboardPage() {
 
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
+  const forecastModeOn = leaderboardMode === "forecast";
+  const displayRows = useMemo(() => {
+    if (!forecastModeOn || Object.keys(forecastByEntry).length === 0) {
+      return rows.map((row) => ({
+        row,
+        forecast: forecastByEntry[row.entry_id] ?? null,
+        displayRank: row.rank,
+        displayScore: row.total_score,
+      }));
+    }
+
+    const sorted = [...rows].sort((a, b) => {
+      const scoreA = forecastByEntry[a.entry_id]?.expected_score ?? a.total_score;
+      const scoreB = forecastByEntry[b.entry_id]?.expected_score ?? b.total_score;
+      return (
+        scoreB - scoreA ||
+        (a.entry_name ?? a.display_name ?? "").localeCompare(
+          b.entry_name ?? b.display_name ?? "",
+        )
+      );
+    });
+
+    let previousScore: number | null = null;
+    let previousRank = 0;
+    return sorted.map((row, index) => {
+      const forecast = forecastByEntry[row.entry_id] ?? null;
+      const displayScore = forecast?.expected_score ?? row.total_score;
+      const scoreKey = Number(displayScore.toFixed(3));
+      const rank = previousScore === scoreKey ? previousRank : index + 1;
+      previousScore = scoreKey;
+      previousRank = rank;
+
+      return {
+        row,
+        forecast,
+        displayRank: rank,
+        displayScore,
+      };
+    });
+  }, [forecastByEntry, forecastModeOn, rows]);
 
   return (
     <main className="page-shell" style={{ maxWidth: 1240 }}>
@@ -1284,6 +1501,9 @@ export default function LeaderboardPage() {
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {!loading && forecastModeOn && forecastMsg ? (
+        <p style={{ marginTop: 12 }}>{forecastMsg}</p>
+      ) : null}
 
       {!loading && !msg ? (
         <div className="leaderboard-layout" style={{ marginTop: 16 }}>
@@ -1312,6 +1532,105 @@ export default function LeaderboardPage() {
 
               <div
                 style={{
+                  padding: "10px 12px",
+                  borderBottom: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  role="tablist"
+                  aria-label="Leaderboard view mode"
+                  style={{
+                    display: "inline-flex",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 9999,
+                    padding: 3,
+                    background: "var(--surface-muted)",
+                    gap: 4,
+                  }}
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={leaderboardMode === "live"}
+                    onClick={() => setLeaderboardMode("live")}
+                    style={{
+                      border: "none",
+                      borderRadius: 9999,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      background:
+                        leaderboardMode === "live" ? "var(--surface-elevated)" : "transparent",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    Live
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={leaderboardMode === "forecast"}
+                    onClick={() => setLeaderboardMode("forecast")}
+                    style={{
+                      border: "none",
+                      borderRadius: 9999,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                      background:
+                        leaderboardMode === "forecast"
+                          ? "var(--surface-elevated)"
+                          : "transparent",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    Forecast
+                  </button>
+                </div>
+                {forecastModeOn ? (
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>
+                      {forecastUpdatedAt
+                        ? `Expected outcomes updated ${formatWhen(forecastUpdatedAt)}`
+                        : "Expected outcomes are loading..."}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForecastInfoOpen(true)}
+                      style={{
+                        border: "1px solid var(--border-color)",
+                        borderRadius: 9999,
+                        padding: "4px 9px",
+                        fontSize: 12,
+                        fontWeight: 800,
+                        background: "var(--surface)",
+                        color: "var(--foreground)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      How forecast works
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div
+                style={{
                   display: "grid",
                   gridTemplateColumns: "80px 1fr 140px",
                   padding: "10px 12px",
@@ -1320,12 +1639,14 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>Rank</div>
+                <div>{forecastModeOn ? "Proj Rank" : "Rank"}</div>
                 <div>Player</div>
-                <div style={{ textAlign: "right" }}>Score</div>
+                <div style={{ textAlign: "right" }}>
+                  {forecastModeOn ? "Expected" : "Score"}
+                </div>
               </div>
 
-              {rows.map((r) => {
+              {displayRows.map(({ row: r, forecast, displayRank, displayScore }) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
                 const canViewTeams = draftLocked || r.user_id === myUserId;
                 const canViewBreakdown = canViewTeams && Boolean(breakdownByEntry[r.entry_id]);
@@ -1354,8 +1675,19 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
-                        <span>{r.rank}</span>
-                        {r.rank_delta != null ? (
+                        <span>{forecastModeOn ? displayRank : r.rank}</span>
+                        {forecastModeOn ? (
+                          <span
+                            style={{
+                              color: "var(--foreground)",
+                              opacity: 0.7,
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                          >
+                            Live {r.rank}
+                          </span>
+                        ) : r.rank_delta != null ? (
                           <span
                             style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
                             onMouseEnter={() => setHoveredMovementEntryId(r.entry_id)}
@@ -1505,7 +1837,9 @@ export default function LeaderboardPage() {
                           gap: 2,
                         }}
                       >
-                        <div style={{ fontWeight: 900, fontSize: 18 }}>{r.total_score}</div>
+                        <div style={{ fontWeight: 900, fontSize: 18 }}>
+                          {forecastModeOn ? formatExpectedScore(displayScore) : r.total_score}
+                        </div>
                         <div
                           style={{
                             fontSize: 12,
@@ -1513,8 +1847,25 @@ export default function LeaderboardPage() {
                             opacity: 0.78,
                           }}
                         >
-                          {canViewTeams ? `${r.active_team_count} alive` : "Hidden"}
+                          {forecastModeOn
+                            ? forecast
+                              ? `${formatPointsDelta(forecast.expected_add)} expected today`
+                              : "Forecast unavailable"
+                            : canViewTeams
+                            ? `${r.active_team_count} alive`
+                            : "Hidden"}
                         </div>
+                        {forecastModeOn && forecast ? (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              opacity: 0.78,
+                            }}
+                          >
+                            1st place: {formatPercent(forecast.first_place_prob)}
+                          </div>
+                        ) : null}
                         <button
                           type="button"
                           aria-expanded={teamsExpanded}
@@ -1618,7 +1969,7 @@ export default function LeaderboardPage() {
                 );
               })}
 
-              {rows.length === 0 ? (
+              {displayRows.length === 0 ? (
                 <div style={{ padding: "12px 12px" }}>
                   No entries yet. Have friends join and draft.
                 </div>
@@ -1646,7 +1997,9 @@ export default function LeaderboardPage() {
           </section>
 
           <aside style={{ display: "grid", gap: 12 }}>
-            {showTeamInsights ? (
+            {forecastModeOn ? (
+              <ForecastGamesCard games={forecastGames} updatedAt={forecastUpdatedAt} />
+            ) : showTeamInsights ? (
               <>
                 <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
                 <TeamPopularityTable rows={popularTeams} />
@@ -1678,6 +2031,82 @@ export default function LeaderboardPage() {
               </section>
             )}
           </aside>
+        </div>
+      ) : null}
+
+      {forecastInfoOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Forecast info"
+          onClick={() => setForecastInfoOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.45)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 60,
+            padding: 16,
+          }}
+        >
+          <section
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(560px, 96vw)",
+              borderRadius: 14,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "12px 14px",
+                borderBottom: "1px solid var(--border-color)",
+                background: "var(--surface-muted)",
+                fontWeight: 900,
+              }}
+            >
+              Forecast Basics
+            </div>
+            <div style={{ padding: "12px 14px", display: "grid", gap: 10, lineHeight: 1.5 }}>
+              <p style={{ margin: 0 }}>
+                Forecast view is a directional estimate of where standings may land by the end
+                of today.
+              </p>
+              <p style={{ margin: 0 }}>
+                It blends current pool scores with live game context and matchup strength signals,
+                then updates as games progress.
+              </p>
+              <p style={{ margin: 0, opacity: 0.82 }}>
+                These numbers are not final standings and can move quickly with any upset.
+              </p>
+            </div>
+            <div
+              style={{
+                padding: "10px 14px 14px 14px",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setForecastInfoOpen(false)}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: "8px 12px",
+                  fontWeight: 800,
+                  background: "var(--surface)",
+                  color: "var(--foreground)",
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </section>
         </div>
       ) : null}
 
