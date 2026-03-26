@@ -855,6 +855,13 @@ export default function BracketPage() {
     () => players.find((p) => p.entry_id === selectedEntryId) ?? null,
     [players, selectedEntryId],
   );
+  const playerDraftLabel = (player: Pick<PlayerOption, "entry_name" | "display_name" | "user_id">) => {
+    const entryName = player.entry_name?.trim();
+    if (entryName) return entryName;
+    const displayName = player.display_name?.trim();
+    if (displayName) return displayName;
+    return `Entry ${player.user_id.slice(0, 8)}`;
+  };
   const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
   const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
   const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
@@ -1367,9 +1374,7 @@ export default function BracketPage() {
 
           <div style={{ minWidth: 240, flex: 1 }}>
             <div style={{ fontWeight: 900, fontSize: 21, display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
-              {selectedPlayer.entry_name ??
-                selectedPlayer.display_name ??
-                "Bracket"}
+              {playerDraftLabel(selectedPlayer)}
               <span style={{ fontSize: 14, fontWeight: 800, opacity: 0.8 }}>
                 {selectedPlayer.total_score} pts
               </span>
@@ -1436,7 +1441,7 @@ export default function BracketPage() {
           ) : null}
           {players.map((p) => (
             <option key={p.entry_id} value={p.entry_id}>
-              {(p.entry_name?.trim() || "Unnamed draft") + ` (${p.total_score} pts)`}
+              {`${playerDraftLabel(p)} (${p.total_score} pts)`}
             </option>
           ))}
         </select>
