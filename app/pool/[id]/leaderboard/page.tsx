@@ -166,20 +166,6 @@ type ForecastEntry = {
   first_place_prob: number;
 };
 
-type ForecastGame = {
-  event_id: string;
-  state: string;
-  detail: string | null;
-  round: string | null;
-  prob_source: string;
-  away_team_name: string;
-  home_team_name: string;
-  away_win_prob: number;
-  home_win_prob: number;
-  away_points_if_win: number | null;
-  home_points_if_win: number | null;
-};
-
 const ROUND_ORDER: Record<string, number> = {
   R64: 1,
   R32: 2,
@@ -568,79 +554,6 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
   );
 }
 
-function ForecastGamesCard({
-  games,
-  updatedAt,
-}: {
-  games: ForecastGame[];
-  updatedAt: string | null;
-}) {
-  return (
-    <section
-      style={{
-        border: "1px solid var(--border-color)",
-        borderRadius: 12,
-        overflow: "hidden",
-        background: "var(--surface)",
-      }}
-    >
-      <div
-        style={{
-          padding: "10px 12px",
-          borderBottom: "1px solid var(--border-color)",
-          fontWeight: 900,
-          background: "var(--surface-muted)",
-        }}
-      >
-        Tonight&apos;s Forecast
-      </div>
-      <div style={{ padding: "10px 12px", opacity: 0.82, fontSize: 12 }}>
-        {updatedAt ? `Updated ${formatWhen(updatedAt)}` : "Updating forecast..."}
-      </div>
-
-      {games.length === 0 ? (
-        <div style={{ padding: "0 12px 12px 12px", opacity: 0.82 }}>
-          No tournament games found for today.
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 8, padding: "0 12px 12px 12px" }}>
-          {games.map((game) => (
-            <div
-              key={game.event_id}
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                padding: "8px 10px",
-                background: "var(--surface-muted)",
-              }}
-            >
-              <div style={{ fontSize: 12, opacity: 0.78, marginBottom: 6 }}>
-                {game.detail ?? "Scheduled"}
-              </div>
-              <div style={{ display: "grid", gap: 3 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontWeight: 700 }}>{toSchoolDisplayName(game.away_team_name)}</span>
-                  <span style={{ fontWeight: 800 }}>
-                    {formatPercent(game.away_win_prob)}
-                    {game.away_points_if_win != null ? ` | +${game.away_points_if_win}` : ""}
-                  </span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontWeight: 700 }}>{toSchoolDisplayName(game.home_team_name)}</span>
-                  <span style={{ fontWeight: 800 }}>
-                    {formatPercent(game.home_win_prob)}
-                    {game.home_points_if_win != null ? ` | +${game.home_points_if_win}` : ""}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
@@ -662,7 +575,6 @@ export default function LeaderboardPage() {
   const [hoveredMovementEntryId, setHoveredMovementEntryId] = useState<string | null>(null);
   const [leaderboardMode, setLeaderboardMode] = useState<LeaderboardMode>("live");
   const [forecastByEntry, setForecastByEntry] = useState<Record<string, ForecastEntry>>({});
-  const [forecastGames, setForecastGames] = useState<ForecastGame[]>([]);
   const [forecastUpdatedAt, setForecastUpdatedAt] = useState<string | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
@@ -848,7 +760,6 @@ export default function LeaderboardPage() {
         setBreakdownByEntry({});
         setOpenBreakdownEntryId(null);
         setForecastByEntry({});
-        setForecastGames([]);
         setForecastUpdatedAt(null);
       }
       setMsg("");
@@ -1403,7 +1314,6 @@ export default function LeaderboardPage() {
 
           const forecastPayload = (await forecastRes.json().catch(() => ({}))) as {
             entries?: ForecastEntry[];
-            games?: ForecastGame[];
             generated_at?: string;
             error?: string;
           };
@@ -1423,7 +1333,6 @@ export default function LeaderboardPage() {
           }
 
           setForecastByEntry(nextForecastByEntry);
-          setForecastGames(Array.isArray(forecastPayload.games) ? forecastPayload.games : []);
           setForecastUpdatedAt(forecastPayload.generated_at ?? null);
           setForecastMsg("");
         } catch (error: unknown) {
@@ -1432,13 +1341,11 @@ export default function LeaderboardPage() {
           );
           if (!isBackgroundRefresh) {
             setForecastByEntry({});
-            setForecastGames([]);
             setForecastUpdatedAt(null);
           }
         }
       } else if (!isBackgroundRefresh) {
         setForecastByEntry({});
-        setForecastGames([]);
         setForecastUpdatedAt(null);
       }
 
@@ -1997,9 +1904,7 @@ export default function LeaderboardPage() {
           </section>
 
           <aside style={{ display: "grid", gap: 12 }}>
-            {forecastModeOn ? (
-              <ForecastGamesCard games={forecastGames} updatedAt={forecastUpdatedAt} />
-            ) : showTeamInsights ? (
+            {showTeamInsights ? (
               <>
                 <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
                 <TeamPopularityTable rows={popularTeams} />
