@@ -169,7 +169,6 @@ type ForecastEntry = {
   projected_add_most_likely: number;
   projected_rank_most_likely: number;
   expected_rank: number;
-  first_place_prob: number;
 };
 
 const ROUND_ORDER: Record<string, number> = {
@@ -411,11 +410,6 @@ function formatExpectedScore(value: number) {
   return value.toFixed(1);
 }
 
-function formatPercent(value: number) {
-  if (!Number.isFinite(value)) return "-";
-  return `${value.toFixed(1)}%`;
-}
-
 function TeamValueTable({
   title,
   rows,
@@ -568,7 +562,6 @@ export default function LeaderboardPage() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState("");
-  const [poolName, setPoolName] = useState("");
   const [memberPools, setMemberPools] = useState<PoolOption[]>([]);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [draftLocked, setDraftLocked] = useState(false);
@@ -761,7 +754,6 @@ export default function LeaderboardPage() {
       const isBackgroundRefresh = refreshTick > 0;
       if (!isBackgroundRefresh) {
         setLoading(true);
-        setPoolName("");
         setShowTeamInsights(false);
         setBestValueTeams([]);
         setPopularTeams([]);
@@ -852,7 +844,6 @@ export default function LeaderboardPage() {
 
       const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
       const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
-      setPoolName((poolRow?.name as string | undefined) ?? "");
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
       setIsPoolOwner(poolRow?.created_by === user.id);
@@ -1637,7 +1628,7 @@ export default function LeaderboardPage() {
                 </div>
               </div>
 
-              {displayRows.map(({ row: r, forecast, displayRank, displayScore }) => {
+              {displayRows.map(({ row: r, displayRank, displayScore }) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
                 const canViewTeams = draftLocked || r.user_id === myUserId;
                 const canViewBreakdown = canViewTeams && Boolean(breakdownByEntry[r.entry_id]);
@@ -1854,17 +1845,6 @@ export default function LeaderboardPage() {
                             ? `${r.active_team_count} alive`
                             : "Hidden"}
                         </div>
-                        {forecastModeOn && forecast ? (
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              opacity: 0.78,
-                            }}
-                          >
-                            1st place: {formatPercent(forecast.first_place_prob)}
-                          </div>
-                        ) : null}
                         <button
                           type="button"
                           aria-expanded={teamsExpanded}
@@ -2070,7 +2050,7 @@ export default function LeaderboardPage() {
             <div style={{ padding: "12px 14px", display: "grid", gap: 10, lineHeight: 1.5 }}>
               <p style={{ margin: 0 }}>
                 Forecast view is a directional estimate of where standings may land by the end
-                of today.
+                of the tournament.
               </p>
               <p style={{ margin: 0 }}>
                 It blends current pool scores with live game context and matchup strength signals,
