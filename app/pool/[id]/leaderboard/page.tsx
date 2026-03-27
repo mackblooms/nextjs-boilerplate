@@ -1623,7 +1623,7 @@ export default function LeaderboardPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "80px 1fr 140px",
+                  gridTemplateColumns: "80px minmax(0, 1fr) 140px",
                   padding: "10px 12px",
                   fontWeight: 900,
                   background: "var(--surface-muted)",
@@ -1660,7 +1660,7 @@ export default function LeaderboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "80px 1fr 140px",
+                        gridTemplateColumns: "80px minmax(0, 1fr) 140px",
                         padding: "10px 12px",
                         alignItems: "center",
                       }}
@@ -1753,8 +1753,8 @@ export default function LeaderboardPage() {
                           </span>
                         ) : null}
                       </div>
-                      <div style={{ fontWeight: 800 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ fontWeight: 800, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <img
                             src={r.avatar_url}
                             alt={profileLabel}
@@ -1767,17 +1767,20 @@ export default function LeaderboardPage() {
                               flexShrink: 0,
                             }}
                           />
-                          <div>
+                          <div style={{ minWidth: 0 }}>
                             {canOpenBracket ? (
                               <a
                                 href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
-                                style={{ textDecoration: "none", display: "inline-block" }}
+                                style={{ textDecoration: "none", display: "block", minWidth: 0 }}
                               >
                                 <div
                                   style={{
                                     fontWeight: 800,
                                     color: "var(--foreground)",
                                     fontSize: 17,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
                                   {draftLabel}
@@ -1789,6 +1792,9 @@ export default function LeaderboardPage() {
                                     opacity: 0.72,
                                     fontSize: 13,
                                     marginTop: 2,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
                                   {profileLabel}
@@ -1801,6 +1807,9 @@ export default function LeaderboardPage() {
                                     fontWeight: 800,
                                     color: "var(--foreground)",
                                     fontSize: 17,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
                                   {draftLabel}
@@ -1811,6 +1820,9 @@ export default function LeaderboardPage() {
                                     opacity: 0.72,
                                     fontSize: 13,
                                     marginTop: 2,
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
                                   }}
                                 >
                                   {profileLabel}
@@ -2496,7 +2508,7 @@ export default function LeaderboardPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "80px 1fr 130px",
+                    gridTemplateColumns: "80px minmax(0, 1fr) 130px",
                     padding: "9px 12px",
                     borderBottom: "1px solid var(--border-color)",
                     fontWeight: 900,
@@ -2512,7 +2524,7 @@ export default function LeaderboardPage() {
                     key={entry.entry_id}
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "80px 1fr 130px",
+                      gridTemplateColumns: "80px minmax(0, 1fr) 130px",
                       padding: "10px 12px",
                       borderBottom: "1px solid var(--border-color)",
                       alignItems: "center",
@@ -2523,7 +2535,14 @@ export default function LeaderboardPage() {
                     }}
                   >
                     <div style={{ fontWeight: 900 }}>{entry.rank}</div>
-                    <div style={{ fontWeight: 800 }}>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
                       {entry.entry_name ?? entry.full_name ?? entry.display_name ?? entry.user_id.slice(0, 8)}
                       {myUserId && entry.user_id === myUserId ? " (You)" : ""}
                     </div>
