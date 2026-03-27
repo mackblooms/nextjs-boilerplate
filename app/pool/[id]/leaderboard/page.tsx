@@ -223,6 +223,7 @@ const ROUND_ORDER: Record<string, number> = {
   CHIP: 6,
 };
 const LEADERBOARD_REFRESH_MS = 60_000;
+const FEATURE_DRAWER_SEEN_KEY = "leaderboard_feature_drawer_seen_v1";
 
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
@@ -666,6 +667,8 @@ export default function LeaderboardPage() {
   const [rootingRadar, setRootingRadar] = useState<RootingRadarItem[]>([]);
   const [swingAlerts, setSwingAlerts] = useState<SwingAlertItem[]>([]);
   const [rivalryCards, setRivalryCards] = useState<RivalryCard[]>([]);
+  const [featuresDrawerOpen, setFeaturesDrawerOpen] = useState(false);
+  const [showFeatureDrawerCallout, setShowFeatureDrawerCallout] = useState(false);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -1645,6 +1648,20 @@ export default function LeaderboardPage() {
     }
   }, [forecastModeOn, openBreakdownEntryId]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const seen = window.localStorage.getItem(FEATURE_DRAWER_SEEN_KEY);
+    setShowFeatureDrawerCallout(seen !== "1");
+  }, []);
+
+  useEffect(() => {
+    if (!featuresDrawerOpen) return;
+    setShowFeatureDrawerCallout(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(FEATURE_DRAWER_SEEN_KEY, "1");
+    }
+  }, [featuresDrawerOpen]);
+
   const displayRows = useMemo(() => {
     if (!forecastModeOn || Object.keys(forecastByEntry).length === 0) {
       return rows.map((row) => ({
@@ -2225,170 +2242,6 @@ export default function LeaderboardPage() {
           </section>
 
           <aside style={{ display: "grid", gap: 12 }}>
-            <section
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                overflow: "hidden",
-                background: "var(--surface)",
-              }}
-            >
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  fontWeight: 900,
-                  background: "var(--surface-muted)",
-                }}
-              >
-                Rooting Radar
-              </div>
-              {rootingRadar.length === 0 ? (
-                <div style={{ padding: "12px", opacity: 0.85 }}>
-                  Rooting angles appear once matchups are available.
-                </div>
-              ) : (
-                <div style={{ display: "grid" }}>
-                  {rootingRadar.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        borderTop: "1px solid var(--border-color)",
-                        padding: "10px 12px",
-                        display: "grid",
-                        gap: 4,
-                      }}
-                    >
-                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.75 }}>
-                          {item.round}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 11,
-                            border: "1px solid var(--border-color)",
-                            borderRadius: 9999,
-                            padding: "2px 8px",
-                            fontWeight: 800,
-                            opacity: 0.8,
-                          }}
-                        >
-                          {item.game_state}
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 800 }}>{item.matchup}</div>
-                      <div style={{ fontSize: 13, opacity: 0.9 }}>
-                        Root for <b>{item.recommended_team}</b> (best rank path: #{item.recommended_rank})
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                overflow: "hidden",
-                background: "var(--surface)",
-              }}
-            >
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  fontWeight: 900,
-                  background: "var(--surface-muted)",
-                }}
-              >
-                Swing Alerts
-              </div>
-              {swingAlerts.length === 0 ? (
-                <div style={{ padding: "12px", opacity: 0.85 }}>
-                  No major swing windows right now.
-                </div>
-              ) : (
-                <div style={{ display: "grid" }}>
-                  {swingAlerts.map((alert) => (
-                    <div
-                      key={alert.id}
-                      style={{
-                        borderTop: "1px solid var(--border-color)",
-                        padding: "10px 12px",
-                        display: "grid",
-                        gap: 4,
-                      }}
-                    >
-                      <div style={{ fontWeight: 800 }}>{alert.summary}</div>
-                      <div style={{ fontSize: 13, opacity: 0.85 }}>{alert.detail}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                overflow: "hidden",
-                background: "var(--surface)",
-              }}
-            >
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  fontWeight: 900,
-                  background: "var(--surface-muted)",
-                }}
-              >
-                Rivalry Engine
-              </div>
-              {rivalryCards.length === 0 ? (
-                <div style={{ padding: "12px", opacity: 0.85 }}>
-                  Rivalry cards unlock when nearby opponents are visible.
-                </div>
-              ) : (
-                <div style={{ display: "grid" }}>
-                  {rivalryCards.map((card) => (
-                    <div
-                      key={card.id}
-                      style={{
-                        borderTop: "1px solid var(--border-color)",
-                        padding: "10px 12px",
-                        display: "grid",
-                        gap: 6,
-                      }}
-                    >
-                      <div style={{ fontSize: 13, opacity: 0.8 }}>
-                        #{card.focus_rank} vs #{card.rival_rank}
-                      </div>
-                      <div style={{ fontWeight: 800 }}>{card.rival_entry_label}</div>
-                      <div style={{ fontSize: 13, opacity: 0.9 }}>
-                        {card.score_gap >= 0 ? "You lead by " : "You trail by "}
-                        <b>{Math.abs(card.score_gap)}</b> points
-                      </div>
-                      <div style={{ fontSize: 12, opacity: 0.8 }}>
-                        Shared alive teams: {card.shared_active_count}
-                      </div>
-                      {card.focus_only_active.length > 0 ? (
-                        <div style={{ fontSize: 12, opacity: 0.84 }}>
-                          Your leverage: {card.focus_only_active.join(", ")}
-                        </div>
-                      ) : null}
-                      {card.rival_only_active.length > 0 ? (
-                        <div style={{ fontSize: 12, opacity: 0.84 }}>
-                          Rival leverage: {card.rival_only_active.join(", ")}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
             {showTeamInsights ? (
               <>
                 <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
@@ -2421,6 +2274,242 @@ export default function LeaderboardPage() {
               </section>
             )}
           </aside>
+        </div>
+      ) : null}
+
+      {!loading && !msg ? (
+        <div className="feature-drawer-root">
+          {showFeatureDrawerCallout && !featuresDrawerOpen ? (
+            <div className="feature-drawer-callout" role="status" aria-live="polite">
+              <div style={{ fontWeight: 900 }}>New: Live Strategy Drawer</div>
+              <div style={{ marginTop: 2, fontSize: 12, opacity: 0.85 }}>
+                Try Rooting Radar, Swing Alerts, and Rivalry Engine.
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFeatureDrawerCallout(false)}
+                style={{
+                  marginTop: 6,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 9999,
+                  padding: "4px 8px",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  background: "var(--surface)",
+                  color: "var(--foreground)",
+                  cursor: "pointer",
+                }}
+              >
+                Dismiss
+              </button>
+            </div>
+          ) : null}
+
+          <div className="feature-drawer-shell" data-open={featuresDrawerOpen ? "true" : "false"}>
+            <button
+              type="button"
+              aria-expanded={featuresDrawerOpen}
+              aria-controls="leaderboard-feature-drawer"
+              onClick={() => setFeaturesDrawerOpen((prev) => !prev)}
+              className={`feature-drawer-tab ${
+                !featuresDrawerOpen && showFeatureDrawerCallout ? "feature-drawer-tab--hint" : ""
+              }`}
+            >
+              <span className="feature-drawer-tab-arrow">{featuresDrawerOpen ? ">" : "<"}</span>
+              <span className="feature-drawer-tab-label">Live Edge</span>
+            </button>
+
+            <section id="leaderboard-feature-drawer" className="feature-drawer-panel">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 12px",
+                  borderBottom: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                }}
+              >
+                <div style={{ fontWeight: 900 }}>Live Edge</div>
+                <button
+                  type="button"
+                  onClick={() => setFeaturesDrawerOpen(false)}
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 9999,
+                    padding: "4px 8px",
+                    fontSize: 12,
+                    fontWeight: 800,
+                    background: "var(--surface)",
+                    color: "var(--foreground)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+
+              <div style={{ padding: 10, display: "grid", gap: 10 }}>
+                <section
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    background: "var(--surface)",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "8px 10px",
+                      borderBottom: "1px solid var(--border-color)",
+                      fontWeight: 900,
+                      fontSize: 13,
+                      background: "var(--surface-muted)",
+                    }}
+                  >
+                    Rooting Radar
+                  </div>
+                  {rootingRadar.length === 0 ? (
+                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
+                      Rooting angles appear once matchups are available.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid" }}>
+                      {rootingRadar.map((item) => (
+                        <div
+                          key={item.id}
+                          style={{
+                            borderTop: "1px solid var(--border-color)",
+                            padding: "9px 10px",
+                            display: "grid",
+                            gap: 4,
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, opacity: 0.75 }}>
+                              {item.round}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 11,
+                                border: "1px solid var(--border-color)",
+                                borderRadius: 9999,
+                                padding: "1px 7px",
+                                fontWeight: 800,
+                                opacity: 0.8,
+                              }}
+                            >
+                              {item.game_state}
+                            </span>
+                          </div>
+                          <div style={{ fontWeight: 800, fontSize: 13 }}>{item.matchup}</div>
+                          <div style={{ fontSize: 12, opacity: 0.92 }}>
+                            Root for <b>{item.recommended_team}</b> (best path #{item.recommended_rank})
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    background: "var(--surface)",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "8px 10px",
+                      borderBottom: "1px solid var(--border-color)",
+                      fontWeight: 900,
+                      fontSize: 13,
+                      background: "var(--surface-muted)",
+                    }}
+                  >
+                    Swing Alerts
+                  </div>
+                  {swingAlerts.length === 0 ? (
+                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
+                      No major swing windows right now.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid" }}>
+                      {swingAlerts.map((alert) => (
+                        <div
+                          key={alert.id}
+                          style={{
+                            borderTop: "1px solid var(--border-color)",
+                            padding: "9px 10px",
+                            display: "grid",
+                            gap: 4,
+                          }}
+                        >
+                          <div style={{ fontWeight: 800, fontSize: 13 }}>{alert.summary}</div>
+                          <div style={{ fontSize: 12, opacity: 0.85 }}>{alert.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 10,
+                    overflow: "hidden",
+                    background: "var(--surface)",
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "8px 10px",
+                      borderBottom: "1px solid var(--border-color)",
+                      fontWeight: 900,
+                      fontSize: 13,
+                      background: "var(--surface-muted)",
+                    }}
+                  >
+                    Rivalry Engine
+                  </div>
+                  {rivalryCards.length === 0 ? (
+                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
+                      Rivalry cards unlock when nearby opponents are visible.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid" }}>
+                      {rivalryCards.map((card) => (
+                        <div
+                          key={card.id}
+                          style={{
+                            borderTop: "1px solid var(--border-color)",
+                            padding: "9px 10px",
+                            display: "grid",
+                            gap: 5,
+                          }}
+                        >
+                          <div style={{ fontSize: 12, opacity: 0.8 }}>
+                            #{card.focus_rank} vs #{card.rival_rank}
+                          </div>
+                          <div style={{ fontWeight: 800, fontSize: 13 }}>{card.rival_entry_label}</div>
+                          <div style={{ fontSize: 12, opacity: 0.9 }}>
+                            {card.score_gap >= 0 ? "You lead by " : "You trail by "}
+                            <b>{Math.abs(card.score_gap)}</b> points
+                          </div>
+                          <div style={{ fontSize: 12, opacity: 0.8 }}>
+                            Shared alive teams: {card.shared_active_count}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </div>
+            </section>
+          </div>
         </div>
       ) : null}
 
