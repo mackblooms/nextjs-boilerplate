@@ -171,6 +171,8 @@ type ForecastEntry = {
   expected_rank: number;
 };
 
+type ForecastRoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
+
 const ROUND_ORDER: Record<string, number> = {
   R64: 1,
   R32: 2,
@@ -577,6 +579,7 @@ export default function LeaderboardPage() {
   const [leaderboardMode, setLeaderboardMode] = useState<LeaderboardMode>("live");
   const [forecastByEntry, setForecastByEntry] = useState<Record<string, ForecastEntry>>({});
   const [forecastUpdatedAt, setForecastUpdatedAt] = useState<string | null>(null);
+  const [forecastHorizonRound, setForecastHorizonRound] = useState<ForecastRoundCode | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
 
@@ -761,6 +764,7 @@ export default function LeaderboardPage() {
         setOpenBreakdownEntryId(null);
         setForecastByEntry({});
         setForecastUpdatedAt(null);
+        setForecastHorizonRound(null);
       }
       setMsg("");
       setForecastMsg("");
@@ -1345,6 +1349,7 @@ export default function LeaderboardPage() {
           const forecastPayload = (await forecastRes.json().catch(() => ({}))) as {
             entries?: ForecastEntry[];
             generated_at?: string;
+            horizon_round?: ForecastRoundCode;
             error?: string;
           };
 
@@ -1364,6 +1369,7 @@ export default function LeaderboardPage() {
 
           setForecastByEntry(nextForecastByEntry);
           setForecastUpdatedAt(forecastPayload.generated_at ?? null);
+          setForecastHorizonRound(forecastPayload.horizon_round ?? null);
           setForecastMsg("");
         } catch (error: unknown) {
           setForecastMsg(
@@ -1372,11 +1378,13 @@ export default function LeaderboardPage() {
           if (!isBackgroundRefresh) {
             setForecastByEntry({});
             setForecastUpdatedAt(null);
+            setForecastHorizonRound(null);
           }
         }
       } else if (!isBackgroundRefresh) {
         setForecastByEntry({});
         setForecastUpdatedAt(null);
+        setForecastHorizonRound(null);
       }
 
       setLoading(false);
@@ -1388,6 +1396,9 @@ export default function LeaderboardPage() {
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const forecastModeOn = leaderboardMode === "forecast";
+  const forecastHorizonLabel = forecastHorizonRound
+    ? formatRoundLabel(forecastHorizonRound)
+    : "current round";
   const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
 
   useEffect(() => {
@@ -1588,7 +1599,7 @@ export default function LeaderboardPage() {
                   >
                     <div style={{ fontSize: 12, opacity: 0.75 }}>
                       {forecastUpdatedAt
-                        ? `Expected outcomes updated ${formatWhen(forecastUpdatedAt)}`
+                        ? `Expected through ${forecastHorizonLabel} updated ${formatWhen(forecastUpdatedAt)}`
                         : "Expected outcomes are loading..."}
                     </div>
                     <button
@@ -2050,7 +2061,7 @@ export default function LeaderboardPage() {
             <div style={{ padding: "12px 14px", display: "grid", gap: 10, lineHeight: 1.5 }}>
               <p style={{ margin: 0 }}>
                 Forecast view is a directional estimate of where standings may land by the end
-                of the tournament.
+                of {forecastHorizonLabel}.
               </p>
               <p style={{ margin: 0 }}>
                 It blends current pool scores with live game context and matchup strength signals,

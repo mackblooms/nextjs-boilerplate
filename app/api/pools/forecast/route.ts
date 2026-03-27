@@ -133,6 +133,7 @@ const SCOREBOARD_WINDOW_DAYS = 3;
 const LOOKAHEAD_DAYS = 30;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
+const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["R64", "R32", "S16", "E8", "F4", "CHIP"];
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -302,6 +303,19 @@ function rankByScore(rows: Array<{ entry_id: string; score: number; label: strin
   });
 }
 
+function roundOrder(round: string | null | undefined) {
+  return ROUND_ORDER[String(round ?? "").toUpperCase()] ?? 0;
+}
+
+function resolveForecastHorizonRound(games: GameRow[]) {
+  for (const round of ROUND_SEQUENCE) {
+    const roundGames = games.filter((game) => String(game.round ?? "").toUpperCase() === round);
+    if (roundGames.length === 0) continue;
+    if (roundGames.some((game) => !game.winner_team_id)) return round;
+  }
+  return "CHIP";
+}
+
 function cloneGames(games: GameRow[]): MutableGame[] {
   return games.map((game) => ({
     id: game.id,
@@ -379,6 +393,7 @@ function runBracketProjection(
   pairProbabilities: Map<string, PairProbability>,
   teamSeedById: Map<string, number | null>,
   chooseMostLikely: boolean,
+  maxRoundOrder: number,
 ) {
   const games = cloneGames(baseGames);
   const sorted = sortedGamesForSimulation(games);
@@ -391,6 +406,9 @@ function runBracketProjection(
   }
 
   for (const game of sorted) {
+    const gameRoundOrder = roundOrder(game.round);
+    if (gameRoundOrder === 0 || gameRoundOrder > maxRoundOrder) continue;
+
     if (game.winner_team_id) {
       propagateWinner(game, byKey);
       continue;
@@ -562,7 +580,8 @@ export async function GET(req: Request) {
       return NextResponse.json({
         ok: true,
         generated_at: new Date().toISOString(),
-        horizon: "tournament",
+        horizon: "round",
+        horizon_round: "CHIP",
         entries: [],
       });
     }
@@ -612,8 +631,11 @@ export async function GET(req: Request) {
     }
 
     const pairProbabilities = await fetchPairProbabilities(localTeamIdByEspnTeamId);
+    const horizonRound = resolveForecastHorizonRound(games);
+    const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
+    const scopedGames = games.filter((game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder);
 
-    const currentScoringGames = games.map((game) => ({
+    const currentScoringGames = scopedGames.map((game) => ({
       round: String(game.round ?? ""),
       team1_id: game.team1_id,
       team2_id: game.team2_id,
@@ -635,7 +657,7 @@ export async function GET(req: Request) {
     const currentRankByEntryId = new Map(currentRanked.map((row) => [row.entry_id, row.rank]));
     const currentScoreByEntryId = new Map(currentRows.map((row) => [row.entry_id, row.score]));
 
-    const unresolvedGameCount = games.filter((game) => !game.winner_team_id).length;
+    const unresolvedGameCount = scopedGames.filter((game) => !game.winner_team_id).length;
     const monteCarloRuns =
       unresolvedGameCount >= 16 ? MONTE_CARLO_RUNS_LIGHT : MONTE_CARLO_RUNS;
 
@@ -649,10 +671,11 @@ export async function GET(req: Request) {
     const runs = Math.max(1, unresolvedGameCount > 0 ? monteCarloRuns : 1);
     for (let run = 0; run < runs; run += 1) {
       const projectedGames = runBracketProjection(
-        games,
+        scopedGames,
         pairProbabilities,
         teamSeedById,
         false,
+        horizonRoundOrder,
       );
       const projectedScores = scoreEntries(projectedGames, teamSeedById, picksByEntry);
 
@@ -678,10 +701,11 @@ export async function GET(req: Request) {
     }
 
     const mostLikelyGames = runBracketProjection(
-      games,
+      scopedGames,
       pairProbabilities,
       teamSeedById,
       true,
+      horizonRoundOrder,
     );
     const mostLikelyScores = scoreEntries(mostLikelyGames, teamSeedById, picksByEntry);
     const mostLikelyRows = entryIds.map((entryId) => ({
@@ -715,7 +739,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       generated_at: new Date().toISOString(),
-      horizon: "tournament",
+      horizon: "round",
+      horizon_round: horizonRound,
       monte_carlo_runs: runs,
       unresolved_game_count: unresolvedGameCount,
       pair_probability_count: pairProbabilities.size,
