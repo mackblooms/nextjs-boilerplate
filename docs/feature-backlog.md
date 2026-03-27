@@ -4,13 +4,13 @@ Last updated: 2026-03-27
 
 Use this file as the running list for retention-focused product ideas.
 
-## Active MVP
+## Back Burner
 
 | Feature | Status | Notes |
 | --- | --- | --- |
-| Rooting Radar | In progress | Live recommendation card per unresolved game showing which side helps your best entry rank path. |
-| Swing Alerts | In progress | Alert feed for high-volatility games that can change rank or score trajectory. |
-| Rivalry Engine | In progress | Closest-opponent cards with score gap, shared alive teams, and leverage teams. |
+| Rooting Radar | Back burner | Live recommendation card per unresolved game showing which side helps your best entry rank path. |
+| Swing Alerts | Back burner | Alert feed for high-volatility games that can change rank or score trajectory. |
+| Rivalry Engine | Back burner | Closest-opponent cards with score gap, shared alive teams, and leverage teams. |
 
 ## Next Candidates
 

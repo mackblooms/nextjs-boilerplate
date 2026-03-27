@@ -173,47 +173,6 @@ type ForecastEntry = {
 
 type ForecastRoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
 
-type RankScenarioSeedRow = {
-  entry_id: string;
-  entry_name: string | null;
-  display_name: string | null;
-  final_four_count: number;
-  championship_count: number;
-  total_score: number;
-};
-
-type RootingRadarItem = {
-  id: string;
-  matchup: string;
-  round: string;
-  game_state: "LIVE" | "UPCOMING";
-  recommended_team: string;
-  alternate_team: string;
-  recommended_rank: number;
-  alternate_rank: number;
-  rank_swing: number;
-  focus_entry_label: string;
-  focus_score_swing: number;
-};
-
-type SwingAlertItem = {
-  id: string;
-  summary: string;
-  detail: string;
-};
-
-type RivalryCard = {
-  id: string;
-  focus_entry_label: string;
-  rival_entry_label: string;
-  score_gap: number;
-  focus_rank: number;
-  rival_rank: number;
-  shared_active_count: number;
-  focus_only_active: string[];
-  rival_only_active: string[];
-};
-
 const ROUND_ORDER: Record<string, number> = {
   R64: 1,
   R32: 2,
@@ -223,7 +182,6 @@ const ROUND_ORDER: Record<string, number> = {
   CHIP: 6,
 };
 const LEADERBOARD_REFRESH_MS = 60_000;
-const FEATURE_DRAWER_SEEN_KEY = "leaderboard_feature_drawer_seen_v1";
 
 function isMissingAvatarColumnError(error: { message?: string; code?: string } | null) {
   return Boolean(
@@ -454,46 +412,6 @@ function formatExpectedScore(value: number) {
   return value.toFixed(1);
 }
 
-function rankMapForRows(rows: RankScenarioSeedRow[]) {
-  const ranked = rankRows(rows);
-  const out = new Map<string, number>();
-  for (const row of ranked) out.set(row.entry_id, row.rank);
-  return out;
-}
-
-function bestRankAcrossEntries(rankByEntry: Map<string, number>, entryIds: string[]) {
-  let best: number | null = null;
-  for (const entryId of entryIds) {
-    const rank = rankByEntry.get(entryId);
-    if (rank == null) continue;
-    best = best == null ? rank : Math.min(best, rank);
-  }
-  return best;
-}
-
-function formatEntryLabel(row: {
-  entry_name?: string | null;
-  full_name?: string | null;
-  display_name?: string | null;
-}) {
-  const draftLabel = row.entry_name?.trim() || "Unnamed draft";
-  const profileLabel = row.full_name?.trim() || row.display_name?.trim() || "Unnamed player";
-  return `${draftLabel} (${profileLabel})`;
-}
-
-function activeTeamNames(
-  entry: Row | undefined,
-  excludeSet: Set<string>,
-  limit: number,
-) {
-  if (!entry) return [];
-  const names = entry.drafted_teams
-    .filter((team) => team.is_active && !excludeSet.has(team.team_id))
-    .map((team) => toSchoolDisplayName(team.team_name))
-    .slice(0, limit);
-  return names;
-}
-
 function TeamValueTable({
   title,
   rows,
@@ -664,11 +582,6 @@ export default function LeaderboardPage() {
   const [forecastHorizonRound, setForecastHorizonRound] = useState<ForecastRoundCode | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
-  const [rootingRadar, setRootingRadar] = useState<RootingRadarItem[]>([]);
-  const [swingAlerts, setSwingAlerts] = useState<SwingAlertItem[]>([]);
-  const [rivalryCards, setRivalryCards] = useState<RivalryCard[]>([]);
-  const [featuresDrawerOpen, setFeaturesDrawerOpen] = useState(false);
-  const [showFeatureDrawerCallout, setShowFeatureDrawerCallout] = useState(false);
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -855,9 +768,6 @@ export default function LeaderboardPage() {
       }
       setMsg("");
       setForecastMsg("");
-      setRootingRadar([]);
-      setSwingAlerts([]);
-      setRivalryCards([]);
 
       try {
         await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
@@ -1345,157 +1255,6 @@ export default function LeaderboardPage() {
         return { ...row, rank_delta };
       });
 
-      const scenarioSeedRows: RankScenarioSeedRow[] = computed.map((row) => ({
-        entry_id: row.entry_id,
-        entry_name: row.entry_name,
-        display_name: row.display_name,
-        final_four_count: row.final_four_count,
-        championship_count: row.championship_count,
-        total_score: row.total_score,
-      }));
-      const myEntries = ranked
-        .filter((row) => row.user_id === user.id)
-        .sort((a, b) => a.rank - b.rank || b.total_score - a.total_score);
-      const focusEntry = myEntries[0];
-      const myEntryIds = myEntries.map((entry) => entry.entry_id);
-
-      if (focusEntry && myEntryIds.length > 0) {
-        const nowMs = Date.now();
-        const todayEt = etDayKey(new Date());
-        const unresolvedGames = gameRows
-          .filter((game) => !game.winner_team_id && game.team1_id && game.team2_id)
-          .sort((a, b) => {
-            const roundDiff = (ROUND_ORDER[a.round] ?? 99) - (ROUND_ORDER[b.round] ?? 99);
-            if (roundDiff !== 0) return roundDiff;
-            const aTime = a.start_time ? Date.parse(a.start_time) : Number.POSITIVE_INFINITY;
-            const bTime = b.start_time ? Date.parse(b.start_time) : Number.POSITIVE_INFINITY;
-            return aTime - bTime;
-          })
-          .slice(0, 16);
-
-        const nextRadar: RootingRadarItem[] = [];
-        for (const game of unresolvedGames) {
-          const team1Id = game.team1_id;
-          const team2Id = game.team2_id;
-          if (!team1Id || !team2Id) continue;
-
-          const scenarioTeam1 = gameRows.map((row) =>
-            row === game ? { ...row, winner_team_id: team1Id } : row,
-          );
-          const scenarioTeam2 = gameRows.map((row) =>
-            row === game ? { ...row, winner_team_id: team2Id } : row,
-          );
-
-          const scoreTeam1 = scoreEntries(scenarioTeam1, teamSeedById, picksByEntry);
-          const scoreTeam2 = scoreEntries(scenarioTeam2, teamSeedById, picksByEntry);
-
-          const ranksTeam1 = rankMapForRows(
-            scenarioSeedRows.map((row) => ({
-              ...row,
-              total_score: scoreTeam1.totalScoreByEntryId.get(row.entry_id) ?? 0,
-            })),
-          );
-          const ranksTeam2 = rankMapForRows(
-            scenarioSeedRows.map((row) => ({
-              ...row,
-              total_score: scoreTeam2.totalScoreByEntryId.get(row.entry_id) ?? 0,
-            })),
-          );
-
-          const bestRankTeam1 = bestRankAcrossEntries(ranksTeam1, myEntryIds);
-          const bestRankTeam2 = bestRankAcrossEntries(ranksTeam2, myEntryIds);
-          if (bestRankTeam1 == null || bestRankTeam2 == null) continue;
-
-          const team1Name =
-            toSchoolDisplayName(teamMetaById.get(team1Id)?.name?.trim()) || "Team 1";
-          const team2Name =
-            toSchoolDisplayName(teamMetaById.get(team2Id)?.name?.trim()) || "Team 2";
-          const team1FocusScore =
-            scoreTeam1.totalScoreByEntryId.get(focusEntry.entry_id) ?? focusEntry.total_score;
-          const team2FocusScore =
-            scoreTeam2.totalScoreByEntryId.get(focusEntry.entry_id) ?? focusEntry.total_score;
-          const recommendTeam1 = bestRankTeam1 <= bestRankTeam2;
-          const preferredRank = recommendTeam1 ? bestRankTeam1 : bestRankTeam2;
-          const alternateRank = recommendTeam1 ? bestRankTeam2 : bestRankTeam1;
-          const preferredScore = recommendTeam1 ? team1FocusScore : team2FocusScore;
-          const alternateScore = recommendTeam1 ? team2FocusScore : team1FocusScore;
-
-          nextRadar.push({
-            id: `${game.round}-${team1Id}-${team2Id}`,
-            matchup: `${team1Name} vs ${team2Name}`,
-            round: formatRoundLabel(game.round),
-            game_state: gameHasStarted(game, nowMs, todayEt) ? "LIVE" : "UPCOMING",
-            recommended_team: recommendTeam1 ? team1Name : team2Name,
-            alternate_team: recommendTeam1 ? team2Name : team1Name,
-            recommended_rank: preferredRank,
-            alternate_rank: alternateRank,
-            rank_swing: Math.abs(bestRankTeam1 - bestRankTeam2),
-            focus_entry_label: formatEntryLabel(focusEntry),
-            focus_score_swing: preferredScore - alternateScore,
-          });
-        }
-
-        nextRadar.sort(
-          (a, b) =>
-            Number(b.game_state === "LIVE") - Number(a.game_state === "LIVE") ||
-            b.rank_swing - a.rank_swing ||
-            Math.abs(b.focus_score_swing) - Math.abs(a.focus_score_swing),
-        );
-        setRootingRadar(nextRadar.slice(0, 8));
-
-        const nextSwingAlerts = nextRadar
-          .filter((item) => item.rank_swing > 0 || Math.abs(item.focus_score_swing) >= 12)
-          .slice(0, 5)
-          .map((item) => ({
-            id: item.id,
-            summary: `${item.matchup}: root for ${item.recommended_team}`,
-            detail:
-              item.rank_swing > 0
-                ? `${item.focus_entry_label} can move between #${item.recommended_rank} and #${item.alternate_rank}.`
-                : `${item.focus_entry_label} gains a ${formatPointsDelta(item.focus_score_swing)} score edge if ${item.recommended_team} wins.`,
-          }));
-        setSwingAlerts(nextSwingAlerts);
-
-        const focusPickSet = new Set(picksByEntry.get(focusEntry.entry_id) ?? []);
-        const rivalryCandidates = ranked
-          .filter((row) => row.user_id !== user.id)
-          .sort(
-            (a, b) =>
-              Math.abs(focusEntry.total_score - a.total_score) -
-                Math.abs(focusEntry.total_score - b.total_score) ||
-              Math.abs(focusEntry.rank - a.rank) - Math.abs(focusEntry.rank - b.rank) ||
-              a.rank - b.rank,
-          )
-          .slice(0, 2);
-
-        const nextRivalryCards: RivalryCard[] = rivalryCandidates.map((rival) => {
-          const rivalPickSet = new Set(picksByEntry.get(rival.entry_id) ?? []);
-          const sharedActiveCount = focusEntry.drafted_teams.filter(
-            (team) => team.is_active && rivalPickSet.has(team.team_id),
-          ).length;
-          const focusOnlyActive = activeTeamNames(focusEntry, rivalPickSet, 3);
-          const rivalOnlyActive = activeTeamNames(rival, focusPickSet, 3);
-
-          return {
-            id: rival.entry_id,
-            focus_entry_label: formatEntryLabel(focusEntry),
-            rival_entry_label: formatEntryLabel(rival),
-            score_gap: focusEntry.total_score - rival.total_score,
-            focus_rank: focusEntry.rank,
-            rival_rank: rival.rank,
-            shared_active_count: sharedActiveCount,
-            focus_only_active: focusOnlyActive,
-            rival_only_active: rivalOnlyActive,
-          };
-        });
-
-        setRivalryCards(nextRivalryCards);
-      } else {
-        setRootingRadar([]);
-        setSwingAlerts([]);
-        setRivalryCards([]);
-      }
-
       const nextBreakdownByEntry: Record<string, EntryScoreBreakdown> = {};
       for (const row of ranked) {
         if (!isLocked && row.user_id !== user.id) continue;
@@ -1647,20 +1406,6 @@ export default function LeaderboardPage() {
       setOpenBreakdownEntryId(null);
     }
   }, [forecastModeOn, openBreakdownEntryId]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const seen = window.localStorage.getItem(FEATURE_DRAWER_SEEN_KEY);
-    setShowFeatureDrawerCallout(seen !== "1");
-  }, []);
-
-  useEffect(() => {
-    if (!featuresDrawerOpen) return;
-    setShowFeatureDrawerCallout(false);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(FEATURE_DRAWER_SEEN_KEY, "1");
-    }
-  }, [featuresDrawerOpen]);
 
   const displayRows = useMemo(() => {
     if (!forecastModeOn || Object.keys(forecastByEntry).length === 0) {
@@ -2274,242 +2019,6 @@ export default function LeaderboardPage() {
               </section>
             )}
           </aside>
-        </div>
-      ) : null}
-
-      {!loading && !msg ? (
-        <div className="feature-drawer-root">
-          {showFeatureDrawerCallout && !featuresDrawerOpen ? (
-            <div className="feature-drawer-callout" role="status" aria-live="polite">
-              <div style={{ fontWeight: 900 }}>New: Live Strategy Drawer</div>
-              <div style={{ marginTop: 2, fontSize: 12, opacity: 0.85 }}>
-                Try Rooting Radar, Swing Alerts, and Rivalry Engine.
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowFeatureDrawerCallout(false)}
-                style={{
-                  marginTop: 6,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 9999,
-                  padding: "4px 8px",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  background: "var(--surface)",
-                  color: "var(--foreground)",
-                  cursor: "pointer",
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          ) : null}
-
-          <div className="feature-drawer-shell" data-open={featuresDrawerOpen ? "true" : "false"}>
-            <button
-              type="button"
-              aria-expanded={featuresDrawerOpen}
-              aria-controls="leaderboard-feature-drawer"
-              onClick={() => setFeaturesDrawerOpen((prev) => !prev)}
-              className={`feature-drawer-tab ${
-                !featuresDrawerOpen && showFeatureDrawerCallout ? "feature-drawer-tab--hint" : ""
-              }`}
-            >
-              <span className="feature-drawer-tab-arrow">{featuresDrawerOpen ? ">" : "<"}</span>
-              <span className="feature-drawer-tab-label">Live Edge</span>
-            </button>
-
-            <section id="leaderboard-feature-drawer" className="feature-drawer-panel">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
-                }}
-              >
-                <div style={{ fontWeight: 900 }}>Live Edge</div>
-                <button
-                  type="button"
-                  onClick={() => setFeaturesDrawerOpen(false)}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 9999,
-                    padding: "4px 8px",
-                    fontSize: 12,
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                    color: "var(--foreground)",
-                    cursor: "pointer",
-                  }}
-                >
-                  Close
-                </button>
-              </div>
-
-              <div style={{ padding: 10, display: "grid", gap: 10 }}>
-                <section
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    overflow: "hidden",
-                    background: "var(--surface)",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "8px 10px",
-                      borderBottom: "1px solid var(--border-color)",
-                      fontWeight: 900,
-                      fontSize: 13,
-                      background: "var(--surface-muted)",
-                    }}
-                  >
-                    Rooting Radar
-                  </div>
-                  {rootingRadar.length === 0 ? (
-                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
-                      Rooting angles appear once matchups are available.
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid" }}>
-                      {rootingRadar.map((item) => (
-                        <div
-                          key={item.id}
-                          style={{
-                            borderTop: "1px solid var(--border-color)",
-                            padding: "9px 10px",
-                            display: "grid",
-                            gap: 4,
-                          }}
-                        >
-                          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 11, fontWeight: 800, opacity: 0.75 }}>
-                              {item.round}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: 11,
-                                border: "1px solid var(--border-color)",
-                                borderRadius: 9999,
-                                padding: "1px 7px",
-                                fontWeight: 800,
-                                opacity: 0.8,
-                              }}
-                            >
-                              {item.game_state}
-                            </span>
-                          </div>
-                          <div style={{ fontWeight: 800, fontSize: 13 }}>{item.matchup}</div>
-                          <div style={{ fontSize: 12, opacity: 0.92 }}>
-                            Root for <b>{item.recommended_team}</b> (best path #{item.recommended_rank})
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                <section
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    overflow: "hidden",
-                    background: "var(--surface)",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "8px 10px",
-                      borderBottom: "1px solid var(--border-color)",
-                      fontWeight: 900,
-                      fontSize: 13,
-                      background: "var(--surface-muted)",
-                    }}
-                  >
-                    Swing Alerts
-                  </div>
-                  {swingAlerts.length === 0 ? (
-                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
-                      No major swing windows right now.
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid" }}>
-                      {swingAlerts.map((alert) => (
-                        <div
-                          key={alert.id}
-                          style={{
-                            borderTop: "1px solid var(--border-color)",
-                            padding: "9px 10px",
-                            display: "grid",
-                            gap: 4,
-                          }}
-                        >
-                          <div style={{ fontWeight: 800, fontSize: 13 }}>{alert.summary}</div>
-                          <div style={{ fontSize: 12, opacity: 0.85 }}>{alert.detail}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                <section
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    overflow: "hidden",
-                    background: "var(--surface)",
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: "8px 10px",
-                      borderBottom: "1px solid var(--border-color)",
-                      fontWeight: 900,
-                      fontSize: 13,
-                      background: "var(--surface-muted)",
-                    }}
-                  >
-                    Rivalry Engine
-                  </div>
-                  {rivalryCards.length === 0 ? (
-                    <div style={{ padding: "10px", opacity: 0.85, fontSize: 13 }}>
-                      Rivalry cards unlock when nearby opponents are visible.
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid" }}>
-                      {rivalryCards.map((card) => (
-                        <div
-                          key={card.id}
-                          style={{
-                            borderTop: "1px solid var(--border-color)",
-                            padding: "9px 10px",
-                            display: "grid",
-                            gap: 5,
-                          }}
-                        >
-                          <div style={{ fontSize: 12, opacity: 0.8 }}>
-                            #{card.focus_rank} vs #{card.rival_rank}
-                          </div>
-                          <div style={{ fontWeight: 800, fontSize: 13 }}>{card.rival_entry_label}</div>
-                          <div style={{ fontSize: 12, opacity: 0.9 }}>
-                            {card.score_gap >= 0 ? "You lead by " : "You trail by "}
-                            <b>{Math.abs(card.score_gap)}</b> points
-                          </div>
-                          <div style={{ fontSize: 12, opacity: 0.8 }}>
-                            Shared alive teams: {card.shared_active_count}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              </div>
-            </section>
-          </div>
         </div>
       ) : null}
 
