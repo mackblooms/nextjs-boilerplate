@@ -86,6 +86,7 @@ type RoundKey = "R64" | "R32" | "S16" | "E8";
 
 const REGIONS = ["East", "West", "South", "Midwest"] as const;
 type Region = (typeof REGIONS)[number];
+type FocusTarget = Region | "FINALS";
 
 const isRegion = (value: string | null): value is Region =>
   value !== null && REGIONS.includes(value as Region);
@@ -126,6 +127,12 @@ function expectedSeedsForR64Slot(slot: number): [number, number] | null {
     8: [2, 15],
   };
   return map[slot] ?? null;
+}
+
+function clamp(value: number, min: number, max: number) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
 }
 
 function matchLiveScoresToGames(
@@ -227,12 +234,16 @@ export default function BracketPage() {
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
   const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
+  const [focusedSection, setFocusedSection] = useState<FocusTarget | null>(null);
+  const [hoveredSection, setHoveredSection] = useState<FocusTarget | null>(null);
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<Partial<Record<FocusTarget, HTMLElement | null>>>({});
   const playerEntryIdsRef = useRef<string[]>([]);
   const forcedSyncInFlightRef = useRef<Promise<void> | null>(null);
   const lastForcedSyncAtRef = useRef(0);
+  const scaleRef = useRef(1);
 
   const syncContentSize = useCallback(() => {
     const content = contentRef.current;
@@ -266,6 +277,71 @@ export default function BracketPage() {
     setScale(Math.max(0.35, next));
   }, []);
 
+  const registerSectionRef = useCallback(
+    (target: FocusTarget) => (node: HTMLElement | null) => {
+      sectionRefs.current[target] = node;
+    },
+    [],
+  );
+
+  const focusSection = useCallback(
+    (target: FocusTarget, behavior: ScrollBehavior = "smooth") => {
+      const viewport = viewportRef.current;
+      const content = contentRef.current;
+      const section = sectionRefs.current[target];
+      if (!viewport || !content || !section) return;
+
+      const contentWidth = content.scrollWidth;
+      const contentHeight = content.scrollHeight;
+      if (!contentWidth || !contentHeight) return;
+
+      const currentScale = scaleRef.current || 1;
+      const contentRect = content.getBoundingClientRect();
+      const sectionRect = section.getBoundingClientRect();
+
+      const sectionLeft = (sectionRect.left - contentRect.left) / currentScale;
+      const sectionTop = (sectionRect.top - contentRect.top) / currentScale;
+      const sectionWidth = sectionRect.width / currentScale;
+      const sectionHeight = sectionRect.height / currentScale;
+      if (!sectionWidth || !sectionHeight) return;
+
+      const widthPadding = 40;
+      const heightPadding = 28;
+      const availableWidth = Math.max(1, viewport.clientWidth - widthPadding);
+      const availableHeight = Math.max(1, viewport.clientHeight - heightPadding);
+      const nextScale = clamp(
+        Math.min(availableWidth / sectionWidth, availableHeight / sectionHeight),
+        0.45,
+        1.85,
+      );
+
+      setFitMode(false);
+      setFocusedSection(target);
+      setScale(nextScale);
+      setContentSize((prev) =>
+        prev.width === contentWidth && prev.height === contentHeight
+          ? prev
+          : { width: contentWidth, height: contentHeight },
+      );
+
+      window.requestAnimationFrame(() => {
+        const scaledContentWidth = contentWidth * nextScale;
+        const scaledContentHeight = contentHeight * nextScale;
+        const targetLeft =
+          sectionLeft * nextScale - (viewport.clientWidth - sectionWidth * nextScale) / 2;
+        const targetTop =
+          sectionTop * nextScale - (viewport.clientHeight - sectionHeight * nextScale) / 2;
+
+        viewport.scrollTo({
+          left: clamp(targetLeft, 0, Math.max(0, scaledContentWidth - viewport.clientWidth)),
+          top: clamp(targetTop, 0, Math.max(0, scaledContentHeight - viewport.clientHeight)),
+          behavior,
+        });
+      });
+    },
+    [],
+  );
+
   const teamById = useMemo(() => {
     const m = new Map<string, Team>();
     for (const t of teams) m.set(t.id, t);
@@ -279,6 +355,10 @@ export default function BracketPage() {
   useEffect(() => {
     setShowViewingBanner(Boolean(selectedEntryId));
   }, [selectedEntryId]);
+
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
 
   const byRoundByRegion = useMemo(() => {
     const out: Record<Region, Record<RoundKey, Game[]>> = {
@@ -789,13 +869,34 @@ export default function BracketPage() {
     return () => observer.disconnect();
   }, [loading, syncContentSize]);
 
+  useEffect(() => {
+    if (loading || fitMode || !focusedSection) return;
+
+    const handleResize = () => {
+      window.requestAnimationFrame(() => {
+        focusSection(focusedSection, "auto");
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [fitMode, focusSection, focusedSection, loading]);
+
   const setFit = () => {
+    setFocusedSection(null);
+    setHoveredSection(null);
     setFitMode(true);
-    window.requestAnimationFrame(applyFitScale);
+    window.requestAnimationFrame(() => {
+      applyFitScale();
+      viewportRef.current?.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+    });
   };
   const set100 = () => {
+    setFocusedSection(null);
+    setHoveredSection(null);
     setFitMode(false);
     setScale(1);
+    viewportRef.current?.scrollTo({ left: 0, top: 0, behavior: "smooth" });
   };
 
   const scaledContentWidth =
@@ -1107,6 +1208,29 @@ export default function BracketPage() {
     </div>
   );
 
+  const getSectionShellStyle = (
+    target: FocusTarget,
+    background: string,
+  ) => {
+    const isFocused = focusedSection === target;
+    const isHovered = hoveredSection === target;
+
+    return {
+      border: "1px solid var(--border-color)",
+      borderRadius: 16,
+      padding: 14,
+      background,
+      cursor: "zoom-in",
+      transition: "box-shadow 140ms ease, transform 140ms ease",
+      boxShadow: isFocused
+        ? "0 0 0 2px var(--highlight-border)"
+        : isHovered
+          ? "0 0 0 1px var(--border-color)"
+          : "none",
+      transform: isHovered ? "translateY(-1px)" : "none",
+    } as const;
+  };
+
   const renderRegionBracket = (region: Region, reverse = false) => {
     const rounds = byRoundByRegion[region];
 
@@ -1157,11 +1281,21 @@ export default function BracketPage() {
 
     return (
       <section
+        ref={registerSectionRef(region)}
+        role="button"
+        tabIndex={0}
+        aria-label={`Focus ${region} region`}
+        title={`Click to focus ${region}`}
+        onMouseEnter={() => setHoveredSection(region)}
+        onMouseLeave={() => setHoveredSection((prev) => (prev === region ? null : prev))}
+        onClick={() => focusSection(region)}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          focusSection(region, "auto");
+        }}
         style={{
-          border: "1px solid var(--border-color)",
-          borderRadius: 16,
-          padding: 14,
-          background: "var(--surface-muted)",
+          ...getSectionShellStyle(region, "var(--surface-muted)"),
           minWidth: 4 * 260 + 3 * 16 + 40,
         }}
       >
@@ -1488,6 +1622,10 @@ export default function BracketPage() {
         >
           100%
         </button>
+        <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.72 }}>
+          Hover and click a region (or Final Four) to focus it.
+          {focusedSection ? ` Focused: ${focusedSection === "FINALS" ? "Final Four" : focusedSection}.` : ""}
+        </div>
       </div>
 
       <div
@@ -1499,7 +1637,7 @@ export default function BracketPage() {
           background: "var(--surface)",
           padding: 12,
           overflowX: "auto",
-          overflowY: "hidden",
+          overflowY: "auto",
         }}
       >
         <div
@@ -1540,11 +1678,21 @@ export default function BracketPage() {
                 }}
               >
                 <section
+                  ref={registerSectionRef("FINALS")}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Focus Final Four and Championship"
+                  title="Click to focus Final Four and Championship"
+                  onMouseEnter={() => setHoveredSection("FINALS")}
+                  onMouseLeave={() => setHoveredSection((prev) => (prev === "FINALS" ? null : prev))}
+                  onClick={() => focusSection("FINALS")}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" && event.key !== " ") return;
+                    event.preventDefault();
+                    focusSection("FINALS", "auto");
+                  }}
                   style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 16,
-                    padding: 14,
-                    background: "var(--surface)",
+                    ...getSectionShellStyle("FINALS", "var(--surface)"),
                     width: 860,
                   }}
                 >
