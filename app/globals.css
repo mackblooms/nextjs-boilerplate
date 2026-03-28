@@ -94,12 +94,15 @@ body {
   font-family: var(--font-app-sans), "Avenir Next", "Segoe UI", sans-serif;
   line-height: 1.45;
   letter-spacing: 0.01em;
-  padding-top: 108px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 108px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   text-rendering: optimizeLegibility;
   text-transform: lowercase;
+  overscroll-behavior-y: none;
 }
 
 a {
@@ -451,11 +454,17 @@ textarea::placeholder {
 
 @media (max-width: 780px) {
   body {
-    padding-top: 102px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 78px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 86px);
   }
 
   .site-main {
     padding-inline: 8px;
+  }
+
+  .site-disclaimer {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    padding-bottom: 8px;
   }
 
   .home-page-shell {
@@ -653,6 +662,42 @@ textarea::placeholder {
   box-shadow: var(--shadow-md);
   color: var(--focus-ring);
   transform: translateY(-1px);
+}
+
+.app-mobile-topbar,
+.app-mobile-tabbar,
+.app-mobile-sheet {
+  backdrop-filter: saturate(130%) blur(12px);
+}
+
+.app-mobile-tabbar-link {
+  color: var(--foreground);
+  text-decoration: none;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.app-mobile-tabbar-link:hover,
+.app-mobile-tabbar-link:focus-visible {
+  background: var(--surface-elevated);
+  color: var(--focus-ring);
+  transform: translateY(-1px);
+}
+
+.app-mobile-sheet-action {
+  transition:
+    transform 140ms ease,
+    box-shadow 160ms ease,
+    border-color 140ms ease;
+}
+
+.app-mobile-sheet-action:hover,
+.app-mobile-sheet-action:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--highlight-border);
 }
 
 @keyframes page-enter {

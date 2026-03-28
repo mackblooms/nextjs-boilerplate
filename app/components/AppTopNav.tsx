@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ACTIVE_POOL_CHANGED_EVENT,
   getStoredActivePoolId,
@@ -15,6 +15,88 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
+
+function getPageTitle(pathname: string, activePoolName: string | null) {
+  if (pathname === "/") return "Home";
+  if (pathname === "/drafts") return "My Drafts";
+  if (pathname.startsWith("/drafts/")) return "Draft Editor";
+  if (pathname === "/pools") return "Pools";
+  if (pathname === "/pools/new") return "Create Pool";
+  if (pathname === "/profile") return "Profile";
+  if (pathname.startsWith("/login")) return "Login";
+  if (pathname.startsWith("/pool/") && pathname.endsWith("/leaderboard")) return "Leaderboard";
+  if (pathname.startsWith("/pool/") && pathname.endsWith("/admin")) return "Pool Admin";
+  if (pathname.startsWith("/pool/") && pathname.endsWith("/draft")) return "Pool Draft";
+  if (pathname.startsWith("/pool/") && pathname.includes("/picks/")) return "Entry Picks";
+  if (pathname.startsWith("/pool/") && pathname.includes("/bracket")) return "Bracket";
+  if (pathname.startsWith("/pool/")) return activePoolName ?? "Pool";
+  if (pathname === "/terms") return "Terms";
+  if (pathname === "/privacy") return "Privacy";
+  return "bracketball";
+}
+
+function NavIcon({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <NavIcon>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 9.5V21h14V9.5" />
+    </NavIcon>
+  );
+}
+
+function DraftsIcon() {
+  return (
+    <NavIcon>
+      <path d="M4 5h16" />
+      <path d="M4 12h16" />
+      <path d="M4 19h10" />
+    </NavIcon>
+  );
+}
+
+function PoolsIcon() {
+  return (
+    <NavIcon>
+      <circle cx="8" cy="8" r="3" />
+      <circle cx="16" cy="16" r="3" />
+      <path d="M10.5 10.5 13.5 13.5" />
+      <path d="M16 5h3v3" />
+    </NavIcon>
+  );
+}
+
+function BracketIcon() {
+  return (
+    <NavIcon>
+      <path d="M7 5H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2v4H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2" />
+      <path d="M17 5h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2v4h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2" />
+      <path d="M7 10h10" />
+      <path d="M7 14h10" />
+    </NavIcon>
+  );
+}
 
 function getPreferredTheme(): Theme {
   if (typeof window === "undefined") return "light";
@@ -343,6 +425,9 @@ export default function AppTopNav() {
   const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
   const activePoolPathId = poolIdFromPath ?? activePoolId;
   const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
+  const pageTitle = getPageTitle(pathname, activePool?.name ?? null);
+  const mobilePoolHref = activePoolBasePath ? `${activePoolBasePath}/bracket` : "/profile";
+  const mobilePoolLabel = activePoolBasePath ? "Pool" : "Profile";
 
   const isHomeActive = pathname === "/";
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
@@ -373,6 +458,18 @@ export default function AppTopNav() {
     };
   };
 
+  const mobileNavItems = [
+    { href: homeHref, label: "Home", active: isHomeActive, icon: <HomeIcon /> },
+    { href: "/drafts", label: "Drafts", active: isDraftsActive, icon: <DraftsIcon /> },
+    { href: "/pools", label: "Pools", active: isPoolsActive, icon: <PoolsIcon /> },
+    {
+      href: mobilePoolHref,
+      label: mobilePoolLabel,
+      active: activePoolBasePath ? isBracketActive || isLeaderboardActive || isAdminActive : pathname === "/profile",
+      icon: <BracketIcon />,
+    },
+  ];
+
   function openHowItWorksModal() {
     setMenuOpen(false);
     setSettingsOpen(false);
@@ -382,145 +479,163 @@ export default function AppTopNav() {
 
   return (
     <>
-      <div
-        style={{
-          position: "fixed",
-          top: isCompact ? 10 : 14,
-          right: "env(safe-area-inset-right)",
-          zIndex: 1205,
-          pointerEvents: "auto",
-        }}
-      >
-        <button
-          type="button"
-          className="app-top-nav-how-it-works-button"
-          onClick={openHowItWorksModal}
-          aria-haspopup="dialog"
-          aria-label="Open how it works details"
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 9999,
-            background: "var(--surface-glass)",
-            color: "var(--foreground)",
-            fontWeight: 800,
-            fontSize: isCompact ? 11 : 12,
-            letterSpacing: "0.02em",
-            minHeight: isCompact ? 30 : 32,
-            padding: isCompact ? "6px 10px" : "6px 12px",
-            boxShadow: "var(--shadow-sm)",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
-          How it works
-        </button>
-      </div>
-
-      <div
-      style={{
-        position: "fixed",
-        top: isCompact ? 56 : 62,
-        left: 0,
-        right: 0,
-        zIndex: 999,
-        display: "flex",
-        justifyContent: "center",
-        padding: isCompact ? "6px 10px" : "8px 18px",
-        pointerEvents: "none",
-        transform: isHidden ? "translateY(-140%)" : "translateY(0)",
-        opacity: isHidden ? 0 : 1,
-        transition: "transform 180ms ease, opacity 180ms ease",
-      }}
-    >
-      <div
-        className={`app-top-nav-pills${shouldDeemphasizeNavPills ? " app-top-nav-pills--deemphasized" : ""}`}
-        style={{
-          display: "flex",
-          gap: isCompact ? 6 : 8,
-          alignItems: "center",
-          flexWrap: isCompact ? "nowrap" : "wrap",
-          justifyContent: isCompact ? "flex-start" : "center",
-          background: "var(--surface-glass)",
-          border: "1px solid var(--border-color)",
-          borderRadius: 9999,
-          padding: isCompact ? 6 : 8,
-          boxShadow: "var(--shadow-sm)",
-          pointerEvents: "auto",
-          maxWidth: isCompact ? "calc(100vw - 72px)" : "min(980px, calc(100vw - 170px))",
-          overflowX: isCompact ? "auto" : "visible",
-          scrollbarWidth: "none",
-        }}
-      >
-        <Link href={homeHref} className="app-top-nav-link" aria-current={isHomeActive ? "page" : undefined} style={getNavPillStyle(isHomeActive)}>Home</Link>
-        <Link href="/drafts" className="app-top-nav-link" aria-current={isDraftsActive ? "page" : undefined} style={getNavPillStyle(isDraftsActive)}>Drafts</Link>
-        <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
-        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
-        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" aria-current={isLeaderboardActive ? "page" : undefined} style={getNavPillStyle(isLeaderboardActive)}>Leaderboard</Link> : null}
-        {activePoolId && activePool?.created_by === userId ? (
-          <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" aria-current={isAdminActive ? "page" : undefined} style={getNavPillStyle(isAdminActive)}>Admin</Link>
-        ) : null}
-      </div>
-      <div
-        ref={menuRef}
-        style={{
-          position: "absolute",
-          right: isCompact ? 10 : 16,
-          top: isCompact ? 6 : 7,
-          display: "grid",
-          justifyItems: "end",
-          pointerEvents: "auto",
-        }}
-      >
-        <div
-          onMouseEnter={() => setMenuOpen(true)}
-          onMouseLeave={() => {
-            if (!settingsOpen && !helpOpen) {
-              setMenuOpen(false);
-            }
-          }}
-          style={{ display: "grid", justifyItems: "end" }}
-        >
-          <button
-            type="button"
-            className="app-top-nav-avatar-button"
-            aria-label="Open profile menu"
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
+      {isCompact ? (
+        <>
+          <div
+            className="app-mobile-topbar"
             style={{
-              width: avatarSize,
-              height: avatarSize,
-              borderRadius: 9999,
-              border: "1px solid var(--border-color)",
-              overflow: "hidden",
-              background: "var(--surface-glass)",
-              display: "grid",
-              placeItems: "center",
-              padding: 0,
-              boxShadow: "var(--shadow-sm)",
-              cursor: "pointer",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1100,
+              padding: `calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px`,
+              pointerEvents: "none",
+              transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+              opacity: isHidden ? 0 : 1,
+              transition: "transform 180ms ease, opacity 180ms ease",
             }}
           >
-            <img
-              src={resolvedAvatarUrl}
-              alt="Profile"
-              width={avatarSize}
-              height={avatarSize}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1fr) auto",
+                gap: 12,
+                alignItems: "center",
+                padding: "10px 12px",
+                background: "var(--surface-glass)",
+                border: "1px solid var(--border-color)",
+                borderRadius: 18,
+                boxShadow: "var(--shadow-sm)",
+                pointerEvents: "auto",
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 900,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--focus-ring)",
+                  }}
+                >
+                  bracketball
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 18,
+                    fontWeight: 900,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {pageTitle}
+                </div>
+                {activePool?.name ? (
+                  <div
+                    style={{
+                      marginTop: 2,
+                      fontSize: 12,
+                      opacity: 0.74,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {activePool.name}
+                  </div>
+                ) : null}
+              </div>
+
+              <div
+                ref={menuRef}
+                style={{ display: "flex", alignItems: "center", gap: 8, justifySelf: "end" }}
+              >
+                <button
+                  type="button"
+                  className="app-top-nav-how-it-works-button"
+                  onClick={openHowItWorksModal}
+                  aria-haspopup="dialog"
+                  aria-label="Open how it works details"
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 9999,
+                    background: "var(--surface)",
+                    color: "var(--foreground)",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    minHeight: 36,
+                    padding: "0 12px",
+                    boxShadow: "var(--shadow-sm)",
+                    cursor: "pointer",
+                  }}
+                >
+                  How
+                </button>
+                <button
+                  type="button"
+                  className="app-top-nav-avatar-button"
+                  aria-label="Open profile menu"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((open) => !open)}
+                  style={{
+                    width: avatarSize,
+                    height: avatarSize,
+                    borderRadius: 9999,
+                    border: "1px solid var(--border-color)",
+                    overflow: "hidden",
+                    background: "var(--surface)",
+                    display: "grid",
+                    placeItems: "center",
+                    padding: 0,
+                    boxShadow: "var(--shadow-sm)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <img
+                    src={resolvedAvatarUrl}
+                    alt="Profile"
+                    width={avatarSize}
+                    height={avatarSize}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {menuOpen ? (
+            <div
+              role="presentation"
+              onClick={() => setMenuOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 1190,
+                background: "rgba(10, 18, 32, 0.34)",
+              }}
             />
-          </button>
+          ) : null}
 
           {menuOpen ? (
             <section
               role="menu"
               aria-label="Profile quick menu"
+              className="app-mobile-sheet"
               style={{
-                marginTop: 10,
-                width: isCompact ? "min(320px, calc(100vw - 20px))" : "min(360px, calc(100vw - 28px))",
+                position: "fixed",
+                left: 12,
+                right: 12,
+                bottom: `calc(env(safe-area-inset-bottom, 0px) + 94px)`,
+                zIndex: 1200,
                 border: "1px solid var(--border-color)",
-                borderRadius: 14,
+                borderRadius: 18,
                 background: "var(--surface-glass)",
-                padding: 10,
+                padding: 12,
                 boxShadow: "var(--shadow-lg)",
                 display: "grid",
                 gap: 10,
@@ -535,15 +650,16 @@ export default function AppTopNav() {
               >
                 <button
                   type="button"
+                  className="app-mobile-sheet-action"
                   onClick={() => {
                     setMenuOpen(false);
                     router.push("/");
                   }}
                   style={{
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: "var(--surface)",
+                    padding: "12px 14px",
                     textAlign: "left",
                     fontWeight: 800,
                     cursor: "pointer",
@@ -553,15 +669,16 @@ export default function AppTopNav() {
                 </button>
                 <button
                   type="button"
+                  className="app-mobile-sheet-action"
                   onClick={() => {
                     setMenuOpen(false);
                     router.push("/drafts");
                   }}
                   style={{
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: "var(--surface)",
+                    padding: "12px 14px",
                     textAlign: "left",
                     fontWeight: 800,
                     cursor: "pointer",
@@ -571,15 +688,16 @@ export default function AppTopNav() {
                 </button>
                 <button
                   type="button"
+                  className="app-mobile-sheet-action"
                   onClick={() => {
                     setMenuOpen(false);
                     setSettingsOpen(true);
                   }}
                   style={{
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: "var(--surface)",
+                    padding: "12px 14px",
                     textAlign: "left",
                     fontWeight: 800,
                     cursor: "pointer",
@@ -589,15 +707,16 @@ export default function AppTopNav() {
                 </button>
                 <button
                   type="button"
+                  className="app-mobile-sheet-action"
                   onClick={() => {
                     setMenuOpen(false);
                     setHelpOpen(true);
                   }}
                   style={{
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: "var(--surface)",
+                    padding: "12px 14px",
                     textAlign: "left",
                     fontWeight: 800,
                     cursor: "pointer",
@@ -611,28 +730,30 @@ export default function AppTopNav() {
                 <Link
                   href="/profile"
                   onClick={() => setMenuOpen(false)}
+                  className="app-mobile-sheet-action"
                   style={{
                     flex: 1,
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    padding: "9px 12px",
+                    borderRadius: 12,
+                    padding: "11px 14px",
                     textDecoration: "none",
                     fontWeight: 800,
                     color: "var(--foreground)",
-                    background: "var(--surface-elevated)",
+                    background: "var(--surface)",
                   }}
                 >
                   Profile
                 </Link>
                 <button
                   type="button"
+                  className="app-mobile-sheet-action"
                   onClick={signOut}
                   style={{
                     flex: 1,
                     border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    padding: "9px 12px",
-                    background: "var(--surface-elevated)",
+                    borderRadius: 12,
+                    padding: "11px 14px",
+                    background: "var(--surface)",
                     cursor: "pointer",
                     fontWeight: 800,
                   }}
@@ -642,8 +763,316 @@ export default function AppTopNav() {
               </div>
             </section>
           ) : null}
-        </div>
-      </div>
+
+          <nav
+            aria-label="Primary"
+            className="app-mobile-tabbar"
+            style={{
+              position: "fixed",
+              left: 12,
+              right: 12,
+              bottom: `calc(env(safe-area-inset-bottom, 0px) + 10px)`,
+              zIndex: 1100,
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 8,
+              padding: 8,
+              border: "1px solid var(--border-color)",
+              borderRadius: 20,
+              background: "var(--surface-glass)",
+              boxShadow: "var(--shadow-md)",
+            }}
+          >
+            {mobileNavItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className="app-mobile-tabbar-link"
+                style={{
+                  display: "grid",
+                  justifyItems: "center",
+                  gap: 4,
+                  padding: "8px 6px",
+                  borderRadius: 14,
+                  fontSize: 11,
+                  fontWeight: item.active ? 900 : 800,
+                  background: item.active ? "var(--surface-elevated)" : "transparent",
+                  color: item.active ? "var(--focus-ring)" : "var(--foreground)",
+                }}
+              >
+                <span style={{ display: "grid", placeItems: "center" }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </>
+      ) : (
+        <>
+          <div
+            style={{
+              position: "fixed",
+              top: 14,
+              right: "env(safe-area-inset-right)",
+              zIndex: 1205,
+              pointerEvents: "auto",
+            }}
+          >
+            <button
+              type="button"
+              className="app-top-nav-how-it-works-button"
+              onClick={openHowItWorksModal}
+              aria-haspopup="dialog"
+              aria-label="Open how it works details"
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 9999,
+                background: "var(--surface-glass)",
+                color: "var(--foreground)",
+                fontWeight: 800,
+                fontSize: 12,
+                letterSpacing: "0.02em",
+                minHeight: 32,
+                padding: "6px 12px",
+                boxShadow: "var(--shadow-sm)",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              How it works
+            </button>
+          </div>
+
+          <div
+            style={{
+              position: "fixed",
+              top: 62,
+              left: 0,
+              right: 0,
+              zIndex: 999,
+              display: "flex",
+              justifyContent: "center",
+              padding: "8px 18px",
+              pointerEvents: "none",
+              transform: isHidden ? "translateY(-140%)" : "translateY(0)",
+              opacity: isHidden ? 0 : 1,
+              transition: "transform 180ms ease, opacity 180ms ease",
+            }}
+          >
+            <div
+              className={`app-top-nav-pills${shouldDeemphasizeNavPills ? " app-top-nav-pills--deemphasized" : ""}`}
+              style={{
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                background: "var(--surface-glass)",
+                border: "1px solid var(--border-color)",
+                borderRadius: 9999,
+                padding: 8,
+                boxShadow: "var(--shadow-sm)",
+                pointerEvents: "auto",
+                maxWidth: "min(980px, calc(100vw - 170px))",
+              }}
+            >
+              <Link href={homeHref} className="app-top-nav-link" aria-current={isHomeActive ? "page" : undefined} style={getNavPillStyle(isHomeActive)}>Home</Link>
+              <Link href="/drafts" className="app-top-nav-link" aria-current={isDraftsActive ? "page" : undefined} style={getNavPillStyle(isDraftsActive)}>Drafts</Link>
+              <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
+              {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
+              {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" aria-current={isLeaderboardActive ? "page" : undefined} style={getNavPillStyle(isLeaderboardActive)}>Leaderboard</Link> : null}
+              {activePoolId && activePool?.created_by === userId ? (
+                <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" aria-current={isAdminActive ? "page" : undefined} style={getNavPillStyle(isAdminActive)}>Admin</Link>
+              ) : null}
+            </div>
+
+            <div
+              ref={menuRef}
+              style={{
+                position: "absolute",
+                right: 16,
+                top: 7,
+                display: "grid",
+                justifyItems: "end",
+                pointerEvents: "auto",
+              }}
+            >
+              <div
+                onMouseEnter={() => setMenuOpen(true)}
+                onMouseLeave={() => {
+                  if (!settingsOpen && !helpOpen) {
+                    setMenuOpen(false);
+                  }
+                }}
+                style={{ display: "grid", justifyItems: "end" }}
+              >
+                <button
+                  type="button"
+                  className="app-top-nav-avatar-button"
+                  aria-label="Open profile menu"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((open) => !open)}
+                  style={{
+                    width: avatarSize,
+                    height: avatarSize,
+                    borderRadius: 9999,
+                    border: "1px solid var(--border-color)",
+                    overflow: "hidden",
+                    background: "var(--surface-glass)",
+                    display: "grid",
+                    placeItems: "center",
+                    padding: 0,
+                    boxShadow: "var(--shadow-sm)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <img
+                    src={resolvedAvatarUrl}
+                    alt="Profile"
+                    width={avatarSize}
+                    height={avatarSize}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </button>
+
+                {menuOpen ? (
+                  <section
+                    role="menu"
+                    aria-label="Profile quick menu"
+                    style={{
+                      marginTop: 10,
+                      width: "min(360px, calc(100vw - 28px))",
+                      border: "1px solid var(--border-color)",
+                      borderRadius: 14,
+                      background: "var(--surface-glass)",
+                      padding: 10,
+                      boxShadow: "var(--shadow-lg)",
+                      display: "grid",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 8,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          router.push("/");
+                        }}
+                        style={{
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          background: "var(--surface-elevated)",
+                          padding: "10px 12px",
+                          textAlign: "left",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Scores
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          router.push("/drafts");
+                        }}
+                        style={{
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          background: "var(--surface-elevated)",
+                          padding: "10px 12px",
+                          textAlign: "left",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Drafts
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setSettingsOpen(true);
+                        }}
+                        style={{
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          background: "var(--surface-elevated)",
+                          padding: "10px 12px",
+                          textAlign: "left",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Settings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setHelpOpen(true);
+                        }}
+                        style={{
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          background: "var(--surface-elevated)",
+                          padding: "10px 12px",
+                          textAlign: "left",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Help
+                      </button>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        style={{
+                          flex: 1,
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "9px 12px",
+                          textDecoration: "none",
+                          fontWeight: 800,
+                          color: "var(--foreground)",
+                          background: "var(--surface-elevated)",
+                        }}
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={signOut}
+                        style={{
+                          flex: 1,
+                          border: "1px solid var(--border-color)",
+                          borderRadius: 10,
+                          padding: "9px 12px",
+                          background: "var(--surface-elevated)",
+                          cursor: "pointer",
+                          fontWeight: 800,
+                        }}
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {settingsOpen ? (
         <div
@@ -875,10 +1304,29 @@ export default function AppTopNav() {
               troubleshooting guides, and in-app support resources as bracketball
               continues to grow.
             </p>
+
+            <Link
+              href="/support"
+              onClick={() => setHelpOpen(false)}
+              style={{
+                display: "inline-flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: 42,
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                padding: "10px 12px",
+                textDecoration: "none",
+                fontWeight: 800,
+                color: "var(--foreground)",
+                background: "var(--surface-elevated)",
+              }}
+            >
+              Open support page
+            </Link>
           </section>
         </div>
       ) : null}
-    </div>
     </>
   );
 }

@@ -71,6 +71,10 @@ export default function HomeButton() {
     return () => media.removeListener(onChange);
   }, []);
 
+  if (isCompact) {
+    return null;
+  }
+
   return (
     <Link
       href={href}
