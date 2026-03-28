@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   ACTIVE_POOL_CHANGED_EVENT,
   getStoredActivePoolId,
@@ -33,69 +33,6 @@ function getPageTitle(pathname: string, activePoolName: string | null) {
   if (pathname === "/terms") return "Terms";
   if (pathname === "/privacy") return "Privacy";
   return "bracketball";
-}
-
-function NavIcon({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {children}
-    </svg>
-  );
-}
-
-function HomeIcon() {
-  return (
-    <NavIcon>
-      <path d="M3 10.5 12 3l9 7.5" />
-      <path d="M5 9.5V21h14V9.5" />
-    </NavIcon>
-  );
-}
-
-function DraftsIcon() {
-  return (
-    <NavIcon>
-      <path d="M4 5h16" />
-      <path d="M4 12h16" />
-      <path d="M4 19h10" />
-    </NavIcon>
-  );
-}
-
-function PoolsIcon() {
-  return (
-    <NavIcon>
-      <circle cx="8" cy="8" r="3" />
-      <circle cx="16" cy="16" r="3" />
-      <path d="M10.5 10.5 13.5 13.5" />
-      <path d="M16 5h3v3" />
-    </NavIcon>
-  );
-}
-
-function BracketIcon() {
-  return (
-    <NavIcon>
-      <path d="M7 5H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2v4H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2" />
-      <path d="M17 5h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2v4h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2" />
-      <path d="M7 10h10" />
-      <path d="M7 14h10" />
-    </NavIcon>
-  );
 }
 
 function getPreferredTheme(): Theme {
@@ -426,8 +363,6 @@ export default function AppTopNav() {
   const activePoolPathId = poolIdFromPath ?? activePoolId;
   const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
   const pageTitle = getPageTitle(pathname, activePool?.name ?? null);
-  const mobilePoolHref = activePoolBasePath ? `${activePoolBasePath}/bracket` : "/profile";
-  const mobilePoolLabel = activePoolBasePath ? "Pool" : "Profile";
 
   const isHomeActive = pathname === "/";
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
@@ -458,15 +393,45 @@ export default function AppTopNav() {
     };
   };
 
-  const mobileNavItems = [
-    { href: homeHref, label: "Home", active: isHomeActive, icon: <HomeIcon /> },
-    { href: "/drafts", label: "Drafts", active: isDraftsActive, icon: <DraftsIcon /> },
-    { href: "/pools", label: "Pools", active: isPoolsActive, icon: <PoolsIcon /> },
+  const mobileNavItems: Array<
+    | { kind: "link"; href: string; label: string; active: boolean }
+    | { kind: "button"; label: string; active: boolean; onClick: () => void }
+  > = [
+    { kind: "link", href: homeHref, label: "home", active: isHomeActive },
+    { kind: "link", href: "/drafts", label: "drafts", active: isDraftsActive },
+    { kind: "link", href: "/pools", label: "pools", active: isPoolsActive },
+    ...(activePoolId
+      ? [
+          {
+            kind: "link" as const,
+            href: `/pool/${activePoolId}/bracket`,
+            label: "bracket",
+            active: isBracketActive,
+          },
+          {
+            kind: "link" as const,
+            href: `/pool/${activePoolId}/leaderboard`,
+            label: "leaderboard",
+            active: isLeaderboardActive,
+          },
+        ]
+      : []),
+    { kind: "link", href: "/profile", label: "profile", active: pathname === "/profile" },
+    ...(activePoolId && activePool?.created_by === userId
+      ? [
+          {
+            kind: "link" as const,
+            href: `/pool/${activePoolId}/admin`,
+            label: "admin",
+            active: isAdminActive,
+          },
+        ]
+      : []),
     {
-      href: mobilePoolHref,
-      label: mobilePoolLabel,
-      active: activePoolBasePath ? isBracketActive || isLeaderboardActive || isAdminActive : pathname === "/profile",
-      icon: <BracketIcon />,
+      kind: "button",
+      label: "how it works",
+      active: false,
+      onClick: openHowItWorksModal,
     },
   ];
 
@@ -515,8 +480,7 @@ export default function AppTopNav() {
                   style={{
                     fontSize: 12,
                     fontWeight: 900,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
                     color: "var(--focus-ring)",
                   }}
                 >
@@ -552,29 +516,8 @@ export default function AppTopNav() {
 
               <div
                 ref={menuRef}
-                style={{ display: "flex", alignItems: "center", gap: 8, justifySelf: "end" }}
+                style={{ display: "flex", alignItems: "center", justifySelf: "end" }}
               >
-                <button
-                  type="button"
-                  className="app-top-nav-how-it-works-button"
-                  onClick={openHowItWorksModal}
-                  aria-haspopup="dialog"
-                  aria-label="Open how it works details"
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 9999,
-                    background: "var(--surface)",
-                    color: "var(--foreground)",
-                    fontWeight: 800,
-                    fontSize: 12,
-                    minHeight: 36,
-                    padding: "0 12px",
-                    boxShadow: "var(--shadow-sm)",
-                    cursor: "pointer",
-                  }}
-                >
-                  How
-                </button>
                 <button
                   type="button"
                   className="app-top-nav-avatar-button"
@@ -773,37 +716,65 @@ export default function AppTopNav() {
               right: 12,
               bottom: `calc(env(safe-area-inset-bottom, 0px) + 10px)`,
               zIndex: 1100,
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              display: "flex",
               gap: 8,
               padding: 8,
               border: "1px solid var(--border-color)",
               borderRadius: 20,
               background: "var(--surface-glass)",
               boxShadow: "var(--shadow-md)",
+              overflowX: "auto",
+              scrollbarWidth: "none",
             }}
           >
             {mobileNavItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className="app-mobile-tabbar-link"
-                style={{
-                  display: "grid",
-                  justifyItems: "center",
-                  gap: 4,
-                  padding: "8px 6px",
-                  borderRadius: 14,
-                  fontSize: 11,
-                  fontWeight: item.active ? 900 : 800,
-                  background: item.active ? "var(--surface-elevated)" : "transparent",
-                  color: item.active ? "var(--focus-ring)" : "var(--foreground)",
-                }}
-              >
-                <span style={{ display: "grid", placeItems: "center" }}>{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
+              item.kind === "link" ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  aria-current={item.active ? "page" : undefined}
+                  className="app-mobile-tabbar-link"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    fontSize: 12,
+                    fontWeight: item.active ? 900 : 800,
+                    background: item.active ? "var(--surface-elevated)" : "transparent",
+                    color: item.active ? "var(--focus-ring)" : "var(--foreground)",
+                    whiteSpace: "nowrap",
+                    flex: "0 0 auto",
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.onClick}
+                  className="app-mobile-tabbar-link"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "10px 14px",
+                    borderRadius: 14,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    background: "transparent",
+                    color: "var(--foreground)",
+                    whiteSpace: "nowrap",
+                    flex: "0 0 auto",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {item.label}
+                </button>
+              )
             ))}
           </nav>
         </>

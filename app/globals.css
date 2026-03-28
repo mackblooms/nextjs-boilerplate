@@ -686,6 +686,10 @@ textarea::placeholder {
   transform: translateY(-1px);
 }
 
+.app-mobile-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
 .app-mobile-sheet-action {
   transition:
     transform 140ms ease,
