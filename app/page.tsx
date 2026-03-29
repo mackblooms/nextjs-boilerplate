@@ -150,6 +150,7 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
+const SHOW_ADMIN_DEBUG = process.env.NODE_ENV !== "production";
 
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
@@ -633,6 +634,9 @@ function HomeContent() {
   const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
+  const [debugUserId, setDebugUserId] = useState<string | null>(null);
+  const [debugIsSiteAdmin, setDebugIsSiteAdmin] = useState(false);
+  const [debugChecked, setDebugChecked] = useState(false);
   const homeDraftsLoadedRef = useRef(false);
 
   const loginHref = useMemo(() => {
@@ -768,6 +772,57 @@ function HomeContent() {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         void loadUserPools();
       }
+    });
+
+    return () => {
+      canceled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadAdminDebug = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (canceled) return;
+      setDebugUserId(user?.id ?? null);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        if (!canceled) {
+          setDebugIsSiteAdmin(false);
+          setDebugChecked(true);
+        }
+        return;
+      }
+
+      const res = await fetch("/api/admin/me", {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      }).catch(() => null);
+
+      if (canceled) return;
+
+      if (!res?.ok) {
+        setDebugIsSiteAdmin(false);
+        setDebugChecked(true);
+        return;
+      }
+
+      const json = (await res.json().catch(() => ({}))) as { isSiteAdmin?: boolean };
+      setDebugIsSiteAdmin(Boolean(json.isSiteAdmin));
+      setDebugChecked(true);
+    };
+
+    void loadAdminDebug();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      void loadAdminDebug();
     });
 
     return () => {
@@ -1638,6 +1693,23 @@ function HomeContent() {
           gap: 10,
         }}
       >
+        {SHOW_ADMIN_DEBUG ? (
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              background: "var(--surface-elevated)",
+              padding: "10px 12px",
+              fontSize: 13,
+              fontWeight: 800,
+              lineHeight: 1.45,
+            }}
+          >
+            home debug: admin {debugChecked ? (debugIsSiteAdmin ? "yes" : "no") : "checking"} | user{" "}
+            {debugUserId ?? "none"}
+          </div>
+        ) : null}
+
         {isAuthenticated ? (
           <div
             className="home-pool-context"
