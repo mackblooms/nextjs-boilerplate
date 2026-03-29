@@ -15,7 +15,6 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
-const SHOW_ADMIN_DEBUG = true;
 
 function getPageTitle(pathname: string, activePoolName: string | null) {
   if (pathname === "/") return "Home";
@@ -488,30 +487,6 @@ export default function AppTopNav() {
 
   return (
     <>
-      {SHOW_ADMIN_DEBUG ? (
-        <div
-          style={{
-            position: "fixed",
-            top: isCompact ? `calc(env(safe-area-inset-top, 0px) + 72px)` : 18,
-            left: isCompact ? 12 : 96,
-            zIndex: 1300,
-            maxWidth: isCompact ? "calc(100vw - 24px)" : "min(520px, calc(100vw - 220px))",
-            padding: "8px 10px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            background: "var(--surface-glass)",
-            boxShadow: "var(--shadow-sm)",
-            fontSize: 12,
-            fontWeight: 800,
-            lineHeight: 1.35,
-            pointerEvents: "none",
-            backdropFilter: "saturate(130%) blur(10px)",
-          }}
-        >
-          debug: admin {isSiteAdmin ? "yes" : "no"} | user {userId ?? "none"}
-        </div>
-      ) : null}
-
       {isCompact ? (
         <>
           <div
@@ -1261,27 +1236,6 @@ export default function AppTopNav() {
                 </Link>
               </div>
             </div>
-
-            {SHOW_ADMIN_DEBUG ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: 12,
-                  display: "grid",
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontWeight: 900 }}>Admin debug</div>
-                <div style={{ fontSize: 13, opacity: 0.82 }}>
-                  current user id: {userId ?? "none"}
-                </div>
-                <div style={{ fontSize: 13, opacity: 0.82 }}>
-                  site admin: {isSiteAdmin ? "yes" : "no"}
-                </div>
-              </div>
-            ) : null}
 
             <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
               More settings options will be added here next.
