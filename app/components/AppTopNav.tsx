@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   ACTIVE_POOL_CHANGED_EVENT,
   getStoredActivePoolId,
@@ -15,6 +15,20 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
+
+function isPublicPathname(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/terms" ||
+    pathname === "/privacy" ||
+    pathname === "/support" ||
+    pathname === "/how-it-works" ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/auth/callback")
+  );
+}
 
 function getPageTitle(pathname: string, activePoolName: string | null) {
   if (pathname === "/") return "Home";
@@ -77,6 +91,24 @@ export default function AppTopNav() {
   const isHidden = useAutoHideOnScroll();
   const isDark = theme === "dark";
 
+  const resetNav = useCallback(() => {
+    setUserId(null);
+    setHomeHref("/");
+    setActivePoolId(null);
+    setActivePool(null);
+    setProfileAvatarUrl(null);
+    setIsSiteAdmin(false);
+    setMenuOpen(false);
+    setSettingsOpen(false);
+    setHelpOpen(false);
+  }, []);
+
+  const redirectToLandingIfNeeded = useCallback(() => {
+    if (isPublicPathname(pathname)) return;
+    router.replace("/");
+    router.refresh();
+  }, [pathname, router]);
+
   const poolIdFromPath = useMemo(() => {
     const match = pathname.match(/^\/pool\/([^/]+)/);
     return match?.[1] ?? null;
@@ -85,26 +117,22 @@ export default function AppTopNav() {
   useEffect(() => {
     let canceled = false;
 
-    const resetNav = () => {
-      if (canceled) return;
-      setUserId(null);
-      setHomeHref("/");
-      setActivePoolId(null);
-      setActivePool(null);
-      setProfileAvatarUrl(null);
-      setIsSiteAdmin(false);
-    };
-
     const syncAuth = async () => {
       if (!supabase) {
-        resetNav();
+        if (!canceled) {
+          resetNav();
+          redirectToLandingIfNeeded();
+        }
         return;
       }
 
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
       if (!user) {
-        resetNav();
+        if (!canceled) {
+          resetNav();
+          redirectToLandingIfNeeded();
+        }
         return;
       }
 
@@ -123,7 +151,10 @@ export default function AppTopNav() {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user) {
-        resetNav();
+        if (!canceled) {
+          resetNav();
+          redirectToLandingIfNeeded();
+        }
         return;
       }
 
@@ -132,11 +163,25 @@ export default function AppTopNav() {
       setHomeHref("/");
     });
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      void syncAuth();
+    };
+
+    const onFocus = () => {
+      void syncAuth();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", onFocus);
+
     return () => {
       canceled = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", onFocus);
       sub.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [redirectToLandingIfNeeded, resetNav, supabase]);
 
   useEffect(() => {
     let canceled = false;
