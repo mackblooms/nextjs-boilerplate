@@ -15,7 +15,7 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
-const SHOW_ADMIN_DEBUG = process.env.NODE_ENV !== "production";
+const SHOW_ADMIN_DEBUG = true;
 
 function getPageTitle(pathname: string, activePoolName: string | null) {
   if (pathname === "/") return "Home";

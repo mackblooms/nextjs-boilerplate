@@ -150,7 +150,7 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
-const SHOW_ADMIN_DEBUG = process.env.NODE_ENV !== "production";
+const SHOW_ADMIN_DEBUG = true;
 
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
