@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import { useRouter } from "next/navigation";
 import { setStoredActivePoolId } from "@/lib/activePool";
 import { resolveDeepLinkPath } from "@/lib/deepLinks";
@@ -15,54 +17,39 @@ export default function AppDeepLinkHandler() {
 
   useEffect(() => {
     let removeListener: (() => void) | null = null;
+    let lastHandledPath: string | null = null;
 
     const navigateToDeepLink = (url: string) => {
       const nextPath = resolveDeepLinkPath(url);
       if (!nextPath) return;
+      if (nextPath === lastHandledPath) return;
+      lastHandledPath = nextPath;
 
       const poolId = getPoolIdFromPath(nextPath);
       if (poolId) setStoredActivePoolId(poolId);
+
+      // Router navigation is preferred, but a hard redirect keeps the app from
+      // getting stranded on the custom scheme if startup timing is awkward.
       router.push(nextPath);
+      window.setTimeout(() => {
+        if (window.location.pathname !== nextPath) {
+          window.location.replace(nextPath);
+        }
+      }, 120);
     };
 
     const setup = async () => {
-      if (typeof window === "undefined") return;
+      if (!Capacitor.isNativePlatform()) return;
 
-      const capacitor = (window as Window & {
-        Capacitor?: {
-          isNativePlatform?: () => boolean;
-          Plugins?: {
-            App?: {
-              addListener?: (
-                eventName: string,
-                listenerFunc: (event: { url: string }) => void,
-              ) => Promise<{ remove: () => Promise<void> } | { remove: () => void }>;
-              getLaunchUrl?: () => Promise<{ url?: string | null }>;
-            };
-          };
-        };
-      }).Capacitor;
-
-      if (!capacitor?.isNativePlatform?.()) return;
-
-      const appPlugin = capacitor.Plugins?.App;
-      if (!appPlugin?.addListener) return;
-
-      const listener = await appPlugin.addListener("appUrlOpen", ({ url }) => {
+      const listener = await CapacitorApp.addListener("appUrlOpen", ({ url }) => {
         navigateToDeepLink(url);
       });
-
       removeListener = () => {
-        const result = listener.remove();
-        if (result && typeof (result as Promise<void>).then === "function") {
-          void result;
-        }
+        void listener.remove();
       };
 
-      if (appPlugin.getLaunchUrl) {
-        const launch = await appPlugin.getLaunchUrl().catch(() => null);
-        if (launch?.url) navigateToDeepLink(launch.url);
-      }
+      const launch = await CapacitorApp.getLaunchUrl().catch(() => null);
+      if (launch?.url) navigateToDeepLink(launch.url);
     };
 
     void setup();
