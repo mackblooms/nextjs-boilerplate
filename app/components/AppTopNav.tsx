@@ -488,6 +488,30 @@ export default function AppTopNav() {
 
   return (
     <>
+      {SHOW_ADMIN_DEBUG ? (
+        <div
+          style={{
+            position: "fixed",
+            top: isCompact ? `calc(env(safe-area-inset-top, 0px) + 72px)` : 18,
+            left: isCompact ? 12 : 96,
+            zIndex: 1300,
+            maxWidth: isCompact ? "calc(100vw - 24px)" : "min(520px, calc(100vw - 220px))",
+            padding: "8px 10px",
+            border: "1px solid var(--border-color)",
+            borderRadius: 12,
+            background: "var(--surface-glass)",
+            boxShadow: "var(--shadow-sm)",
+            fontSize: 12,
+            fontWeight: 800,
+            lineHeight: 1.35,
+            pointerEvents: "none",
+            backdropFilter: "saturate(130%) blur(10px)",
+          }}
+        >
+          debug: admin {isSiteAdmin ? "yes" : "no"} | user {userId ?? "none"}
+        </div>
+      ) : null}
+
       {isCompact ? (
         <>
           <div
