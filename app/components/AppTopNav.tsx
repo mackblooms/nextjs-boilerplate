@@ -15,6 +15,7 @@ import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
+const SHOW_ADMIN_DEBUG = process.env.NODE_ENV !== "production";
 
 function getPageTitle(pathname: string, activePoolName: string | null) {
   if (pathname === "/") return "Home";
@@ -1236,6 +1237,27 @@ export default function AppTopNav() {
                 </Link>
               </div>
             </div>
+
+            {SHOW_ADMIN_DEBUG ? (
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-elevated)",
+                  padding: 12,
+                  display: "grid",
+                  gap: 6,
+                }}
+              >
+                <div style={{ fontWeight: 900 }}>Admin debug</div>
+                <div style={{ fontSize: 13, opacity: 0.82 }}>
+                  current user id: {userId ?? "none"}
+                </div>
+                <div style={{ fontSize: 13, opacity: 0.82 }}>
+                  site admin: {isSiteAdmin ? "yes" : "no"}
+                </div>
+              </div>
+            ) : null}
 
             <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
               More settings options will be added here next.
