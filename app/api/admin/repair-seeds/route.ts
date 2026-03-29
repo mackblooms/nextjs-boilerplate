@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 
 type RepairSeedsRequest = {
   poolId?: string;
-  userId?: string;
 };
 
 type RegionName = "East" | "West" | "South" | "Midwest";
@@ -105,22 +105,14 @@ export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const body = (await req.json().catch(() => ({}))) as RepairSeedsRequest;
     const poolId = body.poolId?.trim();
-    const userId = body.userId?.trim();
 
-    if (!poolId || !userId) {
-      return NextResponse.json({ error: "missing poolId/userId" }, { status: 400 });
-    }
-
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
-      .from("pools")
-      .select("created_by")
-      .eq("id", poolId)
-      .single();
-    if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
-      return NextResponse.json({ error: "not authorized" }, { status: 403 });
+    if (!poolId) {
+      return NextResponse.json({ error: "missing poolId" }, { status: 400 });
     }
 
     const { data: r64Rows, error: r64Err } = await supabaseAdmin

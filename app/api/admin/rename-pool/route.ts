@@ -1,35 +1,26 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const body = await req.json().catch(() => ({}));
     const poolId = body.poolId as string | undefined;
-    const userId = body.userId as string | undefined;
     const name = body.name as string | undefined;
 
-    if (!poolId || !userId || !name) {
-      return NextResponse.json({ error: "missing poolId/userId/name" }, { status: 400 });
+    if (!poolId || !name) {
+      return NextResponse.json({ error: "missing poolId/name" }, { status: 400 });
     }
 
     const nextName = name.trim();
     if (!nextName) {
       return NextResponse.json({ error: "name cannot be empty" }, { status: 400 });
     }
-
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
-      .from("pools")
-      .select("created_by")
-      .eq("id", poolId)
-      .single();
-
-    if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
-      return NextResponse.json({ error: "not authorized" }, { status: 403 });
-    }
-
     const { error: renameErr } = await supabaseAdmin
       .from("pools")
       .update({ name: nextName })

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getBearerToken, requireSiteAdmin } from "@/lib/adminAuth";
 
 async function callJson(url: string, options: RequestInit) {
   const res = await fetch(url, { ...options, cache: "no-store" });
@@ -50,7 +51,11 @@ function countField(value: unknown, field: string): number {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const origin = new URL(req.url).origin;
+    const token = getBearerToken(req);
     const querySeason = toSeason(new URL(req.url).searchParams.get("season"));
     const querySportsDataOnly = toBool(new URL(req.url).searchParams.get("sportsDataOnly"));
 
@@ -72,6 +77,10 @@ export async function POST(req: Request) {
     if (season) syncPayload.season = season;
     syncPayload.sportsDataOnly = sportsDataOnly;
     const syncBody = JSON.stringify(syncPayload);
+    const authHeaders: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    };
 
     const passSummaries: Array<{
       pass: number;
@@ -97,13 +106,13 @@ export async function POST(req: Request) {
     for (let pass = 1; pass <= MAX_PASSES; pass++) {
       bracketRes = await callJson(`${origin}/api/admin/sync-bracket`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: syncBody,
       });
 
       scoresRes = await callJson(`${origin}/api/admin/sync-scores`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: syncBody,
       });
 

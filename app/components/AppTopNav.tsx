@@ -66,6 +66,7 @@ export default function AppTopNav() {
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [isSiteAdmin, setIsSiteAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -91,6 +92,7 @@ export default function AppTopNav() {
       setActivePoolId(null);
       setActivePool(null);
       setProfileAvatarUrl(null);
+      setIsSiteAdmin(false);
     };
 
     const syncAuth = async () => {
@@ -135,6 +137,46 @@ export default function AppTopNav() {
       sub.subscription.unsubscribe();
     };
   }, [supabase]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    const loadAdminStatus = async () => {
+      if (!supabase || !userId) {
+        if (!canceled) setIsSiteAdmin(false);
+        return;
+      }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        if (!canceled) setIsSiteAdmin(false);
+        return;
+      }
+
+      const res = await fetch("/api/admin/me", {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      }).catch(() => null);
+
+      if (canceled || !res?.ok) {
+        if (!canceled) setIsSiteAdmin(false);
+        return;
+      }
+
+      const json = (await res.json().catch(() => ({}))) as { isSiteAdmin?: boolean };
+      if (!canceled) {
+        setIsSiteAdmin(Boolean(json.isSiteAdmin));
+      }
+    };
+
+    void loadAdminStatus();
+
+    return () => {
+      canceled = true;
+    };
+  }, [supabase, userId]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -323,6 +365,7 @@ export default function AppTopNav() {
     setActivePoolId(null);
     setActivePool(null);
     setProfileAvatarUrl(null);
+    setIsSiteAdmin(false);
     setMenuOpen(false);
     setSettingsOpen(false);
     setHelpOpen(false);
@@ -417,7 +460,7 @@ export default function AppTopNav() {
         ]
       : []),
     { kind: "link", href: "/profile", label: "profile", active: pathname === "/profile" },
-    ...(activePoolId && activePool?.created_by === userId
+    ...(activePoolId && isSiteAdmin
       ? [
           {
             kind: "link" as const,
@@ -852,7 +895,7 @@ export default function AppTopNav() {
               <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
               {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
               {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" aria-current={isLeaderboardActive ? "page" : undefined} style={getNavPillStyle(isLeaderboardActive)}>Leaderboard</Link> : null}
-              {activePoolId && activePool?.created_by === userId ? (
+              {activePoolId && isSiteAdmin ? (
                 <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" aria-current={isAdminActive ? "page" : undefined} style={getNavPillStyle(isAdminActive)}>Admin</Link>
               ) : null}
             </div>

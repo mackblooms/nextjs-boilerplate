@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 
@@ -11,31 +12,21 @@ export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const body = await req.json().catch(() => ({}));
     const poolId = body.poolId as string | undefined;
-    const userId = body.userId as string | undefined;
     const password = body.password as string | undefined;
 
-    if (!poolId || !userId || !password) {
-      return NextResponse.json({ error: "missing poolId/userId/password" }, { status: 400 });
+    if (!poolId || !password) {
+      return NextResponse.json({ error: "missing poolId/password" }, { status: 400 });
     }
 
     const nextPassword = password.trim();
     if (nextPassword.length < 4) {
       return NextResponse.json({ error: "password must be at least 4 characters" }, { status: 400 });
     }
-
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
-      .from("pools")
-      .select("created_by")
-      .eq("id", poolId)
-      .single();
-
-    if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
-      return NextResponse.json({ error: "not authorized" }, { status: 403 });
-    }
-
     const passwordHash = hashPoolPassword(nextPassword);
     const passwordCiphertext = encryptPoolPassword(nextPassword);
 

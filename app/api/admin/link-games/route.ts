@@ -1,8 +1,27 @@
 import { NextResponse } from "next/server";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
+
+type LocalGameRow = {
+  id: string;
+  game_date: string;
+  team1_id: string;
+  team2_id: string;
+};
+
+type TeamMappingRow = {
+  id: string;
+  sportsdata_team_id: number | null;
+};
+
+type SportsDataFinalGame = {
+  HomeTeamID?: number;
+  AwayTeamID?: number;
+  GameID?: number;
+};
 
 async function fetchGamesFinalByDate(date: string) {
   if (!KEY) throw new Error("SPORTS_DATA_IO_KEY is missing");
@@ -23,8 +42,11 @@ async function fetchGamesFinalByDate(date: string) {
   return res.json();
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const supabaseAdmin = getSupabaseAdmin();
 
     // Pull your unlinked games that have a date + teams
@@ -47,7 +69,7 @@ export async function GET() {
 
     // Build a map from your team UUID -> sportsdata_team_id
     const teamIds = Array.from(
-      new Set(localGames.flatMap((g: any) => [g.team1_id, g.team2_id]))
+      new Set((localGames as LocalGameRow[]).flatMap((g) => [g.team1_id, g.team2_id]))
     );
 
     const { data: teams, error: teamErr } = await supabaseAdmin
@@ -58,13 +80,13 @@ export async function GET() {
     if (teamErr) throw teamErr;
 
     const localToSports = new Map<string, number>();
-    for (const t of teams ?? []) {
+    for (const t of (teams ?? []) as TeamMappingRow[]) {
       if (t.sportsdata_team_id != null) localToSports.set(t.id, t.sportsdata_team_id);
     }
 
     // Group local games by date (so we only call SportsDataIO once per date)
-    const byDate = new Map<string, any[]>();
-    for (const g of localGames) {
+    const byDate = new Map<string, LocalGameRow[]>();
+    for (const g of (localGames ?? []) as LocalGameRow[]) {
       const d = g.game_date; // comes back as YYYY-MM-DD
       if (!byDate.has(d)) byDate.set(d, []);
       byDate.get(d)!.push(g);
@@ -78,7 +100,7 @@ export async function GET() {
 
       // Index API games by "homeId-awayId" and also "awayId-homeId" (just in case)
       const apiIndex = new Map<string, number>();
-      for (const ag of apiGames ?? []) {
+      for (const ag of (apiGames ?? []) as SportsDataFinalGame[]) {
         const home = ag?.HomeTeamID;
         const away = ag?.AwayTeamID;
         const gid = ag?.GameID;
@@ -106,11 +128,10 @@ export async function GET() {
     }
 
     return NextResponse.json({ ok: true, linked, notFound });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json(
-      { ok: false, error: e?.message ?? "Unknown error" },
+      { ok: false, error: e instanceof Error ? e.message : "Unknown error" },
       { status: 500 }
     );
   }
 }
-

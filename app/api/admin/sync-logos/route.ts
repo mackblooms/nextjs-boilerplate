@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 
 function normName(s: string) {
   return s
@@ -11,28 +12,28 @@ function normName(s: string) {
     .trim();
 }
 
+type EspnTeamEntry = {
+  team?: {
+    id?: string | number;
+    displayName?: string;
+    name?: string;
+    shortDisplayName?: string;
+    logos?: Array<{ href?: string }>;
+  };
+};
+
 export async function POST(req: Request) {
     const supabaseAdmin = getSupabaseAdmin();
   
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const body = await req.json().catch(() => ({}));
     const poolId = body.poolId as string | undefined;
-    const userId = body.userId as string | undefined;
 
-    if (!poolId || !userId) {
-      return NextResponse.json({ error: "missing poolId/userId" }, { status: 400 });
-    }
-
-    // Verify creator
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
-      .from("pools")
-      .select("created_by")
-      .eq("id", poolId)
-      .single();
-
-    if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
-      return NextResponse.json({ error: "not authorized" }, { status: 403 });
+    if (!poolId) {
+      return NextResponse.json({ error: "missing poolId" }, { status: 400 });
     }
 
     // Load teams from DB
@@ -54,10 +55,10 @@ export async function POST(req: Request) {
     const json = await res.json();
 
     // ESPN structure: sports[0].leagues[0].teams -> [{team:{id,displayName,logos:[{href}]}}]
-    const espnTeams: any[] =
+    const espnTeams =
       json?.sports?.[0]?.leagues?.[0]?.teams ??
       json?.sports?.[0]?.leagues?.[0]?.teams ??
-      [];
+      [] as EspnTeamEntry[];
 
     const map = new Map<string, { id: number; logo: string }>();
 
@@ -102,7 +103,7 @@ const overrides: Record<string, string> = {
   "long island/b-cu": "",
 };
     let updated = 0;
-    let missing: string[] = [];
+    const missing: string[] = [];
 
     for (const t of dbTeams ?? []) {
       const raw = String(t.name);
@@ -152,7 +153,10 @@ if (!hit) {
     }
 
     return NextResponse.json({ updated, missing });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "unknown error" }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "unknown error" },
+      { status: 500 }
+    );
   }
 }

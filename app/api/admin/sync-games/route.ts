@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,9 @@ type SportsDataGame = {
 
 export async function POST(req: Request) {
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const supabase = getSupabaseAdmin();
 
     const { date } = await req.json(); // expects "YYYY-MMM-DD" like "2025-MAR-28"
@@ -125,7 +129,10 @@ export async function POST(req: Request) {
       skippedNoMatch,
       skippedTieOrNoScore,
     });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }
