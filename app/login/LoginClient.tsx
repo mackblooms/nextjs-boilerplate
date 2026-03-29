@@ -24,8 +24,8 @@ export default function LoginClient() {
 
   const next =
     typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("next") || "/pools"
-      : "/pools";
+      ? new URLSearchParams(window.location.search).get("next") || "/"
+      : "/";
 
   const invitePoolId =
     typeof window !== "undefined"
@@ -41,6 +41,7 @@ export default function LoginClient() {
       if (invitePoolId) params.set("invitePoolId", invitePoolId);
       return `/profile?${params.toString()}`;
     })();
+  const signInNext = invitePoolId ? `/pool/${invitePoolId}` : next;
 
   useEffect(() => {
     if (!legalModalOpen) return;
@@ -179,7 +180,7 @@ export default function LoginClient() {
 
     setStatus("success");
     setMsg("Signed in successfully. Redirecting...");
-    window.location.href = profileSetupNext;
+    window.location.href = signInNext;
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -546,5 +547,4 @@ export default function LoginClient() {
     </main>
   );
 }
-
 
