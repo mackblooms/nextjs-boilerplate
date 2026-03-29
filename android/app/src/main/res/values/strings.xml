@@ -3,5 +3,5 @@
     <string name="app_name">bracketball</string>
     <string name="title_activity_main">bracketball</string>
     <string name="package_name">com.mackbloom.bracketball</string>
-    <string name="custom_url_scheme">com.mackbloom.bracketball</string>
+    <string name="custom_url_scheme">bracketball</string>
 </resources>

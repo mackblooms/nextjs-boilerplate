@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import HomeButton from "./components/HomeButton";
+import AppDeepLinkHandler from "./components/AppDeepLinkHandler";
 import AppTopNav from "./components/AppTopNav";
 import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
 import "./globals.css";
@@ -53,6 +54,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${ibmPlexMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <HomeButton />
+        <AppDeepLinkHandler />
         <AppTopNav />
         <HowItWorksRulesModal />
 
