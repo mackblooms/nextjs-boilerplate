@@ -519,6 +519,36 @@ textarea::placeholder {
   gap: 18px;
 }
 
+.pool-card-hero {
+  position: relative;
+}
+
+.pool-card-section {
+  border-radius: 14px;
+}
+
+.pool-card-section--accent {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.pool-chip-row span {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.pool-share-actions {
+  align-items: stretch;
+}
+
+.pool-quick-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px !important;
+}
+
+.pool-quick-actions > * {
+  min-width: 0 !important;
+}
+
 @media (max-width: 1100px) {
   .pool-hero-layout {
     grid-template-columns: 1fr;
@@ -670,13 +700,29 @@ textarea::placeholder {
   backdrop-filter: saturate(130%) blur(12px);
 }
 
+.app-mobile-tabbar {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 14px,
+    black calc(100% - 14px),
+    transparent 100%
+  );
+}
+
 .app-mobile-tabbar-link {
   color: var(--foreground);
   text-decoration: none;
+  scroll-snap-align: center;
+  border: 1px solid transparent;
   transition:
     background-color 140ms ease,
     color 140ms ease,
-    transform 140ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
 }
 
 .app-mobile-tabbar-link:hover,
@@ -684,6 +730,11 @@ textarea::placeholder {
   background: var(--surface-elevated);
   color: var(--focus-ring);
   transform: translateY(-1px);
+}
+
+.app-mobile-tabbar-link[data-active="true"] {
+  border-color: var(--highlight-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .app-mobile-tabbar::-webkit-scrollbar {
@@ -718,5 +769,35 @@ textarea::placeholder {
 @media (min-width: 1100px) {
   .leaderboard-layout {
     grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+@media (max-width: 780px) {
+  .pool-main-card {
+    padding: 14px 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .pool-card-hero img {
+    max-width: min(82vw, 360px) !important;
+  }
+
+  .pool-chip-row {
+    justify-content: flex-start !important;
+  }
+
+  .pool-share-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pool-share-actions > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .pool-quick-actions {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

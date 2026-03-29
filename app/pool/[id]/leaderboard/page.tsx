@@ -560,6 +560,7 @@ export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const poolId = params.id;
+  const [isCompact, setIsCompact] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
@@ -1396,6 +1397,27 @@ export default function LeaderboardPage() {
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const forecastModeOn = leaderboardMode === "forecast";
+  const leaderboardGridTemplate = isCompact
+    ? "64px minmax(0, 1fr) 88px"
+    : "80px minmax(0, 1fr) 140px";
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 720px)");
+    const sync = () => setIsCompact(media.matches);
+    sync();
+
+    const onChange = (event: MediaQueryListEvent) => {
+      setIsCompact(event.matches);
+    };
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
   const forecastHorizonLabel = forecastHorizonRound
     ? formatRoundLabel(forecastHorizonRound)
     : "current round";
@@ -1625,17 +1647,17 @@ export default function LeaderboardPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "80px minmax(0, 1fr) 140px",
-                  padding: "10px 12px",
+                  gridTemplateColumns: leaderboardGridTemplate,
+                  padding: isCompact ? "10px 10px" : "10px 12px",
                   fontWeight: 900,
                   background: "var(--surface-muted)",
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>{forecastModeOn ? "Proj Rank" : "Rank"}</div>
+                <div>{forecastModeOn ? (isCompact ? "Proj" : "Proj Rank") : "Rank"}</div>
                 <div>Player</div>
                 <div style={{ textAlign: "right" }}>
-                  {forecastModeOn ? "Expected" : "Score"}
+                  {forecastModeOn ? (isCompact ? "Exp" : "Expected") : "Score"}
                 </div>
               </div>
 
@@ -1662,8 +1684,8 @@ export default function LeaderboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "80px minmax(0, 1fr) 140px",
-                        padding: "10px 12px",
+                        gridTemplateColumns: leaderboardGridTemplate,
+                        padding: isCompact ? "10px 10px" : "10px 12px",
                         alignItems: "center",
                       }}
                     >

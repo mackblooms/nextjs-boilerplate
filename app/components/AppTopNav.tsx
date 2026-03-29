@@ -777,6 +777,7 @@ export default function AppTopNav() {
                   href={item.href}
                   aria-current={item.active ? "page" : undefined}
                   className="app-mobile-tabbar-link"
+                  data-active={item.active ? "true" : "false"}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -799,6 +800,7 @@ export default function AppTopNav() {
                   type="button"
                   onClick={item.onClick}
                   className="app-mobile-tabbar-link"
+                  data-active="false"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

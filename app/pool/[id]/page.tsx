@@ -1485,7 +1485,7 @@ export default function PoolPage() {
             background: "var(--surface)",
           }}
         >
-        <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
+        <div className="pool-card-hero" style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
           <button
             onClick={sharePoolLink}
             aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
@@ -1523,7 +1523,7 @@ export default function PoolPage() {
             {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
           </h1>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="pool-chip-row" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
             <span
               style={{
                 fontSize: 12,
@@ -1553,11 +1553,11 @@ export default function PoolPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 8 }}>
+        <div className="pool-card-section" style={{ display: "grid", gap: 8 }}>
           <label htmlFor="share-link" style={{ fontWeight: 800, fontSize: 13 }}>
             Share link
           </label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="pool-share-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input
               id="share-link"
               type="text"
@@ -1611,6 +1611,7 @@ export default function PoolPage() {
 
         {isMember === false && !loading ? (
           <section
+            className="pool-card-section pool-card-section--accent"
             style={{
               border: "1px solid var(--border-color)",
               borderRadius: 12,
@@ -1675,6 +1676,7 @@ export default function PoolPage() {
 
         {isMember === true ? (
           <section
+            className="pool-card-section pool-card-section--accent"
             style={{
               border: "1px solid var(--border-color)",
               borderRadius: 12,
@@ -1686,7 +1688,7 @@ export default function PoolPage() {
             }}
           >
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
                 href="/drafts"
                 style={{
