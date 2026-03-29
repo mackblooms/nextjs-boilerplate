@@ -1,0 +1,22 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "92767P6W7Q.com.mackbloom.bracketball",
+        "paths": [
+          "/",
+          "/pool/*",
+          "/drafts",
+          "/drafts/*",
+          "/pools",
+          "/pools/*",
+          "/profile",
+          "/profile/*",
+          "/support",
+          "/support/*"
+        ]
+      }
+    ]
+  }
+}
