@@ -21,6 +21,19 @@ type SportsDataGame = {
   AwayTeamScore: number | null;
 };
 
+function pushUniqueTeamId(target: Map<number, string[]>, externalTeamId: unknown, localTeamId: unknown) {
+  const sportsId = Number(externalTeamId);
+  if (!Number.isFinite(sportsId)) return;
+
+  const localId = String(localTeamId ?? "").trim();
+  if (!localId) return;
+
+  const key = Math.trunc(sportsId);
+  const existing = target.get(key) ?? [];
+  if (!existing.includes(localId)) existing.push(localId);
+  target.set(key, existing);
+}
+
 export async function POST(req: Request) {
   try {
     const auth = await requireSiteAdmin(req);
@@ -55,9 +68,9 @@ export async function POST(req: Request) {
 
     if (teamErr) return NextResponse.json({ error: teamErr.message }, { status: 500 });
 
-    const ourTeamBySportsId = new Map<number, string>();
+    const ourTeamIdsBySportsId = new Map<number, string[]>();
     for (const t of teamRows ?? []) {
-      ourTeamBySportsId.set(t.sportsdata_team_id as number, t.id as string);
+      pushUniqueTeamId(ourTeamIdsBySportsId, t.sportsdata_team_id, t.id);
     }
 
     let linked = 0;
@@ -66,23 +79,40 @@ export async function POST(req: Request) {
     let skippedTieOrNoScore = 0;
 
     for (const g of games) {
-      const ourHome = ourTeamBySportsId.get(g.HomeTeamID);
-      const ourAway = ourTeamBySportsId.get(g.AwayTeamID);
-      if (!ourHome || !ourAway) {
+      const ourHomeIds = ourTeamIdsBySportsId.get(g.HomeTeamID) ?? [];
+      const ourAwayIds = ourTeamIdsBySportsId.get(g.AwayTeamID) ?? [];
+      if (ourHomeIds.length === 0 || ourAwayIds.length === 0) {
         skippedNoMatch++;
         continue;
       }
 
-      // Find our corresponding game row (team1/team2 can be in either order)
-      const { data: ourGame, error: ourGameErr } = await supabase
+      const candidateMatchers: string[] = [];
+      for (const ourHome of ourHomeIds) {
+        for (const ourAway of ourAwayIds) {
+          if (ourHome === ourAway) continue;
+          candidateMatchers.push(`and(team1_id.eq.${ourHome},team2_id.eq.${ourAway})`);
+          candidateMatchers.push(`and(team1_id.eq.${ourAway},team2_id.eq.${ourHome})`);
+        }
+      }
+
+      if (candidateMatchers.length === 0) {
+        skippedNoMatch++;
+        continue;
+      }
+
+      const { data: gameMatches, error: ourGameErr } = await supabase
         .from("games")
         .select("id,team1_id,team2_id,winner_team_id,sportsdata_game_id")
-        .or(
-          `and(team1_id.eq.${ourHome},team2_id.eq.${ourAway}),and(team1_id.eq.${ourAway},team2_id.eq.${ourHome})`
-        )
-        .maybeSingle();
+        .or(candidateMatchers.join(","))
+        .limit(2);
 
       if (ourGameErr) continue;
+      if ((gameMatches?.length ?? 0) !== 1) {
+        skippedNoMatch++;
+        continue;
+      }
+
+      const ourGame = gameMatches?.[0];
       if (!ourGame) {
         skippedNoMatch++;
         continue;
@@ -108,7 +138,27 @@ export async function POST(req: Request) {
           continue;
         }
 
-        const winnerOurTeamId = hs > as ? ourHome : ourAway;
+        const homeIdSet = new Set(ourHomeIds);
+        const awayIdSet = new Set(ourAwayIds);
+        const resolvedHomeId =
+          ourGame.team1_id && homeIdSet.has(ourGame.team1_id)
+            ? ourGame.team1_id
+            : ourGame.team2_id && homeIdSet.has(ourGame.team2_id)
+            ? ourGame.team2_id
+            : null;
+        const resolvedAwayId =
+          ourGame.team1_id && awayIdSet.has(ourGame.team1_id)
+            ? ourGame.team1_id
+            : ourGame.team2_id && awayIdSet.has(ourGame.team2_id)
+            ? ourGame.team2_id
+            : null;
+
+        if (!resolvedHomeId || !resolvedAwayId || resolvedHomeId === resolvedAwayId) {
+          skippedNoMatch++;
+          continue;
+        }
+
+        const winnerOurTeamId = hs > as ? resolvedHomeId : resolvedAwayId;
 
         if (ourGame.winner_team_id !== winnerOurTeamId) {
           await supabase

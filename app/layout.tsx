@@ -1,11 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import HomeButton from "./components/HomeButton";
 import AppTopNav from "./components/AppTopNav";
-import InstructionsModal from "./components/InstructionsModal";
 import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
 import "./globals.css";
 
@@ -56,9 +54,6 @@ export default function RootLayout({
       >
         <HomeButton />
         <AppTopNav />
-        <Suspense fallback={null}>
-          <InstructionsModal />
-        </Suspense>
         <HowItWorksRulesModal />
 
         <main className="site-main">{children}</main>
