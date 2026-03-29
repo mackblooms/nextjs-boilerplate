@@ -22,12 +22,37 @@ export function isSiteAdminUserId(userId: string | null | undefined): boolean {
 }
 
 export function getBearerToken(req: Request): string | null {
-  const authHeader = req.headers.get("authorization");
+  const authHeader = getAuthorizationHeader(req);
   if (!authHeader) return null;
 
   const [scheme, token] = authHeader.split(" ");
   if (scheme?.toLowerCase() !== "bearer" || !token) return null;
   return token;
+}
+
+export function getAuthorizationHeader(req: Request): string | null {
+  return req.headers.get("authorization");
+}
+
+export function getCronSecret(): string | null {
+  const secret = process.env.CRON_SECRET?.trim();
+  return secret ? secret : null;
+}
+
+export function getCronAuthorizationHeader(): string | null {
+  const secret = getCronSecret();
+  return secret ? `Bearer ${secret}` : null;
+}
+
+export function isCronAuthorized(req: Request): boolean {
+  const secret = getCronSecret();
+  if (!secret) return false;
+
+  const authHeader = getAuthorizationHeader(req);
+  if (authHeader === `Bearer ${secret}`) return true;
+
+  const cronHeader = req.headers.get("x-cron-secret");
+  return cronHeader === secret;
 }
 
 export async function requireSiteAdmin(
@@ -60,4 +85,16 @@ export async function requireSiteAdmin(
   }
 
   return { userId };
+}
+
+export async function requireSiteAdminOrCron(
+  req: Request
+): Promise<{ userId: string | null; viaCron: boolean } | { response: NextResponse }> {
+  if (isCronAuthorized(req)) {
+    return { userId: null, viaCron: true };
+  }
+
+  const auth = await requireSiteAdmin(req);
+  if ("response" in auth) return auth;
+  return { userId: auth.userId, viaCron: false };
 }

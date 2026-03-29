@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCronAuthorizationHeader } from "@/lib/adminAuth";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 
 type EspnTeam = {
@@ -228,9 +229,13 @@ function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
   const origin = new URL(req.url).origin;
   autoSyncInFlight = (async () => {
     try {
+      const authorization = getCronAuthorizationHeader();
       await fetch(`${origin}/api/admin/sync-scores`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(authorization ? { authorization } : {}),
+        },
         body: JSON.stringify({ lookbackDays: 3 }),
         cache: "no-store",
       });

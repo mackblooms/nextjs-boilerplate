@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSiteAdmin } from "@/lib/adminAuth";
+import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { isDraftLocked } from "../../../../lib/draftLock";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
@@ -2527,7 +2527,7 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
 export async function GET(req: Request) {
   try {
-    const auth = await requireSiteAdmin(req);
+    const auth = await requireSiteAdminOrCron(req);
     if ("response" in auth) return auth.response;
 
     const { season, sportsDataOnly } = await parseSyncParams(req);

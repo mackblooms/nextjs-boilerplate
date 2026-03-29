@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSiteAdmin } from "@/lib/adminAuth";
+import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
@@ -1009,7 +1009,7 @@ async function handleSync(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const auth = await requireSiteAdmin(req);
+    const auth = await requireSiteAdminOrCron(req);
     if ("response" in auth) return auth.response;
 
     const result = await handleSync(req);
