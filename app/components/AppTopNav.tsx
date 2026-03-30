@@ -3,18 +3,26 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   ACTIVE_POOL_CHANGED_EVENT,
   getStoredActivePoolId,
   setStoredActivePoolId,
 } from "../../lib/activePool";
 import { withAvatarFallback } from "../../lib/avatar";
-import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Pool = { id: string; name: string; created_by: string };
 type Theme = "light" | "dark";
+
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
+const DOCK_HOLD_DELAY_MS = 130;
 
 function getPreferredTheme(): Theme {
   if (typeof window === "undefined") return "light";
@@ -38,24 +46,158 @@ function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseAnonKey);
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        d="M3 10.5 12 3l9 7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5.5 9.8V20h13V9.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.6 20v-5.5h4.8V20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChecklistIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <rect
+        x="4"
+        y="4"
+        width="16"
+        height="16"
+        rx="3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="m7.4 9.1 1.5 1.7 2.5-3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.8 8.7h3.8M12.8 12.3h3.8M7.4 15.1l1.5 1.7 2.5-3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function GroupIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <circle cx="9" cy="9" r="2.7" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="16.2" cy="10" r="2.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M4.8 18.4c.5-2.7 2.7-4.4 5.4-4.4s4.9 1.7 5.4 4.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M14.2 18.4c.4-1.9 2-3.2 4-3.2.5 0 1 0 1.5.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BracketIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        d="M3.8 4.5h5.2v6.1h5.9v2.8H9v6.1H3.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20.2 4.5H15v6.1H9.1v2.8H15v6.1h5.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function PodiumIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path d="M3.5 19.8h17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="9.3" y="9" width="5.4" height="10.8" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="3.8" y="12.3" width="4.1" height="7.5" rx="1" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="16.1" y="13.6" width="4.1" height="6.2" rx="1" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M10.8 7.2h2.4M5 10.6h1.6M17.3 12h1.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function AppTopNav() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = useMemo(() => getSupabaseClient(), []);
+
   const [userId, setUserId] = useState<string | null>(null);
   const [homeHref, setHomeHref] = useState("/");
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [homeButtonHovered, setHomeButtonHovered] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const [isCompact, setIsCompact] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const isHidden = useAutoHideOnScroll();
-  const isDark = theme === "dark";
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  const [dockExpanded, setDockExpanded] = useState(false);
+  const [scrubActive, setScrubActive] = useState(false);
+  const [scrubIndex, setScrubIndex] = useState<number | null>(null);
+
+  const holdTimerRef = useRef<number | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
+  const dockRef = useRef<HTMLDivElement | null>(null);
+  const drawerPanelRef = useRef<HTMLDivElement | null>(null);
+  const suppressClickRef = useRef(false);
 
   const poolIdFromPath = useMemo(() => {
     const match = pathname.match(/^\/pool\/([^/]+)/);
@@ -141,32 +283,6 @@ export default function AppTopNav() {
   }, []);
 
   useEffect(() => {
-    if (!menuOpen && !settingsOpen && !helpOpen) return;
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (!menuOpen) return;
-      if (!menuRef.current) return;
-      if (menuRef.current.contains(event.target as Node)) return;
-      setMenuOpen(false);
-    };
-
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMenuOpen(false);
-        setSettingsOpen(false);
-        setHelpOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onEscape);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onEscape);
-    };
-  }, [helpOpen, menuOpen, settingsOpen]);
-
-  useEffect(() => {
     let canceled = false;
 
     const loadAvatar = async () => {
@@ -226,6 +342,7 @@ export default function AppTopNav() {
         (storedPoolId && membershipPoolIds.includes(storedPoolId) ? storedPoolId : null) ??
         membershipPoolIds[0] ??
         null;
+
       setActivePoolId(selectedPoolId);
       setStoredActivePoolId(selectedPoolId);
 
@@ -287,26 +404,86 @@ export default function AppTopNav() {
   }, [poolIdFromPath, supabase, userId]);
 
   useEffect(() => {
-    const onHomeButtonHover = (event: Event) => {
-      const customEvent = event as CustomEvent<{ hovered?: boolean }>;
-      setHomeButtonHovered(Boolean(customEvent.detail?.hovered));
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setDrawerOpen(false);
+      setSettingsOpen(false);
+      setHelpOpen(false);
+      setDockExpanded(false);
+      setScrubActive(false);
+      setScrubIndex(null);
     };
 
-    window.addEventListener("bb:home-button-hover", onHomeButtonHover as EventListener);
+    const onPointerDown = (event: MouseEvent) => {
+      if (!drawerOpen) return;
+      if (!drawerPanelRef.current) return;
+      if (drawerPanelRef.current.contains(event.target as Node)) return;
+      setDrawerOpen(false);
+    };
+
+    document.addEventListener("keydown", onEscape);
+    document.addEventListener("mousedown", onPointerDown);
+
     return () => {
-      window.removeEventListener("bb:home-button-hover", onHomeButtonHover as EventListener);
+      document.removeEventListener("keydown", onEscape);
+      document.removeEventListener("mousedown", onPointerDown);
+    };
+  }, [drawerOpen]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    document.body.classList.add("has-app-shell");
+    return () => {
+      document.body.classList.remove("has-app-shell");
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
     };
   }, []);
 
+  function clearHoldTimer() {
+    if (!holdTimerRef.current) return;
+    clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = null;
+  }
+
+  function pickDockIndex(clientX: number) {
+    if (!dockRef.current) return null;
+
+    const rect = dockRef.current.getBoundingClientRect();
+    if (!rect.width) return null;
+
+    const relativeX = clamp(clientX - rect.left, 0, rect.width - 0.001);
+    const rawIndex = Math.floor((relativeX / rect.width) * 5);
+    return clamp(rawIndex, 0, 4);
+  }
+
+  function navigateDockItem(index: number | null, dockItems: { href: string }[]) {
+    if (index === null) return;
+
+    const selectedItem = dockItems[index];
+    if (!selectedItem) return;
+    if (selectedItem.href === pathname) return;
+
+    router.push(selectedItem.href);
+  }
+
   async function signOut() {
-    // Hide authed nav immediately, then clear auth/session.
     setUserId(null);
     setActivePoolId(null);
     setActivePool(null);
     setProfileAvatarUrl(null);
-    setMenuOpen(false);
+    setDrawerOpen(false);
     setSettingsOpen(false);
     setHelpOpen(false);
+    setStoredActivePoolId(null);
 
     if (supabase) {
       try {
@@ -320,27 +497,16 @@ export default function AppTopNav() {
     router.refresh();
   }
 
+  function openHowItWorksModal() {
+    setDrawerOpen(false);
+    setSettingsOpen(false);
+    setHelpOpen(false);
+    window.dispatchEvent(new CustomEvent("bb:open-how-it-works"));
+  }
+
   if (!userId) return null;
 
-  const avatarSize = isCompact ? 38 : 42;
-  const pillStyle: CSSProperties = {
-    padding: isCompact ? "8px 10px" : "8px 12px",
-    border: "none",
-    borderRadius: 9999,
-    textDecoration: "none",
-    color: "var(--foreground)",
-    fontWeight: 800,
-    fontSize: isCompact ? 12 : 13,
-    letterSpacing: "0.02em",
-    whiteSpace: "nowrap",
-    background: "var(--surface)",
-    minHeight: isCompact ? 36 : 38,
-    display: "inline-flex",
-    alignItems: "center",
-    flexShrink: 0,
-  };
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
-  const shouldDeemphasizeNavPills = homeButtonHovered || menuOpen;
   const activePoolPathId = poolIdFromPath ?? activePoolId;
   const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
 
@@ -361,289 +527,455 @@ export default function AppTopNav() {
       !isAdminActive
     : false;
 
-  const getNavPillStyle = (isActive: boolean): CSSProperties => {
-    if (!isActive) return pillStyle;
+  const dockItems = [
+    { key: "home", label: "Home", href: homeHref, isActive: isHomeActive, Icon: HomeIcon },
+    {
+      key: "drafts",
+      label: "Drafts",
+      href: "/drafts",
+      isActive: isDraftsActive,
+      Icon: ChecklistIcon,
+    },
+    { key: "pools", label: "Pools", href: "/pools", isActive: isPoolsActive, Icon: GroupIcon },
+    {
+      key: "bracket",
+      label: "Bracket",
+      href: activePoolBasePath ? `${activePoolBasePath}/bracket` : "/pools",
+      isActive: isBracketActive,
+      Icon: BracketIcon,
+    },
+    {
+      key: "leaderboard",
+      label: "Leaderboard",
+      href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : "/pools",
+      isActive: isLeaderboardActive,
+      Icon: PodiumIcon,
+    },
+  ];
 
-    return {
-      ...pillStyle,
-      background: "var(--surface-elevated)",
-      boxShadow: "var(--shadow-sm)",
-      color: "var(--focus-ring)",
-      fontWeight: 900,
-    };
+  const settledActiveIndex = Math.max(0, dockItems.findIndex((item) => item.isActive));
+  const emphasizedIndex = scrubActive && scrubIndex !== null ? scrubIndex : settledActiveIndex;
+
+  function handleDockPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+
+    activePointerIdRef.current = event.pointerId;
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    const pointerIndex = pickDockIndex(event.clientX);
+    setScrubIndex(pointerIndex);
+
+    clearHoldTimer();
+    holdTimerRef.current = window.setTimeout(() => {
+      setDockExpanded(true);
+      setScrubActive(true);
+    }, DOCK_HOLD_DELAY_MS);
+  }
+
+  function handleDockPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (activePointerIdRef.current !== event.pointerId) return;
+    if (!scrubActive) return;
+
+    const pointerIndex = pickDockIndex(event.clientX);
+    setScrubIndex(pointerIndex);
+  }
+
+  function stopScrub(pointerId: number, shouldNavigate: boolean) {
+    if (activePointerIdRef.current !== pointerId) return;
+
+    clearHoldTimer();
+
+    if (scrubActive && shouldNavigate) {
+      suppressClickRef.current = true;
+      navigateDockItem(scrubIndex, dockItems);
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 220);
+    }
+
+    setDockExpanded(false);
+    setScrubActive(false);
+    setScrubIndex(null);
+    activePointerIdRef.current = null;
+  }
+
+  const topBarButtonStyle: CSSProperties = {
+    width: isCompact ? 40 : 44,
+    height: isCompact ? 40 : 44,
+    borderRadius: 9999,
+    border: "1px solid var(--border-color)",
+    background: "var(--surface)",
+    boxShadow: "var(--shadow-sm)",
+    display: "grid",
+    placeItems: "center",
+    padding: 0,
+    color: "var(--foreground)",
+    cursor: "pointer",
+    textDecoration: "none",
   };
 
-  function openHowItWorksModal() {
-    setMenuOpen(false);
-    setSettingsOpen(false);
-    setHelpOpen(false);
-    window.dispatchEvent(new CustomEvent("bb:open-how-it-works"));
-  }
+  const drawerActionStyle: CSSProperties = {
+    width: "100%",
+    border: "1px solid var(--border-color)",
+    borderRadius: 12,
+    background: "var(--surface)",
+    color: "var(--foreground)",
+    padding: "11px 12px",
+    textAlign: "left",
+    textDecoration: "none",
+    fontWeight: 800,
+    letterSpacing: "0.01em",
+    cursor: "pointer",
+  };
 
   return (
     <>
-      <div
+      <header
+        aria-label="App top navigation"
         style={{
           position: "fixed",
-          top: isCompact ? 10 : 14,
-          right: "env(safe-area-inset-right)",
-          zIndex: 1205,
-          pointerEvents: "auto",
-        }}
-      >
-        <button
-          type="button"
-          className="app-top-nav-how-it-works-button"
-          onClick={openHowItWorksModal}
-          aria-haspopup="dialog"
-          aria-label="Open how it works details"
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 9999,
-            background: "var(--surface-glass)",
-            color: "var(--foreground)",
-            fontWeight: 800,
-            fontSize: isCompact ? 11 : 12,
-            letterSpacing: "0.02em",
-            minHeight: isCompact ? 30 : 32,
-            padding: isCompact ? "6px 10px" : "6px 12px",
-            boxShadow: "var(--shadow-sm)",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
-        >
-          How it works
-        </button>
-      </div>
-
-      <div
-      style={{
-        position: "fixed",
-        top: isCompact ? 56 : 62,
-        left: 0,
-        right: 0,
-        zIndex: 999,
-        display: "flex",
-        justifyContent: "center",
-        padding: isCompact ? "6px 10px" : "8px 18px",
-        pointerEvents: "none",
-        transform: isHidden ? "translateY(-140%)" : "translateY(0)",
-        opacity: isHidden ? 0 : 1,
-        transition: "transform 180ms ease, opacity 180ms ease",
-      }}
-    >
-      <div
-        className={`app-top-nav-pills${shouldDeemphasizeNavPills ? " app-top-nav-pills--deemphasized" : ""}`}
-        style={{
-          display: "flex",
-          gap: isCompact ? 6 : 8,
-          alignItems: "center",
-          flexWrap: isCompact ? "nowrap" : "wrap",
-          justifyContent: isCompact ? "flex-start" : "center",
-          background: "var(--surface-glass)",
-          border: "1px solid var(--border-color)",
-          borderRadius: 9999,
-          padding: isCompact ? 6 : 8,
-          boxShadow: "var(--shadow-sm)",
-          pointerEvents: "auto",
-          maxWidth: isCompact ? "calc(100vw - 72px)" : "min(980px, calc(100vw - 170px))",
-          overflowX: isCompact ? "auto" : "visible",
-          scrollbarWidth: "none",
-        }}
-      >
-        <Link href={homeHref} className="app-top-nav-link" aria-current={isHomeActive ? "page" : undefined} style={getNavPillStyle(isHomeActive)}>Home</Link>
-        <Link href="/drafts" className="app-top-nav-link" aria-current={isDraftsActive ? "page" : undefined} style={getNavPillStyle(isDraftsActive)}>Drafts</Link>
-        <Link href="/pools" className="app-top-nav-link" aria-current={isPoolsActive ? "page" : undefined} style={getNavPillStyle(isPoolsActive)}>Pools</Link>
-        {activePoolId ? <Link href={`/pool/${activePoolId}/bracket`} className="app-top-nav-link" aria-current={isBracketActive ? "page" : undefined} style={getNavPillStyle(isBracketActive)}>Bracket</Link> : null}
-        {activePoolId ? <Link href={`/pool/${activePoolId}/leaderboard`} className="app-top-nav-link" aria-current={isLeaderboardActive ? "page" : undefined} style={getNavPillStyle(isLeaderboardActive)}>Leaderboard</Link> : null}
-        {activePoolId && activePool?.created_by === userId ? (
-          <Link href={`/pool/${activePoolId}/admin`} className="app-top-nav-link" aria-current={isAdminActive ? "page" : undefined} style={getNavPillStyle(isAdminActive)}>Admin</Link>
-        ) : null}
-      </div>
-      <div
-        ref={menuRef}
-        style={{
-          position: "absolute",
-          right: isCompact ? 10 : 16,
-          top: isCompact ? 6 : 7,
-          display: "grid",
-          justifyItems: "end",
-          pointerEvents: "auto",
+          top: "max(10px, env(safe-area-inset-top))",
+          left: 0,
+          right: 0,
+          zIndex: 1200,
+          paddingInline: isCompact ? 10 : 18,
+          pointerEvents: "none",
         }}
       >
         <div
-          onMouseEnter={() => setMenuOpen(true)}
-          onMouseLeave={() => {
-            if (!settingsOpen && !helpOpen) {
-              setMenuOpen(false);
-            }
+          className="page-surface"
+          style={{
+            maxWidth: 980,
+            margin: "0 auto",
+            minHeight: isCompact ? 58 : 64,
+            borderRadius: 18,
+            padding: isCompact ? "8px 10px" : "9px 12px",
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto",
+            alignItems: "center",
+            gap: 8,
+            pointerEvents: "auto",
+            backdropFilter: "blur(12px) saturate(130%)",
           }}
-          style={{ display: "grid", justifyItems: "end" }}
         >
           <button
             type="button"
-            className="app-top-nav-avatar-button"
-            aria-label="Open profile menu"
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Open app menu"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen((open) => !open)}
+            style={topBarButtonStyle}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+              <path
+                d="M5 7.2h14M5 12h14M5 16.8h14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+
+          <Link
+            href={homeHref}
+            aria-label="Go to bracketball home"
             style={{
-              width: avatarSize,
-              height: avatarSize,
-              borderRadius: 9999,
-              border: "1px solid var(--border-color)",
-              overflow: "hidden",
-              background: "var(--surface-glass)",
-              display: "grid",
-              placeItems: "center",
-              padding: 0,
-              boxShadow: "var(--shadow-sm)",
-              cursor: "pointer",
+              justifySelf: "center",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minWidth: 120,
+              minHeight: isCompact ? 40 : 44,
+              paddingInline: 10,
             }}
           >
             <img
+              src="/bracketball-logo.jpg"
+              alt="bracketball logo"
+              style={{
+                width: isCompact ? 102 : 114,
+                height: "auto",
+                objectFit: "contain",
+                filter: "var(--logo-filter)",
+              }}
+            />
+          </Link>
+
+          <Link href="/profile" aria-label="Open profile" style={topBarButtonStyle}>
+            <img
               src={resolvedAvatarUrl}
               alt="Profile"
-              width={avatarSize}
-              height={avatarSize}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              width={isCompact ? 40 : 44}
+              height={isCompact ? 40 : 44}
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
             />
-          </button>
+          </Link>
+        </div>
+      </header>
 
-          {menuOpen ? (
-            <section
-              role="menu"
-              aria-label="Profile quick menu"
+      <div
+        ref={dockRef}
+        role="tablist"
+        aria-label="Main navigation"
+        onPointerDown={handleDockPointerDown}
+        onPointerMove={handleDockPointerMove}
+        onPointerUp={(event) => stopScrub(event.pointerId, true)}
+        onPointerCancel={(event) => stopScrub(event.pointerId, false)}
+        style={{
+          position: "fixed",
+          left: "max(10px, env(safe-area-inset-left))",
+          right: "max(10px, env(safe-area-inset-right))",
+          bottom: "max(10px, env(safe-area-inset-bottom))",
+          zIndex: 1250,
+          display: "grid",
+          gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+          gap: isCompact ? 4 : 6,
+          maxWidth: 720,
+          marginInline: "auto",
+          border: "1px solid var(--border-color)",
+          borderRadius: 999,
+          padding: isCompact ? "7px 8px" : "8px 9px",
+          background: "var(--surface-glass)",
+          boxShadow: dockExpanded ? "var(--shadow-lg)" : "var(--shadow-md)",
+          backdropFilter: "blur(14px) saturate(145%)",
+          transform: dockExpanded ? "scale(1.04)" : "scale(1)",
+          transition: "transform 160ms ease, box-shadow 160ms ease",
+          touchAction: "none",
+          userSelect: "none",
+        }}
+      >
+        {dockItems.map((item, index) => {
+          const distanceFromEmphasis = Math.abs(index - emphasizedIndex);
+          const shouldMagnify = scrubActive || dockExpanded;
+          const scale = !shouldMagnify
+            ? item.isActive
+              ? 1.06
+              : 1
+            : distanceFromEmphasis === 0
+              ? 1.22
+              : distanceFromEmphasis === 1
+                ? 1.1
+                : 0.98;
+
+          const isCurrent = scrubActive ? index === emphasizedIndex : item.isActive;
+
+          return (
+            <button
+              key={item.key}
+              type="button"
+              role="tab"
+              aria-selected={isCurrent}
+              aria-current={item.isActive ? "page" : undefined}
+              onClick={(event) => {
+                if (suppressClickRef.current || scrubActive) {
+                  event.preventDefault();
+                  return;
+                }
+
+                navigateDockItem(index, dockItems);
+              }}
               style={{
-                marginTop: 10,
-                width: isCompact ? "min(320px, calc(100vw - 20px))" : "min(360px, calc(100vw - 28px))",
-                border: "1px solid var(--border-color)",
-                borderRadius: 14,
-                background: "var(--surface-glass)",
-                padding: 10,
-                boxShadow: "var(--shadow-lg)",
+                border: "none",
+                borderRadius: 999,
+                padding: isCompact ? "8px 4px 7px" : "9px 6px 8px",
+                minHeight: isCompact ? 58 : 62,
+                background: isCurrent ? "var(--surface)" : "transparent",
+                boxShadow: isCurrent ? "var(--shadow-sm)" : "none",
+                color: isCurrent ? "var(--focus-ring)" : "var(--foreground)",
+                cursor: "pointer",
                 display: "grid",
+                placeItems: "center",
+                gap: 3,
+                transform: `translateY(${isCurrent ? -4 : 0}px) scale(${scale})`,
+                transition:
+                  "transform 130ms ease, color 120ms ease, background-color 120ms ease, box-shadow 130ms ease",
+              }}
+            >
+              <item.Icon className="app-shell-dock-icon" />
+              <span
+                style={{
+                  fontSize: isCompact ? 10 : 11,
+                  fontWeight: 800,
+                  letterSpacing: "0.02em",
+                  lineHeight: 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {drawerOpen ? (
+        <div
+          role="presentation"
+          onClick={() => setDrawerOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1300,
+            background: "rgba(4, 10, 22, 0.44)",
+            backdropFilter: "blur(2px)",
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
+          <aside
+            ref={drawerPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="App menu"
+            onClick={(event) => event.stopPropagation()}
+            className="page-surface"
+            style={{
+              width: "min(360px, calc(100vw - 26px))",
+              minHeight: "100%",
+              borderRadius: 0,
+              borderTop: "none",
+              borderBottom: "none",
+              borderLeft: "none",
+              padding: "16px 14px max(24px, env(safe-area-inset-bottom))",
+              display: "grid",
+              gap: 14,
+              overflowY: "auto",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 gap: 10,
               }}
             >
-              <div
+              <div style={{ display: "grid", gap: 3 }}>
+                <strong style={{ fontSize: 18, letterSpacing: "0.02em" }}>Menu</strong>
+                <span style={{ fontSize: 12, opacity: 0.74 }}>
+                  {activePool
+                    ? `active pool: ${activePool.name}`
+                    : "select a pool to unlock bracket + leaderboard"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close menu"
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 8,
+                  ...topBarButtonStyle,
+                  width: 34,
+                  height: 34,
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push("/");
-                  }}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
-                    textAlign: "left",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Scores
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    router.push("/drafts");
-                  }}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
-                    textAlign: "left",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Drafts
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setSettingsOpen(true);
-                  }}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
-                    textAlign: "left",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Settings
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setHelpOpen(true);
-                  }}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    background: "var(--surface-elevated)",
-                    padding: "10px 12px",
-                    textAlign: "left",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
-                  Help
-                </button>
-              </div>
+                <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 16, height: 16 }}>
+                  <path
+                    d="m6.7 6.7 10.6 10.6M17.3 6.7 6.7 17.3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
 
-              <div style={{ display: "flex", gap: 8 }}>
+            <section style={{ display: "grid", gap: 8 }} aria-label="Primary navigation">
+              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
+                Navigate
+              </h2>
+              <Link href={homeHref} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Home
+              </Link>
+              <Link href="/drafts" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Drafts
+              </Link>
+              <Link href="/pools" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Pools
+              </Link>
+              <Link
+                href={activePoolBasePath ? `${activePoolBasePath}/bracket` : "/pools"}
+                onClick={() => setDrawerOpen(false)}
+                style={drawerActionStyle}
+              >
+                Bracket
+              </Link>
+              <Link
+                href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : "/pools"}
+                onClick={() => setDrawerOpen(false)}
+                style={drawerActionStyle}
+              >
+                Leaderboard
+              </Link>
+              {activePoolId && activePool?.created_by === userId ? (
                 <Link
-                  href="/profile"
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    flex: 1,
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    padding: "9px 12px",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    color: "var(--foreground)",
-                    background: "var(--surface-elevated)",
-                  }}
+                  href={`/pool/${activePoolId}/admin`}
+                  onClick={() => setDrawerOpen(false)}
+                  style={drawerActionStyle}
                 >
-                  Profile
+                  Admin
                 </Link>
-                <button
-                  type="button"
-                  onClick={signOut}
-                  style={{
-                    flex: 1,
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 10,
-                    padding: "9px 12px",
-                    background: "var(--surface-elevated)",
-                    cursor: "pointer",
-                    fontWeight: 800,
-                  }}
-                >
-                  Log out
-                </button>
-              </div>
+              ) : null}
             </section>
-          ) : null}
+
+            <section style={{ display: "grid", gap: 8 }} aria-label="Account options">
+              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
+                Account
+              </h2>
+              <Link href="/profile" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Profile
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  setSettingsOpen(true);
+                }}
+                style={drawerActionStyle}
+              >
+                Settings
+              </button>
+              <button type="button" onClick={signOut} style={drawerActionStyle}>
+                Log out
+              </button>
+            </section>
+
+            <section style={{ display: "grid", gap: 8 }} aria-label="Help and support">
+              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
+                Support
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  setHelpOpen(true);
+                }}
+                style={drawerActionStyle}
+              >
+                Help Center
+              </button>
+              <button type="button" onClick={openHowItWorksModal} style={drawerActionStyle}>
+                How it works
+              </button>
+              <a href="mailto:mack@bracketball.io" style={drawerActionStyle}>
+                Contact support
+              </a>
+            </section>
+
+            <section style={{ display: "grid", gap: 8 }} aria-label="Legal links">
+              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
+                Legal
+              </h2>
+              <Link href="/terms" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Terms of service
+              </Link>
+              <Link href="/privacy" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Privacy policy
+              </Link>
+            </section>
+          </aside>
         </div>
-      </div>
+      ) : null}
 
       {settingsOpen ? (
         <div
@@ -652,12 +984,11 @@ export default function AppTopNav() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.56)",
             zIndex: 2000,
             display: "grid",
             placeItems: "center",
             padding: 16,
-            pointerEvents: "auto",
           }}
         >
           <section
@@ -668,7 +999,7 @@ export default function AppTopNav() {
             style={{
               width: "min(420px, 100%)",
               border: "1px solid var(--border-color)",
-              borderRadius: 14,
+              borderRadius: 16,
               background: "var(--surface)",
               padding: 14,
               display: "grid",
@@ -676,13 +1007,7 @@ export default function AppTopNav() {
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Settings</h2>
               <button
                 type="button"
@@ -701,28 +1026,28 @@ export default function AppTopNav() {
             </div>
 
             <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: 12,
-                  display: "flex",
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                background: "var(--surface-elevated)",
+                padding: 12,
+                display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 12,
               }}
             >
               <div>
-                <div style={{ fontWeight: 900 }}>Dark Mode</div>
+                <div style={{ fontWeight: 900 }}>Dark mode</div>
                 <div style={{ fontSize: 13, opacity: 0.76 }}>
                   Toggle the app theme for this device.
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setTheme(isDark ? "light" : "dark")}
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 role="switch"
-                aria-checked={isDark}
+                aria-checked={theme === "dark"}
                 style={{
                   width: 64,
                   height: 34,
@@ -737,7 +1062,7 @@ export default function AppTopNav() {
                   style={{
                     position: "absolute",
                     top: 3,
-                    left: isDark ? 33 : 3,
+                    left: theme === "dark" ? 33 : 3,
                     width: 26,
                     height: 26,
                     borderRadius: "50%",
@@ -750,12 +1075,12 @@ export default function AppTopNav() {
             </div>
 
             <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-elevated)",
-                  padding: 12,
-                  display: "grid",
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 10,
+                background: "var(--surface-elevated)",
+                padding: 12,
+                display: "grid",
                 gap: 8,
               }}
             >
@@ -793,10 +1118,6 @@ export default function AppTopNav() {
                 </Link>
               </div>
             </div>
-
-            <p style={{ margin: 0, fontSize: 13, opacity: 0.72 }}>
-              More settings options will be added here next.
-            </p>
           </section>
         </div>
       ) : null}
@@ -808,12 +1129,11 @@ export default function AppTopNav() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.56)",
             zIndex: 2000,
             display: "grid",
             placeItems: "center",
             padding: 16,
-            pointerEvents: "auto",
           }}
         >
           <section
@@ -858,27 +1178,19 @@ export default function AppTopNav() {
             </div>
 
             <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.9 }}>
-              For now, please direct all questions, bug reports, and support requests
-              to{" "}
-              <a
-                href="mailto:mack@bracketball.io"
-                style={{ fontWeight: 800, color: "var(--foreground)" }}
-              >
+              For now, please send all questions, bug reports, and support requests to{" "}
+              <a href="mailto:mack@bracketball.io" style={{ fontWeight: 800, color: "var(--foreground)" }}>
                 mack@bracketball.io
               </a>
-              . If possible, include your pool name, device, and a screenshot so issues
-              can be diagnosed quickly.
+              . Including your pool name, device, and a screenshot helps us resolve issues faster.
             </p>
 
             <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.82 }}>
-              A more comprehensive Help Center is planned, including FAQs,
-              troubleshooting guides, and in-app support resources as bracketball
-              continues to grow.
+              A full help center with FAQs and troubleshooting guides is on the roadmap.
             </p>
           </section>
         </div>
       ) : null}
-    </div>
     </>
   );
 }

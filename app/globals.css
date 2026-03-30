@@ -102,6 +102,11 @@ body {
   text-transform: lowercase;
 }
 
+body.has-app-shell {
+  padding-top: calc(90px + env(safe-area-inset-top));
+  padding-bottom: calc(102px + env(safe-area-inset-bottom));
+}
+
 a {
   color: inherit;
 }
@@ -454,6 +459,11 @@ textarea::placeholder {
     padding-top: 102px;
   }
 
+  body.has-app-shell {
+    padding-top: calc(84px + env(safe-area-inset-top));
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
   .site-main {
     padding-inline: 8px;
   }
@@ -486,6 +496,12 @@ textarea::placeholder {
   .home-score-panel {
     min-height: 0;
   }
+}
+
+.app-shell-dock-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 @media (max-width: 560px) {
