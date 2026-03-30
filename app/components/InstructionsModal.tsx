@@ -6,6 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const TUTORIAL_OPT_OUT_KEY = "bracketball.tutorial.opt_out.v1";
+const TUTORIAL_OPT_OUT_COOKIE = "bb_tutorial_opt_out";
+const TUTORIAL_OPT_OUT_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 type GuideStep = {
   id: string;
@@ -19,16 +21,84 @@ type GuideStep = {
 
 function readTutorialOptOut() {
   if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(TUTORIAL_OPT_OUT_KEY) === "1";
+
+  try {
+    const cookieMatch = document.cookie
+      .split(";")
+      .map((entry) => entry.trim())
+      .find((entry) => entry.startsWith(`${TUTORIAL_OPT_OUT_COOKIE}=`));
+    if (cookieMatch) {
+      const [, rawValue = ""] = cookieMatch.split("=", 2);
+      if (decodeURIComponent(rawValue) === "1") return true;
+    }
+  } catch {
+    // Ignore cookie read failures and continue to other storage.
+  }
+
+  try {
+    return window.localStorage.getItem(TUTORIAL_OPT_OUT_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 function writeTutorialOptOut(enabled: boolean) {
   if (typeof window === "undefined") return;
-  if (enabled) {
-    window.localStorage.setItem(TUTORIAL_OPT_OUT_KEY, "1");
-    return;
+
+  try {
+    document.cookie = `${TUTORIAL_OPT_OUT_COOKIE}=${
+      enabled ? "1" : "0"
+    }; Max-Age=${enabled ? TUTORIAL_OPT_OUT_COOKIE_MAX_AGE_SECONDS : 0}; Path=/; SameSite=Lax`;
+  } catch {
+    // Ignore cookie write failures and continue to local storage.
   }
-  window.localStorage.removeItem(TUTORIAL_OPT_OUT_KEY);
+
+  try {
+    if (enabled) {
+      window.localStorage.setItem(TUTORIAL_OPT_OUT_KEY, "1");
+      return;
+    }
+    window.localStorage.removeItem(TUTORIAL_OPT_OUT_KEY);
+  } catch {
+    // Ignore storage write failures (best effort preference persistence).
+  }
+}
+
+function readUserTutorialOptOut(
+  user:
+    | {
+        user_metadata?: Record<string, unknown> | null;
+      }
+    | null
+    | undefined,
+) {
+  const value = user?.user_metadata?.tutorial_opt_out;
+  return value === true || value === "1";
+}
+
+async function writeTutorialOptOutToUserProfile(enabled: boolean) {
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) return;
+  if (readUserTutorialOptOut(user) === enabled) return;
+
+  await supabase.auth.updateUser({
+    data: {
+      tutorial_opt_out: enabled,
+    },
+  });
+}
+
+function syncTutorialOptOutFromUser(
+  user:
+    | {
+        user_metadata?: Record<string, unknown> | null;
+      }
+    | null
+    | undefined,
+) {
+  if (!readUserTutorialOptOut(user)) return;
+  writeTutorialOptOut(true);
 }
 
 function buildSteps(isAuthed: boolean, draftEditorPreviewPath: string): GuideStep[] {
@@ -175,6 +245,7 @@ export default function InstructionsModal() {
     const loadAuth = async () => {
       const { data } = await supabase.auth.getUser();
       if (!mounted) return;
+      syncTutorialOptOutFromUser(data.user);
       setIsAuthed(Boolean(data.user));
       setIsReady(true);
     };
@@ -183,6 +254,7 @@ export default function InstructionsModal() {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
+      syncTutorialOptOutFromUser(session?.user);
       setIsAuthed(Boolean(session?.user));
       setIsReady(true);
     });
@@ -281,8 +353,13 @@ export default function InstructionsModal() {
 
   const closeGuide = useCallback(() => {
     writeTutorialOptOut(dontShowAgain);
+    if (isAuthed) {
+      void writeTutorialOptOutToUserProfile(dontShowAgain).catch(() => {
+        // User metadata sync is best effort; local preference is already saved.
+      });
+    }
     setIsOpen(false);
-  }, [dontShowAgain]);
+  }, [dontShowAgain, isAuthed]);
 
   useEffect(() => {
     if (!isOpen) return;
