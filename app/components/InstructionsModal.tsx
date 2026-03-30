@@ -46,9 +46,14 @@ function writeTutorialOptOut(enabled: boolean) {
   if (typeof window === "undefined") return;
 
   try {
+    const host = window.location.hostname.toLowerCase();
+    const domainSuffix =
+      host === "bracketball.io" || host.endsWith(".bracketball.io")
+        ? "; Domain=.bracketball.io"
+        : "";
     document.cookie = `${TUTORIAL_OPT_OUT_COOKIE}=${
       enabled ? "1" : "0"
-    }; Max-Age=${enabled ? TUTORIAL_OPT_OUT_COOKIE_MAX_AGE_SECONDS : 0}; Path=/; SameSite=Lax`;
+    }; Max-Age=${enabled ? TUTORIAL_OPT_OUT_COOKIE_MAX_AGE_SECONDS : 0}${domainSuffix}; Path=/; SameSite=Lax`;
   } catch {
     // Ignore cookie write failures and continue to local storage.
   }
@@ -361,6 +366,19 @@ export default function InstructionsModal() {
     setIsOpen(false);
   }, [dontShowAgain, isAuthed]);
 
+  const onDontShowAgainChange = useCallback(
+    (enabled: boolean) => {
+      setDontShowAgain(enabled);
+      writeTutorialOptOut(enabled);
+      if (isAuthed) {
+        void writeTutorialOptOutToUserProfile(enabled).catch(() => {
+          // User metadata sync is best effort; local preference is already saved.
+        });
+      }
+    },
+    [isAuthed],
+  );
+
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -469,7 +487,7 @@ export default function InstructionsModal() {
           <input
             type="checkbox"
             checked={dontShowAgain}
-            onChange={(event) => setDontShowAgain(event.target.checked)}
+            onChange={(event) => onDontShowAgainChange(event.target.checked)}
           />
           Don&apos;t show me this tutorial again
         </label>
