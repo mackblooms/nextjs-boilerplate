@@ -607,13 +607,16 @@ export default function AppTopNav() {
     borderRadius: 9999,
     border: "1px solid var(--border-color)",
     background: "var(--surface)",
-    boxShadow: "var(--shadow-sm)",
+    boxShadow: "var(--top-nav-pill-shadow, var(--shadow-sm))",
     display: "grid",
     placeItems: "center",
     padding: 0,
     color: "var(--foreground)",
     cursor: "pointer",
     textDecoration: "none",
+    transform: "var(--top-nav-pill-transform, translateY(0) scale(1))",
+    transition:
+      "transform 140ms ease, box-shadow 160ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease",
   };
 
   const drawerActionStyle: CSSProperties = {
@@ -661,6 +664,7 @@ export default function AppTopNav() {
           }}
         >
           <button
+            className="app-top-nav-pill"
             type="button"
             aria-label="Open app menu"
             aria-expanded={drawerOpen}
@@ -703,7 +707,12 @@ export default function AppTopNav() {
             />
           </Link>
 
-          <Link href="/profile" aria-label="Open profile" style={topBarButtonStyle}>
+          <Link
+            className="app-top-nav-pill"
+            href="/profile"
+            aria-label="Open profile"
+            style={topBarButtonStyle}
+          >
             <img
               src={resolvedAvatarUrl}
               alt="Profile"
@@ -763,6 +772,7 @@ export default function AppTopNav() {
 
           return (
             <button
+              className="app-dock-pill"
               key={item.key}
               type="button"
               role="tab"
@@ -782,13 +792,13 @@ export default function AppTopNav() {
                 padding: isCompact ? "8px 4px 7px" : "9px 6px 8px",
                 minHeight: isCompact ? 58 : 62,
                 background: isCurrent ? "var(--surface)" : "transparent",
-                boxShadow: isCurrent ? "var(--shadow-sm)" : "none",
+                boxShadow: `var(--dock-pill-hover-shadow, ${isCurrent ? "var(--shadow-sm)" : "none"})`,
                 color: isCurrent ? "var(--focus-ring)" : "var(--foreground)",
                 cursor: "pointer",
                 display: "grid",
                 placeItems: "center",
                 gap: 3,
-                transform: `translateY(${isCurrent ? -4 : 0}px) scale(${scale})`,
+                transform: `translateY(${isCurrent ? -4 : 0}px) scale(calc(${scale} * var(--dock-pill-hover-scale, 1)))`,
                 transition:
                   "transform 130ms ease, color 120ms ease, background-color 120ms ease, box-shadow 130ms ease",
               }}
@@ -861,6 +871,7 @@ export default function AppTopNav() {
                 </span>
               </div>
               <button
+                className="app-top-nav-pill"
                 type="button"
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close menu"

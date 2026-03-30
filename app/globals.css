@@ -717,6 +717,30 @@ textarea::placeholder {
   transform: translateY(-1px);
 }
 
+.app-top-nav-pill {
+  --top-nav-pill-transform: translateY(0) scale(1);
+  --top-nav-pill-shadow: var(--shadow-sm);
+}
+
+.app-dock-pill {
+  --dock-pill-hover-scale: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-top-nav-pill:hover,
+  .app-top-nav-pill:focus-visible {
+    --top-nav-pill-transform: translateY(-1px) scale(1.03);
+    --top-nav-pill-shadow: var(--shadow-md);
+    border-color: var(--highlight-border);
+  }
+
+  .app-dock-pill:hover,
+  .app-dock-pill:focus-visible {
+    --dock-pill-hover-scale: 1.03;
+    --dock-pill-hover-shadow: var(--shadow-md);
+  }
+}
+
 .app-mobile-topbar,
 .app-mobile-tabbar,
 .app-mobile-sheet {
