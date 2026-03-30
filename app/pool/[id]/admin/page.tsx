@@ -187,7 +187,6 @@ export default function AdminPage() {
   const [adminPools, setAdminPools] = useState<AdminPoolRow[]>([]);
   const [membersByPool, setMembersByPool] = useState<Record<string, PoolMemberRow[]>>({});
   const [entriesByPool, setEntriesByPool] = useState<Record<string, AdminPoolEntryRow[]>>({});
-  const [creatorId, setCreatorId] = useState<string | null>(null);
   const [removingEntryKey, setRemovingEntryKey] = useState<string | null>(null);
   const [deletingPoolId, setDeletingPoolId] = useState<string | null>(null);
   const [renamingPoolId, setRenamingPoolId] = useState<string | null>(null);
@@ -202,6 +201,7 @@ export default function AdminPage() {
   const [poolSearch, setPoolSearch] = useState("");
   const [activePoolModalId, setActivePoolModalId] = useState<string | null>(null);
   const [winnersModalOpen, setWinnersModalOpen] = useState(false);
+  const [siteAdminUserId, setSiteAdminUserId] = useState<string | null>(null);
 
   const entryKey = (targetPoolId: string, entryId: string) => `${targetPoolId}:${entryId}`;
 
@@ -283,6 +283,19 @@ export default function AdminPage() {
 
     return "info";
   }, [msg]);
+
+  async function getAdminAuthHeaders() {
+    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionErr || !accessToken) {
+      throw new Error("Not logged in (could not read session).");
+    }
+
+    return {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${accessToken}`,
+    };
+  }
 
   useEffect(() => {
     if (!activePoolModalId) return;
@@ -376,25 +389,27 @@ export default function AdminPage() {
         return;
       }
 
-      const { data: poolRow, error: poolErr } = await supabase
-        .from("pools")
-        .select("created_by")
-        .eq("id", poolId)
-        .single();
-
-      if (poolErr) {
-        setMsg(poolErr.message);
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (sessionErr || !accessToken) {
+        setMsg("Please log in first.");
         setLoading(false);
         return;
       }
 
-      if (poolRow.created_by !== user.id) {
-        setMsg("Not authorized. Only the pool creator can access Admin.");
+      const adminRes = await fetch("/api/admin/me", {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      }).catch(() => null);
+
+      if (!adminRes?.ok) {
+        setMsg("Not authorized. Only the site admin can access Admin.");
         setLoading(false);
         return;
       }
 
-      setCreatorId(poolRow.created_by);
+      setSiteAdminUserId(user.id);
 
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
@@ -570,22 +585,13 @@ export default function AdminPage() {
     setRemovingEntryKey(targetKey);
     setMsg("");
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const currentUser = authData?.user;
-
-    if (authErr || !currentUser) {
-      setMsg("Not logged in (could not read user).");
-      setRemovingEntryKey(null);
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/remove-entry", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           poolId: targetPoolId,
-          userId: currentUser.id,
           targetEntryId,
         }),
       });
@@ -638,28 +644,12 @@ export default function AdminPage() {
     setDeletingPoolId(targetPoolId);
     setMsg("");
 
-    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
-    const session = sessionData?.session;
-
-    const { data: authData } = await supabase.auth.getUser();
-    const fallbackUserId = authData?.user?.id ?? null;
-
-    if (sessionErr && !fallbackUserId) {
-      setMsg("Not logged in (could not read session).");
-      setDeletingPoolId(null);
-      return;
-    }
-
     try {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (session?.access_token) {
-        headers.authorization = `Bearer ${session.access_token}`;
-      }
-
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/delete-pool", {
         method: "POST",
         headers,
-        body: JSON.stringify({ poolId: targetPoolId, userId: fallbackUserId }),
+        body: JSON.stringify({ poolId: targetPoolId }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -724,22 +714,13 @@ export default function AdminPage() {
     setRenamingPoolId(targetPoolId);
     setMsg("");
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const currentUser = authData?.user;
-
-    if (authErr || !currentUser) {
-      setMsg("Not logged in (could not read user).");
-      setRenamingPoolId(null);
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/rename-pool", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           poolId: targetPoolId,
-          userId: currentUser.id,
           name: nextName,
         }),
       });
@@ -776,22 +757,13 @@ export default function AdminPage() {
     setRotatingPasswordPoolId(targetPoolId);
     setMsg("");
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const currentUser = authData?.user;
-
-    if (authErr || !currentUser) {
-      setMsg("Not logged in (could not read user).");
-      setRotatingPasswordPoolId(null);
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/rotate-pool-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           poolId: targetPoolId,
-          userId: currentUser.id,
           password: nextPassword,
         }),
       });
@@ -816,21 +788,13 @@ export default function AdminPage() {
   async function setWinner(gameId: string, winnerTeamId: string | null) {
     setMsg("");
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
-
-    if (authErr || !userId) {
-      setMsg("Not logged in (could not read user).");
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/set-game-winner", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           poolId,
-          userId,
           gameId,
           winnerTeamId,
         }),
@@ -867,20 +831,12 @@ export default function AdminPage() {
     setMsg("Syncing logos...");
     setSyncingLogos(true);
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
-
-    if (authErr || !userId) {
-      setMsg("Not logged in (could not read user).");
-      setSyncingLogos(false);
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/sync-logos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ poolId, userId }),
+        headers,
+        body: JSON.stringify({ poolId }),
       });
 
       const json = await res.json().catch(() => ({}));
@@ -914,7 +870,7 @@ export default function AdminPage() {
 
       const res = await fetch("/api/admin/sync-scores", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAdminAuthHeaders(),
         body: JSON.stringify({ season }),
       });
 
@@ -958,7 +914,7 @@ export default function AdminPage() {
 
       const res = await fetch("/api/admin/full-sync", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await getAdminAuthHeaders(),
         body: JSON.stringify({ poolId, season, sportsDataOnly: sportsDataOnlyMode }),
       });
 
@@ -1026,19 +982,12 @@ export default function AdminPage() {
     setMsg("Repairing bracket seeds...");
     setRepairingSeeds(true);
 
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    const userId = authData?.user?.id;
-    if (authErr || !userId) {
-      setMsg("Not logged in (could not read user).");
-      setRepairingSeeds(false);
-      return;
-    }
-
     try {
+      const headers = await getAdminAuthHeaders();
       const res = await fetch("/api/admin/repair-seeds", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ poolId, userId }),
+        headers,
+        body: JSON.stringify({ poolId }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -1108,9 +1057,9 @@ export default function AdminPage() {
   const activePoolPasswordPlaceholder =
     !activePoolModal
       ? ""
-      : activePoolModal.created_by === creatorId
+      : siteAdminUserId
         ? "No stored password yet. Update password once to reveal it here."
-        : "Only this pool's creator can view its password.";
+        : "Only the site admin can view stored pool passwords.";
 
   return (
     <main className="page-shell page-shell--stack page-shell--compact" style={{ maxWidth: 1200 }}>

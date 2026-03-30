@@ -169,6 +169,7 @@ type ForecastEntry = {
   projected_add_most_likely: number;
   projected_rank_most_likely: number;
   expected_rank: number;
+  first_place_probability: number;
 };
 
 type ForecastRoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
@@ -560,6 +561,7 @@ export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const poolId = params.id;
+  const [isCompact, setIsCompact] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);
@@ -1396,9 +1398,30 @@ export default function LeaderboardPage() {
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const forecastModeOn = leaderboardMode === "forecast";
+  const leaderboardGridTemplate = isCompact
+    ? "64px minmax(0, 1fr) 88px"
+    : "80px minmax(0, 1fr) 140px";
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 720px)");
+    const sync = () => setIsCompact(media.matches);
+    sync();
+
+    const onChange = (event: MediaQueryListEvent) => {
+      setIsCompact(event.matches);
+    };
+
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
   const forecastHorizonLabel = forecastHorizonRound
     ? formatRoundLabel(forecastHorizonRound)
-    : "current round";
+    : "the tournament";
   const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
 
   useEffect(() => {
@@ -1625,21 +1648,21 @@ export default function LeaderboardPage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "80px minmax(0, 1fr) 140px",
-                  padding: "10px 12px",
+                  gridTemplateColumns: leaderboardGridTemplate,
+                  padding: isCompact ? "10px 10px" : "10px 12px",
                   fontWeight: 900,
                   background: "var(--surface-muted)",
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>{forecastModeOn ? "Proj Rank" : "Rank"}</div>
+                <div>{forecastModeOn ? (isCompact ? "Proj" : "Proj Rank") : "Rank"}</div>
                 <div>Player</div>
                 <div style={{ textAlign: "right" }}>
-                  {forecastModeOn ? "Expected" : "Score"}
+                  {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
                 </div>
               </div>
 
-              {displayRows.map(({ row: r, displayRank, displayScore }) => {
+              {displayRows.map(({ row: r, forecast, displayRank, displayScore }) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
                 const canViewTeams = draftLocked || r.user_id === myUserId;
                 const canViewBreakdown = canViewTeams && Boolean(breakdownByEntry[r.entry_id]);
@@ -1662,8 +1685,8 @@ export default function LeaderboardPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "80px minmax(0, 1fr) 140px",
-                        padding: "10px 12px",
+                        gridTemplateColumns: leaderboardGridTemplate,
+                        padding: isCompact ? "10px 10px" : "10px 12px",
                         alignItems: "center",
                       }}
                     >
@@ -1845,6 +1868,17 @@ export default function LeaderboardPage() {
                         <div style={{ fontWeight: 900, fontSize: 18 }}>
                           {forecastModeOn ? formatExpectedScore(displayScore) : r.total_score}
                         </div>
+                        {forecastModeOn && forecast ? (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 800,
+                              opacity: 0.86,
+                            }}
+                          >
+                            1st: {forecast.first_place_probability.toFixed(1)}%
+                          </div>
+                        ) : null}
                         <div
                           style={{
                             fontSize: 12,
@@ -2061,11 +2095,15 @@ export default function LeaderboardPage() {
             <div style={{ padding: "12px 14px", display: "grid", gap: 10, lineHeight: 1.5 }}>
               <p style={{ margin: 0 }}>
                 Forecast view is a directional estimate of where standings may land by the end
-                of {forecastHorizonLabel}.
+                of the tournament.
               </p>
               <p style={{ margin: 0 }}>
                 It blends current pool scores with live game context and matchup strength signals,
                 then updates as games progress.
+              </p>
+              <p style={{ margin: 0 }}>
+                1st place % is the share of forecast simulations where that entry finishes in
+                first place, including ties for first.
               </p>
               <p style={{ margin: 0, opacity: 0.82 }}>
                 These numbers are not final standings and can move quickly with any upset.

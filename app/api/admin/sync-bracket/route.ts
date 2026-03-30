@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { isDraftLocked } from "../../../../lib/draftLock";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
@@ -206,8 +207,8 @@ function mapDisplayOrderToSlot(
 
   if (roundCode === "F4") {
     const b = norm(bracketValue);
-    if (b.includes("south") && b.includes("west")) return 1;
-    if (b.includes("east") && b.includes("midwest")) return 2;
+    if (b.includes("east") && b.includes("south")) return 1;
+    if (b.includes("west") && b.includes("midwest")) return 2;
     return null;
   }
 
@@ -2526,6 +2527,9 @@ async function runSyncBracket(season: number, sportsDataOnly: boolean) {
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSiteAdminOrCron(req);
+    if ("response" in auth) return auth.response;
+
     const { season, sportsDataOnly } = await parseSyncParams(req);
     const result = await runSyncBracket(season, sportsDataOnly);
     return NextResponse.json({ ok: true, ...result });

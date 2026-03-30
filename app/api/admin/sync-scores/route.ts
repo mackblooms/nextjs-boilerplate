@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
@@ -108,6 +109,19 @@ function norm(s: unknown) {
 
 function teamPairKey(teamA: string, teamB: string) {
   return teamA < teamB ? `${teamA}|${teamB}` : `${teamB}|${teamA}`;
+}
+
+function pushUniqueTeamId(target: Map<number, string[]>, externalTeamId: unknown, localTeamId: unknown) {
+  const sportsId = Number(externalTeamId);
+  if (!Number.isFinite(sportsId)) return;
+
+  const localId = String(localTeamId ?? "").trim();
+  if (!localId) return;
+
+  const key = Math.trunc(sportsId);
+  const existing = target.get(key) ?? [];
+  if (!existing.includes(localId)) existing.push(localId);
+  target.set(key, existing);
 }
 
 function isMissingColumnError(message: string): boolean {
@@ -239,9 +253,9 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
 
   if (round === "E8") {
     const region = norm(g.region);
-    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team1_id" };
-    if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
-    if (region === "east") return { round: "F4", region: null, slot: 2, side: "team1_id" };
+    if (region === "east") return { round: "F4", region: null, slot: 1, side: "team1_id" };
+    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team2_id" };
+    if (region === "south") return { round: "F4", region: null, slot: 2, side: "team1_id" };
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
     return null;
   }
@@ -671,9 +685,9 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     .not("sportsdata_team_id", "is", null);
   if (teamErr) throw teamErr;
 
-  const localTeamBySports = new Map<number, string>();
+  const localTeamIdsBySports = new Map<number, string[]>();
   for (const t of teamRows ?? []) {
-    localTeamBySports.set(Number(t.sportsdata_team_id), String(t.id));
+    pushUniqueTeamId(localTeamIdsBySports, t.sportsdata_team_id, t.id);
   }
 
   const { data: allGameRows, error: allGamesErr } = await supabaseAdmin
@@ -732,38 +746,51 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
       continue;
     }
 
-    const homeLocalId = localTeamBySports.get(f.homeTeamId);
-    const awayLocalId = localTeamBySports.get(f.awayTeamId);
-    if (!homeLocalId || !awayLocalId) {
+    const homeLocalIds = localTeamIdsBySports.get(f.homeTeamId) ?? [];
+    const awayLocalIds = localTeamIdsBySports.get(f.awayTeamId) ?? [];
+    if (homeLocalIds.length === 0 || awayLocalIds.length === 0) {
       skippedNoTeamMap++;
       continue;
     }
 
-    const expectedPair = teamPairKey(homeLocalId, awayLocalId);
+    const homeIdSet = new Set(homeLocalIds);
+    const awayIdSet = new Set(awayLocalIds);
     const gameMatchesExpectedPair = (g: LocalSyncGame | null | undefined) => {
       if (!g?.team1_id || !g.team2_id) return false;
-      return teamPairKey(g.team1_id, g.team2_id) === expectedPair;
+      const team1IsHome = homeIdSet.has(g.team1_id);
+      const team2IsHome = homeIdSet.has(g.team2_id);
+      const team1IsAway = awayIdSet.has(g.team1_id);
+      const team2IsAway = awayIdSet.has(g.team2_id);
+      return (team1IsHome && team2IsAway) || (team2IsHome && team1IsAway);
     };
 
     let localGame = localBySportsGameId.get(f.gameId) ?? null;
     if (!gameMatchesExpectedPair(localGame)) {
-      const candidateIds = gamesByTeamPair.get(expectedPair) ?? [];
-      if (candidateIds.length === 0) {
+      const matchedGamesById = new Map<string, LocalSyncGame>();
+      for (const homeLocalId of homeLocalIds) {
+        for (const awayLocalId of awayLocalIds) {
+          if (homeLocalId === awayLocalId) continue;
+          const pair = teamPairKey(homeLocalId, awayLocalId);
+          for (const candidateId of gamesByTeamPair.get(pair) ?? []) {
+            const candidate = gamesById.get(candidateId);
+            if (candidate) matchedGamesById.set(candidate.id, candidate);
+          }
+        }
+      }
+
+      const matches = [...matchedGamesById.values()];
+      if (matches.length === 0) {
         skippedPairNoMatch++;
         skippedUnlinked++;
         continue;
       }
-      if (candidateIds.length > 1) {
+      if (matches.length > 1) {
         skippedPairAmbiguous++;
         skippedUnlinked++;
         continue;
       }
 
-      const candidate = gamesById.get(candidateIds[0]) ?? null;
-      if (!candidate) {
-        skippedUnlinked++;
-        continue;
-      }
+      const candidate = matches[0];
 
       const previousOwner = localBySportsGameId.get(f.gameId) ?? null;
       if (previousOwner && previousOwner.id !== candidate.id) {
@@ -797,6 +824,23 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
 
     if (!localGame) {
       skippedUnlinked++;
+      continue;
+    }
+
+    const homeLocalId =
+      localGame.team1_id && homeIdSet.has(localGame.team1_id)
+        ? localGame.team1_id
+        : localGame.team2_id && homeIdSet.has(localGame.team2_id)
+        ? localGame.team2_id
+        : null;
+    const awayLocalId =
+      localGame.team1_id && awayIdSet.has(localGame.team1_id)
+        ? localGame.team1_id
+        : localGame.team2_id && awayIdSet.has(localGame.team2_id)
+        ? localGame.team2_id
+        : null;
+    if (!homeLocalId || !awayLocalId || homeLocalId === awayLocalId) {
+      skippedPairAmbiguous++;
       continue;
     }
 
@@ -965,6 +1009,9 @@ async function handleSync(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const auth = await requireSiteAdminOrCron(req);
+    if ("response" in auth) return auth.response;
+
     const result = await handleSync(req);
     return NextResponse.json({ ok: true, ...result });
   } catch (e: unknown) {
@@ -978,4 +1025,3 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   return GET(req);
 }
-

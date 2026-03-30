@@ -456,6 +456,8 @@ export default function PoolPage() {
     if (typeof window === "undefined") return "";
     return `${window.location.origin}/?invite=${encodeURIComponent(poolId)}`;
   }, [poolId]);
+  const canNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
@@ -1343,6 +1345,34 @@ export default function PoolPage() {
     }
   }
 
+  async function sharePoolLink() {
+    if (!shareLink) return;
+
+    if (!canNativeShare) {
+      await copyShareLink();
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: pool?.name ? `${pool.name} on bracketball` : "Join my bracketball pool",
+        text: pool?.name
+          ? `Join my bracketball pool: ${pool.name}`
+          : "Join my bracketball pool on bracketball.",
+        url: shareLink,
+      });
+      setCopyMsg("Share sheet opened.");
+    } catch (error) {
+      const isAbortError =
+        error instanceof DOMException && error.name === "AbortError";
+      if (isAbortError) {
+        return;
+      }
+
+      await copyShareLink();
+    }
+  }
+
   const joinDisabled = joining || (poolIsPrivate && joinPassword.trim().length === 0);
   const draftedEspnIdSet = useMemo(() => new Set(draftedEspnIds), [draftedEspnIds]);
   const draftedKeySet = useMemo(() => new Set(draftedTeamKeys), [draftedTeamKeys]);
@@ -1455,11 +1485,11 @@ export default function PoolPage() {
             background: "var(--surface)",
           }}
         >
-        <div style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
+        <div className="pool-card-hero" style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
           <button
-            onClick={copyShareLink}
-            aria-label="Copy shareable pool link"
-            title="Copy shareable pool link"
+            onClick={sharePoolLink}
+            aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
+            title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
             style={{
               border: "none",
               background: "transparent",
@@ -1484,14 +1514,16 @@ export default function PoolPage() {
           </button>
 
           <div style={{ fontSize: 14, opacity: 0.85, fontWeight: 700 }}>
-            Click logo to copy the shareable pool link
+            {canNativeShare
+              ? "Tap logo to open the share sheet"
+              : "Tap logo to copy the shareable pool link"}
           </div>
 
           <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
             {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
           </h1>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="pool-chip-row" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
             <span
               style={{
                 fontSize: 12,
@@ -1521,11 +1553,11 @@ export default function PoolPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gap: 8 }}>
+        <div className="pool-card-section" style={{ display: "grid", gap: 8 }}>
           <label htmlFor="share-link" style={{ fontWeight: 800, fontSize: 13 }}>
             Share link
           </label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="pool-share-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input
               id="share-link"
               type="text"
@@ -1541,6 +1573,22 @@ export default function PoolPage() {
                 background: "var(--surface-muted)",
               }}
             />
+            <button
+              type="button"
+              onClick={sharePoolLink}
+              style={{
+                flex: "1 1 140px",
+                padding: "10px 12px",
+                minHeight: 44,
+                borderRadius: 10,
+                border: "1px solid var(--border-color)",
+                background: "var(--surface-elevated)",
+                cursor: "pointer",
+                fontWeight: 800,
+              }}
+            >
+              {canNativeShare ? "Share invite" : "Share"}
+            </button>
             <button
               type="button"
               onClick={copyShareLink}
@@ -1563,6 +1611,7 @@ export default function PoolPage() {
 
         {isMember === false && !loading ? (
           <section
+            className="pool-card-section pool-card-section--accent"
             style={{
               border: "1px solid var(--border-color)",
               borderRadius: 12,
@@ -1627,6 +1676,7 @@ export default function PoolPage() {
 
         {isMember === true ? (
           <section
+            className="pool-card-section pool-card-section--accent"
             style={{
               border: "1px solid var(--border-color)",
               borderRadius: 12,
@@ -1638,7 +1688,7 @@ export default function PoolPage() {
             }}
           >
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
                 href="/drafts"
                 style={{

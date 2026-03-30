@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 
 type SetWinnerRequest = {
   poolId?: string;
-  userId?: string;
   gameId?: string;
   winnerTeamId?: string | null;
 };
@@ -53,9 +53,9 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
 
   if (round === "E8") {
     const region = norm(g.region);
-    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team1_id" };
-    if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
-    if (region === "east") return { round: "F4", region: null, slot: 2, side: "team1_id" };
+    if (region === "east") return { round: "F4", region: null, slot: 1, side: "team1_id" };
+    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team2_id" };
+    if (region === "south") return { round: "F4", region: null, slot: 2, side: "team1_id" };
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
     return null;
   }
@@ -148,26 +148,17 @@ export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const body = (await req.json().catch(() => ({}))) as SetWinnerRequest;
     const poolId = body.poolId?.trim();
-    const userId = body.userId?.trim();
     const gameId = body.gameId?.trim();
     const winnerTeamIdRaw = body.winnerTeamId == null ? null : String(body.winnerTeamId).trim();
     const winnerTeamId = winnerTeamIdRaw ? winnerTeamIdRaw : null;
 
-    if (!poolId || !userId || !gameId) {
-      return NextResponse.json({ error: "missing poolId/userId/gameId" }, { status: 400 });
-    }
-
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
-      .from("pools")
-      .select("created_by")
-      .eq("id", poolId)
-      .single();
-
-    if (poolErr) return NextResponse.json({ error: poolErr.message }, { status: 400 });
-    if (poolRow.created_by !== userId) {
-      return NextResponse.json({ error: "not authorized" }, { status: 403 });
+    if (!poolId || !gameId) {
+      return NextResponse.json({ error: "missing poolId/gameId" }, { status: 400 });
     }
 
     const { data: gameRow, error: gameErr } = await supabaseAdmin

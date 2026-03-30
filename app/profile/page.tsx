@@ -37,7 +37,7 @@ export default function ProfilePage() {
       ? new URLSearchParams(window.location.search)
       : null;
   const onboarding = search?.get("onboarding") === "1";
-  const nextPath = search?.get("next") || "/pools";
+  const nextPath = search?.get("next") || "/";
 
   const [fullName, setFullName] = useState("");
   const [favoriteTeam, setFavoriteTeam] = useState("");
@@ -261,7 +261,7 @@ export default function ProfilePage() {
     });
 
     if (onboarding) {
-      router.replace(nextPath.startsWith("/") ? nextPath : "/pools");
+      router.replace(nextPath.startsWith("/") ? nextPath : "/");
       return;
     }
 

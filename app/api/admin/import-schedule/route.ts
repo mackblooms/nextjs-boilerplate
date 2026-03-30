@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireSiteAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
@@ -18,7 +19,21 @@ const BASE = "https://api.sportsdata.io";
  */
 const ENDPOINT_PATH = "<PASTE_SPORTSDATAIO_TOURNAMENT_GAMES_PATH_HERE>";
 
-function toIso(d: any): string | null {
+type SportsDataImportedGame = {
+  GameID?: number | null;
+  HomeTeamID?: number | null;
+  AwayTeamID?: number | null;
+  Bracket?: string | null;
+  Region?: string | null;
+  Round?: number | null;
+  DateTimeUTC?: string | null;
+  DateTime?: string | null;
+  Day?: string | null;
+  Status?: string | null;
+  Season?: number | null;
+};
+
+function toIso(d: unknown): string | null {
   if (!d) return null;
   // SportsDataIO usually gives ISO strings already
   const s = String(d);
@@ -26,7 +41,7 @@ function toIso(d: any): string | null {
   return s;
 }
 
-function toDateOnly(d: any): string | null {
+function toDateOnly(d: unknown): string | null {
   const iso = toIso(d);
   return iso ? iso.slice(0, 10) : null;
 }
@@ -46,7 +61,7 @@ function mapRound(roundNum: number | null | undefined): string {
   }
 }
 
-async function fetchTournamentGames(): Promise<any[]> {
+async function fetchTournamentGames(): Promise<SportsDataImportedGame[]> {
   if (!KEY) throw new Error("SPORTS_DATA_IO_KEY is missing.");
   if (ENDPOINT_PATH.includes("<PASTE_")) {
     throw new Error("You must set ENDPOINT_PATH in import-schedule/route.ts.");
@@ -68,8 +83,11 @@ async function fetchTournamentGames(): Promise<any[]> {
   return Array.isArray(json) ? json : (json?.Games ?? []);
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    const auth = await requireSiteAdmin(req);
+    if ("response" in auth) return auth.response;
+
     const supabaseAdmin = getSupabaseAdmin();
 
     const games = await fetchTournamentGames();
@@ -96,7 +114,7 @@ export async function POST() {
     }
 
     // 2) Convert SportsData games -> rows for your games table
-    const upserts: any[] = [];
+    const upserts: Array<Record<string, string | number | null>> = [];
     let skippedMissingTeams = 0;
 
     for (const g of games) {
@@ -164,11 +182,10 @@ export async function POST() {
       upserted: upserts.length,
       skippedMissingTeams,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     return NextResponse.json(
-      { ok: false, error: e?.message ?? "Unknown error" },
+      { ok: false, error: e instanceof Error ? e.message : "Unknown error" },
       { status: 500 }
     );
   }
 }
-

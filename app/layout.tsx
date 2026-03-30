@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
+import AppDeepLinkHandler from "./components/AppDeepLinkHandler";
 import AppTopNav from "./components/AppTopNav";
 import InstructionsModal from "./components/InstructionsModal";
 import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
@@ -33,6 +34,16 @@ export const metadata: Metadata = {
   description: "bracketball pool for march madness",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#eef2f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1220" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +54,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${ibmPlexMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
+        <AppDeepLinkHandler />
         <AppTopNav />
         <Suspense fallback={null}>
           <InstructionsModal />
@@ -61,6 +73,8 @@ export default function RootLayout({
             <Link href="/terms">Terms of Service</Link>
             <span aria-hidden="true">|</span>
             <Link href="/privacy">Privacy Policy</Link>
+            <span aria-hidden="true">|</span>
+            <Link href="/support">Support</Link>
           </nav>
         </footer>
       </body>
