@@ -111,6 +111,7 @@ type ForecastEntry = {
   projected_add_most_likely: number;
   projected_rank_most_likely: number;
   expected_rank: number;
+  first_place_probability: number;
 };
 
 type PropagationTarget = {
@@ -311,7 +312,6 @@ function resolveForecastHorizonRound(games: GameRow[]) {
   for (const round of ROUND_SEQUENCE) {
     const roundGames = games.filter((game) => String(game.round ?? "").toUpperCase() === round);
     if (roundGames.length === 0) continue;
-    if (roundGames.some((game) => !game.winner_team_id)) return round;
   }
   return "CHIP";
 }
@@ -633,7 +633,9 @@ export async function GET(req: Request) {
     const pairProbabilities = await fetchPairProbabilities(localTeamIdByEspnTeamId);
     const horizonRound = resolveForecastHorizonRound(games);
     const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
-    const scopedGames = games.filter((game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder);
+    const scopedGames = games.filter(
+      (game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder,
+    );
 
     const currentScoringGames = scopedGames.map((game) => ({
       round: String(game.round ?? ""),
@@ -663,9 +665,11 @@ export async function GET(req: Request) {
 
     const expectedScoreAccumulator = new Map<string, number>();
     const expectedRankAccumulator = new Map<string, number>();
+    const firstPlaceCountByEntry = new Map<string, number>();
     for (const entryId of entryIds) {
       expectedScoreAccumulator.set(entryId, 0);
       expectedRankAccumulator.set(entryId, 0);
+      firstPlaceCountByEntry.set(entryId, 0);
     }
 
     const runs = Math.max(1, unresolvedGameCount > 0 ? monteCarloRuns : 1);
@@ -697,6 +701,9 @@ export async function GET(req: Request) {
           entryId,
           (expectedRankAccumulator.get(entryId) ?? 0) + (rankByEntry.get(entryId) ?? 0),
         );
+        if ((rankByEntry.get(entryId) ?? 0) === 1) {
+          firstPlaceCountByEntry.set(entryId, (firstPlaceCountByEntry.get(entryId) ?? 0) + 1);
+        }
       }
     }
 
@@ -732,6 +739,9 @@ export async function GET(req: Request) {
           projected_add_most_likely: projectedMostLikely - currentScore,
           projected_rank_most_likely: mostLikelyRankByEntryId.get(entryId) ?? 0,
           expected_rank: Number(((expectedRankAccumulator.get(entryId) ?? 0) / runs).toFixed(3)),
+          first_place_probability: Number(
+            ((((firstPlaceCountByEntry.get(entryId) ?? 0) / runs) * 100)).toFixed(1),
+          ),
         };
       })
       .sort((a, b) => b.expected_score - a.expected_score || a.entry_id.localeCompare(b.entry_id));
