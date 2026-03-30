@@ -186,7 +186,6 @@ export default function AppTopNav() {
   const [isCompact, setIsCompact] = useState(false);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
   const [dockExpanded, setDockExpanded] = useState(false);
@@ -407,7 +406,6 @@ export default function AppTopNav() {
     const onEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setDrawerOpen(false);
-      setSettingsOpen(false);
       setHelpOpen(false);
       setDockExpanded(false);
       setScrubActive(false);
@@ -481,7 +479,6 @@ export default function AppTopNav() {
     setActivePool(null);
     setProfileAvatarUrl(null);
     setDrawerOpen(false);
-    setSettingsOpen(false);
     setHelpOpen(false);
     setStoredActivePoolId(null);
 
@@ -499,7 +496,6 @@ export default function AppTopNav() {
 
   function openHowItWorksModal() {
     setDrawerOpen(false);
-    setSettingsOpen(false);
     setHelpOpen(false);
     window.dispatchEvent(new CustomEvent("bb:open-how-it-works"));
   }
@@ -690,7 +686,7 @@ export default function AppTopNav() {
             }}
           >
             <img
-              src="/bracketball-logo.jpg"
+              src="/bracketball-logo-mark.svg"
               alt="bracketball logo"
               style={{
                 width: isCompact ? 102 : 114,
@@ -925,16 +921,6 @@ export default function AppTopNav() {
               <Link href="/profile" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Profile
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setDrawerOpen(false);
-                  setSettingsOpen(true);
-                }}
-                style={drawerActionStyle}
-              >
-                Settings
-              </button>
               <button type="button" onClick={signOut} style={drawerActionStyle}>
                 Log out
               </button>
@@ -973,75 +959,26 @@ export default function AppTopNav() {
                 Privacy policy
               </Link>
             </section>
-          </aside>
-        </div>
-      ) : null}
 
-      {settingsOpen ? (
-        <div
-          role="presentation"
-          onClick={() => setSettingsOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.56)",
-            zIndex: 2000,
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-          }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-label="Settings"
-            onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(420px, 100%)",
-              border: "1px solid var(--border-color)",
-              borderRadius: 16,
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 12,
-              boxShadow: "var(--shadow-lg)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Settings</h2>
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(false)}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  padding: "6px 9px",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
-              >
-                Close
-              </button>
-            </div>
-
-            <div
+            <section
+              aria-label="Theme toggle"
               style={{
+                marginTop: "auto",
                 border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                background: "var(--surface-elevated)",
-                padding: 12,
+                borderRadius: 12,
+                background: "var(--surface)",
+                padding: "11px 12px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: 12,
               }}
             >
-              <div>
-                <div style={{ fontWeight: 900 }}>Dark mode</div>
-                <div style={{ fontSize: 13, opacity: 0.76 }}>
-                  Toggle the app theme for this device.
-                </div>
+              <div style={{ display: "grid", gap: 2 }}>
+                <strong style={{ fontSize: 13, letterSpacing: "0.03em" }}>Dark mode</strong>
+                <span style={{ fontSize: 12, opacity: 0.74 }}>
+                  Toggle app appearance
+                </span>
               </div>
               <button
                 type="button"
@@ -1053,9 +990,10 @@ export default function AppTopNav() {
                   height: 34,
                   borderRadius: 9999,
                   border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
+                  background: "var(--surface-muted)",
                   cursor: "pointer",
                   position: "relative",
+                  flexShrink: 0,
                 }}
               >
                 <span
@@ -1072,53 +1010,8 @@ export default function AppTopNav() {
                   }}
                 />
               </button>
-            </div>
-
-            <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                background: "var(--surface-elevated)",
-                padding: 12,
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <div style={{ fontWeight: 900 }}>Legal</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Link
-                  href="/terms"
-                  onClick={() => setSettingsOpen(false)}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 8,
-                    padding: "8px 10px",
-                    textDecoration: "none",
-                    color: "var(--foreground)",
-                    fontWeight: 700,
-                    background: "var(--surface)",
-                  }}
-                >
-                  Terms of Service
-                </Link>
-                <Link
-                  href="/privacy"
-                  onClick={() => setSettingsOpen(false)}
-                  style={{
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 8,
-                    padding: "8px 10px",
-                    textDecoration: "none",
-                    color: "var(--foreground)",
-                    fontWeight: 700,
-                    background: "var(--surface)",
-                  }}
-                >
-                  Privacy Policy
-                </Link>
-              </div>
-            </div>
-          </section>
+            </section>
+          </aside>
         </div>
       ) : null}
 
