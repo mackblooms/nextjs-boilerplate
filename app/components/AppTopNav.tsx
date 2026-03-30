@@ -194,6 +194,7 @@ export default function AppTopNav() {
 
   const holdTimerRef = useRef<number | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
+  const activePointerTypeRef = useRef<string | null>(null);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement | null>(null);
   const suppressClickRef = useRef(false);
@@ -556,6 +557,7 @@ export default function AppTopNav() {
     if (event.button !== 0 && event.pointerType === "mouse") return;
 
     activePointerIdRef.current = event.pointerId;
+    activePointerTypeRef.current = event.pointerType;
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const pointerIndex = pickDockIndex(event.clientX);
@@ -581,7 +583,10 @@ export default function AppTopNav() {
 
     clearHoldTimer();
 
-    if (scrubActive && shouldNavigate) {
+    const shouldNavigateFromClick =
+      shouldNavigate && !scrubActive && activePointerTypeRef.current === "mouse";
+
+    if ((scrubActive && shouldNavigate) || shouldNavigateFromClick) {
       suppressClickRef.current = true;
       navigateDockItem(scrubIndex, dockItems);
       window.setTimeout(() => {
@@ -593,6 +598,7 @@ export default function AppTopNav() {
     setScrubActive(false);
     setScrubIndex(null);
     activePointerIdRef.current = null;
+    activePointerTypeRef.current = null;
   }
 
   const topBarButtonStyle: CSSProperties = {
