@@ -686,7 +686,7 @@ export default function AppTopNav() {
             }}
           >
             <img
-              src="/bracketball-logo-mark.svg"
+              src="/bracketball-logo-mark.png"
               alt="bracketball logo"
               style={{
                 width: isCompact ? 102 : 114,
