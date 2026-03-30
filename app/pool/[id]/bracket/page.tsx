@@ -1576,14 +1576,14 @@ export default function BracketPage() {
                         scoreForDisplay(finalFourTopLive, "team1"),
                       )}
                     </div>
-                    <div style={{ gridColumn: 3, gridRow: 1 }}>
+                    <div style={{ gridColumn: 1, gridRow: 3 }}>
                       {renderSingleTeamBox(
                         finalFour[0]?.team2_id ?? null,
                         finalFour[0]?.winner_team_id ?? null,
                         scoreForDisplay(finalFourTopLive, "team2"),
                       )}
                     </div>
-                    <div style={{ gridColumn: 1, gridRow: 3 }}>
+                    <div style={{ gridColumn: 3, gridRow: 1 }}>
                       {renderSingleTeamBox(
                         finalFour[1]?.team1_id ?? null,
                         finalFour[1]?.winner_team_id ?? null,
