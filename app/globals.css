@@ -235,6 +235,13 @@ a {
     color 140ms ease;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):not([aria-disabled="true"]):hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
