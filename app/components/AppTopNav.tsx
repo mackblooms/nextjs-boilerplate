@@ -193,9 +193,9 @@ export default function AppTopNav() {
   const [scrubActive, setScrubActive] = useState(false);
   const [scrubIndex, setScrubIndex] = useState<number | null>(null);
   const isAutoHidden = useAutoHideOnScroll({
-    scrollDelta: isCompact ? 7 : 10,
-    showAtTop: 58,
-    hideAfter: isCompact ? 86 : 110,
+    scrollDelta: isCompact ? 11 : 14,
+    showAtTop: 72,
+    hideAfter: isCompact ? 110 : 146,
   });
 
   const holdTimerRef = useRef<number | null>(null);
@@ -652,9 +652,10 @@ export default function AppTopNav() {
           zIndex: 1200,
           paddingInline: isCompact ? 10 : 18,
           pointerEvents: "none",
-          transform: isChromeHidden ? "translateY(calc(-100% - 22px))" : "translateY(0)",
-          opacity: isChromeHidden ? 0 : 1,
-          transition: "transform 200ms ease, opacity 160ms ease",
+          transform: isChromeHidden ? "translateY(calc(-100% - 14px))" : "translateY(0)",
+          opacity: isChromeHidden ? 0.12 : 1,
+          transition:
+            "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease",
         }}
       >
         <div
@@ -759,9 +760,10 @@ export default function AppTopNav() {
           background: "var(--surface-glass)",
           boxShadow: dockExpanded ? "var(--shadow-lg)" : "var(--shadow-md)",
           backdropFilter: "blur(14px) saturate(145%)",
-          transform: `translateY(${isChromeHidden ? 120 : 0}%) scale(${dockExpanded ? 1.04 : 1})`,
-          opacity: isChromeHidden ? 0 : 1,
-          transition: "transform 200ms ease, opacity 160ms ease, box-shadow 160ms ease",
+          transform: `translateY(${isChromeHidden ? 108 : 0}%) scale(${dockExpanded ? 1.04 : 1})`,
+          opacity: isChromeHidden ? 0.08 : 1,
+          transition:
+            "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, box-shadow 180ms ease",
           touchAction: "none",
           userSelect: "none",
           pointerEvents: isChromeHidden ? "none" : "auto",
