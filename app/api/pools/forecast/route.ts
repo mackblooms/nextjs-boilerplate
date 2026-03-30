@@ -111,7 +111,6 @@ type ForecastEntry = {
   projected_add_most_likely: number;
   projected_rank_most_likely: number;
   expected_rank: number;
-  first_place_probability: number;
 };
 
 type PropagationTarget = {
@@ -176,9 +175,9 @@ function nextTargetForWinner(game: MutableGame): PropagationTarget | null {
 
   if (round === "E8") {
     const region = norm(game.region);
-    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team1_id" };
+    if (region === "east") return { round: "F4", region: null, slot: 1, side: "team1_id" };
     if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
-    if (region === "east") return { round: "F4", region: null, slot: 2, side: "team1_id" };
+    if (region === "west") return { round: "F4", region: null, slot: 2, side: "team1_id" };
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
     return null;
   }
@@ -665,11 +664,9 @@ export async function GET(req: Request) {
 
     const expectedScoreAccumulator = new Map<string, number>();
     const expectedRankAccumulator = new Map<string, number>();
-    const firstPlaceCountByEntry = new Map<string, number>();
     for (const entryId of entryIds) {
       expectedScoreAccumulator.set(entryId, 0);
       expectedRankAccumulator.set(entryId, 0);
-      firstPlaceCountByEntry.set(entryId, 0);
     }
 
     const runs = Math.max(1, unresolvedGameCount > 0 ? monteCarloRuns : 1);
@@ -701,9 +698,6 @@ export async function GET(req: Request) {
           entryId,
           (expectedRankAccumulator.get(entryId) ?? 0) + (rankByEntry.get(entryId) ?? 0),
         );
-        if ((rankByEntry.get(entryId) ?? 0) === 1) {
-          firstPlaceCountByEntry.set(entryId, (firstPlaceCountByEntry.get(entryId) ?? 0) + 1);
-        }
       }
     }
 
@@ -739,9 +733,6 @@ export async function GET(req: Request) {
           projected_add_most_likely: projectedMostLikely - currentScore,
           projected_rank_most_likely: mostLikelyRankByEntryId.get(entryId) ?? 0,
           expected_rank: Number(((expectedRankAccumulator.get(entryId) ?? 0) / runs).toFixed(3)),
-          first_place_probability: Number(
-            ((((firstPlaceCountByEntry.get(entryId) ?? 0) / runs) * 100)).toFixed(1),
-          ),
         };
       })
       .sort((a, b) => b.expected_score - a.expected_score || a.entry_id.localeCompare(b.entry_id));

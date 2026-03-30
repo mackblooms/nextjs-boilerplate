@@ -169,7 +169,6 @@ type ForecastEntry = {
   projected_add_most_likely: number;
   projected_rank_most_likely: number;
   expected_rank: number;
-  first_place_probability: number;
 };
 
 type ForecastRoundCode = "R64" | "R32" | "S16" | "E8" | "F4" | "CHIP";
@@ -1658,11 +1657,11 @@ export default function LeaderboardPage() {
                 <div>{forecastModeOn ? (isCompact ? "Proj" : "Proj Rank") : "Rank"}</div>
                 <div>Player</div>
                 <div style={{ textAlign: "right" }}>
-                  {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
+                  {forecastModeOn ? (isCompact ? "Exp" : "Expected") : "Score"}
                 </div>
               </div>
 
-              {displayRows.map(({ row: r, forecast, displayRank, displayScore }) => {
+              {displayRows.map(({ row: r, displayRank, displayScore }) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
                 const canViewTeams = draftLocked || r.user_id === myUserId;
                 const canViewBreakdown = canViewTeams && Boolean(breakdownByEntry[r.entry_id]);
@@ -1868,17 +1867,6 @@ export default function LeaderboardPage() {
                         <div style={{ fontWeight: 900, fontSize: 18 }}>
                           {forecastModeOn ? formatExpectedScore(displayScore) : r.total_score}
                         </div>
-                        {forecastModeOn && forecast ? (
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 800,
-                              opacity: 0.86,
-                            }}
-                          >
-                            1st: {forecast.first_place_probability.toFixed(1)}%
-                          </div>
-                        ) : null}
                         <div
                           style={{
                             fontSize: 12,
@@ -2100,10 +2088,6 @@ export default function LeaderboardPage() {
               <p style={{ margin: 0 }}>
                 It blends current pool scores with live game context and matchup strength signals,
                 then updates as games progress.
-              </p>
-              <p style={{ margin: 0 }}>
-                1st place % is the share of forecast simulations where that entry finishes in
-                first place, including ties for first.
               </p>
               <p style={{ margin: 0, opacity: 0.82 }}>
                 These numbers are not final standings and can move quickly with any upset.

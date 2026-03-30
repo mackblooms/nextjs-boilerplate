@@ -207,8 +207,8 @@ function mapDisplayOrderToSlot(
 
   if (roundCode === "F4") {
     const b = norm(bracketValue);
-    if (b.includes("south") && b.includes("west")) return 1;
-    if (b.includes("east") && b.includes("midwest")) return 2;
+    if (b.includes("east") && b.includes("south")) return 1;
+    if (b.includes("west") && b.includes("midwest")) return 2;
     return null;
   }
 
