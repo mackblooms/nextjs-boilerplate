@@ -1649,7 +1649,7 @@ function HomeContent() {
             <div className="landing-action-row">
               <Link
                 href={loginHref}
-                className="ui-btn ui-btn--md ui-btn--primary landing-action-button"
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
                 onClick={() =>
                   trackEvent({
                     eventName: "home_cta_click",
@@ -2034,7 +2034,7 @@ function HomeFallback() {
             bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
           </p>
           <div className="landing-action-row">
-            <Link href="/login" className="ui-btn ui-btn--md ui-btn--primary landing-action-button">
+            <Link href="/login" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
               Login / Sign up
             </Link>
             <Link href="/how-it-works" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
