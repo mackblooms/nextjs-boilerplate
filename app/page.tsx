@@ -2,6 +2,7 @@
 
 import { type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
@@ -1631,80 +1632,99 @@ function HomeContent() {
         padding: 16,
       }}
     >
-      <div
-        style={{
-          marginBottom: 16,
-          display: "grid",
-          gap: 10,
-        }}
-      >
-        {isAuthenticated ? (
-          <div
-            className="home-pool-context"
-            style={{
-              margin: 0,
-              fontSize: 14,
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <span>
-              {scoreViewMode === "my-teams"
-                ? "Showing your selected teams from"
-                : "Highlighting your teams from"}
-            </span>
-            <select
-              id="home-pool-selector"
-              value={selectedPoolId}
-              onChange={(event) => setSelectedPoolId(event.target.value)}
-              disabled={memberPools.length === 0}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-                minHeight: 38,
-              }}
-            >
-              {memberPools.length === 0 ? (
-                <option value="">no joined pools</option>
-              ) : (
-                memberPools.map((pool) => (
-                  <option key={pool.id} value={pool.id}>
-                    {pool.name}
-                  </option>
-                ))
-              )}
-            </select>
-            <span>.</span>
+      <section className="page-surface home-brand-hero" aria-label="bracketball overview">
+        <div className="home-brand-main">
+          <div className="home-brand-logo-row">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={234}
+              height={64}
+              className="home-brand-mark"
+              priority
+            />
+            <span className="home-brand-chip">beta</span>
           </div>
-        ) : (
-          <div
-            className="home-cta-row"
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <Link
-              href="/how-it-works"
-              className="home-cta-button"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: Boolean(isAuthenticated) },
-                })
-              }
-            >
-              How it works
-            </Link>
-            {isAuthenticated === false ? (
+
+          <h1 className="home-brand-title">your march madness command center</h1>
+          <p className="home-brand-copy">
+            Run private pools, draft teams by value, and track every score update in one place.
+          </p>
+
+          {isAuthenticated === true ? (
+            <>
+              <div
+                className="home-pool-context"
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span>
+                  {scoreViewMode === "my-teams"
+                    ? "Showing your selected teams from"
+                    : "Highlighting your teams from"}
+                </span>
+                <select
+                  id="home-pool-selector"
+                  value={selectedPoolId}
+                  onChange={(event) => setSelectedPoolId(event.target.value)}
+                  disabled={memberPools.length === 0}
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    border: "1px solid var(--border-color)",
+                    background: "var(--surface-muted)",
+                    fontWeight: 700,
+                    minHeight: 38,
+                  }}
+                >
+                  {memberPools.length === 0 ? (
+                    <option value="">no joined pools</option>
+                  ) : (
+                    memberPools.map((pool) => (
+                      <option key={pool.id} value={pool.id}>
+                        {pool.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <span>.</span>
+              </div>
+
+              <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Link href="/pools" className="home-cta-button" style={buttonStyle}>
+                  Open pools
+                </Link>
+                <Link href="/pools/new" className="home-cta-button" style={buttonStyle}>
+                  Create pool
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Link
+                href="/how-it-works"
+                className="home-cta-button"
+                style={buttonStyle}
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: {
+                      cta: "how_it_works",
+                      has_invite: Boolean(invitePoolId),
+                      logged_in: Boolean(isAuthenticated),
+                    },
+                  })
+                }
+              >
+                How it works
+              </Link>
               <Link
                 href={loginHref}
                 className="home-cta-button"
@@ -1716,30 +1736,55 @@ function HomeContent() {
                   })
                 }
               >
-                Login / Sign up
+                {invitePoolId ? "Join invited pool" : "Login / Sign up"}
               </Link>
-            ) : null}
-          </div>
-        )}
+            </div>
+          )}
 
-        {isAuthenticated === true && memberPools.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-            Join a pool to highlight your drafted teams on the scoreboard.
+          <p className="home-brand-note" data-tone={invitePoolId ? "invite" : "default"}>
+            {invitePoolId
+              ? `You are being invited to join ${invitePoolName ?? "this pool"}.`
+              : "Built for fast pool setup, sharper drafting decisions, and cleaner game-day tracking."}
           </p>
-        ) : null}
+        </div>
 
-        {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-            You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
-          </p>
-        ) : null}
+        <div className="home-brand-stats" aria-label="Platform highlights">
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">Live scoreboard</h2>
+            <p className="home-brand-stat-copy">
+              Track recent finals and live or upcoming games with direct box score links.
+            </p>
+          </article>
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">Draft workspace</h2>
+            <p className="home-brand-stat-copy">
+              Save up to {MAX_HOME_DRAFTS} draft builds and compare how each one performs by pool.
+            </p>
+          </article>
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">
+              {isAuthenticated === true ? "Personalized view" : "Private pools"}
+            </h2>
+            <p className="home-brand-stat-copy">
+              {isAuthenticated === true
+                ? "Highlight your drafted teams across scoreboards so updates relevant to you stand out."
+                : "Create invite-only pools and bring your group into one shared leaderboard."}
+            </p>
+          </article>
+        </div>
+      </section>
 
-        {invitePoolId ? (
-          <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
-            You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
-          </p>
-        ) : null}
-      </div>
+      {isAuthenticated === true && memberPools.length === 0 ? (
+        <p style={{ margin: "0 0 12px", fontSize: 14, opacity: 0.82 }}>
+          Join a pool to highlight your drafted teams on the scoreboard.
+        </p>
+      ) : null}
+
+      {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
+        <p style={{ margin: "0 0 12px", fontSize: 14, opacity: 0.82 }}>
+          You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
+        </p>
+      ) : null}
 
       <div className="home-layout">
         <div className="home-scores-left">
@@ -2003,42 +2048,77 @@ function HomeFallback() {
         padding: 16,
       }}
     >
-      <div
-        className="home-cta-row"
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <Link
-          href="/how-it-works"
-          className="home-cta-button"
-          style={buttonStyle}
-          onClick={() =>
-            trackEvent({
-              eventName: "home_cta_click",
-              metadata: { cta: "how_it_works", has_invite: false },
-            })
-          }
-        >
-          How it works
-        </Link>
-        <Link
-          href="/login"
-          className="home-cta-button"
-          style={buttonStyle}
-          onClick={() =>
-            trackEvent({
-              eventName: "home_cta_click",
-              metadata: { cta: "login_signup", has_invite: false },
-            })
-          }
-        >
-          Login / Sign up
-        </Link>
-      </div>
+      <section className="page-surface home-brand-hero" aria-label="bracketball overview">
+        <div className="home-brand-main">
+          <div className="home-brand-logo-row">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={234}
+              height={64}
+              className="home-brand-mark"
+              priority
+            />
+            <span className="home-brand-chip">beta</span>
+          </div>
+          <h1 className="home-brand-title">your march madness command center</h1>
+          <p className="home-brand-copy">
+            Run private pools, draft teams by value, and track every score update in one place.
+          </p>
+          <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <Link
+              href="/how-it-works"
+              className="home-cta-button"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: false },
+                })
+              }
+            >
+              How it works
+            </Link>
+            <Link
+              href="/login"
+              className="home-cta-button"
+              style={buttonStyle}
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "login_signup", has_invite: false },
+                })
+              }
+            >
+              Login / Sign up
+            </Link>
+          </div>
+          <p className="home-brand-note" data-tone="default">
+            Built for fast pool setup, sharper drafting decisions, and cleaner game-day tracking.
+          </p>
+        </div>
+
+        <div className="home-brand-stats" aria-label="Platform highlights">
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">Live scoreboard</h2>
+            <p className="home-brand-stat-copy">
+              Track recent finals and live or upcoming games with direct box score links.
+            </p>
+          </article>
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">Draft workspace</h2>
+            <p className="home-brand-stat-copy">
+              Save up to {MAX_HOME_DRAFTS} draft builds and compare how each one performs by pool.
+            </p>
+          </article>
+          <article className="home-brand-stat-card">
+            <h2 className="home-brand-stat-title">Private pools</h2>
+            <p className="home-brand-stat-copy">
+              Create invite-only pools and bring your group into one shared leaderboard.
+            </p>
+          </article>
+        </div>
+      </section>
 
       <div className="home-layout">
         <div className="home-scores-left">
