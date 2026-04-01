@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
+import { getInvitePoolIdFromNextPath } from "../../../../lib/poolInvite";
 import {
   scoreEntries,
   scoreTeamWinsDetailed,
@@ -561,6 +562,7 @@ export default function LeaderboardPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const poolId = params.id;
+  const redirectingToLoginRef = useRef(false);
   const [isCompact, setIsCompact] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -598,6 +600,25 @@ export default function LeaderboardPage() {
 
   const currentSeason = new Date().getUTCFullYear();
 
+  const redirectToLogin = useCallback(() => {
+    if (redirectingToLoginRef.current) return;
+    redirectingToLoginRef.current = true;
+
+    const fallbackPath = `/pool/${poolId}/leaderboard`;
+    const nextPath =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : fallbackPath;
+    const safeNextPath = nextPath.startsWith("/") ? nextPath : fallbackPath;
+    const params = new URLSearchParams({ next: safeNextPath });
+    const invitePoolId = getInvitePoolIdFromNextPath(safeNextPath);
+    if (invitePoolId) {
+      params.set("invitePoolId", invitePoolId);
+    }
+
+    router.replace(`/login?${params.toString()}`);
+  }, [poolId, router]);
+
   async function getAccessToken() {
     const { data } = await supabase.auth.getSession();
     return data.session?.access_token ?? null;
@@ -606,7 +627,8 @@ export default function LeaderboardPage() {
   async function loadArchiveSeason(season: number) {
     const token = await getAccessToken();
     if (!token) {
-      setArchiveMsg("Session expired. Log in again.");
+      setArchiveMsg("Session expired. Redirecting to login...");
+      redirectToLogin();
       return;
     }
 
@@ -650,7 +672,8 @@ export default function LeaderboardPage() {
     const token = await getAccessToken();
     if (!token) {
       setArchiveOpen(true);
-      setArchiveMsg("Session expired. Log in again.");
+      setArchiveMsg("Session expired. Redirecting to login...");
+      redirectToLogin();
       return;
     }
 
@@ -704,7 +727,8 @@ export default function LeaderboardPage() {
   async function saveCurrentSeasonArchive() {
     const token = await getAccessToken();
     if (!token) {
-      setArchiveSaveMsg("Session expired. Log in again.");
+      setArchiveSaveMsg("Session expired. Redirecting to login...");
+      redirectToLogin();
       return;
     }
 
@@ -780,8 +804,9 @@ export default function LeaderboardPage() {
       const { data: authData } = await supabase.auth.getUser();
       if (!authData.user) {
         setMemberPools([]);
-        setMsg("Please log in first.");
+        setMsg("Session expired. Redirecting to login...");
         setLoading(false);
+        redirectToLogin();
         return;
       }
       const user = authData.user;
@@ -1393,7 +1418,7 @@ export default function LeaderboardPage() {
     };
 
     void load();
-  }, [poolId, refreshTick]);
+  }, [poolId, refreshTick, redirectToLogin]);
 
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;

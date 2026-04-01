@@ -1,13 +1,30 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 import { UiButton, UiInput } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
+
+function sanitizeNextPath(nextPath: string | null) {
+  if (!nextPath) return "/";
+  return nextPath.startsWith("/") ? nextPath : "/";
+}
+
+function describeDestination(nextPath: string) {
+  if (nextPath === "/") return "home";
+  if (/^\/pool\/[^/?#]+\/leaderboard(?:\/|$)/.test(nextPath)) return "the leaderboard";
+  if (/^\/pool\/[^/?#]+\/draft(?:\/|$)/.test(nextPath)) return "the draft room";
+  if (/^\/pool\/[^/?#]+\/bracket(?:\/|$)/.test(nextPath)) return "the bracket";
+  if (/^\/pool\/[^/?#]+(?:\/|$)/.test(nextPath)) return "your pool";
+  if (nextPath.startsWith("/pools")) return "your pools";
+  if (nextPath.startsWith("/profile")) return "your profile";
+  return "your account";
+}
 
 export default function LoginClient() {
   const [mode, setMode] = useState<Mode>("sign-in");
@@ -17,14 +34,12 @@ export default function LoginClient() {
   const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [legalModalOpen, setLegalModalOpen] = useState(false);
   const [continueSignUpAfterLegal, setContinueSignUpAfterLegal] = useState(false);
-  const [status, setStatus] = useState<
-    "idle" | "sending" | "error" | "success"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
   const [msg, setMsg] = useState("");
 
-  const next =
+  const nextPath =
     typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("next") || "/"
+      ? sanitizeNextPath(new URLSearchParams(window.location.search).get("next"))
       : "/";
 
   const invitePoolId =
@@ -32,16 +47,18 @@ export default function LoginClient() {
       ? resolveInvitePoolId(new URLSearchParams(window.location.search))
       : null;
 
-  const profileSetupNext =
-    (() => {
-      const params = new URLSearchParams({
-        onboarding: "1",
-        next,
-      });
-      if (invitePoolId) params.set("invitePoolId", invitePoolId);
-      return `/profile?${params.toString()}`;
-    })();
-  const signInNext = invitePoolId ? `/pool/${invitePoolId}` : next;
+  const destinationLabel = useMemo(() => describeDestination(nextPath), [nextPath]);
+
+  const profileSetupNext = useMemo(() => {
+    const params = new URLSearchParams({
+      onboarding: "1",
+      next: nextPath,
+    });
+    if (invitePoolId) params.set("invitePoolId", invitePoolId);
+    return `/profile?${params.toString()}`;
+  }, [invitePoolId, nextPath]);
+
+  const signInNext = invitePoolId ? `/pool/${invitePoolId}` : nextPath;
 
   useEffect(() => {
     if (!legalModalOpen) return;
@@ -58,8 +75,8 @@ export default function LoginClient() {
     };
   }, [legalModalOpen]);
 
-  function buildAuthCallbackUrl(nextPath: string) {
-    const params = new URLSearchParams({ next: nextPath });
+  function buildAuthCallbackUrl(nextTargetPath: string) {
+    const params = new URLSearchParams({ next: nextTargetPath });
     if (invitePoolId) params.set("invitePoolId", invitePoolId);
     return `${window.location.origin}/auth/callback?${params.toString()}`;
   }
@@ -140,9 +157,7 @@ export default function LoginClient() {
       return;
     }
 
-    const hasIdentity = Boolean(
-      data.user?.identities && data.user.identities.length > 0,
-    );
+    const hasIdentity = Boolean(data.user?.identities && data.user.identities.length > 0);
     const hasSession = Boolean(data.session);
 
     setStatus("success");
@@ -153,9 +168,7 @@ export default function LoginClient() {
     }
 
     if (hasIdentity) {
-      setMsg(
-        "Account created. We sent a confirmation email. Open it to activate your account.",
-      );
+      setMsg("Account created. We sent a confirmation email. Open it to activate your account.");
     } else {
       setMsg(
         "If an account exists for that email, Supabase may not return details for security reasons. Try signing in, or use 'Resend confirmation'.",
@@ -228,183 +241,210 @@ export default function LoginClient() {
   }
 
   return (
-    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
-        Sign in
-      </h1>
-      <p style={{ marginBottom: 24 }}>
-        Use email + password so you do not need a magic link every time.
-      </p>
+    <main className="page-shell login-shell">
+      <section className="page-surface login-brand-panel">
+        <div className="login-brand-mark-wrap">
+          <Image
+            src="/bracketball-logo-mark.png"
+            alt="bracketball logo"
+            width={228}
+            height={64}
+            className="login-brand-mark"
+            priority
+          />
+        </div>
+        <h1 className="login-hero-title">draft smarter. climb faster.</h1>
+        <p className="login-hero-copy">
+          Build private March Madness pools, draft teams by value, and track every score update in
+          real time.
+        </p>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        <UiButton
-          type="button"
-          onClick={() => {
-            setMode("sign-in");
-            closeLegalModal();
-            setMsg("");
-            setStatus("idle");
-          }}
-          variant={mode === "sign-in" ? "primary" : "ghost"}
-          fullWidth
-          style={{
-            flex: 1,
-          }}
+        <div
+          className="login-context-card"
+          data-tone={invitePoolId ? "invite" : "default"}
         >
-          Sign in
-        </UiButton>
-        <UiButton
-          type="button"
-          onClick={() => {
-            setMode("sign-up");
-            closeLegalModal();
-            setMsg("");
-            setStatus("idle");
-          }}
-          variant={mode === "sign-up" ? "primary" : "ghost"}
-          fullWidth
-          style={{
-            flex: 1,
-          }}
-        >
-          Create account
-        </UiButton>
-      </div>
+          {invitePoolId
+            ? "You were invited to a pool. Sign in to join and lock in your bracket."
+            : `Sign in to continue to ${destinationLabel}.`}
+        </div>
 
-      <form onSubmit={onSubmit}>
-        <UiInput
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-          style={{ marginBottom: 12 }}
-        />
+        <ul className="login-feature-list" aria-label="Platform highlights">
+          <li className="login-feature-item">Live leaderboard refresh and projected finishes.</li>
+          <li className="login-feature-item">Draft strategy mode with team value and popularity insight.</li>
+          <li className="login-feature-item">Private pool invites with secure account-based access.</li>
+        </ul>
 
-        <UiInput
-          type="password"
-          placeholder={mode === "sign-up" ? "New password" : "Password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={PASSWORD_MIN_LENGTH}
-          autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-          style={{ marginBottom: 12 }}
-        />
+        <div className="login-brand-links">
+          <Link href="/how-it-works">How it works</Link>
+          <span aria-hidden="true">|</span>
+          <Link href="/support">Support</Link>
+          <span aria-hidden="true">|</span>
+          <Link href="/terms">Rules + legal</Link>
+        </div>
+      </section>
 
-        {mode === "sign-up" ? (
+      <section className="page-card login-form-card">
+        <h2 className="login-form-title">
+          {mode === "sign-up" ? "Create your account" : "Welcome back"}
+        </h2>
+        <p className="page-subtitle login-form-subtitle">
+          {mode === "sign-up"
+            ? "Create a password so you can sign in quickly from any device."
+            : "Use email + password so you do not need a magic link every time."}
+        </p>
+
+        <div className="login-mode-toggle">
+          <UiButton
+            type="button"
+            onClick={() => {
+              setMode("sign-in");
+              closeLegalModal();
+              setMsg("");
+              setStatus("idle");
+            }}
+            variant={mode === "sign-in" ? "primary" : "ghost"}
+            fullWidth
+          >
+            Sign in
+          </UiButton>
+          <UiButton
+            type="button"
+            onClick={() => {
+              setMode("sign-up");
+              closeLegalModal();
+              setMsg("");
+              setStatus("idle");
+            }}
+            variant={mode === "sign-up" ? "primary" : "ghost"}
+            fullWidth
+          >
+            Create account
+          </UiButton>
+        </div>
+
+        <form onSubmit={onSubmit} className="login-form-fields">
+          <UiInput
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+
           <UiInput
             type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder={mode === "sign-up" ? "New password" : "Password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
             minLength={PASSWORD_MIN_LENGTH}
-            autoComplete="new-password"
-            style={{ marginBottom: 12 }}
+            autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
           />
+
+          {mode === "sign-up" ? (
+            <UiInput
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+            />
+          ) : null}
+
+          {mode === "sign-up" ? (
+            <div className="login-signup-extras">
+              <UiButton
+                type="button"
+                onClick={onGeneratePassword}
+                disabled={status === "sending"}
+                variant="ghost"
+                fullWidth
+              >
+                Generate strong password
+              </UiButton>
+              <div
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  background: acceptedLegal ? "var(--success-bg)" : "var(--surface-muted)",
+                  display: "grid",
+                  gap: 6,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700 }}>
+                  {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
+                </div>
+                <UiButton
+                  type="button"
+                  onClick={() => openLegalModal(false)}
+                  disabled={status === "sending"}
+                  size="sm"
+                  style={{
+                    justifySelf: "start",
+                  }}
+                >
+                  {acceptedLegal ? "Review agreement" : "Review and agree"}
+                </UiButton>
+              </div>
+            </div>
+          ) : null}
+
+          <UiButton
+            type="submit"
+            disabled={status === "sending"}
+            variant="primary"
+            size="lg"
+            fullWidth
+          >
+            {status === "sending" ? "Working..." : mode === "sign-up" ? "Create account" : "Sign in"}
+          </UiButton>
+        </form>
+
+        {mode === "sign-in" ? (
+          <UiButton
+            type="button"
+            onClick={sendPasswordReset}
+            disabled={status === "sending"}
+            variant="ghost"
+            fullWidth
+            style={{ marginTop: 10 }}
+          >
+            Forgot password?
+          </UiButton>
         ) : null}
 
         {mode === "sign-up" ? (
-          <div
-            style={{
-              display: "grid",
-              gap: 10,
-              marginBottom: 12,
-            }}
+          <UiButton
+            type="button"
+            onClick={resendConfirmation}
+            disabled={status === "sending" || !email}
+            variant="ghost"
+            fullWidth
+            style={{ marginTop: 10 }}
           >
-            <UiButton
-              type="button"
-              onClick={onGeneratePassword}
-              disabled={status === "sending"}
-              variant="ghost"
-              fullWidth
-            >
-              Generate strong password
-            </UiButton>
-            <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                padding: "10px 12px",
-                background: acceptedLegal ? "var(--success-bg)" : "var(--surface-muted)",
-                display: "grid",
-                gap: 6,
-              }}
-            >
-              <div style={{ fontSize: 13, fontWeight: 700 }}>
-                {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
-              </div>
-              <UiButton
-                type="button"
-                onClick={() => openLegalModal(false)}
-                disabled={status === "sending"}
-                size="sm"
-                style={{
-                  justifySelf: "start",
-                }}
-              >
-                {acceptedLegal ? "Review agreement" : "Review and agree"}
-              </UiButton>
-            </div>
-          </div>
+            Resend confirmation email
+          </UiButton>
         ) : null}
 
-        <UiButton
-          type="submit"
-          disabled={status === "sending"}
-          variant="primary"
-          size="lg"
-          fullWidth
-        >
-          {status === "sending"
-            ? "Working..."
-            : mode === "sign-up"
-              ? "Create account"
-              : "Sign in"}
-        </UiButton>
-      </form>
+        {process.env.NODE_ENV !== "production" ? (
+          <p style={{ marginTop: 12, opacity: 0.78, fontSize: 13 }}>
+            Local setup note: configure Supabase Email provider and enable Confirm email.
+          </p>
+        ) : null}
 
-      {mode === "sign-in" ? (
-        <UiButton
-          type="button"
-          onClick={sendPasswordReset}
-          disabled={status === "sending"}
-          variant="ghost"
-          fullWidth
-          style={{
-            marginTop: 10,
-          }}
-        >
-          Forgot password?
-        </UiButton>
-      ) : null}
-
-      {mode === "sign-up" ? (
-        <UiButton
-          type="button"
-          onClick={resendConfirmation}
-          disabled={status === "sending" || !email}
-          variant="ghost"
-          fullWidth
-          style={{
-            marginTop: 10,
-          }}
-        >
-          Resend confirmation email
-        </UiButton>
-      ) : null}
-
-      <p style={{ marginTop: 12, opacity: 0.8, fontSize: 14 }}>
-        For confirmation emails and password resets to send, Supabase must have
-        Email provider configured and &quot;Confirm email&quot; enabled in Auth
-        settings.
-      </p>
-
-      {msg ? (
-        <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p>
-      ) : null}
+        {msg ? (
+          <p
+            className="login-status-message"
+            data-tone={status === "error" ? "error" : status === "success" ? "success" : "neutral"}
+          >
+            {msg}
+          </p>
+        ) : null}
+      </section>
 
       {mode === "sign-up" && legalModalOpen ? (
         <div
@@ -438,13 +478,10 @@ export default function LoginClient() {
               style={{
                 padding: "14px 16px",
                 borderBottom: "1px solid var(--border-color)",
-                background:
-                  "linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%)",
+                background: "linear-gradient(135deg, var(--surface-elevated) 0%, var(--surface) 100%)",
               }}
             >
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
-                Before you create your account
-              </h2>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Before you create your account</h2>
               <p style={{ margin: "6px 0 0", fontSize: 14, opacity: 0.82, lineHeight: 1.4 }}>
                 Please review and accept the legal terms for using bracketball.
               </p>
@@ -524,11 +561,7 @@ export default function LoginClient() {
               </label>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
-                <UiButton
-                  type="button"
-                  onClick={closeLegalModal}
-                  disabled={status === "sending"}
-                >
+                <UiButton type="button" onClick={closeLegalModal} disabled={status === "sending"}>
                   Not now
                 </UiButton>
                 <UiButton
@@ -547,4 +580,3 @@ export default function LoginClient() {
     </main>
   );
 }
-
