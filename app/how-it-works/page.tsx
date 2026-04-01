@@ -1,9 +1,13 @@
-import Link from "next/link";
 import HowItWorksRulesContent from "../components/HowItWorksRulesContent";
+import BackArrowButton from "../components/BackArrowButton";
 
 export default function HowItWorksPage() {
   return (
     <main className="page-shell legal-doc" style={{ maxWidth: 900 }}>
+      <div className="back-arrow-row">
+        <BackArrowButton fallbackHref="/" />
+      </div>
+
       <h1 className="page-title" style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
         bracketball: How It Works
       </h1>
@@ -14,21 +18,6 @@ export default function HowItWorksPage() {
 
       <HowItWorksRulesContent />
 
-      <div style={{ marginTop: 30 }}>
-        <Link
-          href="/"
-          style={{
-            display: "inline-block",
-            padding: "10px 12px",
-            border: "1px solid var(--border-color)",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 900,
-          }}
-        >
-          Back to Home
-        </Link>
-      </div>
     </main>
   );
 }

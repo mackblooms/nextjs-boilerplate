@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
+import BackArrowButton from "../components/BackArrowButton";
 import { UiButton, UiInput } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
@@ -242,6 +243,10 @@ export default function LoginClient() {
 
   return (
     <main className="page-shell login-shell">
+      <div className="back-arrow-row login-back-row">
+        <BackArrowButton fallbackHref="/" />
+      </div>
+
       <section className="page-surface login-brand-panel">
         <div className="login-brand-mark-wrap">
           <Image

@@ -1562,10 +1562,6 @@ function HomeContent() {
     </div>
   );
   const homeDraftCountLabel = `${homeDrafts.length}/${MAX_HOME_DRAFTS} drafts created`;
-  const liveNowCount = scores.reduce((count, game) => (game.state === "LIVE" ? count + 1 : count), 0);
-  const upcomingCount = scores.reduce((count, game) => (game.state === "UPCOMING" ? count + 1 : count), 0);
-  const finalCount = scores.reduce((count, game) => (game.state === "FINAL" ? count + 1 : count), 0);
-
   const toggleDraftPools = (draftId: string) => {
     setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
   };
@@ -1620,87 +1616,62 @@ function HomeContent() {
       <main
         className="page-shell home-page-shell home-landing-shell"
         style={{
-          maxWidth: 1240,
-          margin: "24px auto",
-          padding: 12,
+          maxWidth: 920,
+          margin: "10px auto 22px",
+          padding: 8,
         }}
       >
-        <section className="page-surface landing-hero" aria-label="bracketball landing">
-          <header className="landing-topbar" aria-label="Landing actions">
-            <Link
-              href="/how-it-works"
-              className="landing-topbar-pill"
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
-                })
-              }
-            >
-              How it works
-            </Link>
+        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
+          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={206}
+              height={58}
+              className="landing-topbar-mark"
+              priority
+            />
+          </Link>
+        </header>
 
-            <Link href="/" className="landing-topbar-logo" aria-label="Go to bracketball home">
-              <Image
-                src="/bracketball-logo-mark.png"
-                alt="bracketball logo"
-                width={196}
-                height={56}
-                className="landing-topbar-mark"
-                priority
-              />
-            </Link>
-
-            <Link
-              href={loginHref}
-              className="landing-topbar-pill landing-topbar-pill--primary"
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                })
-              }
-            >
-              {invitePoolId ? "Join pool" : "Login / Sign up"}
-            </Link>
-          </header>
-
-          <div className="landing-hero-grid">
-            <div className="landing-hero-main">
-              <span className="landing-kicker">March Madness Pools</span>
-              <h1 className="landing-title">high-energy competition. clean premium control.</h1>
-              <p className="landing-copy">
-                Draft teams by value, run private pools, and follow every game with live standings
-                that feel fast and focused.
+        <section className="landing-center-stage" aria-label="Landing actions">
+          <div className="page-surface landing-center-card">
+            <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+            <p className="landing-copy">
+              Each pool drafts teams under the same budget. Every win scores points, plus bonuses
+              for upsets and deep runs. Highest total wins your pool.
+            </p>
+            {invitePoolId ? (
+              <p className="landing-invite-text">
+                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
               </p>
-
-              <div className="landing-feature-row" aria-label="Key features">
-                <span className="landing-feature-pill">Live leaderboard</span>
-                <span className="landing-feature-pill">Draft strategy insight</span>
-                <span className="landing-feature-pill">Private invite-only pools</span>
-              </div>
-
-              <p className="landing-note" data-tone={invitePoolId ? "invite" : "default"}>
-                {invitePoolId
-                  ? `You are being invited to join ${invitePoolName ?? "this pool"}.`
-                  : "Everything you need is on this screen. No scrolling required."}
-              </p>
+            ) : null}
+            <div className="landing-action-row">
+              <Link
+                href={loginHref}
+                className="landing-action-button landing-action-button--primary"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                {invitePoolId ? "Join pool" : "Login / Sign up"}
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="landing-action-button"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                How it works
+              </Link>
             </div>
-
-            <aside className="landing-metrics" aria-label="Game status snapshot">
-              <article className="landing-metric-card">
-                <p className="landing-metric-label">Live now</p>
-                <p className="landing-metric-value">{scoresLoading ? "--" : liveNowCount}</p>
-              </article>
-              <article className="landing-metric-card">
-                <p className="landing-metric-label">Upcoming</p>
-                <p className="landing-metric-value">{scoresLoading ? "--" : upcomingCount}</p>
-              </article>
-              <article className="landing-metric-card">
-                <p className="landing-metric-label">Finals (24h)</p>
-                <p className="landing-metric-value">{scoresLoading ? "--" : finalCount}</p>
-              </article>
-            </aside>
           </div>
         </section>
       </main>
@@ -2037,65 +2008,39 @@ function HomeFallback() {
     <main
       className="page-shell home-page-shell home-landing-shell"
       style={{
-        maxWidth: 1240,
-        margin: "24px auto",
-        padding: 12,
+        maxWidth: 920,
+        margin: "10px auto 22px",
+        padding: 8,
       }}
     >
-      <section className="page-surface landing-hero" aria-label="bracketball landing">
-        <header className="landing-topbar" aria-label="Landing actions">
-          <Link href="/how-it-works" className="landing-topbar-pill">
-            How it works
-          </Link>
-          <Link href="/" className="landing-topbar-logo" aria-label="Go to bracketball home">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={196}
-              height={56}
-              className="landing-topbar-mark"
-              priority
-            />
-          </Link>
-          <Link href="/login" className="landing-topbar-pill landing-topbar-pill--primary">
-            Login / Sign up
-          </Link>
-        </header>
+      <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
+        <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+          <Image
+            src="/bracketball-logo-mark.png"
+            alt="bracketball logo"
+            width={206}
+            height={58}
+            className="landing-topbar-mark"
+            priority
+          />
+        </Link>
+      </header>
 
-        <div className="landing-hero-grid">
-          <div className="landing-hero-main">
-            <span className="landing-kicker">March Madness Pools</span>
-            <h1 className="landing-title">high-energy competition. clean premium control.</h1>
-            <p className="landing-copy">
-              Draft teams by value, run private pools, and follow every game with live standings
-              that feel fast and focused.
-            </p>
-
-            <div className="landing-feature-row" aria-label="Key features">
-              <span className="landing-feature-pill">Live leaderboard</span>
-              <span className="landing-feature-pill">Draft strategy insight</span>
-              <span className="landing-feature-pill">Private invite-only pools</span>
-            </div>
-
-            <p className="landing-note" data-tone="default">
-              Everything you need is on this screen. No scrolling required.
-            </p>
+      <section className="landing-center-stage" aria-label="Landing actions">
+        <div className="page-surface landing-center-card">
+          <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+          <p className="landing-copy">
+            Each pool drafts teams under the same budget. Every win scores points, plus bonuses for
+            upsets and deep runs. Highest total wins your pool.
+          </p>
+          <div className="landing-action-row">
+            <Link href="/login" className="landing-action-button landing-action-button--primary">
+              Login / Sign up
+            </Link>
+            <Link href="/how-it-works" className="landing-action-button">
+              How it works
+            </Link>
           </div>
-
-          <aside className="landing-metrics" aria-label="Game status snapshot">
-            <article className="landing-metric-card">
-              <p className="landing-metric-label">Live now</p>
-              <p className="landing-metric-value">--</p>
-            </article>
-            <article className="landing-metric-card">
-              <p className="landing-metric-label">Upcoming</p>
-              <p className="landing-metric-value">--</p>
-            </article>
-            <article className="landing-metric-card">
-              <p className="landing-metric-label">Finals (24h)</p>
-              <p className="landing-metric-value">--</p>
-            </article>
-          </aside>
         </div>
       </section>
     </main>
