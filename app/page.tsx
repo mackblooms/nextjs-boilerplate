@@ -118,17 +118,6 @@ type DraftPoolTeamSeedRow = {
 
 type ScoreViewMode = "my-teams" | "all-scores";
 
-const buttonStyle = {
-  display: "inline-block",
-  padding: "12px 16px",
-  borderRadius: 10,
-  border: "1px solid var(--border-color)",
-  textDecoration: "none",
-  fontWeight: 800,
-  minWidth: 170,
-  textAlign: "center" as const,
-};
-
 const scorePanelStyle = {
   border: "1px solid var(--border-color)",
   borderRadius: 12,
@@ -1573,6 +1562,9 @@ function HomeContent() {
     </div>
   );
   const homeDraftCountLabel = `${homeDrafts.length}/${MAX_HOME_DRAFTS} drafts created`;
+  const liveNowCount = scores.reduce((count, game) => (game.state === "LIVE" ? count + 1 : count), 0);
+  const upcomingCount = scores.reduce((count, game) => (game.state === "UPCOMING" ? count + 1 : count), 0);
+  const finalCount = scores.reduce((count, game) => (game.state === "FINAL" ? count + 1 : count), 0);
 
   const toggleDraftPools = (draftId: string) => {
     setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
@@ -1623,6 +1615,98 @@ function HomeContent() {
     setRenamingDraftId(null);
   };
 
+  if (isAuthenticated !== true) {
+    return (
+      <main
+        className="page-shell home-page-shell home-landing-shell"
+        style={{
+          maxWidth: 1240,
+          margin: "24px auto",
+          padding: 12,
+        }}
+      >
+        <section className="page-surface landing-hero" aria-label="bracketball landing">
+          <header className="landing-topbar" aria-label="Landing actions">
+            <Link
+              href="/how-it-works"
+              className="landing-topbar-pill"
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
+                })
+              }
+            >
+              How it works
+            </Link>
+
+            <Link href="/" className="landing-topbar-logo" aria-label="Go to bracketball home">
+              <Image
+                src="/bracketball-logo-mark.png"
+                alt="bracketball logo"
+                width={196}
+                height={56}
+                className="landing-topbar-mark"
+                priority
+              />
+            </Link>
+
+            <Link
+              href={loginHref}
+              className="landing-topbar-pill landing-topbar-pill--primary"
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                })
+              }
+            >
+              {invitePoolId ? "Join pool" : "Login / Sign up"}
+            </Link>
+          </header>
+
+          <div className="landing-hero-grid">
+            <div className="landing-hero-main">
+              <span className="landing-kicker">March Madness Pools</span>
+              <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+              <p className="landing-copy">
+                Draft teams by value, run private pools, and follow every game with live standings
+                that feel fast and focused.
+              </p>
+
+              <div className="landing-feature-row" aria-label="Key features">
+                <span className="landing-feature-pill">Live leaderboard</span>
+                <span className="landing-feature-pill">Draft strategy insight</span>
+                <span className="landing-feature-pill">Private invite-only pools</span>
+              </div>
+
+              <p className="landing-note" data-tone={invitePoolId ? "invite" : "default"}>
+                {invitePoolId
+                  ? `You are being invited to join ${invitePoolName ?? "this pool"}.`
+                  : "Everything you need is on this screen. No scrolling required."}
+              </p>
+            </div>
+
+            <aside className="landing-metrics" aria-label="Game status snapshot">
+              <article className="landing-metric-card">
+                <p className="landing-metric-label">Live now</p>
+                <p className="landing-metric-value">{scoresLoading ? "--" : liveNowCount}</p>
+              </article>
+              <article className="landing-metric-card">
+                <p className="landing-metric-label">Upcoming</p>
+                <p className="landing-metric-value">{scoresLoading ? "--" : upcomingCount}</p>
+              </article>
+              <article className="landing-metric-card">
+                <p className="landing-metric-label">Finals (24h)</p>
+                <p className="landing-metric-value">{scoresLoading ? "--" : finalCount}</p>
+              </article>
+            </aside>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main
       className="page-shell home-page-shell"
@@ -1632,159 +1716,69 @@ function HomeContent() {
         padding: 16,
       }}
     >
-      <section className="page-surface home-brand-hero" aria-label="bracketball overview">
-        <div className="home-brand-main">
-          <div className="home-brand-logo-row">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={234}
-              height={64}
-              className="home-brand-mark"
-              priority
-            />
-            <span className="home-brand-chip">beta</span>
-          </div>
-
-          <h1 className="home-brand-title">your march madness command center</h1>
-          <p className="home-brand-copy">
-            Run private pools, draft teams by value, and track every score update in one place.
-          </p>
-
-          {isAuthenticated === true ? (
-            <>
-              <div
-                className="home-pool-context"
-                style={{
-                  margin: 0,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  flexWrap: "wrap",
-                }}
-              >
-                <span>
-                  {scoreViewMode === "my-teams"
-                    ? "Showing your selected teams from"
-                    : "Highlighting your teams from"}
-                </span>
-                <select
-                  id="home-pool-selector"
-                  value={selectedPoolId}
-                  onChange={(event) => setSelectedPoolId(event.target.value)}
-                  disabled={memberPools.length === 0}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface-muted)",
-                    fontWeight: 700,
-                    minHeight: 38,
-                  }}
-                >
-                  {memberPools.length === 0 ? (
-                    <option value="">no joined pools</option>
-                  ) : (
-                    memberPools.map((pool) => (
-                      <option key={pool.id} value={pool.id}>
-                        {pool.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-                <span>.</span>
-              </div>
-
-              <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Link href="/pools" className="home-cta-button" style={buttonStyle}>
-                  Open pools
-                </Link>
-                <Link href="/pools/new" className="home-cta-button" style={buttonStyle}>
-                  Create pool
-                </Link>
-              </div>
-            </>
-          ) : (
-            <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Link
-                href="/how-it-works"
-                className="home-cta-button"
-                style={buttonStyle}
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: {
-                      cta: "how_it_works",
-                      has_invite: Boolean(invitePoolId),
-                      logged_in: Boolean(isAuthenticated),
-                    },
-                  })
-                }
-              >
-                How it works
-              </Link>
-              <Link
-                href={loginHref}
-                className="home-cta-button"
-                style={buttonStyle}
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                {invitePoolId ? "Join invited pool" : "Login / Sign up"}
-              </Link>
-            </div>
-          )}
-
-          <p className="home-brand-note" data-tone={invitePoolId ? "invite" : "default"}>
-            {invitePoolId
-              ? `You are being invited to join ${invitePoolName ?? "this pool"}.`
-              : "Built for fast pool setup, sharper drafting decisions, and cleaner game-day tracking."}
-          </p>
+      <div
+        style={{
+          marginBottom: 16,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <div
+          className="home-pool-context"
+          style={{
+            margin: 0,
+            fontSize: 14,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <span>
+            {scoreViewMode === "my-teams"
+              ? "Showing your selected teams from"
+              : "Highlighting your teams from"}
+          </span>
+          <select
+            id="home-pool-selector"
+            value={selectedPoolId}
+            onChange={(event) => setSelectedPoolId(event.target.value)}
+            disabled={memberPools.length === 0}
+            style={{
+              padding: "8px 10px",
+              borderRadius: 10,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface-muted)",
+              fontWeight: 700,
+              minHeight: 38,
+            }}
+          >
+            {memberPools.length === 0 ? (
+              <option value="">no joined pools</option>
+            ) : (
+              memberPools.map((pool) => (
+                <option key={pool.id} value={pool.id}>
+                  {pool.name}
+                </option>
+              ))
+            )}
+          </select>
+          <span>.</span>
         </div>
 
-        <div className="home-brand-stats" aria-label="Platform highlights">
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">Live scoreboard</h2>
-            <p className="home-brand-stat-copy">
-              Track recent finals and live or upcoming games with direct box score links.
-            </p>
-          </article>
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">Draft workspace</h2>
-            <p className="home-brand-stat-copy">
-              Save up to {MAX_HOME_DRAFTS} draft builds and compare how each one performs by pool.
-            </p>
-          </article>
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">
-              {isAuthenticated === true ? "Personalized view" : "Private pools"}
-            </h2>
-            <p className="home-brand-stat-copy">
-              {isAuthenticated === true
-                ? "Highlight your drafted teams across scoreboards so updates relevant to you stand out."
-                : "Create invite-only pools and bring your group into one shared leaderboard."}
-            </p>
-          </article>
-        </div>
-      </section>
+        {memberPools.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+            Join a pool to highlight your drafted teams on the scoreboard.
+          </p>
+        ) : null}
 
-      {isAuthenticated === true && memberPools.length === 0 ? (
-        <p style={{ margin: "0 0 12px", fontSize: 14, opacity: 0.82 }}>
-          Join a pool to highlight your drafted teams on the scoreboard.
-        </p>
-      ) : null}
-
-      {isAuthenticated === true && selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
-        <p style={{ margin: "0 0 12px", fontSize: 14, opacity: 0.82 }}>
-          You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
-        </p>
-      ) : null}
+        {selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+            You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
+          </p>
+        ) : null}
+      </div>
 
       <div className="home-layout">
         <div className="home-scores-left">
@@ -2041,125 +2035,69 @@ function HomeContent() {
 function HomeFallback() {
   return (
     <main
-      className="page-shell home-page-shell"
+      className="page-shell home-page-shell home-landing-shell"
       style={{
         maxWidth: 1240,
-        margin: "40px auto",
-        padding: 16,
+        margin: "24px auto",
+        padding: 12,
       }}
     >
-      <section className="page-surface home-brand-hero" aria-label="bracketball overview">
-        <div className="home-brand-main">
-          <div className="home-brand-logo-row">
+      <section className="page-surface landing-hero" aria-label="bracketball landing">
+        <header className="landing-topbar" aria-label="Landing actions">
+          <Link href="/how-it-works" className="landing-topbar-pill">
+            How it works
+          </Link>
+          <Link href="/" className="landing-topbar-logo" aria-label="Go to bracketball home">
             <Image
               src="/bracketball-logo-mark.png"
               alt="bracketball logo"
-              width={234}
-              height={64}
-              className="home-brand-mark"
+              width={196}
+              height={56}
+              className="landing-topbar-mark"
               priority
             />
-            <span className="home-brand-chip">beta</span>
-          </div>
-          <h1 className="home-brand-title">your march madness command center</h1>
-          <p className="home-brand-copy">
-            Run private pools, draft teams by value, and track every score update in one place.
-          </p>
-          <div className="home-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <Link
-              href="/how-it-works"
-              className="home-cta-button"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "how_it_works", has_invite: false },
-                })
-              }
-            >
-              How it works
-            </Link>
-            <Link
-              href="/login"
-              className="home-cta-button"
-              style={buttonStyle}
-              onClick={() =>
-                trackEvent({
-                  eventName: "home_cta_click",
-                  metadata: { cta: "login_signup", has_invite: false },
-                })
-              }
-            >
-              Login / Sign up
-            </Link>
-          </div>
-          <p className="home-brand-note" data-tone="default">
-            Built for fast pool setup, sharper drafting decisions, and cleaner game-day tracking.
-          </p>
-        </div>
+          </Link>
+          <Link href="/login" className="landing-topbar-pill landing-topbar-pill--primary">
+            Login / Sign up
+          </Link>
+        </header>
 
-        <div className="home-brand-stats" aria-label="Platform highlights">
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">Live scoreboard</h2>
-            <p className="home-brand-stat-copy">
-              Track recent finals and live or upcoming games with direct box score links.
+        <div className="landing-hero-grid">
+          <div className="landing-hero-main">
+            <span className="landing-kicker">March Madness Pools</span>
+            <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+            <p className="landing-copy">
+              Draft teams by value, run private pools, and follow every game with live standings
+              that feel fast and focused.
             </p>
-          </article>
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">Draft workspace</h2>
-            <p className="home-brand-stat-copy">
-              Save up to {MAX_HOME_DRAFTS} draft builds and compare how each one performs by pool.
+
+            <div className="landing-feature-row" aria-label="Key features">
+              <span className="landing-feature-pill">Live leaderboard</span>
+              <span className="landing-feature-pill">Draft strategy insight</span>
+              <span className="landing-feature-pill">Private invite-only pools</span>
+            </div>
+
+            <p className="landing-note" data-tone="default">
+              Everything you need is on this screen. No scrolling required.
             </p>
-          </article>
-          <article className="home-brand-stat-card">
-            <h2 className="home-brand-stat-title">Private pools</h2>
-            <p className="home-brand-stat-copy">
-              Create invite-only pools and bring your group into one shared leaderboard.
-            </p>
-          </article>
+          </div>
+
+          <aside className="landing-metrics" aria-label="Game status snapshot">
+            <article className="landing-metric-card">
+              <p className="landing-metric-label">Live now</p>
+              <p className="landing-metric-value">--</p>
+            </article>
+            <article className="landing-metric-card">
+              <p className="landing-metric-label">Upcoming</p>
+              <p className="landing-metric-value">--</p>
+            </article>
+            <article className="landing-metric-card">
+              <p className="landing-metric-label">Finals (24h)</p>
+              <p className="landing-metric-value">--</p>
+            </article>
+          </aside>
         </div>
       </section>
-
-      <div className="home-layout">
-        <div className="home-scores-left">
-          <ScorePanel
-            title="Recent Finals"
-            games={[]}
-            loading
-            error={null}
-            emptyMessage="No final scores from today or yesterday."
-          />
-        </div>
-
-        <section
-          className="home-center home-primary-panel"
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 14,
-            background: "var(--surface)",
-            padding: 14,
-            display: "grid",
-            gap: 10,
-            alignContent: "start",
-            minHeight: 360,
-          }}
-          aria-label="My drafts"
-        >
-          <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>0/{MAX_HOME_DRAFTS} drafts created</p>
-          <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
-        </section>
-
-        <div className="home-scores-right">
-          <ScorePanel
-            title="Live / Upcoming"
-            games={[]}
-            loading
-            error={null}
-            emptyMessage="No live or upcoming games for today or tomorrow."
-          />
-        </div>
-      </div>
     </main>
   );
 }
