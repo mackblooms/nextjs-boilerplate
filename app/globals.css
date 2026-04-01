@@ -493,19 +493,6 @@ textarea::placeholder {
 .landing-action-button {
   min-width: 168px;
   text-decoration: none;
-  font-weight: 800;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 10px 13px;
-  background: var(--surface);
-}
-
-.landing-action-button--primary {
-  border-color: var(--highlight-border);
-  background: var(--surface-elevated);
 }
 
 .back-arrow-button {

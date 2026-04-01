@@ -1636,10 +1636,10 @@ function HomeContent() {
 
         <section className="landing-center-stage" aria-label="Landing actions">
           <div className="page-surface landing-center-card">
-            <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+            <h1 className="landing-title">draft, track and win.</h1>
             <p className="landing-copy">
-              Each pool drafts teams under the same budget. Every win scores points, plus bonuses
-              for upsets and deep runs. Highest total wins your pool.
+              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
+              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
             </p>
             {invitePoolId ? (
               <p className="landing-invite-text">
@@ -1649,7 +1649,7 @@ function HomeContent() {
             <div className="landing-action-row">
               <Link
                 href={loginHref}
-                className="landing-action-button landing-action-button--primary"
+                className="ui-btn ui-btn--md ui-btn--primary landing-action-button"
                 onClick={() =>
                   trackEvent({
                     eventName: "home_cta_click",
@@ -1661,7 +1661,7 @@ function HomeContent() {
               </Link>
               <Link
                 href="/how-it-works"
-                className="landing-action-button"
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
                 onClick={() =>
                   trackEvent({
                     eventName: "home_cta_click",
@@ -2028,16 +2028,16 @@ function HomeFallback() {
 
       <section className="landing-center-stage" aria-label="Landing actions">
         <div className="page-surface landing-center-card">
-          <h1 className="landing-title">high-energy competition. clean premium control.</h1>
+          <h1 className="landing-title">draft, track and win.</h1>
           <p className="landing-copy">
-            Each pool drafts teams under the same budget. Every win scores points, plus bonuses for
-            upsets and deep runs. Highest total wins your pool.
+            Build drafts that fit the budget and cap rules. Every win adds points, with scaled
+            bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
           </p>
           <div className="landing-action-row">
-            <Link href="/login" className="landing-action-button landing-action-button--primary">
+            <Link href="/login" className="ui-btn ui-btn--md ui-btn--primary landing-action-button">
               Login / Sign up
             </Link>
-            <Link href="/how-it-works" className="landing-action-button">
+            <Link href="/how-it-works" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
               How it works
             </Link>
           </div>
