@@ -263,6 +263,10 @@ export default function LoginClient() {
           Build private March Madness pools, draft teams by value, and track every score update in
           real time.
         </p>
+        <p className="login-hero-copy">
+          Can you find the perfect draft strategy? Can you build the best combination of picks for
+          upside and consistency? Every draft is a puzzle to optimize, refine, and master.
+        </p>
 
         <div
           className="login-context-card"
@@ -275,7 +279,9 @@ export default function LoginClient() {
 
         <ul className="login-feature-list" aria-label="Platform highlights">
           <li className="login-feature-item">Live leaderboard refresh and projected finishes.</li>
-          <li className="login-feature-item">Draft strategy mode with team value and popularity insight.</li>
+          <li className="login-feature-item">
+            Draft strategy mode with team value, popularity insight, and optimization-focused prep.
+          </li>
           <li className="login-feature-item">Private pool invites with secure account-based access.</li>
         </ul>
 
