@@ -16,17 +16,6 @@ function sanitizeNextPath(nextPath: string | null) {
   return nextPath.startsWith("/") ? nextPath : "/";
 }
 
-function describeDestination(nextPath: string) {
-  if (nextPath === "/") return "home";
-  if (/^\/pool\/[^/?#]+\/leaderboard(?:\/|$)/.test(nextPath)) return "the leaderboard";
-  if (/^\/pool\/[^/?#]+\/draft(?:\/|$)/.test(nextPath)) return "the draft room";
-  if (/^\/pool\/[^/?#]+\/bracket(?:\/|$)/.test(nextPath)) return "the bracket";
-  if (/^\/pool\/[^/?#]+(?:\/|$)/.test(nextPath)) return "your pool";
-  if (nextPath.startsWith("/pools")) return "your pools";
-  if (nextPath.startsWith("/profile")) return "your profile";
-  return "your account";
-}
-
 export default function LoginClient() {
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
@@ -47,8 +36,6 @@ export default function LoginClient() {
     typeof window !== "undefined"
       ? resolveInvitePoolId(new URLSearchParams(window.location.search))
       : null;
-
-  const destinationLabel = useMemo(() => describeDestination(nextPath), [nextPath]);
 
   const profileSetupNext = useMemo(() => {
     const params = new URLSearchParams({
@@ -268,14 +255,11 @@ export default function LoginClient() {
           upside and consistency? Every draft is a puzzle to optimize, refine, and master.
         </p>
 
-        <div
-          className="login-context-card"
-          data-tone={invitePoolId ? "invite" : "default"}
-        >
-          {invitePoolId
-            ? "You were invited to a pool. Sign in to join and lock in your bracket."
-            : `Sign in to continue to ${destinationLabel}.`}
-        </div>
+        {invitePoolId ? (
+          <div className="login-context-card" data-tone="invite">
+            You were invited to a pool. Sign in to join and lock in your bracket.
+          </div>
+        ) : null}
 
         <ul className="login-feature-list" aria-label="Platform highlights">
           <li className="login-feature-item">Live leaderboard refresh and projected finishes.</li>
