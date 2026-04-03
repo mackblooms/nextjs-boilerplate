@@ -1,5 +1,9 @@
 # bracketball Mac Release-Day Checklist
 
+Status: specialized final-day checklist, not the master release checklist
+
+Start with [App Store Review Readiness](/Users/mackbloom/nextjs-boilerplate/docs/app-store-review-readiness.md) before using this file.
+
 Run this on your Mac once Windows prep docs are complete.
 
 ## 1) Local setup

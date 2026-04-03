@@ -1,5 +1,9 @@
 # bracketball App Review Notes Template
 
+Status: supporting template
+
+Use this only when you are already at the reviewer-notes step in [App Store Review Readiness](/Users/mackbloom/nextjs-boilerplate/docs/app-store-review-readiness.md).
+
 Paste an edited version of this into App Store Connect under Review Notes.
 
 ## Reviewer notes draft
