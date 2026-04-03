@@ -55,7 +55,23 @@ Fill this out before your Mac release session. Keep copy short and specific.
 - iPad screenshots needed: Yes/No
 - Screen list:
   - Home
-  - Pool join/create
-  - Draft flow
+  - Pools
   - Leaderboard
+  - Bracket
   - Profile
+  - Draft flow
+
+## Recommended screenshot story for bracketball
+
+1. Home
+   Show the mobile shell with clear app navigation and live product context.
+2. Pools
+   Show joined pools plus the discover/join flow.
+3. Leaderboard
+   Show the strongest seeded pool with visible standings and the `Share Invite` action.
+4. Bracket
+   Show the bracket view for the same pool.
+5. Profile
+   Show avatar, profile details, and notification controls.
+6. Draft flow
+   Show saved draft or entry flow so the app does not read as “standings only.”
