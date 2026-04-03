@@ -1526,21 +1526,46 @@ export default function LeaderboardPage() {
 
   return (
     <main className="page-shell" style={{ maxWidth: 1240 }}>
-      <div
+      <section
+        className="leaderboard-hero"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          border: "1px solid var(--border-color)",
+          borderRadius: 18,
+          background: "linear-gradient(180deg, var(--surface-elevated), var(--surface))",
+          boxShadow: "var(--shadow-sm)",
+          padding: isCompact ? "14px 12px" : "16px 16px",
+          display: "grid",
           gap: 12,
-          flexWrap: "wrap",
         }}
       >
-        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
-          Leaderboard
-        </h1>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 4,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: 0.24,
+              textTransform: "uppercase",
+              opacity: 0.62,
+            }}
+          >
+            Pool leaderboard
+          </div>
+          <h1 className="page-title" style={{ fontSize: isCompact ? 26 : 30, fontWeight: 900, margin: 0 }}>
+            {activePoolName || "Leaderboard"}
+          </h1>
+          <p style={{ margin: 0, opacity: 0.78, fontSize: 14 }}>
+            Rankings, scores, and pool movement all in one place.
+          </p>
+        </div>
+
+        <div className="leaderboard-hero-controls">
           {memberPools.length > 0 ? (
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+            <label className="leaderboard-hero-control" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
               <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
               <select
                 value={poolSelectorValue}
@@ -1554,9 +1579,11 @@ export default function LeaderboardPage() {
                   padding: "8px 10px",
                   borderRadius: 10,
                   border: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
+                  background: "var(--surface)",
                   fontWeight: 700,
                   minHeight: 38,
+                  minWidth: isCompact ? 0 : 200,
+                  width: "100%",
                 }}
               >
                 {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
@@ -1569,22 +1596,23 @@ export default function LeaderboardPage() {
             </label>
           ) : null}
           <button
+            className="leaderboard-hero-share"
             type="button"
             onClick={() => void sharePoolInvite()}
             style={{
-              padding: "8px 12px",
+              padding: "10px 14px",
               borderRadius: 10,
               border: "1px solid var(--border-color)",
               background: "var(--surface-elevated)",
               fontWeight: 800,
-              minHeight: 38,
+              minHeight: 42,
               cursor: "pointer",
             }}
           >
             Share Invite
           </button>
         </div>
-      </div>
+      </section>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}

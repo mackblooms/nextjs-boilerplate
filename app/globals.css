@@ -963,6 +963,22 @@ textarea::placeholder {
   align-items: start;
 }
 
+.leaderboard-hero-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leaderboard-hero-control {
+  flex: 1 1 240px;
+}
+
+.leaderboard-hero-share {
+  flex: 0 0 auto;
+}
+
 .home-draft-link {
   text-decoration: none;
   text-decoration-thickness: 2px;
@@ -1169,6 +1185,22 @@ textarea::placeholder {
 @media (min-width: 1100px) {
   .leaderboard-layout {
     grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+@media (max-width: 720px) {
+  .leaderboard-hero-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .leaderboard-hero-control {
+    width: 100%;
+  }
+
+  .leaderboard-hero-share {
+    width: 100%;
   }
 }
 
