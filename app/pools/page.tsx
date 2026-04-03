@@ -1128,7 +1128,17 @@ export default function PoolsPage() {
                       flexWrap: "wrap",
                     }}
                   >
-                    <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
+                    <Link
+                      href={`/pool/${pool.id}`}
+                      style={{
+                        minWidth: 0,
+                        display: "grid",
+                        gap: 4,
+                        textDecoration: "none",
+                        color: "inherit",
+                        flex: "1 1 220px",
+                      }}
+                    >
                       <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
                       <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
                       {entriesLocked ? (
@@ -1136,24 +1146,8 @@ export default function PoolsPage() {
                           Entry changes locked at {formatDraftLockTimeET(pool.lock_time)}
                         </div>
                       ) : null}
-                    </div>
+                    </Link>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <Link
-                        href={`/pool/${pool.id}`}
-                        style={{
-                          padding: "9px 12px",
-                          borderRadius: 10,
-                          border: "1px solid var(--border-color)",
-                          textDecoration: "none",
-                          fontWeight: 800,
-                          background: "var(--surface)",
-                          minHeight: 40,
-                          display: "inline-flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        Open Pool
-                      </Link>
                       <button
                         type="button"
                         onClick={() => openJoinModal(pool)}
