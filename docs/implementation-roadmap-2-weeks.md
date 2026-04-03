@@ -6,9 +6,9 @@ This file is no longer the active task list.
 
 Use these instead:
 
-- [Checklists and Planning Map](/Users/mackbloom/nextjs-boilerplate/docs/checklists-and-planning-map.md)
-- [App Store Review Readiness](/Users/mackbloom/nextjs-boilerplate/docs/app-store-review-readiness.md)
-- [Feature Backlog](/Users/mackbloom/nextjs-boilerplate/docs/feature-backlog.md)
+- [Checklists and Planning Map](./checklists-and-planning-map.md)
+- [App Store Review Readiness](./app-store-review-readiness.md)
+- [Feature Backlog](./feature-backlog.md)
 
 Why this was trimmed:
 

@@ -2,7 +2,7 @@
 
 Status: working checklist for the screenshot phase only
 
-Do not use this as the main priority list. First use [App Store Review Readiness](/Users/mackbloom/nextjs-boilerplate/docs/app-store-review-readiness.md) to decide whether you are actually ready to start screenshots.
+Do not use this as the main priority list. First use [App Store Review Readiness](./app-store-review-readiness.md) to decide whether you are actually ready to start screenshots.
 
 Use this before you start taking App Store screenshots on your iPhone.
 

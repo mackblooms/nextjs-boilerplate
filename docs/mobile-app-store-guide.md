@@ -4,8 +4,8 @@ Status: reference only
 
 If you are deciding what to do next, start here instead:
 
-- [Checklists and Planning Map](/Users/mackbloom/nextjs-boilerplate/docs/checklists-and-planning-map.md)
-- [App Store Review Readiness](/Users/mackbloom/nextjs-boilerplate/docs/app-store-review-readiness.md)
+- [Checklists and Planning Map](./checklists-and-planning-map.md)
+- [App Store Review Readiness](./app-store-review-readiness.md)
 
 This repo is now wired to ship as a downloadable app using Capacitor (native iOS/Android shells that load your hosted Next.js app).
 
