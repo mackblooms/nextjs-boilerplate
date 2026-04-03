@@ -64,6 +64,9 @@ export default function ProfilePage() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushPermission, setPushPermission] = useState<PushPermissionState>("unknown");
   const [pushMessage, setPushMessage] = useState("");
+  const [pushInstallationId, setPushInstallationId] = useState("");
+  const [isSiteAdmin, setIsSiteAdmin] = useState(false);
+  const [sendingTestPush, setSendingTestPush] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -160,6 +163,9 @@ export default function ProfilePage() {
         const nextPermission = normalizePushPermissionState(permission.receive);
         setPushPermission(nextPermission);
 
+        const installationId = getPushInstallationId();
+        setPushInstallationId(installationId);
+
         const { data: sessionData } = await supabase.auth.getSession();
         const session = sessionData.session;
         if (!session) {
@@ -169,7 +175,6 @@ export default function ProfilePage() {
           return;
         }
 
-        const installationId = getPushInstallationId();
         const res = await fetch(
           `/api/push/device?installationId=${encodeURIComponent(installationId)}`,
           {
@@ -210,6 +215,34 @@ export default function ProfilePage() {
       isMounted = false;
     };
   }, [pushSupported, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    let isMounted = true;
+
+    const loadAdminStatus = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return;
+
+      const res = await fetch("/api/admin/me", {
+        headers: {
+          authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!isMounted) return;
+      setIsSiteAdmin(res.ok);
+    };
+
+    void loadAdminStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
 
   async function uploadAvatar(file: File) {
     setUploadingAvatar(true);
@@ -380,6 +413,48 @@ export default function ProfilePage() {
       setPushMessage("Couldn't turn off notifications right now.");
     } finally {
       setPushBusy(false);
+    }
+  }
+
+  async function sendTestPush() {
+    setSendingTestPush(true);
+    setPushMessage("");
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) {
+        setPushMessage("Please log in again before sending a test push.");
+        return;
+      }
+
+      const res = await fetch("/api/admin/push/test", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          installationId: pushInstallationId || undefined,
+          path: "/profile",
+        }),
+      });
+
+      const body = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        environment?: string;
+      };
+
+      if (!res.ok) {
+        setPushMessage(body.error ?? "Couldn't send a test push.");
+        return;
+      }
+
+      setPushMessage(
+        `Test push sent through APNs ${body.environment ? `(${body.environment})` : ""}.`,
+      );
+    } finally {
+      setSendingTestPush(false);
     }
   }
 
@@ -875,6 +950,16 @@ export default function ProfilePage() {
             >
               {pushBusy && pushEnabled ? "Turning off..." : "Turn off on this phone"}
             </button>
+            {isSiteAdmin ? (
+              <button
+                type="button"
+                onClick={() => void sendTestPush()}
+                disabled={sendingTestPush || pushLoading || !pushEnabled}
+                className="ui-btn ui-btn--ghost"
+              >
+                {sendingTestPush ? "Sending test..." : "Send test push"}
+              </button>
+            ) : null}
           </div>
 
           <p style={{ margin: 0, fontSize: 12, opacity: 0.72 }}>
