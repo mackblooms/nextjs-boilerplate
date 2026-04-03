@@ -1,6 +1,8 @@
 "use client";
 
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Capacitor } from "@capacitor/core";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { withAvatarFallback } from "../../lib/avatar";
@@ -49,6 +51,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(onboarding);
   const [userId, setUserId] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -180,6 +183,63 @@ export default function ProfilePage() {
     e.target.value = "";
   }
 
+  function dataUrlToFile(dataUrl: string, filename: string) {
+    const match = dataUrl.match(/^data:(.+);base64,(.+)$/);
+    if (!match) return null;
+
+    const mimeType = match[1];
+    const base64 = match[2];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    return new File([bytes], filename, { type: mimeType });
+  }
+
+  async function pickNativeAvatar(source: CameraSource) {
+    setAvatarPickerOpen(false);
+
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 88,
+        allowEditing: true,
+        resultType: CameraResultType.DataUrl,
+        source,
+        width: 1200,
+        height: 1200,
+      });
+
+      if (!photo.dataUrl) {
+        setMsg("No photo selected.");
+        return;
+      }
+
+      const extension = photo.format === "png" ? "png" : photo.format === "gif" ? "gif" : "jpg";
+      const file = dataUrlToFile(photo.dataUrl, `avatar.${extension}`);
+      if (!file) {
+        setMsg("Couldn't read that photo. Try another one.");
+        return;
+      }
+
+      await uploadAvatar(file);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "";
+      if (/cancel/i.test(message)) return;
+      setMsg("Couldn't open your camera or photo library.");
+    }
+  }
+
+  function openAvatarPicker() {
+    if (uploadingAvatar) return;
+    if (Capacitor.isNativePlatform()) {
+      setAvatarPickerOpen(true);
+      return;
+    }
+    fileInputRef.current?.click();
+  }
+
   async function save() {
     setMsg("");
     const { data: authData } = await supabase.auth.getUser();
@@ -292,7 +352,7 @@ export default function ProfilePage() {
           <div style={{ display: "grid", placeItems: "center", marginBottom: 14 }}>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={openAvatarPicker}
               disabled={uploadingAvatar}
               style={{
                 width: 112,
@@ -347,12 +407,78 @@ export default function ProfilePage() {
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={onAvatarFileChange}
               style={{ display: "none" }}
             />
             <p style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
-              Tap the profile circle to upload from this device.
+              {Capacitor.isNativePlatform()
+                ? "Tap the profile circle to choose a photo or take one."
+                : "Tap the profile circle to upload from this device."}
             </p>
+            {avatarPickerOpen ? (
+              <div
+                role="presentation"
+                onClick={() => setAvatarPickerOpen(false)}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(8, 15, 25, 0.42)",
+                  zIndex: 1190,
+                }}
+              />
+            ) : null}
+            {avatarPickerOpen ? (
+              <section
+                style={{
+                  position: "fixed",
+                  left: 16,
+                  right: 16,
+                  bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+                  zIndex: 1200,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 18,
+                  background: "var(--surface-glass)",
+                  boxShadow: "var(--shadow-lg)",
+                  padding: 12,
+                  display: "grid",
+                  gap: 8,
+                  backdropFilter: "saturate(130%) blur(12px)",
+                }}
+              >
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full"
+                  onClick={() => void pickNativeAvatar(CameraSource.Photos)}
+                >
+                  Choose from library
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--lg ui-btn--secondary ui-btn--full"
+                  onClick={() => void pickNativeAvatar(CameraSource.Camera)}
+                >
+                  Take photo
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--lg ui-btn--ghost ui-btn--full"
+                  onClick={() => {
+                    setAvatarPickerOpen(false);
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Browse files
+                </button>
+                <button
+                  type="button"
+                  className="ui-btn ui-btn--lg ui-btn--ghost ui-btn--full"
+                  onClick={() => setAvatarPickerOpen(false)}
+                >
+                  Cancel
+                </button>
+              </section>
+            ) : null}
             <button
               type="button"
               onClick={() => {
