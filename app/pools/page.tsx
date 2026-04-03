@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -94,6 +95,8 @@ export default function PoolsPage() {
   const [myPoolsMsg, setMyPoolsMsg] = useState("");
   const [joinStatus, setJoinStatus] = useState<StatusMessage | null>(null);
   const [leavingPoolId, setLeavingPoolId] = useState<string | null>(null);
+  const canNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   const [joinModalPool, setJoinModalPool] = useState<PoolRow | null>(null);
   const [joinPasswordInput, setJoinPasswordInput] = useState("");
@@ -194,6 +197,32 @@ export default function PoolsPage() {
   const selectedLeaveCount = selectedLeaveEntryIds.size;
   const draftModalPoolLocked = draftModalPool ? isPoolEntryLocked(draftModalPool) : false;
   const leaveModalPoolLocked = leaveModalPool ? isPoolEntryLocked(leaveModalPool) : false;
+
+  async function sharePoolInvite(pool: PoolRow) {
+    const shareData = buildPoolInviteShareData(pool.id, pool.name, pool.is_private ?? true);
+
+    if (canNativeShare) {
+      try {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: shareData.url,
+        });
+        setJoinStatus({ tone: "success", text: "Invite ready to send." });
+        return;
+      } catch (error) {
+        const isAbortError = error instanceof DOMException && error.name === "AbortError";
+        if (isAbortError) return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setJoinStatus({ tone: "success", text: shareData.copyLabel });
+    } catch {
+      setJoinStatus({ tone: "info", text: `Copy this invite link: ${shareData.url}` });
+    }
+  }
 
   function rememberJoinedPool(pool: PoolRow) {
     setMyPools((prev) => {
@@ -1109,6 +1138,22 @@ export default function PoolsPage() {
                       ) : null}
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <Link
+                        href={`/pool/${pool.id}`}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          textDecoration: "none",
+                          fontWeight: 800,
+                          background: "var(--surface)",
+                          minHeight: 40,
+                          display: "inline-flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        Open Pool
+                      </Link>
                       <button
                         type="button"
                         onClick={() => openJoinModal(pool)}
@@ -1143,6 +1188,21 @@ export default function PoolsPage() {
                       >
                         Leaderboard
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => void sharePoolInvite(pool)}
+                        style={{
+                          padding: "9px 12px",
+                          borderRadius: 10,
+                          border: "1px solid var(--border-color)",
+                          fontWeight: 800,
+                          background: "var(--surface-elevated)",
+                          minHeight: 40,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Share Invite
+                      </button>
                       <button
                         type="button"
                         onClick={() => void openLeaveModal(pool)}

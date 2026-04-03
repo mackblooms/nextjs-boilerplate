@@ -6,7 +6,7 @@ import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
-import { getInvitePoolIdFromNextPath } from "../../../../lib/poolInvite";
+import { buildPoolInviteShareData, getInvitePoolIdFromNextPath } from "../../../../lib/poolInvite";
 import {
   scoreEntries,
   scoreTeamWinsDetailed,
@@ -1448,6 +1448,35 @@ export default function LeaderboardPage() {
     ? formatRoundLabel(forecastHorizonRound)
     : "the tournament";
   const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
+  const activePoolName = memberPools.find((pool) => pool.id === poolId)?.name ?? "";
+  const canNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+  async function sharePoolInvite() {
+    const shareData = buildPoolInviteShareData(poolId, activePoolName, true);
+
+    if (canNativeShare) {
+      try {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: shareData.url,
+        });
+        setMsg("Invite ready to send.");
+        return;
+      } catch (error) {
+        const isAbortError = error instanceof DOMException && error.name === "AbortError";
+        if (isAbortError) return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setMsg(shareData.copyLabel);
+    } catch {
+      setMsg(`Copy this invite link: ${shareData.url}`);
+    }
+  }
 
   useEffect(() => {
     if (forecastModeOn && openBreakdownEntryId) {
@@ -1509,35 +1538,52 @@ export default function LeaderboardPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Leaderboard
         </h1>
-        {memberPools.length > 0 ? (
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
-            <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
-            <select
-              value={poolSelectorValue}
-              onChange={(event) => {
-                const nextPoolId = event.target.value;
-                if (!nextPoolId || nextPoolId === poolId) return;
-                setStoredActivePoolId(nextPoolId);
-                router.push(`/pool/${nextPoolId}/leaderboard`);
-              }}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-                minHeight: 38,
-              }}
-            >
-              {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
-              {memberPools.map((pool) => (
-                <option key={pool.id} value={pool.id}>
-                  {pool.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {memberPools.length > 0 ? (
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+              <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
+              <select
+                value={poolSelectorValue}
+                onChange={(event) => {
+                  const nextPoolId = event.target.value;
+                  if (!nextPoolId || nextPoolId === poolId) return;
+                  setStoredActivePoolId(nextPoolId);
+                  router.push(`/pool/${nextPoolId}/leaderboard`);
+                }}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface-muted)",
+                  fontWeight: 700,
+                  minHeight: 38,
+                }}
+              >
+                {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
+                {memberPools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => void sharePoolInvite()}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface-elevated)",
+              fontWeight: 800,
+              minHeight: 38,
+              cursor: "pointer",
+            }}
+          >
+            Share Invite
+          </button>
+        </div>
       </div>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
