@@ -64,9 +64,6 @@ export default function ProfilePage() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushPermission, setPushPermission] = useState<PushPermissionState>("unknown");
   const [pushMessage, setPushMessage] = useState("");
-  const [pushInstallationId, setPushInstallationId] = useState("");
-  const [isSiteAdmin, setIsSiteAdmin] = useState(false);
-  const [sendingTestPush, setSendingTestPush] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -164,7 +161,6 @@ export default function ProfilePage() {
         setPushPermission(nextPermission);
 
         const installationId = getPushInstallationId();
-        setPushInstallationId(installationId);
 
         const { data: sessionData } = await supabase.auth.getSession();
         const session = sessionData.session;
@@ -215,34 +211,6 @@ export default function ProfilePage() {
       isMounted = false;
     };
   }, [pushSupported, userId]);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    let isMounted = true;
-
-    const loadAdminStatus = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) return;
-
-      const res = await fetch("/api/admin/me", {
-        headers: {
-          authorization: `Bearer ${session.access_token}`,
-        },
-        cache: "no-store",
-      });
-
-      if (!isMounted) return;
-      setIsSiteAdmin(res.ok);
-    };
-
-    void loadAdminStatus();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [userId]);
 
   async function uploadAvatar(file: File) {
     setUploadingAvatar(true);
@@ -416,46 +384,14 @@ export default function ProfilePage() {
     }
   }
 
-  async function sendTestPush() {
-    setSendingTestPush(true);
-    setPushMessage("");
-
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-      if (!session) {
-        setPushMessage("Please log in again before sending a test push.");
-        return;
-      }
-
-      const res = await fetch("/api/admin/push/test", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          installationId: pushInstallationId || undefined,
-          path: "/profile",
-        }),
-      });
-
-      const body = (await res.json().catch(() => ({}))) as {
-        error?: string;
-        environment?: string;
-      };
-
-      if (!res.ok) {
-        setPushMessage(body.error ?? "Couldn't send a test push.");
-        return;
-      }
-
-      setPushMessage(
-        `Test push sent through APNs ${body.environment ? `(${body.environment})` : ""}.`,
-      );
-    } finally {
-      setSendingTestPush(false);
+  async function togglePushNotifications() {
+    if (pushBusy || pushLoading) return;
+    if (pushEnabled) {
+      await disablePushNotifications();
+      return;
     }
+
+    await enablePushNotifications();
   }
 
   async function save() {
@@ -861,13 +797,55 @@ export default function ProfilePage() {
       {!loading && !onboarding && pushSupported ? (
         <section
           className="page-card"
-          style={{ padding: 16, display: "grid", gap: 10 }}
+          style={{ padding: 16, display: "grid", gap: 12 }}
         >
-          <div style={{ display: "grid", gap: 4 }}>
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Push notifications</h2>
-            <p style={{ margin: 0, opacity: 0.78 }}>
-              Get pool updates on this phone when scores move and activity picks up.
-            </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4 }}>
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Push notifications</h2>
+              <p style={{ margin: 0, opacity: 0.78 }}>
+                Get score swings and pool activity updates on this phone.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={pushEnabled}
+              aria-label={pushEnabled ? "Turn off push notifications" : "Turn on push notifications"}
+              onClick={() => void togglePushNotifications()}
+              disabled={pushBusy || pushLoading}
+              style={{
+                width: 58,
+                height: 34,
+                borderRadius: 999,
+                border: "1px solid var(--border-color)",
+                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.36)",
+                padding: 3,
+                position: "relative",
+                cursor: pushBusy || pushLoading ? "not-allowed" : "pointer",
+                opacity: pushBusy || pushLoading ? 0.7 : 1,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  display: "block",
+                  width: 26,
+                  height: 26,
+                  borderRadius: 999,
+                  background: "#fff",
+                  boxShadow: "0 3px 10px rgba(15, 23, 42, 0.2)",
+                  transform: pushEnabled ? "translateX(24px)" : "translateX(0)",
+                  transition: "transform 160ms ease",
+                }}
+              />
+            </button>
           </div>
 
           <div
@@ -890,40 +868,15 @@ export default function ProfilePage() {
             />
             {pushLoading
               ? "Checking this device..."
+              : pushBusy
+                ? pushEnabled
+                  ? "Turning notifications off..."
+                  : "Turning notifications on..."
               : pushEnabled
                 ? "Enabled on this phone"
                 : pushPermission === "denied"
                   ? "Denied in device settings"
                   : "Not enabled on this phone"}
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              type="button"
-              onClick={() => void enablePushNotifications()}
-              disabled={pushBusy || pushLoading || pushEnabled}
-              className="ui-btn ui-btn--primary"
-            >
-              {pushBusy && !pushEnabled ? "Enabling..." : pushEnabled ? "Enabled" : "Enable notifications"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void disablePushNotifications()}
-              disabled={pushBusy || pushLoading || !pushEnabled}
-              className="ui-btn ui-btn--secondary"
-            >
-              {pushBusy && pushEnabled ? "Turning off..." : "Turn off on this phone"}
-            </button>
-            {isSiteAdmin ? (
-              <button
-                type="button"
-                onClick={() => void sendTestPush()}
-                disabled={sendingTestPush || pushLoading || !pushEnabled}
-                className="ui-btn ui-btn--ghost"
-              >
-                {sendingTestPush ? "Sending test..." : "Send test push"}
-              </button>
-            ) : null}
           </div>
 
           <p style={{ margin: 0, fontSize: 12, opacity: 0.72 }}>

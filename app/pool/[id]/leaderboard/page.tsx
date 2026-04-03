@@ -1575,15 +1575,12 @@ export default function LeaderboardPage() {
                   setStoredActivePoolId(nextPoolId);
                   router.push(`/pool/${nextPoolId}/leaderboard`);
                 }}
+                className="ui-control ui-select"
                 style={{
-                  padding: "8px 10px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 700,
                   minHeight: 38,
                   minWidth: isCompact ? 0 : 200,
                   width: "100%",
+                  background: "var(--surface)",
                 }}
               >
                 {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
@@ -1596,18 +1593,9 @@ export default function LeaderboardPage() {
             </label>
           ) : null}
           <button
-            className="leaderboard-hero-share"
+            className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
             type="button"
             onClick={() => void sharePoolInvite()}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-elevated)",
-              fontWeight: 800,
-              minHeight: 42,
-              cursor: "pointer",
-            }}
           >
             Share Invite
           </button>

@@ -1216,49 +1216,77 @@ export default function BracketPage() {
 
   return (
     <main className="page-shell" style={{ maxWidth: "100%" }}>
-      <div
+      <section
+        className="page-surface"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
+          display: "grid",
           gap: 12,
-          flexWrap: "wrap",
           maxWidth: 1800,
           margin: "0 auto",
+          padding: 16,
         }}
       >
-        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
-          Bracket
-        </h1>
-        {memberPools.length > 0 ? (
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
-            <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
-            <select
-              value={poolSelectorValue}
-              onChange={(event) => {
-                const nextPoolId = event.target.value;
-                if (!nextPoolId || nextPoolId === poolId) return;
-                setStoredActivePoolId(nextPoolId);
-                router.push(`/pool/${nextPoolId}/bracket`);
-              }}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-                minHeight: 38,
-              }}
-            >
-              {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
-              {memberPools.map((pool) => (
-                <option key={pool.id} value={pool.id}>
-                  {pool.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "grid", gap: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, textTransform: "uppercase", opacity: 0.62 }}>
+              Pool bracket
+            </div>
+            <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
+              Bracket
+            </h1>
+            <p style={{ margin: 0, opacity: 0.78, fontSize: 14 }}>
+              Follow the full tournament board and compare one entry&apos;s path when needed.
+            </p>
+          </div>
+          {memberPools.length > 0 ? (
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+              <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
+              <select
+                value={poolSelectorValue}
+                onChange={(event) => {
+                  const nextPoolId = event.target.value;
+                  if (!nextPoolId || nextPoolId === poolId) return;
+                  setStoredActivePoolId(nextPoolId);
+                  router.push(`/pool/${nextPoolId}/bracket`);
+                }}
+                className="ui-control ui-select"
+                style={{
+                  minHeight: 38,
+                }}
+              >
+                {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
+                {memberPools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
+
+        {!draftLocked ? (
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 12,
+              background: "var(--surface-muted)",
+              fontWeight: 700,
+              opacity: 0.86,
+            }}
+          >
+            Other members&apos; brackets stay hidden until draft lock
+            {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
+          </div>
         ) : null}
-      </div>
+      </section>
 
       {selectedEntryId && showViewingBanner ? (
         <div
@@ -1301,21 +1329,6 @@ export default function BracketPage() {
       {msg ? (
         <p style={{ marginTop: 12, maxWidth: 1800, marginInline: "auto" }}>
           {msg}
-        </p>
-      ) : null}
-
-      {!draftLocked ? (
-        <p
-          style={{
-            marginTop: 12,
-            maxWidth: 1800,
-            marginInline: "auto",
-            opacity: 0.8,
-            fontWeight: 700,
-          }}
-        >
-          Other members&apos; brackets stay hidden until draft lock
-          {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
         </p>
       ) : null}
 

@@ -642,46 +642,28 @@ export default function PoolDraftPage() {
       <section
         className="page-surface"
         style={{
-          border: "1px solid var(--border-color)",
-          borderRadius: 14,
-          background: "var(--surface)",
           padding: 14,
           display: "grid",
           gap: 12,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>{pool?.name ?? "Pool"}</h1>
-            <p style={{ margin: "6px 0 0", opacity: 0.85 }}>
-              Enter saved drafts into this pool. You can create multiple entries.
+          <div style={{ display: "grid", gap: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, textTransform: "uppercase", opacity: 0.62 }}>
+              Pool draft
+            </div>
+            <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
+              {pool?.name ?? "Pool"}
+            </h1>
+            <p style={{ margin: 0, opacity: 0.85 }}>
+              Enter saved drafts into this pool or replace an existing entry when you want to change picks.
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link
-              href="/drafts"
-              style={{
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                textDecoration: "none",
-                fontWeight: 800,
-                background: "var(--surface)",
-              }}
-            >
+            <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
               Edit Drafts
             </Link>
-            <Link
-              href={`/pool/${poolId}/leaderboard`}
-              style={{
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                textDecoration: "none",
-                fontWeight: 800,
-                background: "var(--surface)",
-              }}
-            >
+            <Link href={`/pool/${poolId}/leaderboard`} className="ui-btn ui-btn--md ui-btn--primary">
               Leaderboard
             </Link>
           </div>
@@ -758,31 +740,16 @@ export default function PoolDraftPage() {
               value={joinPassword}
               onChange={(event) => setJoinPassword(event.target.value)}
               placeholder="Pool password"
-              style={{
-                width: "100%",
-                maxWidth: 380,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control ui-control--full"
+              style={{ maxWidth: 380 }}
             />
           ) : null}
           <button
             type="button"
             onClick={() => void joinPool()}
             disabled={joining}
-            style={{
-              width: "100%",
-              maxWidth: 240,
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              fontWeight: 900,
-              cursor: joining ? "not-allowed" : "pointer",
-              opacity: joining ? 0.7 : 1,
-            }}
+            className="ui-btn ui-btn--lg ui-btn--primary"
+            style={{ width: "100%", maxWidth: 240 }}
           >
             {joining ? "Joining..." : "Join pool"}
           </button>
@@ -808,14 +775,8 @@ export default function PoolDraftPage() {
               id="pool-draft-select"
               value={selectedDraftId}
               onChange={(event) => setSelectedDraftId(event.target.value)}
-              style={{
-                width: "100%",
-                maxWidth: 420,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control ui-control--full ui-select"
+              style={{ maxWidth: 420 }}
             >
               {drafts.length === 0 ? <option value="">No drafts available</option> : null}
               {drafts.map((draft) => (
@@ -834,14 +795,8 @@ export default function PoolDraftPage() {
               id="pool-entry-target-select"
               value={targetEntryId}
               onChange={(event) => setTargetEntryId(event.target.value)}
-              style={{
-                width: "100%",
-                maxWidth: 420,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control ui-control--full ui-select"
+              style={{ maxWidth: 420 }}
             >
               <option value="">Create new pool entry</option>
               {existingEntries.map((entry, index) => (
