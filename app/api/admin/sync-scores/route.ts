@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
+import { sendPoolFinalUpdateNotifications, type ChangedWinnerGame } from "@/lib/pushCampaigns";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -66,6 +67,26 @@ type LocalBracketGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+};
+
+type FinalsApplyResult = {
+  finalsSeen: number;
+  updatedGames: number;
+  alreadySet: number;
+  skippedUnlinked: number;
+  skippedNoTeamMap: number;
+  skippedTie: number;
+  relinkedByTeamPair: number;
+  skippedPairNoMatch: number;
+  skippedPairAmbiguous: number;
+  skippedWinnerNotInGame: number;
+  playInSlotsUpdated?: number;
+  playInGamesTouched?: number;
+  advancedSlotsUpdated: number;
+  advancedGamesTouched: number;
+  clearedInvalidWinners: number;
+  clearedInvalidSourceWinners: number;
+  changedGames: ChangedWinnerGame[];
 };
 
 type PropagationTarget = {
@@ -581,6 +602,7 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
   let espnSkippedPairNoMatch = 0;
   let espnSkippedPairAmbiguous = 0;
   let espnSkippedTie = 0;
+  const changedGames: ChangedWinnerGame[] = [];
 
   for (const f of finals) {
     if (f.homeScore === f.awayScore) {
@@ -655,6 +677,7 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
 
     localGame.winner_team_id = winnerLocalId;
     espnUpdatedGames++;
+    changedGames.push({ gameId: localGame.id, winnerTeamId: winnerLocalId });
   }
 
   const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
@@ -671,10 +694,11 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
     espnAdvancedGamesTouched: propagation.advancedGamesTouched,
     espnClearedInvalidWinners: propagation.clearedInvalidWinners,
     espnClearedInvalidSourceWinners: propagation.clearedInvalidSourceWinners,
+    changedGames,
   };
 }
 
-async function applyFinalsToLocalGames(finals: FinalGame[]) {
+async function applyFinalsToLocalGames(finals: FinalGame[]): Promise<FinalsApplyResult> {
   const supabaseAdmin = getSupabaseAdmin();
   const nowIso = new Date().toISOString();
   const canWriteStatus = await hasStatusColumn(supabaseAdmin);
@@ -739,6 +763,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
   let skippedPairNoMatch = 0;
   let skippedPairAmbiguous = 0;
   let skippedWinnerNotInGame = 0;
+  const changedGames: ChangedWinnerGame[] = [];
 
   for (const f of finals) {
     if (f.homeScore === f.awayScore) {
@@ -869,6 +894,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
 
     localGame.winner_team_id = winnerLocalId;
     updatedGames++;
+    changedGames.push({ gameId: localGame.id, winnerTeamId: winnerLocalId });
   }
 
   const playInResolution = await applyPlayInWinnersToR64Slots(supabaseAdmin, nowIso);
@@ -887,6 +913,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]) {
     skippedWinnerNotInGame,
     ...playInResolution,
     ...propagation,
+    changedGames,
   };
 }
 
@@ -922,6 +949,10 @@ async function runDailySync(lookbackDays: number) {
   const espnFallback = await applyEspnFinalsToLocalGames(
     await fetchEspnFinalGames(Math.max(lookbackDays, 1))
   );
+  const notifications = await sendPoolFinalUpdateNotifications([
+    ...(result.changedGames ?? []),
+    ...((espnFallback.changedGames as ChangedWinnerGame[] | undefined) ?? []),
+  ]);
 
   return {
     mode: "daily" as const,
@@ -935,6 +966,7 @@ async function runDailySync(lookbackDays: number) {
       Number(result.advancedGamesTouched ?? 0),
       Number(espnFallback.espnAdvancedGamesTouched ?? 0)
     ),
+    notifications,
     sportsDataWarnings,
     espnFallback,
   };
@@ -959,6 +991,10 @@ async function runTournamentSeasonSync(season: number) {
   const espnFallback = await applyEspnFinalsToLocalGames(
     await fetchEspnFinalGames(Math.max(DEFAULT_LOOKBACK_DAYS, 3))
   );
+  const notifications = await sendPoolFinalUpdateNotifications([
+    ...(result.changedGames ?? []),
+    ...((espnFallback.changedGames as ChangedWinnerGame[] | undefined) ?? []),
+  ]);
 
   return {
     mode: "tournament" as const,
@@ -973,6 +1009,7 @@ async function runTournamentSeasonSync(season: number) {
       Number(result.advancedGamesTouched ?? 0),
       Number(espnFallback.espnAdvancedGamesTouched ?? 0)
     ),
+    notifications,
     sportsDataWarnings,
     espnFallback,
   };
