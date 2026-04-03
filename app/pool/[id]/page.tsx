@@ -7,6 +7,7 @@ import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
@@ -451,11 +452,6 @@ function ScoreSidebar({
 export default function PoolPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
-
-  const shareLink = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}/?invite=${encodeURIComponent(poolId)}`;
-  }, [poolId]);
   const canNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -488,6 +484,11 @@ export default function PoolPage() {
   const [draftedTeamKeys, setDraftedTeamKeys] = useState<string[]>([]);
   const [draftedTeamCount, setDraftedTeamCount] = useState(0);
   const [draftedLoaded, setDraftedLoaded] = useState(false);
+  const sharePayload = useMemo(
+    () => buildPoolInviteShareData(poolId, pool?.name ?? null, pool?.is_private ?? true),
+    [pool?.is_private, pool?.name, poolId]
+  );
+  const shareLink = sharePayload.url;
 
   useEffect(() => {
     const load = async () => {
@@ -1339,7 +1340,7 @@ export default function PoolPage() {
 
     try {
       await navigator.clipboard.writeText(shareLink);
-      setCopyMsg("Share link copied.");
+      setCopyMsg(sharePayload.copyLabel);
     } catch {
       setCopyMsg("Unable to copy automatically. You can copy it from the field below.");
     }
@@ -1355,13 +1356,11 @@ export default function PoolPage() {
 
     try {
       await navigator.share({
-        title: pool?.name ? `${pool.name} on bracketball` : "Join my bracketball pool",
-        text: pool?.name
-          ? `Join my bracketball pool: ${pool.name}`
-          : "Join my bracketball pool on bracketball.",
+        title: sharePayload.title,
+        text: sharePayload.text,
         url: shareLink,
       });
-      setCopyMsg("Share sheet opened.");
+      setCopyMsg("Invite ready to send.");
     } catch (error) {
       const isAbortError =
         error instanceof DOMException && error.name === "AbortError";
