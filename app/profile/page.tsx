@@ -552,21 +552,29 @@ export default function ProfilePage() {
     : avatarUrl.trim();
 
   return (
-    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 560 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
-        {onboarding ? "Set up your profile" : "Profile"}
-      </h1>
-
-      {onboarding ? (
-        <p style={{ marginBottom: 16, opacity: 0.9 }}>
-          Before you jump in, create your bracketball profile.
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 620 }}>
+      <section className="page-surface" style={{ padding: 16, display: "grid", gap: 8 }}>
+        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
+          {onboarding ? "Set up your profile" : "Profile"}
+        </h1>
+        <p className="page-subtitle" style={{ maxWidth: 520 }}>
+          {onboarding
+            ? "Before you jump in, create the account details and avatar that will show up around your pools."
+            : "Keep your player card, avatar, and phone-specific notification settings ready for pool season."}
         </p>
-      ) : null}
+      </section>
 
       {loading ? <p>Loading...</p> : null}
 
       {!loading && isEditing ? (
-        <>
+        <section
+          className="page-card"
+          style={{
+            padding: 16,
+            display: "grid",
+            gap: 14,
+          }}
+        >
           <div style={{ display: "grid", placeItems: "center", marginBottom: 14 }}>
             <button
               type="button"
@@ -725,13 +733,8 @@ export default function ProfilePage() {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="e.g., Jordan Matthews"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
+            className="ui-control ui-control--full"
+            style={{ marginBottom: 12 }}
           />
 
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
@@ -741,13 +744,8 @@ export default function ProfilePage() {
             value={favoriteTeam}
             onChange={(e) => setFavoriteTeam(e.target.value)}
             placeholder="e.g., UConn"
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              marginBottom: 12,
-            }}
+            className="ui-control ui-control--full"
+            style={{ marginBottom: 12 }}
           />
 
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
@@ -758,28 +756,15 @@ export default function ProfilePage() {
             onChange={(e) => setBio(e.target.value)}
             placeholder="Tell your poolmates about your upset philosophy"
             rows={3}
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              marginBottom: 12,
-              resize: "vertical",
-            }}
+            className="ui-control ui-control--full ui-textarea"
+            style={{ marginBottom: 12 }}
           />
 
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button
               onClick={save}
               disabled={uploadingAvatar}
-              style={{
-                padding: "12px 14px",
-                borderRadius: 8,
-                border: "none",
-                cursor: "pointer",
-                fontWeight: 800,
-                opacity: uploadingAvatar ? 0.65 : 1,
-              }}
+              className="ui-btn ui-btn--lg ui-btn--primary"
             >
               {onboarding ? "Save and continue" : "Save"}
             </button>
@@ -790,30 +775,19 @@ export default function ProfilePage() {
                   setIsEditing(false);
                   setMsg("");
                 }}
-                style={{
-                  padding: "12px 14px",
-                  borderRadius: 8,
-                  border: "1px solid var(--border-color)",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  background: "transparent",
-                }}
+                className="ui-btn ui-btn--lg ui-btn--ghost"
               >
                 Cancel
               </button>
             ) : null}
           </div>
-        </>
+        </section>
       ) : null}
 
       {!loading && !isEditing ? (
         <section
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            padding: 14,
-            background: "var(--surface)",
-          }}
+          className="page-card"
+          style={{ padding: 16 }}
         >
           <div
             style={{
@@ -856,6 +830,9 @@ export default function ProfilePage() {
               <div style={{ fontWeight: 900, fontSize: 22 }}>
                 {fullName || "Full name"}
               </div>
+              <div style={{ marginTop: 4, fontSize: 13, opacity: 0.74 }}>
+                {favoriteTeam ? `Pulling for ${favoriteTeam}` : "Favorite team not set yet"}
+              </div>
             </div>
           </div>
 
@@ -873,15 +850,8 @@ export default function ProfilePage() {
               setIsEditing(true);
               setMsg("");
             }}
-            style={{
-              marginTop: 12,
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid var(--border-color)",
-              cursor: "pointer",
-              fontWeight: 800,
-              background: "transparent",
-            }}
+            className="ui-btn ui-btn--md ui-btn--ghost"
+            style={{ marginTop: 12 }}
           >
             Edit profile
           </button>
@@ -890,14 +860,8 @@ export default function ProfilePage() {
 
       {!loading && !onboarding && pushSupported ? (
         <section
-          style={{
-            border: "1px solid var(--border-color)",
-            borderRadius: 12,
-            padding: 14,
-            background: "var(--surface)",
-            display: "grid",
-            gap: 10,
-          }}
+          className="page-card"
+          style={{ padding: 16, display: "grid", gap: 10 }}
         >
           <div style={{ display: "grid", gap: 4 }}>
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Push notifications</h2>

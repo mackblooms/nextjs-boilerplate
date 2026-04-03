@@ -655,16 +655,13 @@ export default function PoolsPage() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main className="page-shell page-shell--stack" style={{ maxWidth: 960, marginTop: 90 }}>
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
       <section
         className="page-surface"
         style={{
-          border: "1px solid var(--border-color)",
-          borderRadius: 14,
-          background: "var(--surface)",
-          padding: 14,
+          padding: 16,
           display: "grid",
-          gap: 14,
+          gap: 16,
         }}
       >
         <div
@@ -677,45 +674,58 @@ export default function PoolsPage() {
           }}
         >
           <div style={{ display: "grid", gap: 6 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Pools</h1>
-            <p style={{ margin: 0, opacity: 0.8 }}>
-              Join a pool, then select one or more saved drafts to enter.
+            <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
+              Pools
+            </h1>
+            <p className="page-subtitle" style={{ maxWidth: 540 }}>
+              Move between your live competitions, discover new pools, and enter saved drafts without extra setup.
             </p>
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link
-              href="/drafts"
-              style={{
-                padding: "10px 14px",
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 900,
-                minHeight: 44,
-                display: "inline-flex",
-                alignItems: "center",
-                background: "var(--surface)",
-              }}
-            >
+            <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
               My Drafts
             </Link>
-            <Link
-              href="/pools/new"
-              style={{
-                padding: "10px 14px",
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 900,
-                minHeight: 44,
-                display: "inline-flex",
-                alignItems: "center",
-                background: "var(--surface)",
-              }}
-            >
+            <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--primary">
               New Pool
             </Link>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: "var(--surface)",
+              display: "grid",
+              gap: 4,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Joined pools</span>
+            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{myPools.length}</span>
+            <span style={{ fontSize: 13, opacity: 0.78 }}>Open one tap straight to the leaderboard.</span>
+          </div>
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: "var(--surface)",
+              display: "grid",
+              gap: 4,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Available to join</span>
+            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{discoverPools.length}</span>
+            <span style={{ fontSize: 13, opacity: 0.78 }}>Public and private pools ready for entry.</span>
           </div>
         </div>
 
@@ -760,52 +770,26 @@ export default function PoolsPage() {
               style={{
                 border: "1px solid var(--border-color)",
                 borderRadius: 12,
-                padding: 12,
+                padding: 16,
                 background: "var(--surface)",
                 display: "grid",
-                gap: 8,
+                gap: 10,
               }}
             >
-              <p style={{ margin: 0 }}>You have not joined any pools yet.</p>
+              <div style={{ display: "grid", gap: 4 }}>
+                <div style={{ fontSize: 18, fontWeight: 900 }}>Your pool list is still empty.</div>
+                <p style={{ margin: 0, opacity: 0.8 }}>
+                  Join a pool to start tracking standings, brackets, and draft entries from the app shell.
+                </p>
+              </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("discover")}
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
+                <button type="button" onClick={() => setActiveTab("discover")} className="ui-btn ui-btn--md ui-btn--primary">
                   Discover pools
                 </button>
-                <Link
-                  href="/drafts"
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
-                >
+                <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
                   Open drafts
                 </Link>
-                <Link
-                  href="/pools/new"
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
-                >
+                <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--secondary">
                   Create a pool
                 </Link>
               </div>
@@ -817,33 +801,57 @@ export default function PoolsPage() {
               {myPools.map((pool) => {
                 const entriesLocked = isPoolEntryLocked(pool);
                 return (
-                <li key={pool.id}>
-                  <Link
-                    href={`/pool/${pool.id}/leaderboard`}
-                    style={{
-                      border: "1px solid var(--border-color)",
-                      borderRadius: 12,
-                      padding: 12,
-                      background: "var(--surface)",
-                      display: "grid",
-                      gap: 6,
-                      textDecoration: "none",
-                      color: "inherit",
-                    }}
-                  >
-                    <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {pool.name}
-                    </div>
-                    <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
-                    {entriesLocked ? (
-                      <div style={{ fontSize: 12, opacity: 0.7 }}>
-                        Entry changes locked at {formatDraftLockTimeET(pool.lock_time)}
+                  <li key={pool.id}>
+                    <Link
+                      href={`/pool/${pool.id}/leaderboard`}
+                      style={{
+                        border: "1px solid var(--border-color)",
+                        borderRadius: 14,
+                        padding: 14,
+                        background: "var(--surface)",
+                        display: "grid",
+                        gap: 8,
+                        textDecoration: "none",
+                        color: "inherit",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          alignItems: "flex-start",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {pool.name}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            border: "1px solid var(--border-color)",
+                            background: "var(--surface-muted)",
+                          }}
+                        >
+                          {privacyLabel(pool)}
+                        </span>
                       </div>
-                    ) : null}
-                  </Link>
-                </li>
-              );
-            })}
+                      <div style={{ fontSize: 13, opacity: 0.8 }}>Tap to open standings, bracket, and invite tools.</div>
+                      {entriesLocked ? (
+                        <div style={{ fontSize: 12, opacity: 0.7 }}>
+                          Entry changes locked at {formatDraftLockTimeET(pool.lock_time)}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Open leaderboard</div>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
         </section>
@@ -861,22 +869,20 @@ export default function PoolsPage() {
               gap: 10,
             }}
           >
-            <label htmlFor="pool-search" style={{ fontWeight: 800, fontSize: 13 }}>
-              Search pools
-            </label>
+            <div style={{ display: "grid", gap: 4 }}>
+              <label htmlFor="pool-search" style={{ fontWeight: 800, fontSize: 13 }}>
+                Search pools
+              </label>
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.76 }}>
+                Find a pool by name, then join it and choose which saved drafts you want to enter.
+              </p>
+            </div>
             <input
               id="pool-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Find by pool name"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                minHeight: 44,
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control ui-control--full"
             />
             {!userId ? (
               <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
@@ -887,7 +893,16 @@ export default function PoolsPage() {
 
           {allPoolsMsg ? <p>{allPoolsMsg}</p> : null}
           {!loading && !allPoolsMsg && filteredDiscoverPools.length === 0 ? (
-            <p>{query.trim() ? "No pools match your search." : "No pools available to join right now."}</p>
+            <div
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 12,
+                padding: 14,
+                background: "var(--surface)",
+              }}
+            >
+              {query.trim() ? "No pools match your search." : "No pools are available to join right now."}
+            </div>
           ) : null}
 
           {!loading && filteredDiscoverPools.length > 0 ? (
@@ -900,8 +915,8 @@ export default function PoolsPage() {
                     <div
                       style={{
                         border: "1px solid var(--border-color)",
-                        borderRadius: 12,
-                        padding: 12,
+                        borderRadius: 14,
+                        padding: 14,
                         background: "var(--surface)",
                         display: "grid",
                         gap: 10,
@@ -919,9 +934,21 @@ export default function PoolsPage() {
                         <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
                           <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
-                            {isPrivate ? "Private (password required)" : "Public"}
+                            {isPrivate ? "Private pool with password protection" : "Public pool ready to join"}
                           </div>
                         </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            border: "1px solid var(--border-color)",
+                            background: isPrivate ? "var(--surface-muted)" : "var(--highlight)",
+                          }}
+                        >
+                          {isPrivate ? "Private" : "Public"}
+                        </span>
                       </div>
 
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -929,38 +956,17 @@ export default function PoolsPage() {
                           type="button"
                           onClick={() => openJoinModal(pool)}
                           disabled={!userId}
-                          style={{
-                            flex: "1 1 160px",
-                            padding: "10px 12px",
-                            minHeight: 44,
-                            borderRadius: 10,
-                            border: "1px solid #16a34a",
-                            background: "rgba(22,163,74,0.12)",
-                            color: "#166534",
-                            fontWeight: 800,
-                            cursor: !userId ? "not-allowed" : "pointer",
-                            opacity: !userId ? 0.7 : 1,
-                          }}
+                          className="ui-btn ui-btn--md ui-btn--success"
+                          style={{ flex: "1 1 180px" }}
                         >
                           Join + Enter Drafts
                         </button>
                         <Link
                           href={`/pool/${pool.id}/leaderboard`}
-                          style={{
-                            flex: "1 1 160px",
-                            padding: "10px 12px",
-                            minHeight: 44,
-                            borderRadius: 10,
-                            border: "1px solid var(--border-color)",
-                            textDecoration: "none",
-                            fontWeight: 800,
-                            background: "var(--surface)",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+                          className="ui-btn ui-btn--md ui-btn--secondary"
+                          style={{ flex: "1 1 180px" }}
                         >
-                          Leaderboard
+                          Preview Leaderboard
                         </Link>
                       </div>
                     </div>

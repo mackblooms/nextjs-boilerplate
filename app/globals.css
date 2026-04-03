@@ -153,7 +153,7 @@ body::before {
 .page-shell {
   width: 100%;
   margin: clamp(26px, 4vw, 58px) auto;
-  padding: 16px;
+  padding: clamp(12px, 2.8vw, 18px);
 }
 
 .page-shell--stack {
@@ -178,6 +178,16 @@ body::before {
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    margin-block: 18px 28px;
+  }
+
+  .page-shell--compact {
+    margin-top: 14px;
+  }
 }
 
 .page-title {
