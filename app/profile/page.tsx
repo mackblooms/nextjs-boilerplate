@@ -3,10 +3,16 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { withAvatarFallback } from "../../lib/avatar";
 import { trackEvent } from "@/lib/analytics";
+import {
+  getPushInstallationId,
+  normalizePushPermissionState,
+  type PushPermissionState,
+} from "@/lib/pushNotifications";
 
 type ProfileRow = {
   display_name: string | null;
@@ -52,6 +58,12 @@ export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const [pushSupported] = useState(Capacitor.isNativePlatform());
+  const [pushLoading, setPushLoading] = useState(Capacitor.isNativePlatform());
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushPermission, setPushPermission] = useState<PushPermissionState>("unknown");
+  const [pushMessage, setPushMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -129,6 +141,75 @@ export default function ProfilePage() {
 
     load();
   }, [onboarding]);
+
+  useEffect(() => {
+    if (!pushSupported || !userId) {
+      setPushLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadPushState = async () => {
+      setPushLoading(true);
+
+      try {
+        const permission = await PushNotifications.checkPermissions();
+        if (!isMounted) return;
+
+        const nextPermission = normalizePushPermissionState(permission.receive);
+        setPushPermission(nextPermission);
+
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData.session;
+        if (!session) {
+          if (!isMounted) return;
+          setPushEnabled(false);
+          setPushLoading(false);
+          return;
+        }
+
+        const installationId = getPushInstallationId();
+        const res = await fetch(
+          `/api/push/device?installationId=${encodeURIComponent(installationId)}`,
+          {
+            headers: {
+              authorization: `Bearer ${session.access_token}`,
+            },
+            cache: "no-store",
+          },
+        );
+
+        const body = (await res.json().catch(() => ({}))) as {
+          device?: {
+            enabled?: boolean;
+            permissionState?: string | null;
+          } | null;
+        };
+
+        if (!isMounted) return;
+
+        if (res.ok && body.device) {
+          setPushEnabled(body.device.enabled !== false && nextPermission === "granted");
+          setPushPermission(normalizePushPermissionState(body.device.permissionState));
+        } else {
+          setPushEnabled(false);
+        }
+      } catch {
+        if (!isMounted) return;
+        setPushEnabled(false);
+        setPushPermission("unknown");
+      } finally {
+        if (isMounted) setPushLoading(false);
+      }
+    };
+
+    void loadPushState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pushSupported, userId]);
 
   async function uploadAvatar(file: File) {
     setUploadingAvatar(true);
@@ -238,6 +319,68 @@ export default function ProfilePage() {
       return;
     }
     fileInputRef.current?.click();
+  }
+
+  async function enablePushNotifications() {
+    setPushBusy(true);
+    setPushMessage("");
+
+    try {
+      let permission = await PushNotifications.checkPermissions();
+      if (permission.receive === "prompt") {
+        permission = await PushNotifications.requestPermissions();
+      }
+
+      const permissionState = normalizePushPermissionState(permission.receive);
+      setPushPermission(permissionState);
+
+      if (permissionState !== "granted") {
+        setPushEnabled(false);
+        setPushMessage("Notifications are off for this phone right now.");
+        return;
+      }
+
+      await PushNotifications.register();
+      setPushEnabled(true);
+      setPushMessage("Push notifications are enabled on this phone.");
+    } catch {
+      setPushEnabled(false);
+      setPushMessage("Couldn't enable notifications on this phone.");
+    } finally {
+      setPushBusy(false);
+    }
+  }
+
+  async function disablePushNotifications() {
+    setPushBusy(true);
+    setPushMessage("");
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (session) {
+        await fetch("/api/push/device", {
+          method: "DELETE",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            installationId: getPushInstallationId(),
+          }),
+        });
+      }
+
+      await PushNotifications.unregister().catch(() => {});
+      const permission = await PushNotifications.checkPermissions().catch(() => ({ receive: "unknown" as const }));
+      setPushPermission(normalizePushPermissionState(permission.receive));
+      setPushEnabled(false);
+      setPushMessage("Push notifications are turned off for this phone.");
+    } catch {
+      setPushMessage("Couldn't turn off notifications right now.");
+    } finally {
+      setPushBusy(false);
+    }
   }
 
   async function save() {
@@ -667,6 +810,77 @@ export default function ProfilePage() {
           >
             Edit profile
           </button>
+        </section>
+      ) : null}
+
+      {!loading && !onboarding && pushSupported ? (
+        <section
+          style={{
+            border: "1px solid var(--border-color)",
+            borderRadius: 12,
+            padding: 14,
+            background: "var(--surface)",
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "grid", gap: 4 }}>
+            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Push notifications</h2>
+            <p style={{ margin: 0, opacity: 0.78 }}>
+              Get pool updates on this phone when scores move and activity picks up.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 13,
+              fontWeight: 800,
+              opacity: 0.84,
+            }}
+          >
+            <span
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.9)",
+              }}
+            />
+            {pushLoading
+              ? "Checking this device..."
+              : pushEnabled
+                ? "Enabled on this phone"
+                : pushPermission === "denied"
+                  ? "Denied in device settings"
+                  : "Not enabled on this phone"}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => void enablePushNotifications()}
+              disabled={pushBusy || pushLoading || pushEnabled}
+              className="ui-btn ui-btn--primary"
+            >
+              {pushBusy && !pushEnabled ? "Enabling..." : pushEnabled ? "Enabled" : "Enable notifications"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void disablePushNotifications()}
+              disabled={pushBusy || pushLoading || !pushEnabled}
+              className="ui-btn ui-btn--secondary"
+            >
+              {pushBusy && pushEnabled ? "Turning off..." : "Turn off on this phone"}
+            </button>
+          </div>
+
+          <p style={{ margin: 0, fontSize: 12, opacity: 0.72 }}>
+            If you deny notifications on iPhone, you can turn them back on later in Settings.
+          </p>
+          {pushMessage ? <p style={{ margin: 0 }}>{pushMessage}</p> : null}
         </section>
       ) : null}
 

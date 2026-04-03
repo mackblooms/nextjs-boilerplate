@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import AppDeepLinkHandler from "./components/AppDeepLinkHandler";
+import AppPushNotifications from "./components/AppPushNotifications";
 import AppTopNav from "./components/AppTopNav";
 import InstructionsModal from "./components/InstructionsModal";
 import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
@@ -55,6 +56,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${ibmPlexMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <AppDeepLinkHandler />
+        <AppPushNotifications />
         <AppTopNav />
         <Suspense fallback={null}>
           <InstructionsModal />
