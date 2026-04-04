@@ -140,7 +140,6 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
-const LANDING_INTRO_STORAGE_KEY = "bracketball-home-intro-seen";
 const LANDING_INTRO_MARK_MS = 650;
 const LANDING_INTRO_WORDMARK_MS = 850;
 const LANDING_INTRO_EXIT_MS = 420;
@@ -153,7 +152,6 @@ type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
 
 function getInitialLandingIntroPhase(enabled: boolean): LandingIntroPhase {
   if (!enabled || typeof window === "undefined") return "hidden";
-  if (window.sessionStorage.getItem(LANDING_INTRO_STORAGE_KEY) === "1") return "hidden";
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "wordmark" : "mark";
 }
 
@@ -164,8 +162,6 @@ function useLandingIntro(enabled: boolean) {
     if (!enabled || typeof window === "undefined") return undefined;
 
     if (phase === "hidden") {
-      if (window.sessionStorage.getItem(LANDING_INTRO_STORAGE_KEY) === "1") return undefined;
-
       const startTimer = window.setTimeout(() => {
         setPhase(getInitialLandingIntroPhase(true));
       }, 0);
@@ -174,8 +170,6 @@ function useLandingIntro(enabled: boolean) {
         window.clearTimeout(startTimer);
       };
     }
-
-    window.sessionStorage.setItem(LANDING_INTRO_STORAGE_KEY, "1");
 
     const timer = window.setTimeout(() => {
       if (phase === "mark") {
@@ -253,21 +247,19 @@ function PenIcon() {
 function LandingIntroOverlay({ phase }: { phase: LandingIntroPhase }) {
   if (phase === "hidden") return null;
 
+  const showMark = phase === "mark";
   const showWordmark = phase === "wordmark" || phase === "exit";
 
   return (
-    <div
-      className="landing-intro-overlay"
-      data-phase={phase}
-      aria-hidden="true"
-    >
-      <div className="landing-intro-lockup" data-expanded={showWordmark}>
+    <div className="landing-intro-overlay" data-phase={phase} aria-hidden="true">
+      <div className="landing-intro-stage">
         <Image
           src="/bracketball-logo-mark.png"
           alt=""
           width={120}
           height={120}
           className="landing-intro-mark"
+          data-visible={showMark}
           priority
         />
         <span className="landing-intro-wordmark" data-visible={showWordmark}>
@@ -290,6 +282,7 @@ function LandingPage({
   showIntro?: boolean;
 }) {
   const introPhase = useLandingIntro(showIntro);
+  const introActive = introPhase !== "hidden";
 
   return (
     <>
@@ -300,6 +293,9 @@ function LandingPage({
           maxWidth: 920,
           margin: "10px auto 22px",
           padding: 8,
+          opacity: introActive ? 0 : 1,
+          pointerEvents: introActive ? "none" : "auto",
+          transition: "opacity 180ms ease",
         }}
       >
         <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
