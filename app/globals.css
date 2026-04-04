@@ -473,10 +473,10 @@ textarea::placeholder {
   opacity: 0;
   white-space: nowrap;
   font-family: var(--font-app-sans), "Avenir Next", "Segoe UI", sans-serif;
-  font-size: clamp(2rem, 7vw, 3.4rem);
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  line-height: 1;
+  font-size: clamp(1.92rem, 6.4vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  line-height: 0.96;
   transform: translateY(8px) scale(0.98);
   transition:
     opacity 320ms ease,
@@ -918,7 +918,7 @@ textarea::placeholder {
   }
 
   .landing-intro-wordmark {
-    font-size: clamp(1.72rem, 10vw, 2.3rem);
+    font-size: clamp(1.6rem, 9vw, 2.15rem);
   }
 
   .landing-logo-topbar {
