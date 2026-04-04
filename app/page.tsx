@@ -151,22 +151,7 @@ function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
 type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
 
 function useLandingIntro(enabled: boolean) {
-  const [phase, setPhase] = useState<LandingIntroPhase>("hidden");
-  const hasStartedRef = useRef(false);
-
-  useEffect(() => {
-    if (!enabled || typeof window === "undefined" || hasStartedRef.current) return undefined;
-
-    hasStartedRef.current = true;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const startTimer = window.setTimeout(() => {
-      setPhase(reduceMotion ? "wordmark" : "mark");
-    }, 0);
-
-    return () => {
-      window.clearTimeout(startTimer);
-    };
-  }, [enabled]);
+  const [phase, setPhase] = useState<LandingIntroPhase>(enabled ? "mark" : "hidden");
 
   useEffect(() => {
     if (!enabled || typeof window === "undefined" || phase === "hidden") return undefined;
@@ -2106,7 +2091,7 @@ function HomeContent() {
 }
 
 function HomeFallback() {
-  return <LandingPage loginHref="/login" />;
+  return <LandingPage loginHref="/login" showIntro />;
 }
 
 export default function Home() {
