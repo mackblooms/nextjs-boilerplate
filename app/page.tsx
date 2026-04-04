@@ -150,26 +150,26 @@ function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
 
 type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
 
-function getInitialLandingIntroPhase(enabled: boolean): LandingIntroPhase {
-  if (!enabled || typeof window === "undefined") return "hidden";
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "wordmark" : "mark";
-}
-
 function useLandingIntro(enabled: boolean) {
-  const [phase, setPhase] = useState<LandingIntroPhase>(() => getInitialLandingIntroPhase(enabled));
+  const [phase, setPhase] = useState<LandingIntroPhase>("hidden");
+  const hasStartedRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
+    if (!enabled || typeof window === "undefined" || hasStartedRef.current) return undefined;
 
-    if (phase === "hidden") {
-      const startTimer = window.setTimeout(() => {
-        setPhase(getInitialLandingIntroPhase(true));
-      }, 0);
+    hasStartedRef.current = true;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const startTimer = window.setTimeout(() => {
+      setPhase(reduceMotion ? "wordmark" : "mark");
+    }, 0);
 
-      return () => {
-        window.clearTimeout(startTimer);
-      };
-    }
+    return () => {
+      window.clearTimeout(startTimer);
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined" || phase === "hidden") return undefined;
 
     const timer = window.setTimeout(() => {
       if (phase === "mark") {
