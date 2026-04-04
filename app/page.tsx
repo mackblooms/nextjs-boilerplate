@@ -1,6 +1,8 @@
 "use client";
 
 import { type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -152,6 +154,27 @@ type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
 
 function useLandingIntro(enabled: boolean) {
   const [phase, setPhase] = useState<LandingIntroPhase>(enabled ? "mark" : "hidden");
+  const wasBackgroundedRef = useRef(false);
+  const previousEnabledRef = useRef(enabled);
+
+  useEffect(() => {
+    if (previousEnabledRef.current === enabled) return undefined;
+
+    previousEnabledRef.current = enabled;
+    const timer = window.setTimeout(() => {
+      if (!enabled) {
+        wasBackgroundedRef.current = false;
+        setPhase("hidden");
+        return;
+      }
+
+      setPhase("mark");
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled || typeof window === "undefined" || phase === "hidden") return undefined;
@@ -172,6 +195,55 @@ function useLandingIntro(enabled: boolean) {
       window.clearTimeout(timer);
     };
   }, [enabled, phase]);
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return undefined;
+
+    let removeNativeListener: (() => void) | undefined;
+
+    const restartIntro = () => {
+      if (!wasBackgroundedRef.current) return;
+      wasBackgroundedRef.current = false;
+      setPhase("mark");
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        wasBackgroundedRef.current = true;
+        return;
+      }
+
+      if (document.visibilityState === "visible") {
+        restartIntro();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const setupNativeListener = async () => {
+      if (!Capacitor.isNativePlatform()) return;
+
+      const listener = await CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+        if (!isActive) {
+          wasBackgroundedRef.current = true;
+          return;
+        }
+
+        restartIntro();
+      });
+
+      removeNativeListener = () => {
+        void listener.remove();
+      };
+    };
+
+    void setupNativeListener();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      removeNativeListener?.();
+    };
+  }, [enabled]);
 
   return phase;
 }
