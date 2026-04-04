@@ -140,9 +140,61 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
+const LANDING_INTRO_STORAGE_KEY = "bracketball-home-intro-seen";
+const LANDING_INTRO_MARK_MS = 650;
+const LANDING_INTRO_WORDMARK_MS = 850;
+const LANDING_INTRO_EXIT_MS = 420;
 
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+}
+
+type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
+
+function getInitialLandingIntroPhase(enabled: boolean): LandingIntroPhase {
+  if (!enabled || typeof window === "undefined") return "hidden";
+  if (window.sessionStorage.getItem(LANDING_INTRO_STORAGE_KEY) === "1") return "hidden";
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "wordmark" : "mark";
+}
+
+function useLandingIntro(enabled: boolean) {
+  const [phase, setPhase] = useState<LandingIntroPhase>(() => getInitialLandingIntroPhase(enabled));
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return undefined;
+
+    if (phase === "hidden") {
+      if (window.sessionStorage.getItem(LANDING_INTRO_STORAGE_KEY) === "1") return undefined;
+
+      const startTimer = window.setTimeout(() => {
+        setPhase(getInitialLandingIntroPhase(true));
+      }, 0);
+
+      return () => {
+        window.clearTimeout(startTimer);
+      };
+    }
+
+    window.sessionStorage.setItem(LANDING_INTRO_STORAGE_KEY, "1");
+
+    const timer = window.setTimeout(() => {
+      if (phase === "mark") {
+        setPhase("wordmark");
+        return;
+      }
+      if (phase === "wordmark") {
+        setPhase("exit");
+        return;
+      }
+      setPhase("hidden");
+    }, phase === "mark" ? LANDING_INTRO_MARK_MS : phase === "wordmark" ? LANDING_INTRO_WORDMARK_MS : LANDING_INTRO_EXIT_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [enabled, phase]);
+
+  return phase;
 }
 
 function isMissingEntryNameError(message?: string) {
@@ -195,6 +247,116 @@ function PenIcon() {
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
     </svg>
+  );
+}
+
+function LandingIntroOverlay({ phase }: { phase: LandingIntroPhase }) {
+  if (phase === "hidden") return null;
+
+  const showWordmark = phase === "wordmark" || phase === "exit";
+
+  return (
+    <div
+      className="landing-intro-overlay"
+      data-phase={phase}
+      aria-hidden="true"
+    >
+      <div className="landing-intro-lockup" data-expanded={showWordmark}>
+        <Image
+          src="/bracketball-logo-mark.png"
+          alt=""
+          width={120}
+          height={120}
+          className="landing-intro-mark"
+          priority
+        />
+        <span className="landing-intro-wordmark" data-visible={showWordmark}>
+          bracketball
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function LandingPage({
+  loginHref,
+  invitePoolId,
+  invitePoolName,
+  showIntro = false,
+}: {
+  loginHref: string;
+  invitePoolId?: string | null;
+  invitePoolName?: string | null;
+  showIntro?: boolean;
+}) {
+  const introPhase = useLandingIntro(showIntro);
+
+  return (
+    <>
+      <LandingIntroOverlay phase={introPhase} />
+      <main
+        className="page-shell home-page-shell home-landing-shell"
+        style={{
+          maxWidth: 920,
+          margin: "10px auto 22px",
+          padding: 8,
+        }}
+      >
+        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
+          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={206}
+              height={58}
+              className="landing-topbar-mark"
+              priority
+            />
+          </Link>
+        </header>
+
+        <section className="landing-center-stage" aria-label="Landing actions">
+          <div className="page-surface landing-center-card">
+            <h1 className="landing-title">draft, track and win.</h1>
+            <p className="landing-copy">
+              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
+              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
+            </p>
+            {invitePoolId ? (
+              <p className="landing-invite-text">
+                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
+              </p>
+            ) : null}
+            <div className="landing-action-row">
+              <Link
+                href={loginHref}
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                {invitePoolId ? "Join pool" : "Login / Sign up"}
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                How it works
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
 
@@ -1613,68 +1775,12 @@ function HomeContent() {
 
   if (isAuthenticated !== true) {
     return (
-      <main
-        className="page-shell home-page-shell home-landing-shell"
-        style={{
-          maxWidth: 920,
-          margin: "10px auto 22px",
-          padding: 8,
-        }}
-      >
-        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={206}
-              height={58}
-              className="landing-topbar-mark"
-              priority
-            />
-          </Link>
-        </header>
-
-        <section className="landing-center-stage" aria-label="Landing actions">
-          <div className="page-surface landing-center-card">
-            <h1 className="landing-title">draft, track and win.</h1>
-            <p className="landing-copy">
-              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-            </p>
-            {invitePoolId ? (
-              <p className="landing-invite-text">
-                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
-              </p>
-            ) : null}
-            <div className="landing-action-row">
-              <Link
-                href={loginHref}
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                {invitePoolId ? "Join pool" : "Login / Sign up"}
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                How it works
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+      <LandingPage
+        loginHref={loginHref}
+        invitePoolId={invitePoolId}
+        invitePoolName={invitePoolName}
+        showIntro={isAuthenticated === false}
+      />
     );
   }
 
@@ -2004,47 +2110,7 @@ function HomeContent() {
 }
 
 function HomeFallback() {
-  return (
-    <main
-      className="page-shell home-page-shell home-landing-shell"
-      style={{
-        maxWidth: 920,
-        margin: "10px auto 22px",
-        padding: 8,
-      }}
-    >
-      <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-        <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-          <Image
-            src="/bracketball-logo-mark.png"
-            alt="bracketball logo"
-            width={206}
-            height={58}
-            className="landing-topbar-mark"
-            priority
-          />
-        </Link>
-      </header>
-
-      <section className="landing-center-stage" aria-label="Landing actions">
-        <div className="page-surface landing-center-card">
-          <h1 className="landing-title">draft, track and win.</h1>
-          <p className="landing-copy">
-            Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-            bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-          </p>
-          <div className="landing-action-row">
-            <Link href="/login" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
-              Login / Sign up
-            </Link>
-            <Link href="/how-it-works" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
-              How it works
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  return <LandingPage loginHref="/login" />;
 }
 
 export default function Home() {
