@@ -142,9 +142,9 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
-const LANDING_INTRO_MARK_MS = 650;
-const LANDING_INTRO_WORDMARK_MS = 850;
-const LANDING_INTRO_EXIT_MS = 420;
+const LANDING_INTRO_MARK_MS = 1050;
+const LANDING_INTRO_WORDMARK_MS = 1200;
+const LANDING_INTRO_EXIT_MS = 560;
 
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
