@@ -96,6 +96,28 @@ type PropagationTarget = {
   side: "team1_id" | "team2_id";
 };
 
+type TeamIdentityRow = {
+  id: string;
+  name?: string | null;
+  region?: string | null;
+  seed?: number | null;
+  seed_in_region?: number | null;
+  sportsdata_team_id?: number | null;
+  espn_team_id?: number | null;
+};
+
+type LocalPairGame = {
+  id: string;
+  round?: string | null;
+  region?: string | null;
+  slot?: number | null;
+  status?: string | null;
+  start_time?: string | null;
+  team1_id: string | null;
+  team2_id: string | null;
+  winner_team_id: string | null;
+};
+
 const PLAY_IN_R64_SLOT_KEYS = new Set([
   "south|1",
   "west|5",
@@ -132,17 +154,71 @@ function teamPairKey(teamA: string, teamB: string) {
   return teamA < teamB ? `${teamA}|${teamB}` : `${teamB}|${teamA}`;
 }
 
-function pushUniqueTeamId(target: Map<number, string[]>, externalTeamId: unknown, localTeamId: unknown) {
-  const sportsId = Number(externalTeamId);
-  if (!Number.isFinite(sportsId)) return;
+function toSeed(value: unknown): number | null {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  const seed = Math.trunc(n);
+  return seed >= 1 && seed <= 16 ? seed : null;
+}
 
-  const localId = String(localTeamId ?? "").trim();
-  if (!localId) return;
+function teamIdentityScore(row: TeamIdentityRow): number {
+  const name = norm(row.name);
+  let score = 0;
+  if (name && !name.includes("winner")) score += 2;
+  if (row.region) score += 5;
+  if (toSeed(row.seed_in_region) != null) score += 5;
+  if (toSeed(row.seed) != null) score += 2;
+  return score;
+}
 
-  const key = Math.trunc(sportsId);
-  const existing = target.get(key) ?? [];
-  if (!existing.includes(localId)) existing.push(localId);
-  target.set(key, existing);
+function preferredLocalIdsForExternalTeam(rows: TeamIdentityRow[]): string[] {
+  return [...rows]
+    .sort((a, b) => {
+      const scoreDiff = teamIdentityScore(b) - teamIdentityScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+      const seedDiff = (toSeed(a.seed_in_region) ?? 99) - (toSeed(b.seed_in_region) ?? 99);
+      if (seedDiff !== 0) return seedDiff;
+      return String(a.id).localeCompare(String(b.id));
+    })
+    .map((row) => String(row.id));
+}
+
+function roundOrder(round: string | null | undefined): number {
+  const key = String(round ?? "").toUpperCase();
+  if (key === "R64") return 1;
+  if (key === "R32") return 2;
+  if (key === "S16") return 3;
+  if (key === "E8") return 4;
+  if (key === "F4") return 5;
+  if (key === "CHIP") return 6;
+  return 0;
+}
+
+function localPairGameScore(game: LocalPairGame): number {
+  let score = 0;
+  score += roundOrder(game.round) * 10;
+  if (Number.isFinite(Number(game.slot))) score += 2;
+  if (!game.winner_team_id) score += 4;
+  const status = norm(game.status);
+  if (status && !status.startsWith("final")) score += 1;
+  const startMs = game.start_time ? Date.parse(game.start_time) : Number.NaN;
+  if (Number.isFinite(startMs)) score += Math.trunc(startMs / 60000);
+  return score;
+}
+
+function chooseBestMatchingGame(matches: LocalPairGame[]): LocalPairGame | null {
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+  const ranked = [...matches].sort((a, b) => {
+    const scoreDiff = localPairGameScore(b) - localPairGameScore(a);
+    if (scoreDiff !== 0) return scoreDiff;
+    const roundDiff = roundOrder(String(b.round ?? "")) - roundOrder(String(a.round ?? ""));
+    if (roundDiff !== 0) return roundDiff;
+    const slotDiff = Number(a.slot ?? 0) - Number(b.slot ?? 0);
+    if (slotDiff !== 0) return slotDiff;
+    return String(a.id).localeCompare(String(b.id));
+  });
+  return ranked[0] ?? null;
 }
 
 function isMissingColumnError(message: string): boolean {
@@ -295,6 +371,41 @@ async function hasStatusColumn(supabaseAdmin: ReturnType<typeof getSupabaseAdmin
   if (!error) return true;
   if (isMissingColumnError(String(error.message ?? ""))) return false;
   throw error;
+}
+
+async function fetchGamesForPairMatching(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  includeSportsDataId: boolean,
+) {
+  const baseFields = [
+    "id",
+    "round",
+    "region",
+    "slot",
+    "start_time",
+    "team1_id",
+    "team2_id",
+    "winner_team_id",
+  ];
+  if (includeSportsDataId) baseFields.push("sportsdata_game_id");
+
+  const withStatusFields = [...baseFields, "status"].join(",");
+  const fallbackFields = baseFields.join(",");
+
+  const withStatus = await supabaseAdmin.from("games").select(withStatusFields);
+  if (!withStatus.error) {
+    return ((withStatus.data ?? []) as unknown[]) as Array<Record<string, unknown>>;
+  }
+  if (!isMissingColumnError(String(withStatus.error.message ?? ""))) {
+    throw withStatus.error;
+  }
+
+  const fallback = await supabaseAdmin.from("games").select(fallbackFields);
+  if (fallback.error) throw fallback.error;
+  return (((fallback.data ?? []) as unknown[]) as Array<Record<string, unknown>>).map((row) => ({
+    ...row,
+    status: null,
+  }));
 }
 
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, nowIso: string) {
@@ -556,39 +667,33 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
 
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
-    .select("id,espn_team_id")
+    .select("id,name,region,seed,seed_in_region,espn_team_id")
     .not("espn_team_id", "is", null);
   if (teamErr) throw teamErr;
 
-  const localTeamIdsByEspn = new Map<number, string[]>();
-  for (const t of teamRows ?? []) {
+  const localTeamsByEspn = new Map<number, TeamIdentityRow[]>();
+  for (const t of (teamRows ?? []) as TeamIdentityRow[]) {
     const espnId = Number(t.espn_team_id);
     if (!Number.isFinite(espnId)) continue;
     const key = Math.trunc(espnId);
-    const list = localTeamIdsByEspn.get(key) ?? [];
-    const localId = String(t.id);
-    if (!list.includes(localId)) list.push(localId);
-    localTeamIdsByEspn.set(key, list);
+    const list = localTeamsByEspn.get(key) ?? [];
+    list.push(t);
+    localTeamsByEspn.set(key, list);
   }
 
-  const { data: gameRows, error: gamesErr } = await supabaseAdmin
-    .from("games")
-    .select("id,team1_id,team2_id,winner_team_id");
-  if (gamesErr) throw gamesErr;
-
-  type LocalPairGame = {
-    id: string;
-    team1_id: string | null;
-    team2_id: string | null;
-    winner_team_id: string | null;
-  };
+  const gameRows = await fetchGamesForPairMatching(supabaseAdmin, false);
   const gamesByPair = new Map<string, LocalPairGame[]>();
-  for (const g of (gameRows ?? []) as LocalPairGame[]) {
+  for (const g of gameRows as LocalPairGame[]) {
     if (!g.team1_id || !g.team2_id) continue;
     const key = teamPairKey(String(g.team1_id), String(g.team2_id));
     const bucket = gamesByPair.get(key) ?? [];
     bucket.push({
       id: String(g.id),
+      round: g.round ?? null,
+      region: g.region ?? null,
+      slot: g.slot ?? null,
+      status: g.status ?? null,
+      start_time: g.start_time ?? null,
       team1_id: g.team1_id ? String(g.team1_id) : null,
       team2_id: g.team2_id ? String(g.team2_id) : null,
       winner_team_id: g.winner_team_id ? String(g.winner_team_id) : null,
@@ -610,8 +715,8 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
       continue;
     }
 
-    const homeLocalIds = localTeamIdsByEspn.get(f.homeTeamId) ?? [];
-    const awayLocalIds = localTeamIdsByEspn.get(f.awayTeamId) ?? [];
+    const homeLocalIds = preferredLocalIdsForExternalTeam(localTeamsByEspn.get(f.homeTeamId) ?? []);
+    const awayLocalIds = preferredLocalIdsForExternalTeam(localTeamsByEspn.get(f.awayTeamId) ?? []);
     if (homeLocalIds.length === 0 || awayLocalIds.length === 0) {
       espnSkippedNoTeamMap++;
       continue;
@@ -628,16 +733,12 @@ async function applyEspnFinalsToLocalGames(finals: FinalGame[]) {
       }
     }
     const matches = [...matchedGamesById.values()];
-    if (matches.length === 0) {
+    const localGame = chooseBestMatchingGame(matches);
+    if (!localGame) {
       espnSkippedPairNoMatch++;
       continue;
     }
-    if (matches.length > 1) {
-      espnSkippedPairAmbiguous++;
-      continue;
-    }
-
-    const localGame = matches[0];
+    if (matches.length > 1) espnSkippedPairAmbiguous++;
     const homeIdSet = new Set(homeLocalIds);
     const awayIdSet = new Set(awayLocalIds);
     const homeLocalId =
@@ -705,34 +806,38 @@ async function applyFinalsToLocalGames(finals: FinalGame[]): Promise<FinalsApply
 
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
-    .select("id,sportsdata_team_id")
+    .select("id,name,region,seed,seed_in_region,sportsdata_team_id")
     .not("sportsdata_team_id", "is", null);
   if (teamErr) throw teamErr;
 
-  const localTeamIdsBySports = new Map<number, string[]>();
-  for (const t of teamRows ?? []) {
-    pushUniqueTeamId(localTeamIdsBySports, t.sportsdata_team_id, t.id);
+  const localTeamsBySports = new Map<number, TeamIdentityRow[]>();
+  for (const t of (teamRows ?? []) as TeamIdentityRow[]) {
+    const sportsId = Number(t.sportsdata_team_id);
+    if (!Number.isFinite(sportsId)) continue;
+    const key = Math.trunc(sportsId);
+    const bucket = localTeamsBySports.get(key) ?? [];
+    bucket.push(t);
+    localTeamsBySports.set(key, bucket);
   }
 
-  const { data: allGameRows, error: allGamesErr } = await supabaseAdmin
-    .from("games")
-    .select("id,sportsdata_game_id,winner_team_id,team1_id,team2_id");
-  if (allGamesErr) throw allGamesErr;
+  const allGameRows = await fetchGamesForPairMatching(supabaseAdmin, true);
 
-  type LocalSyncGame = {
+  type LocalSyncGame = LocalPairGame & {
     id: string;
     sportsdata_game_id: number | null;
-    winner_team_id: string | null;
-    team1_id: string | null;
-    team2_id: string | null;
   };
 
-  const allLocalGames: LocalSyncGame[] = ((allGameRows ?? []) as LocalSyncGame[]).map((g) => ({
+  const allLocalGames: LocalSyncGame[] = (allGameRows as LocalSyncGame[]).map((g) => ({
     id: String(g.id),
     sportsdata_game_id: Number.isFinite(Number(g.sportsdata_game_id))
       ? Math.trunc(Number(g.sportsdata_game_id))
       : null,
     winner_team_id: g.winner_team_id ? String(g.winner_team_id) : null,
+    round: g.round ?? null,
+    region: g.region ?? null,
+    slot: g.slot ?? null,
+    status: g.status ?? null,
+    start_time: g.start_time ?? null,
     team1_id: g.team1_id ? String(g.team1_id) : null,
     team2_id: g.team2_id ? String(g.team2_id) : null,
   }));
@@ -771,8 +876,8 @@ async function applyFinalsToLocalGames(finals: FinalGame[]): Promise<FinalsApply
       continue;
     }
 
-    const homeLocalIds = localTeamIdsBySports.get(f.homeTeamId) ?? [];
-    const awayLocalIds = localTeamIdsBySports.get(f.awayTeamId) ?? [];
+    const homeLocalIds = preferredLocalIdsForExternalTeam(localTeamsBySports.get(f.homeTeamId) ?? []);
+    const awayLocalIds = preferredLocalIdsForExternalTeam(localTeamsBySports.get(f.awayTeamId) ?? []);
     if (homeLocalIds.length === 0 || awayLocalIds.length === 0) {
       skippedNoTeamMap++;
       continue;
@@ -802,20 +907,14 @@ async function applyFinalsToLocalGames(finals: FinalGame[]): Promise<FinalsApply
           }
         }
       }
-
       const matches = [...matchedGamesById.values()];
-      if (matches.length === 0) {
+      const candidate = chooseBestMatchingGame(matches) as LocalSyncGame | null;
+      if (!candidate) {
         skippedPairNoMatch++;
         skippedUnlinked++;
         continue;
       }
-      if (matches.length > 1) {
-        skippedPairAmbiguous++;
-        skippedUnlinked++;
-        continue;
-      }
-
-      const candidate = matches[0];
+      if (matches.length > 1) skippedPairAmbiguous++;
 
       const previousOwner = localBySportsGameId.get(f.gameId) ?? null;
       if (previousOwner && previousOwner.id !== candidate.id) {
