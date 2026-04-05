@@ -1016,7 +1016,7 @@ async function applyFinalsToLocalGames(finals: FinalGame[]): Promise<FinalsApply
   };
 }
 
-async function runDailySync(lookbackDays: number) {
+export async function runDailySync(lookbackDays: number) {
   const dates: string[] = [];
   const allGames: SportsGame[] = [];
   const sportsDataWarnings: string[] = [];
