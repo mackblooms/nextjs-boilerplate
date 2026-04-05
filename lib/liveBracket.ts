@@ -75,8 +75,8 @@ function nextTargetForWinner(game: LiveOverlayGame) {
   if (round === "E8") {
     const region = String(game.region ?? "").toLowerCase();
     if (region === "east") return { round: "F4", region: null, slot: 1, side: "team1_id" } as const;
-    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team2_id" } as const;
-    if (region === "south") return { round: "F4", region: null, slot: 2, side: "team1_id" } as const;
+    if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" } as const;
+    if (region === "west") return { round: "F4", region: null, slot: 2, side: "team1_id" } as const;
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" } as const;
     return null;
   }

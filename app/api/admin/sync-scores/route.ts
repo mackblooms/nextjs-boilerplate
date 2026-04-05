@@ -351,8 +351,8 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
   if (round === "E8") {
     const region = norm(g.region);
     if (region === "east") return { round: "F4", region: null, slot: 1, side: "team1_id" };
-    if (region === "west") return { round: "F4", region: null, slot: 1, side: "team2_id" };
-    if (region === "south") return { round: "F4", region: null, slot: 2, side: "team1_id" };
+    if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
+    if (region === "west") return { round: "F4", region: null, slot: 2, side: "team1_id" };
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
     return null;
   }
