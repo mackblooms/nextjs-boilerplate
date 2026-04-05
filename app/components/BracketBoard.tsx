@@ -1,12 +1,14 @@
 "use client";
 
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { toSchoolDisplayName } from "@/lib/teamNames";
+import { applyLiveScoreOverlay, matchLiveScoresToGames, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 
 export type BracketBoardTeam = {
   id: string;
-  name: string;
+  name: string | null;
   seed_in_region: number | null;
+  espn_team_id?: string | number | null;
 };
 
 export type BracketBoardGame = {
@@ -19,6 +21,11 @@ export type BracketBoardGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+};
+
+type LiveScoresResponse = {
+  ok: boolean;
+  games?: LiveOverlayScoreGame[];
 };
 
 type RoundKey = "R64" | "R32" | "S16" | "E8";
@@ -81,16 +88,58 @@ export function BracketBoard({
   teams,
   games,
   highlightTeamIds,
+  liveScores,
 }: {
   teams: BracketBoardTeam[];
   games: BracketBoardGame[];
   highlightTeamIds: Set<string>;
+  liveScores?: LiveOverlayScoreGame[];
 }) {
+  const [localLiveScores, setLocalLiveScores] = useState<LiveOverlayScoreGame[]>(liveScores ?? []);
+
+  useEffect(() => {
+    if (liveScores) {
+      setLocalLiveScores(liveScores);
+      return;
+    }
+
+    let canceled = false;
+    const loadLiveScores = async () => {
+      try {
+        const res = await fetch("/api/scores/live?lookbackDays=30&lookaheadDays=2", {
+          cache: "no-store",
+        });
+        const payload = (await res.json().catch(() => ({}))) as LiveScoresResponse;
+        if (!res.ok || !payload.ok) return;
+        if (!canceled) setLocalLiveScores(payload.games ?? []);
+      } catch {
+        if (!canceled) setLocalLiveScores([]);
+      }
+    };
+
+    void loadLiveScores();
+    const interval = window.setInterval(loadLiveScores, 20_000);
+    return () => {
+      canceled = true;
+      window.clearInterval(interval);
+    };
+  }, [liveScores]);
+
   const teamById = useMemo(() => {
     const m = new Map<string, BracketBoardTeam>();
     for (const t of teams) m.set(t.id, t);
     return m;
   }, [teams]);
+
+  const displayGames = useMemo(
+    () => applyLiveScoreOverlay(games, teams, localLiveScores),
+    [games, localLiveScores, teams],
+  );
+
+  const liveByGameId = useMemo(
+    () => matchLiveScoresToGames(displayGames, teams, localLiveScores),
+    [displayGames, localLiveScores, teams],
+  );
 
   const byRoundByRegion = useMemo(() => {
     const out: Record<Region, Record<RoundKey, BracketBoardGame[]>> = {
@@ -100,7 +149,7 @@ export function BracketBoard({
       Midwest: { R64: [], R32: [], S16: [], E8: [] },
     };
 
-    for (const g of games) {
+    for (const g of displayGames) {
       if (!isRegion(g.region)) continue;
       if (
         g.round === "R64" ||
@@ -119,19 +168,33 @@ export function BracketBoard({
     }
 
     return out;
-  }, [games]);
+  }, [displayGames]);
 
   const finalFour = useMemo(
-    () => games.filter((g) => g.round === "F4").sort((a, b) => a.slot - b.slot),
-    [games],
+    () => displayGames.filter((g) => g.round === "F4").sort((a, b) => a.slot - b.slot),
+    [displayGames],
   );
 
   const championship = useMemo(
-    () => games.find((g) => g.round === "CHIP"),
-    [games],
+    () => displayGames.find((g) => g.round === "CHIP"),
+    [displayGames],
   );
 
-  const renderTeam = (teamId: string | null, winnerId: string | null) => {
+  const scoreForDisplay = (gameId: string, side: "team1" | "team2") => {
+    const live = liveByGameId.get(gameId);
+    if (!live || live.state === "UPCOMING") return undefined;
+    return side === "team1" ? live.team1Score : live.team2Score;
+  };
+
+  const formatGameMeta = (game: BracketBoardGame | null | undefined) => {
+    if (!game) return null;
+    const live = liveByGameId.get(game.id);
+    if (live?.detail && live.state !== "UPCOMING") return live.detail;
+    return formatGameTimeEst(game);
+  };
+
+  const renderTeam = (teamId: string | null, winnerId: string | null, score?: number | null) => {
+    const showScore = score !== undefined;
     if (!teamId) {
       return (
         <span
@@ -147,7 +210,7 @@ export function BracketBoard({
           }}
         >
           <span>TBD</span>
-          <span />
+          <span>{showScore ? "-" : ""}</span>
         </span>
       );
     }
@@ -193,13 +256,15 @@ export function BracketBoard({
           style={{
             opacity: 0.75,
             flexShrink: 0,
-            width: 22,
+            width: showScore ? 34 : 22,
             textAlign: "right",
             whiteSpace: "nowrap",
             lineHeight: "18px",
           }}
         >
-          {t?.seed_in_region ?? ""}
+          {showScore
+            ? (typeof score === "number" && Number.isFinite(score) ? String(score) : "-")
+            : (t?.seed_in_region ?? "")}
         </span>
       </span>
     );
@@ -246,6 +311,7 @@ export function BracketBoard({
   const renderSingleTeamBox = (
     teamId: string | null,
     winnerId: string | null,
+    score?: number | null,
   ) => (
     <div
       style={{
@@ -256,7 +322,7 @@ export function BracketBoard({
         boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
       }}
     >
-      {renderTeam(teamId, winnerId)}
+      {renderTeam(teamId, winnerId, score)}
     </div>
   );
 
@@ -280,7 +346,7 @@ export function BracketBoard({
           >
             {gamesForRound.map((g) => {
               const start = rowStartFor(roundKey, g.slot);
-              const meta = formatGameTimeEst(g);
+              const meta = formatGameMeta(g);
               return (
                 <div
                   key={g.id}
@@ -288,8 +354,8 @@ export function BracketBoard({
                 >
                   {renderGameBox(
                     <>
-                      {renderTeam(g.team1_id, g.winner_team_id)}
-                      {renderTeam(g.team2_id, g.winner_team_id)}
+                      {renderTeam(g.team1_id, g.winner_team_id, scoreForDisplay(g.id, "team1"))}
+                      {renderTeam(g.team2_id, g.winner_team_id, scoreForDisplay(g.id, "team2"))}
                     </>,
                     meta,
                   )}
@@ -406,24 +472,28 @@ export function BracketBoard({
               {renderSingleTeamBox(
                 finalFour[0]?.team1_id ?? null,
                 finalFour[0]?.winner_team_id ?? null,
+                finalFour[0] ? scoreForDisplay(finalFour[0].id, "team1") : undefined,
               )}
             </div>
             <div style={{ gridColumn: 3, gridRow: 1 }}>
               {renderSingleTeamBox(
                 finalFour[0]?.team2_id ?? null,
                 finalFour[0]?.winner_team_id ?? null,
+                finalFour[0] ? scoreForDisplay(finalFour[0].id, "team2") : undefined,
               )}
             </div>
             <div style={{ gridColumn: 1, gridRow: 3 }}>
               {renderSingleTeamBox(
                 finalFour[1]?.team1_id ?? null,
                 finalFour[1]?.winner_team_id ?? null,
+                finalFour[1] ? scoreForDisplay(finalFour[1].id, "team1") : undefined,
               )}
             </div>
             <div style={{ gridColumn: 3, gridRow: 3 }}>
               {renderSingleTeamBox(
                 finalFour[1]?.team2_id ?? null,
                 finalFour[1]?.winner_team_id ?? null,
+                finalFour[1] ? scoreForDisplay(finalFour[1].id, "team2") : undefined,
               )}
             </div>
 
@@ -452,13 +522,15 @@ export function BracketBoard({
                   {renderTeam(
                     championship?.team1_id ?? null,
                     championship?.winner_team_id ?? null,
+                    championship ? scoreForDisplay(championship.id, "team1") : undefined,
                   )}
                   {renderTeam(
                     championship?.team2_id ?? null,
                     championship?.winner_team_id ?? null,
+                    championship ? scoreForDisplay(championship.id, "team2") : undefined,
                   )}
                 </>,
-                formatGameTimeEst(championship),
+                formatGameMeta(championship),
               )}
             </div>
           </div>
