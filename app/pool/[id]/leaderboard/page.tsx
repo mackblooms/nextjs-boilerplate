@@ -1523,9 +1523,12 @@ export default function LeaderboardPage() {
     }
 
     const sorted = [...rows].sort((a, b) => {
+      const rankA = forecastByEntry[a.entry_id]?.expected_rank ?? a.rank;
+      const rankB = forecastByEntry[b.entry_id]?.expected_rank ?? b.rank;
       const scoreA = forecastByEntry[a.entry_id]?.expected_score ?? a.total_score;
       const scoreB = forecastByEntry[b.entry_id]?.expected_score ?? b.total_score;
       return (
+        rankA - rankB ||
         scoreB - scoreA ||
         (a.entry_name ?? a.display_name ?? "").localeCompare(
           b.entry_name ?? b.display_name ?? "",
@@ -1533,20 +1536,14 @@ export default function LeaderboardPage() {
       );
     });
 
-    let previousScore: number | null = null;
-    let previousRank = 0;
-    return sorted.map((row, index) => {
+    return sorted.map((row) => {
       const forecast = forecastByEntry[row.entry_id] ?? null;
       const displayScore = forecast?.expected_score ?? row.total_score;
-      const scoreKey = Number(displayScore.toFixed(3));
-      const rank = previousScore === scoreKey ? previousRank : index + 1;
-      previousScore = scoreKey;
-      previousRank = rank;
 
       return {
         row,
         forecast,
-        displayRank: rank,
+        displayRank: forecast ? Number(forecast.expected_rank.toFixed(1)) : row.rank,
         displayScore,
       };
     });
@@ -1770,7 +1767,7 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>{forecastModeOn ? (isCompact ? "Proj" : "Proj Rank") : "Rank"}</div>
+                <div>{forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}</div>
                 <div>Player</div>
                 <div style={{ textAlign: "right" }}>
                   {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
@@ -2219,6 +2216,10 @@ export default function LeaderboardPage() {
               <p style={{ margin: 0 }}>
                 1st place % is the share of forecast simulations where that entry finishes in
                 first place, including ties for first.
+              </p>
+              <p style={{ margin: 0 }}>
+                Expected rank is the average finishing place across those simulations, so it can
+                differ from expected points when an entry has upside but narrow paths to a top finish.
               </p>
               <p style={{ margin: 0, opacity: 0.82 }}>
                 These numbers are not final standings and can move quickly with any upset.

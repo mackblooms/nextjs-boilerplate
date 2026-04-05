@@ -744,7 +744,12 @@ export async function GET(req: Request) {
           ),
         };
       })
-      .sort((a, b) => b.expected_score - a.expected_score || a.entry_id.localeCompare(b.entry_id));
+      .sort(
+        (a, b) =>
+          a.expected_rank - b.expected_rank ||
+          b.expected_score - a.expected_score ||
+          a.entry_id.localeCompare(b.entry_id),
+      );
 
     return NextResponse.json({
       ok: true,
