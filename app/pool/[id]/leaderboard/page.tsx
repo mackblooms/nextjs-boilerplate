@@ -13,6 +13,7 @@ import {
   type ScoringGame,
 } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
+import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 
 type Row = {
   entry_id: string;
@@ -48,8 +49,16 @@ type TeamSeedRow = {
 };
 type PickRow = { entry_id: string; team_id: string };
 type ScoringGameWithDate = ScoringGame & {
+  id: string;
+  region: string | null;
+  slot: number;
   game_date: string | null;
   start_time: string | null;
+};
+type LiveScoresResponse = {
+  ok: boolean;
+  games?: LiveOverlayScoreGame[];
+  error?: string;
 };
 type ProfileLookupRow = {
   user_id: string;
@@ -795,8 +804,13 @@ export default function LeaderboardPage() {
       setMsg("");
       setForecastMsg("");
 
+      let liveScoreGames: LiveOverlayScoreGame[] = [];
       try {
-        await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+        const liveRes = await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+        const livePayload = (await liveRes.json().catch(() => ({}))) as LiveScoresResponse;
+        if (liveRes.ok && livePayload.ok) {
+          liveScoreGames = livePayload.games ?? [];
+        }
       } catch {
         // Live scores may be temporarily unavailable; continue loading leaderboard data.
       }
@@ -989,14 +1003,14 @@ export default function LeaderboardPage() {
       let gameRows: ScoringGameWithDate[] = [];
       const gameQuery = await supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id,game_date,start_time");
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
 
       if (!gameQuery.error) {
         gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];
       } else if (isMissingColumnError(gameQuery.error)) {
         const fallback = await supabase
           .from("games")
-          .select("round,team1_id,team2_id,winner_team_id");
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
 
         if (fallback.error) {
           setMsg(fallback.error.message);
@@ -1004,7 +1018,15 @@ export default function LeaderboardPage() {
           return;
         }
 
-        gameRows = (((fallback.data as ScoringGame[] | null) ?? []).map((row) => ({
+        gameRows = ((((fallback.data as unknown) as Array<{
+          id: string;
+          round: string;
+          region: string | null;
+          slot: number;
+          team1_id: string | null;
+          team2_id: string | null;
+          winner_team_id: string | null;
+        }> | null) ?? []).map((row) => ({
           ...row,
           game_date: null,
           start_time: null,
@@ -1014,6 +1036,12 @@ export default function LeaderboardPage() {
         setLoading(false);
         return;
       }
+
+      gameRows = applyLiveScoreOverlay(gameRows, teamRowsList, liveScoreGames).map((game) => ({
+        ...game,
+        game_date: game.game_date ?? null,
+        start_time: game.start_time ?? null,
+      }));
 
       let picksByEntry = new Map<string, string[]>();
 

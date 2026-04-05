@@ -15,6 +15,7 @@ import { supabase } from "../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
 import { scoreEntries } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
+import { applyLiveScoreOverlay, matchLiveScoresToGames, type MatchedLiveGame } from "@/lib/liveBracket";
 
 type Team = {
   id: string;
@@ -65,6 +66,8 @@ type LiveScoreGame = {
   startTime: string | null;
   awayTeamId: string | null;
   homeTeamId: string | null;
+  awayTeamName: string;
+  homeTeamName: string;
   awayScore: number | null;
   homeScore: number | null;
 };
@@ -73,13 +76,6 @@ type LiveScoresResponse = {
   ok: boolean;
   games?: LiveScoreGame[];
   error?: string;
-};
-
-type MatchedLiveGame = {
-  state: LiveScoreState;
-  detail: string;
-  team1Score: number | null;
-  team2Score: number | null;
 };
 
 type RoundKey = "R64" | "R32" | "S16" | "E8";
@@ -104,16 +100,6 @@ function normalizeSeed(value: unknown): number | null {
   return seed;
 }
 
-function toLiveStateRank(state: LiveScoreState) {
-  if (state === "LIVE") return 2;
-  if (state === "UPCOMING") return 1;
-  return 0;
-}
-
-function pairKey(a: string, b: string) {
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
 function expectedSeedsForR64Slot(slot: number): [number, number] | null {
   const map: Record<number, [number, number]> = {
     1: [1, 16],
@@ -126,54 +112,6 @@ function expectedSeedsForR64Slot(slot: number): [number, number] | null {
     8: [2, 15],
   };
   return map[slot] ?? null;
-}
-
-function matchLiveScoresToGames(
-  games: Game[],
-  liveScores: LiveScoreGame[],
-  espnTeamIdByLocalId: Map<string, string>,
-): Map<string, MatchedLiveGame> {
-  const liveByTeamPair = new Map<string, LiveScoreGame>();
-  for (const live of liveScores) {
-    if (!live.awayTeamId || !live.homeTeamId) continue;
-    const key = pairKey(live.awayTeamId, live.homeTeamId);
-    const existing = liveByTeamPair.get(key);
-    if (!existing || toLiveStateRank(live.state) > toLiveStateRank(existing.state)) {
-      liveByTeamPair.set(key, live);
-    }
-  }
-
-  const out = new Map<string, MatchedLiveGame>();
-  for (const g of games) {
-    if (!g.team1_id || !g.team2_id) continue;
-    const team1EspnId = espnTeamIdByLocalId.get(g.team1_id);
-    const team2EspnId = espnTeamIdByLocalId.get(g.team2_id);
-    if (!team1EspnId || !team2EspnId) continue;
-
-    const live = liveByTeamPair.get(pairKey(team1EspnId, team2EspnId));
-    if (!live) continue;
-
-    if (live.awayTeamId === team1EspnId) {
-      out.set(g.id, {
-        state: live.state,
-        detail: live.detail,
-        team1Score: live.awayScore,
-        team2Score: live.homeScore,
-      });
-      continue;
-    }
-
-    if (live.homeTeamId === team1EspnId) {
-      out.set(g.id, {
-        state: live.state,
-        detail: live.detail,
-        team1Score: live.homeScore,
-        team2Score: live.awayScore,
-      });
-    }
-  }
-
-  return out;
 }
 
 function gameSignature(game: Game): string {
@@ -280,6 +218,11 @@ export default function BracketPage() {
     setShowViewingBanner(Boolean(selectedEntryId));
   }, [selectedEntryId]);
 
+  const displayGames = useMemo(
+    () => applyLiveScoreOverlay(games, teams, liveScores),
+    [games, teams, liveScores],
+  );
+
   const byRoundByRegion = useMemo(() => {
     const out: Record<Region, Record<RoundKey, Game[]>> = {
       East: { R64: [], R32: [], S16: [], E8: [] },
@@ -288,7 +231,7 @@ export default function BracketPage() {
       Midwest: { R64: [], R32: [], S16: [], E8: [] },
     };
 
-    for (const g of games) {
+    for (const g of displayGames) {
       if (!isRegion(g.region)) continue;
       if (
         g.round === "R64" ||
@@ -307,16 +250,16 @@ export default function BracketPage() {
     }
 
     return out;
-  }, [games]);
+  }, [displayGames]);
 
   const finalFour = useMemo(
-    () => games.filter((g) => g.round === "F4").sort((a, b) => a.slot - b.slot),
-    [games],
+    () => displayGames.filter((g) => g.round === "F4").sort((a, b) => a.slot - b.slot),
+    [displayGames],
   );
 
   const championship = useMemo(
-    () => games.find((g) => g.round === "CHIP"),
-    [games],
+    () => displayGames.find((g) => g.round === "CHIP"),
+    [displayGames],
   );
 
   const BRACKET_UNITS = 16;
@@ -692,17 +635,6 @@ export default function BracketPage() {
     void loadHighlights();
   }, [draftLocked, myEntryIds, selectedEntryId]);
 
-  const espnTeamIdByLocalId = useMemo(() => {
-    const out = new Map<string, string>();
-    for (const t of teams) {
-      if (t.espn_team_id == null) continue;
-      const value = String(t.espn_team_id).trim();
-      if (!value) continue;
-      out.set(t.id, value);
-    }
-    return out;
-  }, [teams]);
-
   useEffect(() => {
     let canceled = false;
 
@@ -761,7 +693,7 @@ export default function BracketPage() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, [espnTeamIdByLocalId, games, refreshBracketState, teamById]);
+  }, [games, refreshBracketState, teamById]);
 
   useEffect(() => {
     if (!fitMode || loading) return;
@@ -804,8 +736,8 @@ export default function BracketPage() {
     contentSize.height > 0 ? Math.ceil(contentSize.height * scale) : null;
 
   const liveByGameId = useMemo(() => {
-    return matchLiveScoresToGames(games, liveScores, espnTeamIdByLocalId);
-  }, [espnTeamIdByLocalId, games, liveScores]);
+    return matchLiveScoresToGames(displayGames, teams, liveScores);
+  }, [displayGames, teams, liveScores]);
 
   const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
     if (!g) return null;
@@ -869,7 +801,7 @@ export default function BracketPage() {
 
   const r64SeedByTeamId = useMemo(() => {
     const out = new Map<string, number>();
-    for (const g of games) {
+    for (const g of displayGames) {
       if (g.round !== "R64") continue;
       const pair = expectedSeedsForR64Slot(g.slot);
       if (!pair) continue;
@@ -879,7 +811,7 @@ export default function BracketPage() {
       if (team2Id) out.set(team2Id, pair[1]);
     }
     return out;
-  }, [games]);
+  }, [displayGames]);
 
   const teamSeedForDisplay = (teamId: string | null): number | null => {
     if (!teamId) return null;
