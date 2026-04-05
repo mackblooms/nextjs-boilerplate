@@ -1,8 +1,6 @@
 "use client";
 
 import { type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { App as CapacitorApp } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -142,110 +140,9 @@ const scoreRowStyle = {
 const LANDING_LOOKBACK_DAYS = 1;
 const LANDING_LOOKAHEAD_DAYS = 1;
 const MAX_HOME_DRAFTS = 10;
-const LANDING_INTRO_MARK_MS = 1050;
-const LANDING_INTRO_WORDMARK_MS = 1200;
-const LANDING_INTRO_EXIT_MS = 560;
 
 function sortDraftsByUpdatedAt(a: HomeDraftRow, b: HomeDraftRow) {
   return Date.parse(b.updated_at) - Date.parse(a.updated_at);
-}
-
-type LandingIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
-
-function useLandingIntro(enabled: boolean) {
-  const [phase, setPhase] = useState<LandingIntroPhase>(enabled ? "mark" : "hidden");
-  const wasBackgroundedRef = useRef(false);
-  const previousEnabledRef = useRef(enabled);
-
-  useEffect(() => {
-    if (previousEnabledRef.current === enabled) return undefined;
-
-    previousEnabledRef.current = enabled;
-    const timer = window.setTimeout(() => {
-      if (!enabled) {
-        wasBackgroundedRef.current = false;
-        setPhase("hidden");
-        return;
-      }
-
-      setPhase("mark");
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled || typeof window === "undefined" || phase === "hidden") return undefined;
-
-    const timer = window.setTimeout(() => {
-      if (phase === "mark") {
-        setPhase("wordmark");
-        return;
-      }
-      if (phase === "wordmark") {
-        setPhase("exit");
-        return;
-      }
-      setPhase("hidden");
-    }, phase === "mark" ? LANDING_INTRO_MARK_MS : phase === "wordmark" ? LANDING_INTRO_WORDMARK_MS : LANDING_INTRO_EXIT_MS);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [enabled, phase]);
-
-  useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
-
-    let removeNativeListener: (() => void) | undefined;
-
-    const restartIntro = () => {
-      if (!wasBackgroundedRef.current) return;
-      wasBackgroundedRef.current = false;
-      setPhase("mark");
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        wasBackgroundedRef.current = true;
-        return;
-      }
-
-      if (document.visibilityState === "visible") {
-        restartIntro();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    const setupNativeListener = async () => {
-      if (!Capacitor.isNativePlatform()) return;
-
-      const listener = await CapacitorApp.addListener("appStateChange", ({ isActive }) => {
-        if (!isActive) {
-          wasBackgroundedRef.current = true;
-          return;
-        }
-
-        restartIntro();
-      });
-
-      removeNativeListener = () => {
-        void listener.remove();
-      };
-    };
-
-    void setupNativeListener();
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      removeNativeListener?.();
-    };
-  }, [enabled]);
-
-  return phase;
 }
 
 function isMissingEntryNameError(message?: string) {
@@ -301,60 +198,24 @@ function PenIcon() {
   );
 }
 
-function LandingIntroOverlay({ phase }: { phase: LandingIntroPhase }) {
-  if (phase === "hidden") return null;
-
-  const showMark = phase === "mark";
-  const showWordmark = phase === "wordmark" || phase === "exit";
-
-  return (
-    <div className="landing-intro-overlay" data-phase={phase} aria-hidden="true">
-      <div className="landing-intro-stage">
-        <Image
-          src="/bracketball-logo-mark.png"
-          alt=""
-          width={120}
-          height={120}
-          className="landing-intro-mark"
-          data-visible={showMark}
-          priority
-        />
-        <span className="landing-intro-wordmark" data-visible={showWordmark}>
-          bracketball
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function LandingPage({
   loginHref,
   invitePoolId,
   invitePoolName,
-  showIntro = false,
 }: {
   loginHref: string;
   invitePoolId?: string | null;
   invitePoolName?: string | null;
-  showIntro?: boolean;
 }) {
-  const introPhase = useLandingIntro(showIntro);
-  const introActive = introPhase !== "hidden";
-
   return (
-    <>
-      <LandingIntroOverlay phase={introPhase} />
-      <main
-        className="page-shell home-page-shell home-landing-shell"
-        style={{
-          maxWidth: 920,
-          margin: "10px auto 22px",
-          padding: 8,
-          opacity: introActive ? 0 : 1,
-          pointerEvents: introActive ? "none" : "auto",
-          transition: "opacity 180ms ease",
-        }}
-      >
+    <main
+      className="page-shell home-page-shell home-landing-shell"
+      style={{
+        maxWidth: 920,
+        margin: "10px auto 22px",
+        padding: 8,
+      }}
+    >
         <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
           <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
             <Image
@@ -363,7 +224,6 @@ function LandingPage({
               width={206}
               height={58}
               className="landing-topbar-mark"
-              priority
             />
           </Link>
         </header>
@@ -408,8 +268,7 @@ function LandingPage({
             </div>
           </div>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
 
@@ -1832,7 +1691,6 @@ function HomeContent() {
         loginHref={loginHref}
         invitePoolId={invitePoolId}
         invitePoolName={invitePoolName}
-        showIntro={isAuthenticated === false}
       />
     );
   }
@@ -2163,7 +2021,7 @@ function HomeContent() {
 }
 
 function HomeFallback() {
-  return <LandingPage loginHref="/login" showIntro />;
+  return <LandingPage loginHref="/login" />;
 }
 
 export default function Home() {

@@ -110,6 +110,21 @@ body.has-app-shell {
   padding-bottom: calc(102px + env(safe-area-inset-bottom));
 }
 
+body.app-launch-active {
+  overflow: hidden;
+}
+
+.app-launch-content {
+  min-height: 100vh;
+  min-height: 100dvh;
+  transition: opacity 180ms ease;
+}
+
+body.app-launch-active .app-launch-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
 a {
   color: inherit;
 }
