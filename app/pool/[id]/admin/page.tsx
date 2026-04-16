@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import AdminProjectionTool from "@/app/components/AdminProjectionTool";
 
 type Team = {
   id: string;
@@ -1080,6 +1081,8 @@ export default function AdminPage() {
             Manage members, pool settings, and bracket sync operations from one place.
           </p>
         </div>
+
+        <AdminProjectionTool />
 
         <div style={{ display: "flex", gap: 10, alignItems: "stretch", flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
