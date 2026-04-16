@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCronAuthorizationHeader } from "@/lib/adminAuth";
 import { toSchoolDisplayName } from "@/lib/teamNames";
+import { runDailySync } from "@/app/api/admin/sync-scores/route";
 
 type EspnTeam = {
   id?: string | number;
@@ -217,18 +218,25 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
   };
 }
 
-function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
+async function runAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
   const hasFinalGame = rows.some((row) => row.state === "FINAL");
   if (!hasFinalGame) return;
-  if (autoSyncInFlight) return;
+  if (autoSyncInFlight) {
+    await autoSyncInFlight;
+    return;
+  }
 
   const now = Date.now();
-  if (now - lastAutoSyncStartedAt < AUTO_SYNC_MIN_INTERVAL_MS) return;
+  if (now - lastAutoSyncStartedAt < AUTO_SYNC_MIN_INTERVAL_MS) {
+    return;
+  }
   lastAutoSyncStartedAt = now;
 
-  const origin = new URL(req.url).origin;
   autoSyncInFlight = (async () => {
     try {
+      await runDailySync(3);
+    } catch {
+      const origin = new URL(req.url).origin;
       const authorization = getCronAuthorizationHeader();
       await fetch(`${origin}/api/admin/sync-scores`, {
         method: "POST",
@@ -238,13 +246,17 @@ function queueAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
         },
         body: JSON.stringify({ lookbackDays: 3 }),
         cache: "no-store",
-      });
-    } catch {
-      // Best-effort background sync: ignore transient failures.
+      }).catch(() => undefined);
     } finally {
       autoSyncInFlight = null;
     }
   })();
+
+  try {
+    await autoSyncInFlight;
+  } catch {
+      // Best-effort background sync: ignore transient failures.
+  }
 }
 
 export async function GET(req: Request) {
@@ -294,7 +306,7 @@ export async function GET(req: Request) {
       .filter((row): row is LiveScoreRow => row !== null)
       .sort(sortScores);
 
-    queueAutoScoreSync(req, rows);
+    await runAutoScoreSync(req, rows);
 
     return NextResponse.json({
       ok: true,

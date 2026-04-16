@@ -7,6 +7,7 @@ import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 
@@ -451,11 +452,6 @@ function ScoreSidebar({
 export default function PoolPage() {
   const params = useParams<{ id: string }>();
   const poolId = params.id;
-
-  const shareLink = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return `${window.location.origin}/?invite=${encodeURIComponent(poolId)}`;
-  }, [poolId]);
   const canNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -488,6 +484,11 @@ export default function PoolPage() {
   const [draftedTeamKeys, setDraftedTeamKeys] = useState<string[]>([]);
   const [draftedTeamCount, setDraftedTeamCount] = useState(0);
   const [draftedLoaded, setDraftedLoaded] = useState(false);
+  const sharePayload = useMemo(
+    () => buildPoolInviteShareData(poolId, pool?.name ?? null, pool?.is_private ?? true),
+    [pool?.is_private, pool?.name, poolId]
+  );
+  const shareLink = sharePayload.url;
 
   useEffect(() => {
     const load = async () => {
@@ -1339,7 +1340,7 @@ export default function PoolPage() {
 
     try {
       await navigator.clipboard.writeText(shareLink);
-      setCopyMsg("Share link copied.");
+      setCopyMsg(sharePayload.copyLabel);
     } catch {
       setCopyMsg("Unable to copy automatically. You can copy it from the field below.");
     }
@@ -1355,13 +1356,11 @@ export default function PoolPage() {
 
     try {
       await navigator.share({
-        title: pool?.name ? `${pool.name} on bracketball` : "Join my bracketball pool",
-        text: pool?.name
-          ? `Join my bracketball pool: ${pool.name}`
-          : "Join my bracketball pool on bracketball.",
+        title: sharePayload.title,
+        text: sharePayload.text,
         url: shareLink,
       });
-      setCopyMsg("Share sheet opened.");
+      setCopyMsg("Invite ready to send.");
     } catch (error) {
       const isAbortError =
         error instanceof DOMException && error.name === "AbortError";
@@ -1515,13 +1514,17 @@ export default function PoolPage() {
 
           <div style={{ fontSize: 14, opacity: 0.85, fontWeight: 700 }}>
             {canNativeShare
-              ? "Tap logo to open the share sheet"
-              : "Tap logo to copy the shareable pool link"}
+              ? "Tap the logo to share this pool invite"
+              : "Tap the logo to copy this pool invite link"}
           </div>
 
-          <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
+          <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
             {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
           </h1>
+
+          <p style={{ margin: 0, opacity: 0.8, maxWidth: 520 }}>
+            Open the bracket, check standings, and keep invites moving from one place.
+          </p>
 
           <div className="pool-chip-row" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
             <span
@@ -1563,45 +1566,22 @@ export default function PoolPage() {
               type="text"
               value={shareLink}
               readOnly
-              style={{
-                flex: "1 1 260px",
-                minWidth: 0,
-                padding: "10px 12px",
-                minHeight: 44,
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control"
+              style={{ flex: "1 1 260px", minWidth: 0 }}
             />
             <button
               type="button"
               onClick={sharePoolLink}
-              style={{
-                flex: "1 1 140px",
-                padding: "10px 12px",
-                minHeight: 44,
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-elevated)",
-                cursor: "pointer",
-                fontWeight: 800,
-              }}
+              className="ui-btn ui-btn--md ui-btn--primary"
+              style={{ flex: "1 1 140px" }}
             >
               {canNativeShare ? "Share invite" : "Share"}
             </button>
             <button
               type="button"
               onClick={copyShareLink}
-              style={{
-                flex: "1 1 140px",
-                padding: "10px 12px",
-                minHeight: 44,
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface)",
-                cursor: "pointer",
-                fontWeight: 800,
-              }}
+              className="ui-btn ui-btn--md ui-btn--secondary"
+              style={{ flex: "1 1 140px" }}
             >
               Copy link
             </button>
@@ -1640,15 +1620,8 @@ export default function PoolPage() {
                     }
                   }}
                   placeholder="Pool password"
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    marginBottom: 10,
-                    background: "var(--surface)",
-                  }}
+                  className="ui-control ui-control--full"
+                  style={{ marginBottom: 10, background: "var(--surface)" }}
                 />
               ) : null}
 
@@ -1656,17 +1629,7 @@ export default function PoolPage() {
                 type="button"
                 onClick={joinPool}
                 disabled={joinDisabled}
-                style={{
-                  width: "100%",
-                  padding: "12px 14px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  cursor: joinDisabled ? "not-allowed" : "pointer",
-                  fontWeight: 900,
-                  opacity: joinDisabled ? 0.7 : 1,
-                }}
+                className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full"
               >
                 {joining ? "Joining..." : entriesLocked ? "Join Pool" : "Join + Choose Drafts"}
               </button>
@@ -1691,20 +1654,8 @@ export default function PoolPage() {
             <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
                 href="/drafts"
-                style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  fontWeight: 800,
-                  background: "var(--surface)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="ui-btn ui-btn--md ui-btn--secondary"
+                style={{ flex: "1 1 140px", minWidth: 120 }}
               >
                 My Drafts
               </Link>
@@ -1712,21 +1663,8 @@ export default function PoolPage() {
                 type="button"
                 onClick={() => void openDraftModal()}
                 disabled={entriesLocked}
-                style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  fontWeight: 800,
-                  background: "var(--surface)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: entriesLocked ? "not-allowed" : "pointer",
-                  opacity: entriesLocked ? 0.7 : 1,
-                }}
+                className="ui-btn ui-btn--md ui-btn--primary"
+                style={{ flex: "1 1 140px", minWidth: 120 }}
               >
                 Enter Drafts
               </button>
@@ -1734,60 +1672,22 @@ export default function PoolPage() {
                 type="button"
                 onClick={() => void openLeaveModal()}
                 disabled={entriesLocked}
-                style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid #dc2626",
-                  fontWeight: 800,
-                  background: "rgba(220,38,38,0.12)",
-                  color: "#dc2626",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: entriesLocked ? "not-allowed" : "pointer",
-                  opacity: entriesLocked ? 0.7 : 1,
-                }}
+                className="ui-btn ui-btn--md ui-btn--danger"
+                style={{ flex: "1 1 140px", minWidth: 120 }}
               >
                 Leave Entries
               </button>
               <Link
                 href={`/pool/${poolId}/bracket`}
-                style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  fontWeight: 800,
-                  background: "var(--surface)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="ui-btn ui-btn--md ui-btn--secondary"
+                style={{ flex: "1 1 140px", minWidth: 120 }}
               >
                 Bracket
               </Link>
               <Link
                 href={`/pool/${poolId}/leaderboard`}
-                style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  fontWeight: 800,
-                  background: "var(--surface)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="ui-btn ui-btn--md ui-btn--secondary"
+                style={{ flex: "1 1 140px", minWidth: 120 }}
               >
                 Leaderboard
               </Link>

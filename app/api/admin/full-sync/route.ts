@@ -5,6 +5,7 @@ import {
   getCronAuthorizationHeader,
   requireSiteAdminOrCron,
 } from "@/lib/adminAuth";
+import { sendDraftLockReminderNotifications } from "@/lib/pushCampaigns";
 
 async function callJson(url: string, options: RequestInit) {
   const res = await fetch(url, { ...options, cache: "no-store" });
@@ -155,6 +156,8 @@ export async function POST(req: Request) {
       if (linked === 0 && updatedWinners === 0 && advancedSlotsUpdated === 0) break;
     }
 
+    const draftLockNotifications = await sendDraftLockReminderNotifications();
+
     return NextResponse.json({
       ok: true,
       season: season ?? null,
@@ -170,6 +173,7 @@ export async function POST(req: Request) {
         advancedSlotsUpdated: totalAdvancedSlotsUpdated,
         advancedGamesTouched: totalAdvancedGamesTouched,
       },
+      draftLockNotifications,
     });
   } catch (e: unknown) {
     return NextResponse.json(

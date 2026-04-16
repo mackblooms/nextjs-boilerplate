@@ -6,13 +6,14 @@ import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
 import { withAvatarFallback } from "../../../../lib/avatar";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../lib/draftLock";
-import { getInvitePoolIdFromNextPath } from "../../../../lib/poolInvite";
+import { buildPoolInviteShareData, getInvitePoolIdFromNextPath } from "../../../../lib/poolInvite";
 import {
   scoreEntries,
   scoreTeamWinsDetailed,
   type ScoringGame,
 } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
+import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 
 type Row = {
   entry_id: string;
@@ -48,8 +49,16 @@ type TeamSeedRow = {
 };
 type PickRow = { entry_id: string; team_id: string };
 type ScoringGameWithDate = ScoringGame & {
+  id: string;
+  region: string | null;
+  slot: number;
   game_date: string | null;
   start_time: string | null;
+};
+type LiveScoresResponse = {
+  ok: boolean;
+  games?: LiveOverlayScoreGame[];
+  error?: string;
 };
 type ProfileLookupRow = {
   user_id: string;
@@ -795,8 +804,13 @@ export default function LeaderboardPage() {
       setMsg("");
       setForecastMsg("");
 
+      let liveScoreGames: LiveOverlayScoreGame[] = [];
       try {
-        await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+        const liveRes = await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+        const livePayload = (await liveRes.json().catch(() => ({}))) as LiveScoresResponse;
+        if (liveRes.ok && livePayload.ok) {
+          liveScoreGames = livePayload.games ?? [];
+        }
       } catch {
         // Live scores may be temporarily unavailable; continue loading leaderboard data.
       }
@@ -989,14 +1003,14 @@ export default function LeaderboardPage() {
       let gameRows: ScoringGameWithDate[] = [];
       const gameQuery = await supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id,game_date,start_time");
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
 
       if (!gameQuery.error) {
         gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];
       } else if (isMissingColumnError(gameQuery.error)) {
         const fallback = await supabase
           .from("games")
-          .select("round,team1_id,team2_id,winner_team_id");
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
 
         if (fallback.error) {
           setMsg(fallback.error.message);
@@ -1004,7 +1018,15 @@ export default function LeaderboardPage() {
           return;
         }
 
-        gameRows = (((fallback.data as ScoringGame[] | null) ?? []).map((row) => ({
+        gameRows = ((((fallback.data as unknown) as Array<{
+          id: string;
+          round: string;
+          region: string | null;
+          slot: number;
+          team1_id: string | null;
+          team2_id: string | null;
+          winner_team_id: string | null;
+        }> | null) ?? []).map((row) => ({
           ...row,
           game_date: null,
           start_time: null,
@@ -1014,6 +1036,12 @@ export default function LeaderboardPage() {
         setLoading(false);
         return;
       }
+
+      gameRows = applyLiveScoreOverlay(gameRows, teamRowsList, liveScoreGames).map((game) => ({
+        ...game,
+        game_date: game.game_date ?? null,
+        start_time: game.start_time ?? null,
+      }));
 
       let picksByEntry = new Map<string, string[]>();
 
@@ -1448,6 +1476,35 @@ export default function LeaderboardPage() {
     ? formatRoundLabel(forecastHorizonRound)
     : "the tournament";
   const poolSelectorValue = memberPools.some((pool) => pool.id === poolId) ? poolId : "";
+  const activePoolName = memberPools.find((pool) => pool.id === poolId)?.name ?? "";
+  const canNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+  async function sharePoolInvite() {
+    const shareData = buildPoolInviteShareData(poolId, activePoolName, true);
+
+    if (canNativeShare) {
+      try {
+        await navigator.share({
+          title: shareData.title,
+          text: shareData.text,
+          url: shareData.url,
+        });
+        setMsg("Invite ready to send.");
+        return;
+      } catch (error) {
+        const isAbortError = error instanceof DOMException && error.name === "AbortError";
+        if (isAbortError) return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setMsg(shareData.copyLabel);
+    } catch {
+      setMsg(`Copy this invite link: ${shareData.url}`);
+    }
+  }
 
   useEffect(() => {
     if (forecastModeOn && openBreakdownEntryId) {
@@ -1466,9 +1523,12 @@ export default function LeaderboardPage() {
     }
 
     const sorted = [...rows].sort((a, b) => {
+      const rankA = forecastByEntry[a.entry_id]?.expected_rank ?? a.rank;
+      const rankB = forecastByEntry[b.entry_id]?.expected_rank ?? b.rank;
       const scoreA = forecastByEntry[a.entry_id]?.expected_score ?? a.total_score;
       const scoreB = forecastByEntry[b.entry_id]?.expected_score ?? b.total_score;
       return (
+        rankA - rankB ||
         scoreB - scoreA ||
         (a.entry_name ?? a.display_name ?? "").localeCompare(
           b.entry_name ?? b.display_name ?? "",
@@ -1476,20 +1536,14 @@ export default function LeaderboardPage() {
       );
     });
 
-    let previousScore: number | null = null;
-    let previousRank = 0;
-    return sorted.map((row, index) => {
+    return sorted.map((row) => {
       const forecast = forecastByEntry[row.entry_id] ?? null;
       const displayScore = forecast?.expected_score ?? row.total_score;
-      const scoreKey = Number(displayScore.toFixed(3));
-      const rank = previousScore === scoreKey ? previousRank : index + 1;
-      previousScore = scoreKey;
-      previousRank = rank;
 
       return {
         row,
         forecast,
-        displayRank: rank,
+        displayRank: forecast ? Number(forecast.expected_rank.toFixed(1)) : row.rank,
         displayScore,
       };
     });
@@ -1497,48 +1551,81 @@ export default function LeaderboardPage() {
 
   return (
     <main className="page-shell" style={{ maxWidth: 1240 }}>
-      <div
+      <section
+        className="leaderboard-hero"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          border: "1px solid var(--border-color)",
+          borderRadius: 18,
+          background: "linear-gradient(180deg, var(--surface-elevated), var(--surface))",
+          boxShadow: "var(--shadow-sm)",
+          padding: isCompact ? "14px 12px" : "16px 16px",
+          display: "grid",
           gap: 12,
-          flexWrap: "wrap",
         }}
       >
-        <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
-          Leaderboard
-        </h1>
-        {memberPools.length > 0 ? (
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
-            <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
-            <select
-              value={poolSelectorValue}
-              onChange={(event) => {
-                const nextPoolId = event.target.value;
-                if (!nextPoolId || nextPoolId === poolId) return;
-                setStoredActivePoolId(nextPoolId);
-                router.push(`/pool/${nextPoolId}/leaderboard`);
-              }}
-              style={{
-                padding: "8px 10px",
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-                minHeight: 38,
-              }}
-            >
-              {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
-              {memberPools.map((pool) => (
-                <option key={pool.id} value={pool.id}>
-                  {pool.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-      </div>
+        <div
+          style={{
+            display: "grid",
+            gap: 4,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 800,
+              letterSpacing: 0.24,
+              textTransform: "uppercase",
+              opacity: 0.62,
+            }}
+          >
+            Pool leaderboard
+          </div>
+          <h1 className="page-title" style={{ fontSize: isCompact ? 26 : 30, fontWeight: 900, margin: 0 }}>
+            {activePoolName || "Leaderboard"}
+          </h1>
+          <p style={{ margin: 0, opacity: 0.78, fontSize: 14 }}>
+            Rankings, scores, and pool movement all in one place.
+          </p>
+        </div>
+
+        <div className="leaderboard-hero-controls">
+          {memberPools.length > 0 ? (
+            <label className="leaderboard-hero-control" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800 }}>
+              <span style={{ fontSize: 13, opacity: 0.82 }}>Pool</span>
+              <select
+                value={poolSelectorValue}
+                onChange={(event) => {
+                  const nextPoolId = event.target.value;
+                  if (!nextPoolId || nextPoolId === poolId) return;
+                  setStoredActivePoolId(nextPoolId);
+                  router.push(`/pool/${nextPoolId}/leaderboard`);
+                }}
+                className="ui-control ui-select"
+                style={{
+                  minHeight: 38,
+                  minWidth: isCompact ? 0 : 200,
+                  width: "100%",
+                  background: "var(--surface)",
+                }}
+              >
+                {!poolSelectorValue ? <option value="">Choose a pool</option> : null}
+                {memberPools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          <button
+            className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
+            type="button"
+            onClick={() => void sharePoolInvite()}
+          >
+            Share Invite
+          </button>
+        </div>
+      </section>
 
       {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
@@ -1680,7 +1767,7 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>{forecastModeOn ? (isCompact ? "Proj" : "Proj Rank") : "Rank"}</div>
+                <div>{forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}</div>
                 <div>Player</div>
                 <div style={{ textAlign: "right" }}>
                   {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
@@ -2129,6 +2216,10 @@ export default function LeaderboardPage() {
               <p style={{ margin: 0 }}>
                 1st place % is the share of forecast simulations where that entry finishes in
                 first place, including ties for first.
+              </p>
+              <p style={{ margin: 0 }}>
+                Expected rank is the average finishing place across those simulations, so it can
+                differ from expected points when an entry has upside but narrow paths to a top finish.
               </p>
               <p style={{ margin: 0, opacity: 0.82 }}>
                 These numbers are not final standings and can move quickly with any upset.

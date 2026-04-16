@@ -29,6 +29,9 @@ export default function PrivacyPage() {
           <b>Account and profile information:</b> email address, authentication identifiers, avatar,
           display name, and other profile fields you choose to provide.
           <br />
+          <b>Notification data:</b> mobile push notification tokens, device-level notification
+          preferences, and notification delivery metadata when you enable notifications.
+          <br />
           <b>Gameplay and competition data:</b> drafts, picks, entries, pools joined, standings,
           and related game activity.
           <br />
@@ -45,6 +48,7 @@ export default function PrivacyPage() {
           <li>calculate scores, standings, and competition outcomes,</li>
           <li>secure accounts, detect abuse, and maintain platform integrity,</li>
           <li>analyze usage and improve reliability, performance, and user experience,</li>
+          <li>send optional push notifications you choose to receive,</li>
           <li>communicate important service, account, or policy updates.</li>
         </ul>
       </section>
@@ -142,4 +146,3 @@ export default function PrivacyPage() {
     </main>
   );
 }
-

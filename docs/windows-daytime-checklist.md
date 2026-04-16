@@ -1,5 +1,9 @@
 # bracketball Windows Daytime Checklist
 
+Status: specialized support checklist, not the master release checklist
+
+Start with [App Store Review Readiness](./app-store-review-readiness.md) if you are deciding priorities.
+
 Use this list for work you can complete on Windows so Mac time is only for Xcode signing, archive, and upload.
 
 ## Daily flow

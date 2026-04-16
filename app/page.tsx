@@ -198,6 +198,80 @@ function PenIcon() {
   );
 }
 
+function LandingPage({
+  loginHref,
+  invitePoolId,
+  invitePoolName,
+}: {
+  loginHref: string;
+  invitePoolId?: string | null;
+  invitePoolName?: string | null;
+}) {
+  return (
+    <main
+      className="page-shell home-page-shell home-landing-shell"
+      style={{
+        maxWidth: 920,
+        margin: "10px auto 22px",
+        padding: 8,
+      }}
+    >
+        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
+          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={206}
+              height={58}
+              className="landing-topbar-mark"
+            />
+          </Link>
+        </header>
+
+        <section className="landing-center-stage" aria-label="Landing actions">
+          <div className="page-surface landing-center-card">
+            <h1 className="landing-title">draft, track and win.</h1>
+            <p className="landing-copy">
+              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
+              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
+            </p>
+            {invitePoolId ? (
+              <p className="landing-invite-text">
+                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
+              </p>
+            ) : null}
+            <div className="landing-action-row">
+              <Link
+                href={loginHref}
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                {invitePoolId ? "Join pool" : "Login / Sign up"}
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
+                onClick={() =>
+                  trackEvent({
+                    eventName: "home_cta_click",
+                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
+                  })
+                }
+              >
+                How it works
+              </Link>
+            </div>
+          </div>
+        </section>
+    </main>
+  );
+}
+
 function formatGameDateTimeET(startTime: string | null) {
   if (!startTime) return "Time TBD (ET)";
   const d = new Date(startTime);
@@ -1613,68 +1687,11 @@ function HomeContent() {
 
   if (isAuthenticated !== true) {
     return (
-      <main
-        className="page-shell home-page-shell home-landing-shell"
-        style={{
-          maxWidth: 920,
-          margin: "10px auto 22px",
-          padding: 8,
-        }}
-      >
-        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={206}
-              height={58}
-              className="landing-topbar-mark"
-              priority
-            />
-          </Link>
-        </header>
-
-        <section className="landing-center-stage" aria-label="Landing actions">
-          <div className="page-surface landing-center-card">
-            <h1 className="landing-title">draft, track and win.</h1>
-            <p className="landing-copy">
-              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-            </p>
-            {invitePoolId ? (
-              <p className="landing-invite-text">
-                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
-              </p>
-            ) : null}
-            <div className="landing-action-row">
-              <Link
-                href={loginHref}
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                {invitePoolId ? "Join pool" : "Login / Sign up"}
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                How it works
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+      <LandingPage
+        loginHref={loginHref}
+        invitePoolId={invitePoolId}
+        invitePoolName={invitePoolName}
+      />
     );
   }
 
@@ -2004,47 +2021,7 @@ function HomeContent() {
 }
 
 function HomeFallback() {
-  return (
-    <main
-      className="page-shell home-page-shell home-landing-shell"
-      style={{
-        maxWidth: 920,
-        margin: "10px auto 22px",
-        padding: 8,
-      }}
-    >
-      <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-        <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-          <Image
-            src="/bracketball-logo-mark.png"
-            alt="bracketball logo"
-            width={206}
-            height={58}
-            className="landing-topbar-mark"
-            priority
-          />
-        </Link>
-      </header>
-
-      <section className="landing-center-stage" aria-label="Landing actions">
-        <div className="page-surface landing-center-card">
-          <h1 className="landing-title">draft, track and win.</h1>
-          <p className="landing-copy">
-            Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-            bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-          </p>
-          <div className="landing-action-row">
-            <Link href="/login" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
-              Login / Sign up
-            </Link>
-            <Link href="/how-it-works" className="ui-btn ui-btn--md ui-btn--secondary landing-action-button">
-              How it works
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  return <LandingPage loginHref="/login" />;
 }
 
 export default function Home() {

@@ -110,6 +110,21 @@ body.has-app-shell {
   padding-bottom: calc(102px + env(safe-area-inset-bottom));
 }
 
+body.app-launch-active {
+  overflow: hidden;
+}
+
+.app-launch-content {
+  min-height: 100vh;
+  min-height: 100dvh;
+  transition: opacity 180ms ease;
+}
+
+body.app-launch-active .app-launch-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
 a {
   color: inherit;
 }
@@ -153,7 +168,7 @@ body::before {
 .page-shell {
   width: 100%;
   margin: clamp(26px, 4vw, 58px) auto;
-  padding: 16px;
+  padding: clamp(12px, 2.8vw, 18px);
 }
 
 .page-shell--stack {
@@ -178,6 +193,16 @@ body::before {
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    margin-block: 18px 28px;
+  }
+
+  .page-shell--compact {
+    margin-top: 14px;
+  }
 }
 
 .page-title {
@@ -411,6 +436,72 @@ textarea::placeholder {
 .home-landing-shell {
   max-width: 920px;
   min-height: calc(100dvh - 240px);
+}
+
+.landing-intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(77, 120, 210, 0.16), transparent 36%),
+    radial-gradient(circle at 84% 18%, rgba(45, 160, 125, 0.12), transparent 32%),
+    linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, #06101d 12%), color-mix(in srgb, var(--background) 92%, #06101d 8%));
+  opacity: 1;
+  transition: opacity 420ms ease;
+  pointer-events: none;
+}
+
+.landing-intro-overlay[data-phase="exit"] {
+  opacity: 0;
+}
+
+.landing-intro-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(82vw, 520px);
+  min-height: 120px;
+}
+
+.landing-intro-mark {
+  position: absolute;
+  width: clamp(74px, 18vw, 108px);
+  height: auto;
+  object-fit: contain;
+  filter: var(--logo-filter);
+  transform: translateY(0) scale(1);
+  opacity: 0;
+  transition:
+    transform 760ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 520ms ease;
+}
+
+.landing-intro-mark[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(-2px) scale(1.03);
+}
+
+.landing-intro-wordmark {
+  display: block;
+  opacity: 0;
+  white-space: nowrap;
+  font-family: var(--font-app-sans), "Avenir Next", "Segoe UI", sans-serif;
+  font-size: clamp(1.92rem, 6.4vw, 3.1rem);
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  line-height: 0.96;
+  transform: translateY(12px) scale(0.965);
+  transition:
+    opacity 620ms ease,
+    transform 860ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-intro-wordmark[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(-1px) scale(1);
 }
 
 .landing-logo-topbar {
@@ -838,6 +929,14 @@ textarea::placeholder {
 }
 
 @media (max-width: 560px) {
+  .landing-intro-stage {
+    min-height: 96px;
+  }
+
+  .landing-intro-wordmark {
+    font-size: clamp(1.6rem, 9vw, 2.15rem);
+  }
+
   .landing-logo-topbar {
     border-radius: 12px;
     padding: 5px 8px;
@@ -885,6 +984,14 @@ textarea::placeholder {
 
   .home-draft-points {
     white-space: normal !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-intro-overlay,
+  .landing-intro-mark,
+  .landing-intro-wordmark {
+    transition-duration: 1ms;
   }
 }
 
@@ -961,6 +1068,22 @@ textarea::placeholder {
   grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
+}
+
+.leaderboard-hero-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leaderboard-hero-control {
+  flex: 1 1 240px;
+}
+
+.leaderboard-hero-share {
+  flex: 0 0 auto;
 }
 
 .home-draft-link {
@@ -1169,6 +1292,22 @@ textarea::placeholder {
 @media (min-width: 1100px) {
   .leaderboard-layout {
     grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+@media (max-width: 720px) {
+  .leaderboard-hero-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .leaderboard-hero-control {
+    width: 100%;
+  }
+
+  .leaderboard-hero-share {
+    width: 100%;
   }
 }
 

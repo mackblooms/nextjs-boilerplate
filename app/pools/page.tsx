@@ -93,7 +93,6 @@ export default function PoolsPage() {
   const [allPoolsMsg, setAllPoolsMsg] = useState("");
   const [myPoolsMsg, setMyPoolsMsg] = useState("");
   const [joinStatus, setJoinStatus] = useState<StatusMessage | null>(null);
-  const [leavingPoolId, setLeavingPoolId] = useState<string | null>(null);
 
   const [joinModalPool, setJoinModalPool] = useState<PoolRow | null>(null);
   const [joinPasswordInput, setJoinPasswordInput] = useState("");
@@ -107,13 +106,6 @@ export default function PoolsPage() {
   const [draftPickMap, setDraftPickMap] = useState<Map<string, Set<string>>>(new Map());
   const [alreadyEnteredDraftIds, setAlreadyEnteredDraftIds] = useState<Set<string>>(new Set());
   const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
-
-  const [leaveModalPool, setLeaveModalPool] = useState<PoolRow | null>(null);
-  const [leaveEntries, setLeaveEntries] = useState<LeaveEntryRow[]>([]);
-  const [selectedLeaveEntryIds, setSelectedLeaveEntryIds] = useState<Set<string>>(new Set());
-  const [leaveModalLoading, setLeaveModalLoading] = useState(false);
-  const [leaveModalSubmitting, setLeaveModalSubmitting] = useState(false);
-  const [leaveModalMessage, setLeaveModalMessage] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -191,9 +183,7 @@ export default function PoolsPage() {
   }, [discoverPools, query]);
 
   const selectedDraftCount = selectedDraftIds.size;
-  const selectedLeaveCount = selectedLeaveEntryIds.size;
   const draftModalPoolLocked = draftModalPool ? isPoolEntryLocked(draftModalPool) : false;
-  const leaveModalPoolLocked = leaveModalPool ? isPoolEntryLocked(leaveModalPool) : false;
 
   function rememberJoinedPool(pool: PoolRow) {
     setMyPools((prev) => {
@@ -648,264 +638,6 @@ export default function PoolsPage() {
     setSelectedDraftIds(new Set());
   }
 
-  function closeLeaveModal() {
-    setLeaveModalPool(null);
-    setLeaveEntries([]);
-    setSelectedLeaveEntryIds(new Set());
-    setLeaveModalLoading(false);
-    setLeaveModalSubmitting(false);
-    setLeaveModalMessage("");
-  }
-
-  async function openLeaveModal(pool: PoolRow) {
-    setJoinStatus(null);
-
-    if (!userId) {
-      setJoinStatus({ tone: "error", text: "Log in first to leave a pool." });
-      return;
-    }
-
-    if (isPoolEntryLocked(pool)) {
-      setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool) });
-      return;
-    }
-
-    setLeaveModalPool(pool);
-    setLeaveEntries([]);
-    setSelectedLeaveEntryIds(new Set());
-    setLeaveModalLoading(true);
-    setLeaveModalSubmitting(false);
-    setLeaveModalMessage("");
-
-    const withName = await supabase
-      .from("entries")
-      .select("id,entry_name")
-      .eq("pool_id", pool.id)
-      .eq("user_id", userId);
-
-    if (withName.error && !isMissingEntryNameError(withName.error.message)) {
-      setLeaveModalLoading(false);
-      setLeaveModalMessage(withName.error.message);
-      return;
-    }
-
-    let nextEntries: LeaveEntryRow[] = [];
-    if (withName.error && isMissingEntryNameError(withName.error.message)) {
-      const fallback = await supabase
-        .from("entries")
-        .select("id")
-        .eq("pool_id", pool.id)
-        .eq("user_id", userId);
-
-      if (fallback.error) {
-        setLeaveModalLoading(false);
-        setLeaveModalMessage(fallback.error.message);
-        return;
-      }
-
-      nextEntries = ((fallback.data ?? []) as Array<{ id: string }>).map((row) => ({
-        id: row.id,
-        entry_name: null,
-      }));
-    } else {
-      nextEntries = (withName.data ?? []) as LeaveEntryRow[];
-    }
-
-    const unresolvedEntries = nextEntries.filter((entry) => !(entry.entry_name?.trim().length));
-    if (unresolvedEntries.length > 0) {
-      const draftsQuery = await supabase
-        .from("saved_drafts")
-        .select("id,name,updated_at")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false });
-
-      if (!draftsQuery.error) {
-        const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);
-        const draftIds = drafts.map((draft) => draft.id);
-        if (draftIds.length > 0) {
-          const draftPicksQuery = await supabase
-            .from("saved_draft_picks")
-            .select("draft_id,team_id")
-            .in("draft_id", draftIds);
-
-          const unresolvedEntryIds = unresolvedEntries.map((entry) => entry.id);
-          const entryPicksQuery = await supabase
-            .from("entry_picks")
-            .select("entry_id,team_id")
-            .in("entry_id", unresolvedEntryIds);
-
-          if (!draftPicksQuery.error && !entryPicksQuery.error) {
-            const draftPickMap = new Map<string, Set<string>>();
-            for (const draftId of draftIds) draftPickMap.set(draftId, new Set());
-            for (const row of (draftPicksQuery.data ?? []) as SavedDraftPickRow[]) {
-              const picks = draftPickMap.get(row.draft_id) ?? new Set<string>();
-              picks.add(row.team_id);
-              draftPickMap.set(row.draft_id, picks);
-            }
-
-            const entryPickMap = new Map<string, Set<string>>();
-            for (const entryId of unresolvedEntryIds) entryPickMap.set(entryId, new Set());
-            for (const row of (entryPicksQuery.data ?? []) as Array<{ entry_id: string; team_id: string }>) {
-              const picks = entryPickMap.get(row.entry_id) ?? new Set<string>();
-              picks.add(row.team_id);
-              entryPickMap.set(row.entry_id, picks);
-            }
-
-            nextEntries = nextEntries.map((entry) => {
-              if (entry.entry_name?.trim().length) return entry;
-              const entryPicks = entryPickMap.get(entry.id) ?? new Set<string>();
-              if (entryPicks.size === 0) return entry;
-              const matchedDraft = drafts.find((draft) =>
-                sameTeamSet(draftPickMap.get(draft.id) ?? new Set<string>(), entryPicks)
-              );
-              if (!matchedDraft?.name?.trim()) return entry;
-              return { ...entry, entry_name: matchedDraft.name.trim() };
-            });
-          }
-        }
-      }
-    }
-
-    const stillUnresolvedEntries = nextEntries.filter((entry) => !(entry.entry_name?.trim().length));
-    if (stillUnresolvedEntries.length > 0) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData.session;
-
-      if (session) {
-        const draftNamesRes = await fetch(`/api/pools/draft-names?poolId=${encodeURIComponent(pool.id)}`, {
-          headers: {
-            authorization: `Bearer ${session.access_token}`,
-          },
-          cache: "no-store",
-        });
-
-        if (draftNamesRes.ok) {
-          const body = (await draftNamesRes.json().catch(() => ({}))) as {
-            draftNamesByEntry?: Record<string, string>;
-          };
-
-          const draftNamesByEntry = body.draftNamesByEntry ?? {};
-          nextEntries = nextEntries.map((entry) => {
-            if (entry.entry_name?.trim().length) return entry;
-            const draftName = draftNamesByEntry[entry.id]?.trim();
-            if (!draftName) return entry;
-            return { ...entry, entry_name: draftName };
-          });
-        }
-      }
-    }
-
-    setLeaveEntries(nextEntries);
-    setLeaveModalLoading(false);
-  }
-
-  function toggleLeaveEntrySelection(entryId: string) {
-    setSelectedLeaveEntryIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(entryId)) {
-        next.delete(entryId);
-      } else {
-        next.add(entryId);
-      }
-      return next;
-    });
-  }
-
-  function selectAllLeaveEntries() {
-    setSelectedLeaveEntryIds(new Set(leaveEntries.map((entry) => entry.id)));
-  }
-
-  function clearLeaveSelection() {
-    setSelectedLeaveEntryIds(new Set());
-  }
-
-  async function submitLeaveSelection() {
-    const pool = leaveModalPool;
-    if (!pool) return;
-
-    if (isPoolEntryLocked(pool)) {
-      setLeaveModalMessage(lockedEntriesMessage(pool));
-      return;
-    }
-
-    if (!userId) {
-      setLeaveModalMessage("Please log in first.");
-      return;
-    }
-
-    const entryIds = Array.from(selectedLeaveEntryIds);
-    if (leaveEntries.length > 0 && entryIds.length === 0) {
-      setLeaveModalMessage("Select at least one draft to remove.");
-      return;
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData.session;
-    if (!session) {
-      setLeaveModalMessage("Session expired. Log in again to leave this pool.");
-      return;
-    }
-
-    setLeavingPoolId(pool.id);
-    setLeaveModalSubmitting(true);
-    setLeaveModalMessage("");
-
-    const res = await fetch("/api/pools/leave", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        poolId: pool.id,
-        entryIds: entryIds.length > 0 ? entryIds : undefined,
-      }),
-    });
-
-    const body = (await res.json().catch(() => ({}))) as {
-      error?: string;
-      removedEntryIds?: string[];
-      membershipRemoved?: boolean;
-    };
-
-    if (!res.ok) {
-      setLeavingPoolId(null);
-      setLeaveModalSubmitting(false);
-      setLeaveModalMessage(body.error ?? "Failed to remove selected drafts.");
-      return;
-    }
-
-    const removedEntryIds = new Set(body.removedEntryIds ?? []);
-    const remainingEntries = leaveEntries.filter((entry) => !removedEntryIds.has(entry.id));
-
-    if (body.membershipRemoved) {
-      setMyPools((prev) => {
-        const next = prev.filter((row) => row.id !== pool.id);
-        if (next.length === 0) {
-          setActiveTab("discover");
-        }
-        return next;
-      });
-      setLeavingPoolId(null);
-      setLeaveModalSubmitting(false);
-      closeLeaveModal();
-      setJoinStatus({ tone: "success", text: `Left ${pool.name}.` });
-      return;
-    }
-
-    setLeaveEntries(remainingEntries);
-    setSelectedLeaveEntryIds(new Set());
-    setLeavingPoolId(null);
-    setLeaveModalSubmitting(false);
-    setLeaveModalMessage("Removed selected draft(s) from this pool.");
-  }
-
-  function leaveEntryLabel(entry: LeaveEntryRow, index: number) {
-    const trimmed = entry.entry_name?.trim() ?? "";
-    if (trimmed.length > 0) return trimmed;
-    return `Entry ${index + 1}`;
-  }
-
   const tabButton = (isActive: boolean): CSSProperties => ({
     padding: "10px 14px",
     border: "1px solid var(--border-color)",
@@ -923,16 +655,13 @@ export default function PoolsPage() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main className="page-shell page-shell--stack" style={{ maxWidth: 960, marginTop: 90 }}>
+    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
       <section
         className="page-surface"
         style={{
-          border: "1px solid var(--border-color)",
-          borderRadius: 14,
-          background: "var(--surface)",
-          padding: 14,
+          padding: 16,
           display: "grid",
-          gap: 14,
+          gap: 16,
         }}
       >
         <div
@@ -945,45 +674,58 @@ export default function PoolsPage() {
           }}
         >
           <div style={{ display: "grid", gap: 6 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>Pools</h1>
-            <p style={{ margin: 0, opacity: 0.8 }}>
-              Join a pool, then select one or more saved drafts to enter.
+            <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
+              Pools
+            </h1>
+            <p className="page-subtitle" style={{ maxWidth: 540 }}>
+              Move between your live competitions, discover new pools, and enter saved drafts without extra setup.
             </p>
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link
-              href="/drafts"
-              style={{
-                padding: "10px 14px",
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 900,
-                minHeight: 44,
-                display: "inline-flex",
-                alignItems: "center",
-                background: "var(--surface)",
-              }}
-            >
+            <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
               My Drafts
             </Link>
-            <Link
-              href="/pools/new"
-              style={{
-                padding: "10px 14px",
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                textDecoration: "none",
-                fontWeight: 900,
-                minHeight: 44,
-                display: "inline-flex",
-                alignItems: "center",
-                background: "var(--surface)",
-              }}
-            >
+            <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--primary">
               New Pool
             </Link>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: "var(--surface)",
+              display: "grid",
+              gap: 4,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Joined pools</span>
+            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{myPools.length}</span>
+            <span style={{ fontSize: 13, opacity: 0.78 }}>Open one tap straight to the leaderboard.</span>
+          </div>
+          <div
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              padding: "12px 14px",
+              background: "var(--surface)",
+              display: "grid",
+              gap: 4,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Available to join</span>
+            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{discoverPools.length}</span>
+            <span style={{ fontSize: 13, opacity: 0.78 }}>Public and private pools ready for entry.</span>
           </div>
         </div>
 
@@ -1028,52 +770,26 @@ export default function PoolsPage() {
               style={{
                 border: "1px solid var(--border-color)",
                 borderRadius: 12,
-                padding: 12,
+                padding: 16,
                 background: "var(--surface)",
                 display: "grid",
-                gap: 8,
+                gap: 10,
               }}
             >
-              <p style={{ margin: 0 }}>You have not joined any pools yet.</p>
+              <div style={{ display: "grid", gap: 4 }}>
+                <div style={{ fontSize: 18, fontWeight: 900 }}>Your pool list is still empty.</div>
+                <p style={{ margin: 0, opacity: 0.8 }}>
+                  Join a pool to start tracking standings, brackets, and draft entries from the app shell.
+                </p>
+              </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("discover")}
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
+                <button type="button" onClick={() => setActiveTab("discover")} className="ui-btn ui-btn--md ui-btn--primary">
                   Discover pools
                 </button>
-                <Link
-                  href="/drafts"
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
-                >
+                <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
                   Open drafts
                 </Link>
-                <Link
-                  href="/pools/new"
-                  style={{
-                    padding: "9px 12px",
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    textDecoration: "none",
-                    fontWeight: 800,
-                    background: "var(--surface)",
-                  }}
-                >
+                <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--secondary">
                   Create a pool
                 </Link>
               </div>
@@ -1085,85 +801,55 @@ export default function PoolsPage() {
               {myPools.map((pool) => {
                 const entriesLocked = isPoolEntryLocked(pool);
                 return (
-                <li key={pool.id}>
-                  <div
-                    style={{
-                      border: "1px solid var(--border-color)",
-                      borderRadius: 12,
-                      padding: 12,
-                      background: "var(--surface)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 12,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
-                      <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
-                      <div style={{ fontSize: 13, opacity: 0.8 }}>{privacyLabel(pool)} pool</div>
+                  <li key={pool.id}>
+                    <Link
+                      href={`/pool/${pool.id}/leaderboard`}
+                      style={{
+                        border: "1px solid var(--border-color)",
+                        borderRadius: 14,
+                        padding: 14,
+                        background: "var(--surface)",
+                        display: "grid",
+                        gap: 8,
+                        textDecoration: "none",
+                        color: "inherit",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          alignItems: "flex-start",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {pool.name}
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            border: "1px solid var(--border-color)",
+                            background: "var(--surface-muted)",
+                          }}
+                        >
+                          {privacyLabel(pool)}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 13, opacity: 0.8 }}>Tap to open standings, bracket, and invite tools.</div>
                       {entriesLocked ? (
                         <div style={{ fontSize: 12, opacity: 0.7 }}>
                           Entry changes locked at {formatDraftLockTimeET(pool.lock_time)}
                         </div>
-                      ) : null}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button
-                        type="button"
-                        onClick={() => openJoinModal(pool)}
-                        disabled={!userId || entriesLocked}
-                        style={{
-                          padding: "9px 12px",
-                          borderRadius: 10,
-                          border: "1px solid #16a34a",
-                          fontWeight: 800,
-                          background: "rgba(22,163,74,0.12)",
-                          color: "#166534",
-                          minHeight: 40,
-                          cursor: !userId || entriesLocked ? "not-allowed" : "pointer",
-                          opacity: !userId || entriesLocked ? 0.7 : 1,
-                        }}
-                      >
-                        Enter Drafts
-                      </button>
-                      <Link
-                        href={`/pool/${pool.id}/leaderboard`}
-                        style={{
-                          padding: "9px 12px",
-                          borderRadius: 10,
-                          border: "1px solid var(--border-color)",
-                          textDecoration: "none",
-                          fontWeight: 800,
-                          background: "var(--surface)",
-                          minHeight: 40,
-                          display: "inline-flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        Leaderboard
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => void openLeaveModal(pool)}
-                        disabled={leavingPoolId === pool.id || entriesLocked}
-                        style={{
-                          padding: "9px 12px",
-                          borderRadius: 10,
-                          border: "1px solid #dc2626",
-                          fontWeight: 800,
-                          background: "rgba(220,38,38,0.12)",
-                          color: "#dc2626",
-                          minHeight: 40,
-                          cursor: leavingPoolId === pool.id || entriesLocked ? "not-allowed" : "pointer",
-                          opacity: leavingPoolId === pool.id || entriesLocked ? 0.7 : 1,
-                        }}
-                      >
-                        {leavingPoolId === pool.id ? "Leaving..." : "Leave"}
-                      </button>
-                    </div>
-                  </div>
-                </li>
+                      ) : (
+                        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Open leaderboard</div>
+                      )}
+                    </Link>
+                  </li>
                 );
               })}
             </ul>
@@ -1183,22 +869,20 @@ export default function PoolsPage() {
               gap: 10,
             }}
           >
-            <label htmlFor="pool-search" style={{ fontWeight: 800, fontSize: 13 }}>
-              Search pools
-            </label>
+            <div style={{ display: "grid", gap: 4 }}>
+              <label htmlFor="pool-search" style={{ fontWeight: 800, fontSize: 13 }}>
+                Search pools
+              </label>
+              <p style={{ margin: 0, fontSize: 13, opacity: 0.76 }}>
+                Find a pool by name, then join it and choose which saved drafts you want to enter.
+              </p>
+            </div>
             <input
               id="pool-search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Find by pool name"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                minHeight: 44,
-                borderRadius: 10,
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-              }}
+              className="ui-control ui-control--full"
             />
             {!userId ? (
               <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
@@ -1209,7 +893,16 @@ export default function PoolsPage() {
 
           {allPoolsMsg ? <p>{allPoolsMsg}</p> : null}
           {!loading && !allPoolsMsg && filteredDiscoverPools.length === 0 ? (
-            <p>{query.trim() ? "No pools match your search." : "No pools available to join right now."}</p>
+            <div
+              style={{
+                border: "1px solid var(--border-color)",
+                borderRadius: 12,
+                padding: 14,
+                background: "var(--surface)",
+              }}
+            >
+              {query.trim() ? "No pools match your search." : "No pools are available to join right now."}
+            </div>
           ) : null}
 
           {!loading && filteredDiscoverPools.length > 0 ? (
@@ -1222,8 +915,8 @@ export default function PoolsPage() {
                     <div
                       style={{
                         border: "1px solid var(--border-color)",
-                        borderRadius: 12,
-                        padding: 12,
+                        borderRadius: 14,
+                        padding: 14,
                         background: "var(--surface)",
                         display: "grid",
                         gap: 10,
@@ -1241,9 +934,21 @@ export default function PoolsPage() {
                         <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
                           <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
-                            {isPrivate ? "Private (password required)" : "Public"}
+                            {isPrivate ? "Private pool with password protection" : "Public pool ready to join"}
                           </div>
                         </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            border: "1px solid var(--border-color)",
+                            background: isPrivate ? "var(--surface-muted)" : "var(--highlight)",
+                          }}
+                        >
+                          {isPrivate ? "Private" : "Public"}
+                        </span>
                       </div>
 
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1251,38 +956,17 @@ export default function PoolsPage() {
                           type="button"
                           onClick={() => openJoinModal(pool)}
                           disabled={!userId}
-                          style={{
-                            flex: "1 1 160px",
-                            padding: "10px 12px",
-                            minHeight: 44,
-                            borderRadius: 10,
-                            border: "1px solid #16a34a",
-                            background: "rgba(22,163,74,0.12)",
-                            color: "#166534",
-                            fontWeight: 800,
-                            cursor: !userId ? "not-allowed" : "pointer",
-                            opacity: !userId ? 0.7 : 1,
-                          }}
+                          className="ui-btn ui-btn--md ui-btn--success"
+                          style={{ flex: "1 1 180px" }}
                         >
                           Join + Enter Drafts
                         </button>
                         <Link
                           href={`/pool/${pool.id}/leaderboard`}
-                          style={{
-                            flex: "1 1 160px",
-                            padding: "10px 12px",
-                            minHeight: 44,
-                            borderRadius: 10,
-                            border: "1px solid var(--border-color)",
-                            textDecoration: "none",
-                            fontWeight: 800,
-                            background: "var(--surface)",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+                          className="ui-btn ui-btn--md ui-btn--secondary"
+                          style={{ flex: "1 1 180px" }}
                         >
-                          Leaderboard
+                          Preview Leaderboard
                         </Link>
                       </div>
                     </div>
@@ -1292,211 +976,6 @@ export default function PoolsPage() {
             </ul>
           ) : null}
         </section>
-      ) : null}
-
-      {leaveModalPool ? (
-        <div
-          role="presentation"
-          onClick={closeLeaveModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 118,
-          }}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-label="Remove drafts from pool"
-            onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(640px, 100%)",
-              maxHeight: "88vh",
-              overflow: "auto",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 12,
-            }}
-          >
-            <div style={{ display: "grid", gap: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Remove Drafts from {leaveModalPool.name}</h2>
-              <p style={{ margin: 0, opacity: 0.8 }}>
-                Choose which entered drafts to remove from this pool.
-              </p>
-            </div>
-
-            {leaveModalLoading ? <p style={{ margin: 0 }}>Loading your pool drafts...</p> : null}
-
-            {!leaveModalLoading && leaveEntries.length > 0 ? (
-              <>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={selectAllLeaveEntries}
-                    disabled={leaveModalSubmitting || leaveModalPoolLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: leaveModalSubmitting || leaveModalPoolLocked ? "not-allowed" : "pointer",
-                      opacity: leaveModalSubmitting || leaveModalPoolLocked ? 0.7 : 1,
-                    }}
-                  >
-                    Select all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearLeaveSelection}
-                    disabled={leaveModalSubmitting || leaveModalPoolLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: leaveModalSubmitting || leaveModalPoolLocked ? "not-allowed" : "pointer",
-                      opacity: leaveModalSubmitting || leaveModalPoolLocked ? 0.7 : 1,
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
-
-                <div style={{ display: "grid", gap: 8 }}>
-                  {leaveEntries.map((entry, index) => {
-                    const checked = selectedLeaveEntryIds.has(entry.id);
-                    return (
-                      <label
-                        key={entry.id}
-                        style={{
-                          display: "flex",
-                          gap: 10,
-                          alignItems: "center",
-                          border: "1px solid var(--border-color)",
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleLeaveEntrySelection(entry.id)}
-                          disabled={leaveModalSubmitting || leaveModalPoolLocked}
-                        />
-                        <div style={{ display: "grid", gap: 2 }}>
-                          <div style={{ fontWeight: 900 }}>{leaveEntryLabel(entry, index)}</div>
-                          <div style={{ fontSize: 12, opacity: 0.75 }}>Entry ID: {entry.id.slice(0, 8)}</div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </>
-            ) : null}
-
-            {!leaveModalLoading && leaveEntries.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No entered drafts found for this pool.</p>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Use the red button below to leave the pool entirely.
-                </p>
-              </div>
-            ) : null}
-
-            {leaveModalMessage ? (
-              <p
-                style={{
-                  margin: 0,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                }}
-              >
-                {leaveModalMessage}
-              </p>
-            ) : null}
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                onClick={closeLeaveModal}
-                disabled={leaveModalSubmitting}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  cursor: leaveModalSubmitting ? "not-allowed" : "pointer",
-                  opacity: leaveModalSubmitting ? 0.7 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => void submitLeaveSelection()}
-                disabled={
-                  leaveModalSubmitting ||
-                  leaveModalLoading ||
-                  leaveModalPoolLocked ||
-                  (leaveEntries.length > 0 && selectedLeaveCount === 0)
-                }
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid #dc2626",
-                  background: "rgba(220,38,38,0.12)",
-                  color: "#dc2626",
-                  fontWeight: 900,
-                  cursor:
-                    leaveModalSubmitting ||
-                    leaveModalLoading ||
-                    leaveModalPoolLocked ||
-                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
-                      ? "not-allowed"
-                      : "pointer",
-                  opacity:
-                    leaveModalSubmitting ||
-                    leaveModalLoading ||
-                    leaveModalPoolLocked ||
-                    (leaveEntries.length > 0 && selectedLeaveCount === 0)
-                      ? 0.7
-                      : 1,
-                }}
-              >
-                {leaveModalSubmitting
-                  ? "Removing..."
-                  : leaveEntries.length > 0
-                    ? `Remove ${selectedLeaveCount} Draft${selectedLeaveCount === 1 ? "" : "s"}`
-                    : "Leave Pool"}
-              </button>
-            </div>
-          </section>
-        </div>
       ) : null}
 
       {joinModalPool ? (
