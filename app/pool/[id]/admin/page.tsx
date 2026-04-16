@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import AdminPlayerLookup from "@/app/components/AdminPlayerLookup";
 import AdminProjectionTool from "@/app/components/AdminProjectionTool";
 
 type Team = {
@@ -1082,6 +1083,7 @@ export default function AdminPage() {
           </p>
         </div>
 
+        <AdminPlayerLookup />
         <AdminProjectionTool />
 
         <div style={{ display: "flex", gap: 10, alignItems: "stretch", flexWrap: "wrap" }}>
