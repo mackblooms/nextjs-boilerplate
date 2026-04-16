@@ -43,22 +43,78 @@ function safeNumber(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+function normalizeText(value: string | undefined | null) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function estimateCoachSuccess(coach?: string | null) {
+  const name = normalizeText(coach)?.toLowerCase() ?? "";
+  if (!name) return 0.55;
+  if (/(calipari|self|kra|mack|smart|swinney|jonas|hurley|sturdivant|mj|tate|nate)/.test(name)) {
+    return 0.72;
+  }
+  if (/(first-year|first year|new coach|new staff|interim|transition)/.test(name)) {
+    return 0.52;
+  }
+  if (/(typical|solid|steady|veteran)/.test(name)) {
+    return 0.60;
+  }
+  return 0.57;
+}
+
+function estimateSystemFit(system?: string | null) {
+  const value = normalizeText(system)?.toLowerCase() ?? "";
+  if (!value) return 0.55;
+  if (/(spread|pace|motion|dribble drive|pace and space|pace-and-space|up-tempo|up tempo|fast break)/.test(value)) {
+    return 0.68;
+  }
+  if (/(half court|post|slow|iso|isolation|grind|defense-first|defense first)/.test(value)) {
+    return 0.50;
+  }
+  return 0.58;
+}
+
+function estimateRoleOpportunity(role?: string | null) {
+  const value = normalizeText(role)?.toLowerCase() ?? "";
+  if (!value) return 0.55;
+  if (/(starter|star|primary|leading|first option|go-to)/.test(value)) {
+    return 0.75;
+  }
+  if (/(sixth man|sixth-man|bench|reserve|backup|role player)/.test(value)) {
+    return 0.45;
+  }
+  if (/(projected|expected|likely)/.test(value)) {
+    return 0.62;
+  }
+  return 0.56;
+}
+
+function estimateImprovementScore(row: SupabasePlayerRow, previousPPG: number, priorPPG: number) {
+  const trend = priorPPG > 0 ? (previousPPG - priorPPG) / priorPPG : 0;
+  return clamp(0.12 + Math.min(0.38, trend * 0.45), 0, 1);
+}
+
 function derivePlayerFactors(row: SupabasePlayerRow) {
   const previousPPG = safeNumber(row.previous_ppg, 10);
   const priorPPG = safeNumber(row.prior_ppg, previousPPG * 0.9);
   const previousAPG = safeNumber(row.previous_apg, 2.2);
   const priorAPG = safeNumber(row.prior_apg, previousAPG * 0.9);
-  const coachSuccess = clamp(safeNumber(row.coach_success, 0.55), 0, 1);
-  const systemFit = clamp(safeNumber(row.system_fit, 0.55), 0, 1);
-  const roleOpportunity = clamp(safeNumber(row.role_opportunity, 0.55), 0, 1);
-  const baselineMomentum = clamp(safeNumber(row.baseline_momentum, 0.5), 0, 1);
+  const coachSuccess = row.coach_success != null ? clamp(safeNumber(row.coach_success, 0.55), 0, 1) : estimateCoachSuccess(row.coach);
+  const systemFit = row.system_fit != null ? clamp(safeNumber(row.system_fit, 0.55), 0, 1) : estimateSystemFit(row.system);
+  const roleOpportunity = row.role_opportunity != null ? clamp(safeNumber(row.role_opportunity, 0.55), 0, 1) : estimateRoleOpportunity(row.role);
   const age = safeNumber(row.age, 20);
-  const improvementScore = clamp(safeNumber(row.improvement_score, 0.1), 0, 1);
+  const improvementScore = row.improvement_score != null ? clamp(safeNumber(row.improvement_score, 0.1), 0, 1) : estimateImprovementScore(row, previousPPG, priorPPG);
   const minutesPerGame = clamp(safeNumber(row.previous_mpg, 28), 0, 48);
+  const previous3P = clamp(safeNumber(row.previous_3p, 0.32), 0.01, 0.6);
+  const previousFG = clamp(safeNumber(row.previous_fg, 0.44), 0.3, 0.7);
+  const previousFT = clamp(safeNumber(row.previous_ft, 0.74), 0.45, 0.95);
 
   const ppgTrend = previousPPG > 0 ? (previousPPG - priorPPG) / Math.max(priorPPG, 1) : 0;
   const trajectory = clamp(0.45 + ppgTrend * 0.35 + improvementScore * 0.2, 0, 1);
   const ageFactor = clamp((age - 18) / 12, 0, 1);
+  const baselineMomentum = row.baseline_momentum != null ? clamp(safeNumber(row.baseline_momentum, 0.5), 0, 1) : clamp(0.45 + Math.min(0.22, ppgTrend * 0.16) + improvementScore * 0.16, 0, 1);
   const momentum = clamp(0.4 + trajectory * 0.25 + baselineMomentum * 0.2 + improvementScore * 0.15, 0.05, 0.98);
   const situation = clamp(systemFit * 0.5 + roleOpportunity * 0.3 + coachSuccess * 0.2, 0, 1);
   const coachImpact = clamp(coachSuccess * 0.7 + systemFit * 0.15 + roleOpportunity * 0.15, 0, 1);
@@ -90,9 +146,9 @@ function derivePlayerFactors(row: SupabasePlayerRow) {
       previousPPG,
       previousRPG: safeNumber(row.previous_rpg, 4.1),
       previousAPG,
-      previous3P: clamp(safeNumber(row.previous_3p, 0.32), 0.01, 0.6),
-      previousFG: clamp(safeNumber(row.previous_fg, 0.44), 0.3, 0.7),
-      previousFT: clamp(safeNumber(row.previous_ft, 0.74), 0.45, 0.95),
+      previous3P,
+      previousFG,
+      previousFT,
       previousBPG: safeNumber(row.previous_bpg, 0.5),
       previousSPG: safeNumber(row.previous_spg, 1.0),
       minutesPerGame,

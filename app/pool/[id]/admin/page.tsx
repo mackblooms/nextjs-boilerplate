@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabaseClient";
+import AdminPlayerImport from "@/app/components/AdminPlayerImport";
 import AdminPlayerLookup from "@/app/components/AdminPlayerLookup";
 import AdminProjectionTool from "@/app/components/AdminProjectionTool";
 
@@ -1083,6 +1084,7 @@ export default function AdminPage() {
           </p>
         </div>
 
+        <AdminPlayerImport />
         <AdminPlayerLookup />
         <AdminProjectionTool />
 
