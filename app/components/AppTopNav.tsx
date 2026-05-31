@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -16,10 +16,18 @@ import {
   getStoredActivePoolId,
   setStoredActivePoolId,
 } from "../../lib/activePool";
+import { getStoredActiveCompetition, setStoredActiveCompetition } from "../../lib/activeCompetition";
 import { withAvatarFallback } from "../../lib/avatar";
+import {
+  competitionPath,
+  getCompetition,
+  normalizeCompetitionSlug,
+  type CompetitionSlug,
+} from "../../lib/competitions";
+import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "../../lib/competitionData";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
-type Pool = { id: string; name: string; created_by: string };
+type Pool = { id: string; name: string; created_by: string; competition_slug?: string | null };
 type Theme = "light" | "dark";
 
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
@@ -175,11 +183,14 @@ function PodiumIcon({ className }: { className?: string }) {
 
 export default function AppTopNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const supabase = useMemo(() => getSupabaseClient(), []);
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [homeHref, setHomeHref] = useState("/");
+  const [storedCompetitionSlug, setStoredCompetitionSlug] = useState<CompetitionSlug>(() =>
+    getStoredActiveCompetition(),
+  );
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
   const [activePool, setActivePool] = useState<Pool | null>(null);
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
@@ -210,13 +221,26 @@ export default function AppTopNav() {
     return match?.[1] ?? null;
   }, [pathname]);
 
+  const explicitCompetition = searchParams.get("competition");
+  const competitionSlug =
+    pathname === "/world-cup"
+      ? "world-cup"
+      : pathname === "/"
+        ? "march-madness"
+        : explicitCompetition
+          ? normalizeCompetitionSlug(explicitCompetition)
+          : storedCompetitionSlug;
+
+  useEffect(() => {
+    setStoredActiveCompetition(competitionSlug);
+  }, [competitionSlug]);
+
   useEffect(() => {
     let canceled = false;
 
     const resetNav = () => {
       if (canceled) return;
       setUserId(null);
-      setHomeHref("/");
       setActivePoolId(null);
       setActivePool(null);
       setProfileAvatarUrl(null);
@@ -237,7 +261,6 @@ export default function AppTopNav() {
 
       if (canceled) return;
       setUserId(user.id);
-      setHomeHref("/");
     };
 
     void syncAuth();
@@ -256,7 +279,6 @@ export default function AppTopNav() {
 
       if (canceled) return;
       setUserId(session.user.id);
-      setHomeHref("/");
     });
 
     return () => {
@@ -342,11 +364,35 @@ export default function AppTopNav() {
       if (canceled) return;
 
       const membershipPoolIds = (memberships ?? []).map((m) => m.pool_id);
+      let poolRows: Pool[] = [];
+
+      if (membershipPoolIds.length > 0) {
+        let { data, error } = await supabase
+          .from("pools")
+          .select("id,name,created_by,competition_slug")
+          .in("id", membershipPoolIds);
+
+        if (canUseLegacyMarchMadnessFallback(competitionSlug, error?.message)) {
+          const fallback = await supabase
+            .from("pools")
+            .select("id,name,created_by")
+            .in("id", membershipPoolIds);
+          data = (fallback.data ?? []).map((pool) => ({ ...pool, competition_slug: null }));
+          error = fallback.error;
+        }
+
+        if (!error) poolRows = (data ?? []) as Pool[];
+      }
+
+      const competitionPoolRows = poolRows.filter(
+        (pool) => normalizeCompetitionSlug(pool.competition_slug) === competitionSlug,
+      );
+      const competitionPoolIds = new Set(competitionPoolRows.map((pool) => pool.id));
       const storedPoolId = getStoredActivePoolId();
       const selectedPoolId =
         poolIdFromPath ??
-        (storedPoolId && membershipPoolIds.includes(storedPoolId) ? storedPoolId : null) ??
-        membershipPoolIds[0] ??
+        (storedPoolId && competitionPoolIds.has(storedPoolId) ? storedPoolId : null) ??
+        competitionPoolRows[0]?.id ??
         null;
 
       setActivePoolId(selectedPoolId);
@@ -357,14 +403,35 @@ export default function AppTopNav() {
         return;
       }
 
-      const { data: poolData } = await supabase
-        .from("pools")
-        .select("id,name,created_by")
-        .eq("id", selectedPoolId)
-        .single();
+      let poolData = competitionPoolRows.find((pool) => pool.id === selectedPoolId) ?? null;
+
+      if (!poolData) {
+        let { data, error } = await supabase
+          .from("pools")
+          .select("id,name,created_by,competition_slug")
+          .eq("id", selectedPoolId)
+          .single();
+
+        if (canUseLegacyMarchMadnessFallback(competitionSlug, error?.message)) {
+          const fallback = await supabase
+            .from("pools")
+            .select("id,name,created_by")
+            .eq("id", selectedPoolId)
+            .single();
+          data = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+          error = fallback.error;
+        }
+
+        poolData = data as Pool | null;
+      }
 
       if (canceled) return;
       setActivePool(poolData ?? null);
+      if (poolIdFromPath && poolData) {
+        const nextCompetitionSlug = normalizeCompetitionSlug(poolData.competition_slug);
+        setStoredCompetitionSlug(nextCompetitionSlug);
+        setStoredActiveCompetition(nextCompetitionSlug);
+      }
     };
 
     void loadPoolContext();
@@ -372,7 +439,7 @@ export default function AppTopNav() {
     return () => {
       canceled = true;
     };
-  }, [poolIdFromPath, supabase, userId]);
+  }, [competitionSlug, poolIdFromPath, supabase, userId]);
 
   useEffect(() => {
     if (poolIdFromPath || !supabase || !userId) return;
@@ -391,14 +458,29 @@ export default function AppTopNav() {
         return;
       }
 
-      const { data: poolData } = await supabase
+      let { data: poolData, error } = await supabase
         .from("pools")
-        .select("id,name,created_by")
+        .select("id,name,created_by,competition_slug")
         .eq("id", nextPoolId)
         .single();
 
+      if (isMissingCompetitionSlugColumn(error?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("id,name,created_by")
+          .eq("id", nextPoolId)
+          .single();
+        poolData = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+        error = fallback.error;
+      }
+
       if (canceled) return;
       setActivePool(poolData ?? null);
+      if (poolData) {
+        const nextCompetitionSlug = normalizeCompetitionSlug(poolData.competition_slug);
+        setStoredCompetitionSlug(nextCompetitionSlug);
+        setStoredActiveCompetition(nextCompetitionSlug);
+      }
     };
 
     window.addEventListener(ACTIVE_POOL_CHANGED_EVENT, onActivePoolChanged as EventListener);
@@ -510,10 +592,14 @@ export default function AppTopNav() {
   if (!userId) return null;
 
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
+  const competition = getCompetition(competitionSlug);
   const activePoolPathId = poolIdFromPath ?? activePoolId;
-  const activePoolBasePath = activePoolPathId ? `/pool/${activePoolPathId}` : null;
+  const activePoolBasePath =
+    activePoolPathId && (!activePool || normalizeCompetitionSlug(activePool.competition_slug) === competitionSlug)
+      ? `/pool/${activePoolPathId}`
+      : null;
 
-  const isHomeActive = pathname === "/";
+  const isHomeActive = pathname === competition.href;
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
   const isLeaderboardActive = activePoolBasePath
@@ -531,26 +617,26 @@ export default function AppTopNav() {
     : false;
 
   const dockItems = [
-    { key: "home", label: "Home", href: homeHref, isActive: isHomeActive, Icon: HomeIcon },
+    { key: "home", label: "Home", href: competition.href, isActive: isHomeActive, Icon: HomeIcon },
     {
       key: "drafts",
       label: "Drafts",
-      href: "/drafts",
+      href: competitionPath("/drafts", competitionSlug),
       isActive: isDraftsActive,
       Icon: ChecklistIcon,
     },
-    { key: "pools", label: "Pools", href: "/pools", isActive: isPoolsActive, Icon: GroupIcon },
+    { key: "pools", label: "Pools", href: competitionPath("/pools", competitionSlug), isActive: isPoolsActive, Icon: GroupIcon },
     {
       key: "bracket",
       label: "Bracket",
-      href: activePoolBasePath ? `${activePoolBasePath}/bracket` : "/pools",
+      href: activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug),
       isActive: isBracketActive,
       Icon: BracketIcon,
     },
     {
       key: "leaderboard",
       label: "Leaderboard",
-      href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : "/pools",
+      href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
       isActive: isLeaderboardActive,
       Icon: PodiumIcon,
     },
@@ -694,7 +780,7 @@ export default function AppTopNav() {
           </button>
 
           <Link
-            href={homeHref}
+            href={competition.href}
             aria-label="Go to bracketball home"
             style={{
               justifySelf: "center",
@@ -911,27 +997,27 @@ export default function AppTopNav() {
               <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
                 Navigate
               </h2>
-              <Link href={homeHref} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+              <Link href={competition.href} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Home
               </Link>
               <Link href="/sports" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Sports
               </Link>
-              <Link href="/drafts" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+              <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Drafts
               </Link>
-              <Link href="/pools" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+              <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Pools
               </Link>
               <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/bracket` : "/pools"}
+                href={activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
                 style={drawerActionStyle}
               >
                 Bracket
               </Link>
               <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : "/pools"}
+                href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
                 style={drawerActionStyle}
               >

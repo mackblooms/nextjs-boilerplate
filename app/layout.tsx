@@ -60,7 +60,9 @@ export default function RootLayout({
         <AppDeepLinkHandler />
         <AppPushNotifications />
         <div className="app-launch-content">
-          <AppTopNav />
+          <Suspense fallback={null}>
+            <AppTopNav />
+          </Suspense>
           <Suspense fallback={null}>
             <InstructionsModal />
           </Suspense>
