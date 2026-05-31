@@ -1,5 +1,7 @@
 import Link from "next/link";
 import CompetitionSwitcher from "../components/CompetitionSwitcher";
+import WorldCupBracketBoard from "../components/WorldCupBracketBoard";
+import { WORLD_CUP_TEAMS } from "@/lib/worldCup";
 
 export default function WorldCupPage() {
   return (
@@ -34,6 +36,8 @@ export default function WorldCupPage() {
           <strong>round of 32 knockout</strong>
         </div>
       </section>
+
+      <WorldCupBracketBoard teams={WORLD_CUP_TEAMS} games={[]} highlightTeamIds={new Set()} />
     </main>
   );
 }
