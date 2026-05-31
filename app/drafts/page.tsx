@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
+import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = { draft_id: string };
@@ -47,7 +49,10 @@ function TrashIcon() {
   );
 }
 
-export default function DraftsPage() {
+function DraftsPageContent() {
+  const searchParams = useSearchParams();
+  const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
+  const competition = getCompetition(competitionSlug);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -58,8 +63,8 @@ export default function DraftsPage() {
   const [newDraftName, setNewDraftName] = useState("");
   const [creating, setCreating] = useState(false);
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
-  const draftsLocked = isDraftLibraryLocked();
-  const lockMessage = draftLibraryLockMessage();
+  const draftsLocked = isDraftLibraryLocked(competitionSlug);
+  const lockMessage = draftLibraryLockMessage(competitionSlug);
 
   useEffect(() => {
     const load = async () => {
@@ -79,8 +84,9 @@ export default function DraftsPage() {
 
       const { data: draftRows, error: draftErr } = await supabase
         .from("saved_drafts")
-        .select("id,name,created_at,updated_at,user_id")
+        .select("id,name,created_at,updated_at,user_id,competition_slug")
         .eq("user_id", user.id)
+        .eq("competition_slug", competitionSlug)
         .order("updated_at", { ascending: false });
 
       if (draftErr) {
@@ -128,10 +134,10 @@ export default function DraftsPage() {
     };
 
     void load();
-  }, []);
+  }, [competitionSlug]);
 
   async function createDraft() {
-    if (isDraftLibraryLocked()) {
+    if (isDraftLibraryLocked(competitionSlug)) {
       setMessage(lockMessage);
       return;
     }
@@ -150,6 +156,7 @@ export default function DraftsPage() {
       .insert({
         user_id: userId,
         name,
+        competition_slug: competitionSlug,
       })
       .select("id,name,created_at,updated_at")
       .single();
@@ -175,7 +182,7 @@ export default function DraftsPage() {
   }
 
   async function deleteDraft(draftId: string, draftName: string) {
-    if (isDraftLibraryLocked()) {
+    if (isDraftLibraryLocked(competitionSlug)) {
       setMessage(lockMessage);
       return;
     }
@@ -213,7 +220,7 @@ export default function DraftsPage() {
     return (
       <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
         <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900 }}>
-          My Drafts
+          {competition.shortName} Drafts
         </h1>
         <p style={{ marginTop: 12 }}>Loading drafts...</p>
       </main>
@@ -235,13 +242,13 @@ export default function DraftsPage() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>My Drafts</h1>
+            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>{competition.shortName} Drafts</h1>
             <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
               {draftsLocked ? lockMessage : "Create multiple drafts here, then open one to edit teams and save."}
             </p>
           </div>
           <UiLinkButton
-            href="/pools"
+            href={competitionPath("/pools", competitionSlug)}
             variant="secondary"
             style={{ height: "fit-content" }}
           >
@@ -288,7 +295,7 @@ export default function DraftsPage() {
             >
               <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
                 <Link
-                  href={`/drafts/${draft.id}`}
+                  href={competitionPath(`/drafts/${draft.id}`, competitionSlug)}
                   className="drafts-draft-link"
                   title={`Open ${draft.name}`}
                   style={{
@@ -309,7 +316,7 @@ export default function DraftsPage() {
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <UiLinkButton
-                  href="/pools"
+                  href={competitionPath("/pools", competitionSlug)}
                 >
                   Join Pool(s)
                 </UiLinkButton>
@@ -358,5 +365,13 @@ export default function DraftsPage() {
         </p>
       ) : null}
     </main>
+  );
+}
+
+export default function DraftsPage() {
+  return (
+    <Suspense fallback={null}>
+      <DraftsPageContent />
+    </Suspense>
   );
 }

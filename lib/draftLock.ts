@@ -1,4 +1,6 @@
-export const OFFICIAL_DRAFT_LOCK_ISO = "2026-03-19T16:15:00.000Z";
+import { getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+
+export const OFFICIAL_DRAFT_LOCK_ISO = getCompetition("march-madness").draftLockIso;
 
 function parseTimestamp(value: string | null | undefined): Date | null {
   if (!value) return null;
@@ -7,8 +9,11 @@ function parseTimestamp(value: string | null | undefined): Date | null {
   return parsed;
 }
 
-export function resolveDraftLockTime(poolLockTime: string | null | undefined): string {
-  const official = parseTimestamp(OFFICIAL_DRAFT_LOCK_ISO);
+export function resolveDraftLockTime(
+  poolLockTime: string | null | undefined,
+  competitionSlug: CompetitionSlug = "march-madness",
+): string {
+  const official = parseTimestamp(getCompetition(competitionSlug).draftLockIso);
   if (!official) {
     throw new Error("OFFICIAL_DRAFT_LOCK_ISO is invalid.");
   }
@@ -22,14 +27,21 @@ export function resolveDraftLockTime(poolLockTime: string | null | undefined): s
   return effective.toISOString();
 }
 
-export function isDraftLocked(poolLockTime: string | null | undefined, now: Date = new Date()): boolean {
-  const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime));
+export function isDraftLocked(
+  poolLockTime: string | null | undefined,
+  now: Date = new Date(),
+  competitionSlug: CompetitionSlug = "march-madness",
+): boolean {
+  const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime, competitionSlug));
   if (!resolved) return false;
   return now.getTime() >= resolved.getTime();
 }
 
-export function formatDraftLockTimeET(poolLockTime: string | null | undefined): string {
-  const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime));
+export function formatDraftLockTimeET(
+  poolLockTime: string | null | undefined,
+  competitionSlug: CompetitionSlug = "march-madness",
+): string {
+  const resolved = parseTimestamp(resolveDraftLockTime(poolLockTime, competitionSlug));
   if (!resolved) return "TBD (ET)";
 
   return (
@@ -45,10 +57,14 @@ export function formatDraftLockTimeET(poolLockTime: string | null | undefined): 
   );
 }
 
-export function isDraftLibraryLocked(now: Date = new Date()): boolean {
-  return isDraftLocked(null, now);
+export function isDraftLibraryLocked(
+  competitionSlug: CompetitionSlug = "march-madness",
+  now: Date = new Date(),
+): boolean {
+  return isDraftLocked(null, now, competitionSlug);
 }
 
-export function draftLibraryLockMessage(): string {
-  return `Draft editing is locked after first tip (${formatDraftLockTimeET(null)}).`;
+export function draftLibraryLockMessage(competitionValue?: string | null): string {
+  const competitionSlug = normalizeCompetitionSlug(competitionValue);
+  return `Draft editing is locked after first tip (${formatDraftLockTimeET(null, competitionSlug)}).`;
 }

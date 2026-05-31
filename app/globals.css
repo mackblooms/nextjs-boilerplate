@@ -746,6 +746,100 @@ textarea::placeholder {
   padding-top: 8px;
 }
 
+.world-cup-bracket-board {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.world-cup-groups,
+.world-cup-knockout {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px;
+}
+
+.world-cup-board-heading {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.world-cup-board-heading span {
+  font-family: var(--font-app-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.world-cup-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.world-cup-group-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.world-cup-group-team,
+.world-cup-bracket-team {
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 7px;
+}
+
+.world-cup-group-team[data-highlighted="true"],
+.world-cup-bracket-team[data-highlighted="true"] {
+  border-color: var(--highlight-border);
+  background: var(--highlight);
+}
+
+.world-cup-bracket-team[data-winner="true"] {
+  font-weight: 900;
+}
+
+.world-cup-knockout {
+  overflow-x: auto;
+}
+
+.world-cup-knockout-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 12px;
+  min-width: 980px;
+}
+
+.world-cup-knockout-round {
+  display: grid;
+  align-content: space-around;
+  gap: 8px;
+}
+
+.world-cup-knockout-round > strong {
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.world-cup-knockout-game {
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--surface-muted);
+  display: grid;
+  gap: 4px;
+  padding: 5px;
+}
+
 @media (max-width: 640px) {
   .competition-switcher-grid,
   .world-cup-hero {

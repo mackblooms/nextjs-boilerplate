@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { UiButton, UiInput } from "../../components/ui/primitives";
+import { getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 
-export default function NewPoolPage() {
+function NewPoolPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
+  const competition = getCompetition(competitionSlug);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -81,6 +85,7 @@ export default function NewPoolPage() {
       body: JSON.stringify({
         name: poolName,
         password: poolPassword,
+        competitionSlug,
       }),
     });
 
@@ -110,7 +115,7 @@ export default function NewPoolPage() {
   return (
     <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
-        Create a Pool
+        Create a {competition.shortName} Pool
       </h1>
 
       <form onSubmit={createPool}>
@@ -152,5 +157,13 @@ export default function NewPoolPage() {
 
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
     </main>
+  );
+}
+
+export default function NewPoolPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewPoolPageContent />
+    </Suspense>
   );
 }

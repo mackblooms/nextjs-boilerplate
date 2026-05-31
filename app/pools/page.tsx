@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
+import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 
 type PoolRow = {
   id: string;
   name: string;
   is_private: boolean | null;
   lock_time: string | null;
+  competition_slug?: string;
 };
 
 type MembershipRow = {
@@ -75,15 +78,18 @@ function normalizeDraftName(value: string | null | undefined) {
     .toLowerCase();
 }
 
-function isPoolEntryLocked(pool: PoolRow) {
-  return isDraftLocked(pool.lock_time ?? null);
+function isPoolEntryLocked(pool: PoolRow, competitionSlug: CompetitionSlug) {
+  return isDraftLocked(pool.lock_time ?? null, new Date(), competitionSlug);
 }
 
-function lockedEntriesMessage(pool: PoolRow) {
-  return `Draft entries are locked for ${pool.name} (${formatDraftLockTimeET(pool.lock_time)}).`;
+function lockedEntriesMessage(pool: PoolRow, competitionSlug: CompetitionSlug) {
+  return `Draft entries are locked for ${pool.name} (${formatDraftLockTimeET(pool.lock_time, competitionSlug)}).`;
 }
 
-export default function PoolsPage() {
+function PoolsPageContent() {
+  const searchParams = useSearchParams();
+  const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
+  const competition = getCompetition(competitionSlug);
   const [loading, setLoading] = useState(true);
   const [allPools, setAllPools] = useState<PoolRow[]>([]);
   const [myPools, setMyPools] = useState<PoolRow[]>([]);
@@ -116,7 +122,8 @@ export default function PoolsPage() {
 
       const { data: allRows, error: allErr } = await supabase
         .from("pools")
-        .select("id,name,is_private,lock_time")
+        .select("id,name,is_private,lock_time,competition_slug")
+        .eq("competition_slug", competitionSlug)
         .order("name", { ascending: true });
 
       if (allErr) {
@@ -167,7 +174,7 @@ export default function PoolsPage() {
     };
 
     void load();
-  }, []);
+  }, [competitionSlug]);
 
   const myPoolIds = useMemo(() => new Set(myPools.map((pool) => pool.id)), [myPools]);
 
@@ -183,7 +190,7 @@ export default function PoolsPage() {
   }, [discoverPools, query]);
 
   const selectedDraftCount = selectedDraftIds.size;
-  const draftModalPoolLocked = draftModalPool ? isPoolEntryLocked(draftModalPool) : false;
+  const draftModalPoolLocked = draftModalPool ? isPoolEntryLocked(draftModalPool, competitionSlug) : false;
 
   function rememberJoinedPool(pool: PoolRow) {
     setMyPools((prev) => {
@@ -200,8 +207,8 @@ export default function PoolsPage() {
       return;
     }
 
-    if (myPoolIds.has(pool.id) && isPoolEntryLocked(pool)) {
-      setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool) });
+    if (myPoolIds.has(pool.id) && isPoolEntryLocked(pool, competitionSlug)) {
+      setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool, competitionSlug) });
       return;
     }
 
@@ -228,12 +235,12 @@ export default function PoolsPage() {
   }
 
   async function loadDraftModal(pool: PoolRow) {
-    if (isPoolEntryLocked(pool)) {
+    if (isPoolEntryLocked(pool, competitionSlug)) {
       setDraftModalPool(null);
       setDraftModalLoading(false);
       setDraftModalSubmitting(false);
       setDraftModalMessage("");
-      setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool) });
+      setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool, competitionSlug) });
       return;
     }
 
@@ -257,6 +264,7 @@ export default function PoolsPage() {
       .from("saved_drafts")
       .select("id,name,updated_at")
       .eq("user_id", user.id)
+      .eq("competition_slug", competitionSlug)
       .order("updated_at", { ascending: false });
 
     if (draftsQuery.error) {
@@ -400,12 +408,12 @@ export default function PoolsPage() {
 
     setJoinStatus(null);
     setJoiningPool(true);
-    const entriesLocked = isPoolEntryLocked(pool);
+    const entriesLocked = isPoolEntryLocked(pool, competitionSlug);
 
     if (myPoolIds.has(pool.id)) {
       if (entriesLocked) {
         setJoiningPool(false);
-        setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool) });
+        setJoinStatus({ tone: "error", text: lockedEntriesMessage(pool, competitionSlug) });
         return;
       }
       setJoinModalPool(null);
@@ -460,7 +468,7 @@ export default function PoolsPage() {
     setJoiningPool(false);
 
     if (entriesLocked) {
-      setJoinStatus({ tone: "info", text: `Joined ${pool.name}. ${lockedEntriesMessage(pool)}` });
+      setJoinStatus({ tone: "info", text: `Joined ${pool.name}. ${lockedEntriesMessage(pool, competitionSlug)}` });
       return;
     }
 
@@ -516,8 +524,8 @@ export default function PoolsPage() {
     const pool = draftModalPool;
     if (!pool) return;
 
-    if (isPoolEntryLocked(pool)) {
-      setDraftModalMessage(lockedEntriesMessage(pool));
+    if (isPoolEntryLocked(pool, competitionSlug)) {
+      setDraftModalMessage(lockedEntriesMessage(pool, competitionSlug));
       return;
     }
 
@@ -554,8 +562,8 @@ export default function PoolsPage() {
     }
 
     const latestLockTime = (lockQuery.data as { lock_time: string | null }).lock_time;
-    if (isDraftLocked(latestLockTime)) {
-      setDraftModalMessage(`Draft entries are locked for ${pool.name} (${formatDraftLockTimeET(latestLockTime)}).`);
+    if (isDraftLocked(latestLockTime, new Date(), competitionSlug)) {
+      setDraftModalMessage(`Draft entries are locked for ${pool.name} (${formatDraftLockTimeET(latestLockTime, competitionSlug)}).`);
       return;
     }
 
@@ -675,7 +683,7 @@ export default function PoolsPage() {
         >
           <div style={{ display: "grid", gap: 6 }}>
             <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
-              Pools
+              {competition.shortName} Pools
             </h1>
             <p className="page-subtitle" style={{ maxWidth: 540 }}>
               Move between your live competitions, discover new pools, and enter saved drafts without extra setup.
@@ -683,10 +691,10 @@ export default function PoolsPage() {
           </div>
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
+            <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
               My Drafts
             </Link>
-            <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--primary">
+            <Link href={competitionPath("/pools/new", competitionSlug)} className="ui-btn ui-btn--md ui-btn--primary">
               New Pool
             </Link>
           </div>
@@ -786,10 +794,10 @@ export default function PoolsPage() {
                 <button type="button" onClick={() => setActiveTab("discover")} className="ui-btn ui-btn--md ui-btn--primary">
                   Discover pools
                 </button>
-                <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
+                <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
                   Open drafts
                 </Link>
-                <Link href="/pools/new" className="ui-btn ui-btn--md ui-btn--secondary">
+                <Link href={competitionPath("/pools/new", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
                   Create a pool
                 </Link>
               </div>
@@ -799,7 +807,7 @@ export default function PoolsPage() {
           {!loading && myPools.length > 0 ? (
             <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
               {myPools.map((pool) => {
-                const entriesLocked = isPoolEntryLocked(pool);
+                const entriesLocked = isPoolEntryLocked(pool, competitionSlug);
                 return (
                   <li key={pool.id}>
                     <Link
@@ -843,7 +851,7 @@ export default function PoolsPage() {
                       <div style={{ fontSize: 13, opacity: 0.8 }}>Tap to open standings, bracket, and invite tools.</div>
                       {entriesLocked ? (
                         <div style={{ fontSize: 12, opacity: 0.7 }}>
-                          Entry changes locked at {formatDraftLockTimeET(pool.lock_time)}
+                          Entry changes locked at {formatDraftLockTimeET(pool.lock_time, competitionSlug)}
                         </div>
                       ) : (
                         <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Open leaderboard</div>
@@ -1014,7 +1022,7 @@ export default function PoolsPage() {
             <p style={{ margin: 0, opacity: 0.8 }}>
               {myPoolIds.has(joinModalPool.id)
                 ? "You are already in this pool. Continue to choose one or more drafts to enter."
-                : isPoolEntryLocked(joinModalPool)
+                : isPoolEntryLocked(joinModalPool, competitionSlug)
                 ? "You can still join this pool, but draft entry and leave are locked."
                 : (joinModalPool.is_private ?? true) !== false
                 ? "Enter the pool password to continue."
@@ -1076,7 +1084,7 @@ export default function PoolsPage() {
                   opacity: joiningPool ? 0.7 : 1,
                 }}
               >
-                {joiningPool ? "Joining..." : isPoolEntryLocked(joinModalPool) ? "Join Pool" : "Continue"}
+                {joiningPool ? "Joining..." : isPoolEntryLocked(joinModalPool, competitionSlug) ? "Join Pool" : "Continue"}
               </button>
             </div>
           </section>
@@ -1216,7 +1224,7 @@ export default function PoolsPage() {
               >
                 <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
                 <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Open <Link href="/drafts">My Drafts</Link> to create one.
+                  Open <Link href={competitionPath("/drafts", competitionSlug)}>My Drafts</Link> to create one.
                 </p>
               </div>
             ) : null}
@@ -1238,7 +1246,7 @@ export default function PoolsPage() {
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
               <Link
-                href="/drafts"
+                href={competitionPath("/drafts", competitionSlug)}
                 onClick={closeDraftModal}
                 style={{
                   padding: "10px 12px",
@@ -1303,5 +1311,13 @@ export default function PoolsPage() {
         </div>
       ) : null}
     </main>
+  );
+}
+
+export default function PoolsPage() {
+  return (
+    <Suspense fallback={null}>
+      <PoolsPageContent />
+    </Suspense>
   );
 }

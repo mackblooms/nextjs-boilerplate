@@ -14,6 +14,7 @@ import {
   type DraftableTeam,
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
@@ -22,6 +23,7 @@ type DraftRow = {
   name: string;
   updated_at: string;
   user_id: string;
+  competition_slug?: string;
 };
 
 type TeamRow = DraftableTeam;
@@ -60,10 +62,11 @@ export default function DraftDetailPage() {
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [savedSelected, setSavedSelected] = useState<Set<string>>(new Set());
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
 
   const [saving, setSaving] = useState(false);
-  const draftsLocked = isDraftLibraryLocked();
-  const lockMessage = draftLibraryLockMessage();
+  const draftsLocked = isDraftLibraryLocked(competitionSlug);
+  const lockMessage = draftLibraryLockMessage(competitionSlug);
 
   const teamById = useMemo(() => {
     const map = new Map<string, TeamRow>();
@@ -80,7 +83,10 @@ export default function DraftDetailPage() {
     [selected, teamById]
   );
 
-  const summary = useMemo(() => summarizeDraft(selected, teamById), [selected, teamById]);
+  const summary = useMemo(
+    () => summarizeDraft(selected, teamById, competitionSlug),
+    [competitionSlug, selected, teamById],
+  );
   const hasUnsavedChanges = useMemo(
     () => renameValue.trim() !== draftName.trim() || !sameSet(selected, savedSelected),
     [draftName, renameValue, savedSelected, selected]
@@ -102,7 +108,7 @@ export default function DraftDetailPage() {
 
       const { data: draftRow, error: draftErr } = await supabase
         .from("saved_drafts")
-        .select("id,name,updated_at,user_id")
+        .select("id,name,updated_at,user_id,competition_slug")
         .eq("id", draftId)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -124,12 +130,15 @@ export default function DraftDetailPage() {
       }
 
       const typedDraft = draftRow as DraftRow;
+      const nextCompetitionSlug = normalizeCompetitionSlug(typedDraft.competition_slug);
+      setCompetitionSlug(nextCompetitionSlug);
       setDraftName(typedDraft.name);
       setRenameValue(typedDraft.name);
 
       const { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("round,team1_id,team2_id");
+        .select("round,team1_id,team2_id")
+        .eq("competition_slug", nextCompetitionSlug);
 
       if (gameErr) {
         setLoading(false);
@@ -140,13 +149,16 @@ export default function DraftDetailPage() {
       const r64TeamIds = Array.from(
         new Set(
           ((gameRows ?? []) as GameRow[])
-            .filter((g) => g.round === "R64")
+            .filter((g) => nextCompetitionSlug === "world-cup" || g.round === "R64")
             .flatMap((g) => [g.team1_id, g.team2_id])
             .filter((id): id is string => Boolean(id))
         )
       );
 
-      let teamQuery = supabase.from("teams").select("id,name,seed,cost");
+      let teamQuery = supabase
+        .from("teams")
+        .select("id,name,seed,cost")
+        .eq("competition_slug", nextCompetitionSlug);
       if (r64TeamIds.length > 0) {
         teamQuery = teamQuery.in("id", r64TeamIds);
       }
@@ -174,7 +186,7 @@ export default function DraftDetailPage() {
       setSelected(new Set(picked));
       setSavedSelected(new Set(picked));
 
-      if (r64TeamIds.length === 0) {
+      if (nextCompetitionSlug === "march-madness" && r64TeamIds.length === 0) {
         setMessage("Tournament field is still TBD. Draftable teams will populate once R64 teams are assigned.");
       }
 
@@ -185,7 +197,7 @@ export default function DraftDetailPage() {
   }, [draftId]);
 
   function toggleTeam(teamId: string) {
-    if (isDraftLibraryLocked()) {
+    if (isDraftLibraryLocked(competitionSlug)) {
       setMessage(lockMessage);
       return;
     }
@@ -199,7 +211,7 @@ export default function DraftDetailPage() {
       }
 
       next.add(teamId);
-      const nextSummary = summarizeDraft(next, teamById);
+      const nextSummary = summarizeDraft(next, teamById, competitionSlug);
       if (!nextSummary.isValid) {
         setMessage(nextSummary.error ?? "That selection breaks draft constraints.");
         return prev;
@@ -209,7 +221,7 @@ export default function DraftDetailPage() {
   }
 
   async function saveDraft() {
-    if (isDraftLibraryLocked()) {
+    if (isDraftLibraryLocked(competitionSlug)) {
       setMessage(lockMessage);
       return;
     }
@@ -375,7 +387,9 @@ export default function DraftDetailPage() {
                     <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {toSchoolDisplayName(team.name)}
                     </div>
-                    <div style={{ fontSize: 12, opacity: 0.75 }}>Seed {team.seed}</div>
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>
+                      {competitionSlug === "world-cup" ? "Draft tier" : "Seed"} {team.seed}
+                    </div>
                   </div>
                 </div>
 
@@ -406,24 +420,22 @@ export default function DraftDetailPage() {
               <span>Remaining</span>
               <b>{summary.remaining}</b>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>1-seeds</span>
-              <b>
-                {summary.count1}/{MAX_1_SEEDS}
-              </b>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>2-seeds</span>
-              <b>
-                {summary.count2}/{MAX_2_SEEDS}
-              </b>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>14-16 seeds</span>
-              <b>
-                {summary.count141516}/{MAX_14_TO_16_SEEDS}
-              </b>
-            </div>
+            {competitionSlug === "march-madness" ? (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>1-seeds</span>
+                  <b>{summary.count1}/{MAX_1_SEEDS}</b>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>2-seeds</span>
+                  <b>{summary.count2}/{MAX_2_SEEDS}</b>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>14-16 seeds</span>
+                  <b>{summary.count141516}/{MAX_14_TO_16_SEEDS}</b>
+                </div>
+              </>
+            ) : null}
           </div>
 
           <div
@@ -450,8 +462,9 @@ export default function DraftDetailPage() {
           </UiButton>
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
-            Rules: budget {DRAFT_BUDGET}, max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max{" "}
-            {MAX_14_TO_16_SEEDS} seeds 14-16.
+            {competitionSlug === "world-cup"
+              ? `Rules: build any combination of national teams within the ${DRAFT_BUDGET}-point budget.`
+              : `Rules: budget ${DRAFT_BUDGET}, max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
           </div>
 
           <div style={{ display: "grid", gap: 4 }}>

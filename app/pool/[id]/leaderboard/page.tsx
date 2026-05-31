@@ -14,6 +14,7 @@ import {
 } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
 
 type Row = {
   entry_id: string;
@@ -806,7 +807,16 @@ export default function LeaderboardPage() {
 
       let liveScoreGames: LiveOverlayScoreGame[] = [];
       try {
-        const liveRes = await fetch("/api/scores/live?lookbackDays=1&lookaheadDays=0", { cache: "no-store" });
+        const { data: scorePoolRow } = await supabase
+          .from("pools")
+          .select("competition_slug")
+          .eq("id", poolId)
+          .maybeSingle();
+        const scoreCompetitionSlug = normalizeCompetitionSlug(scorePoolRow?.competition_slug);
+        const liveRes = await fetch(
+          `/api/scores/live?lookbackDays=1&lookaheadDays=0&competition=${scoreCompetitionSlug}`,
+          { cache: "no-store" },
+        );
         const livePayload = (await liveRes.json().catch(() => ({}))) as LiveScoresResponse;
         if (liveRes.ok && livePayload.ok) {
           liveScoreGames = livePayload.games ?? [];
@@ -877,7 +887,7 @@ export default function LeaderboardPage() {
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("name,lock_time,created_by")
+        .select("name,lock_time,created_by,competition_slug")
         .eq("id", poolId)
         .single();
 
@@ -887,8 +897,9 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
-      const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
+      const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, competitionSlug);
+      const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), competitionSlug);
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
       setIsPoolOwner(poolRow?.created_by === user.id);
@@ -989,7 +1000,8 @@ export default function LeaderboardPage() {
 
       const { data: teamRows, error: teamErr } = await supabase
         .from("teams")
-        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
+        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id")
+        .eq("competition_slug", competitionSlug);
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -1003,7 +1015,8 @@ export default function LeaderboardPage() {
       let gameRows: ScoringGameWithDate[] = [];
       const gameQuery = await supabase
         .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time")
+        .eq("competition_slug", competitionSlug);
 
       if (!gameQuery.error) {
         gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];

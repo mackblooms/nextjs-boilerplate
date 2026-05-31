@@ -4,6 +4,7 @@ export type SavedDraftRow = {
   name: string;
   created_at: string;
   updated_at: string;
+  competition_slug?: string;
 };
 
 export type SavedDraftPickRow = {

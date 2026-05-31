@@ -16,6 +16,8 @@ import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../.
 import { scoreEntries } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, matchLiveScoresToGames, type MatchedLiveGame } from "@/lib/liveBracket";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import WorldCupBracketBoard from "@/app/components/WorldCupBracketBoard";
 
 type Team = {
   id: string;
@@ -161,6 +163,7 @@ export default function BracketPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -276,7 +279,8 @@ export default function BracketPage() {
   const refreshBracketState = useCallback(async () => {
     let { data: gameRows, error: gameErr } = await supabase
       .from("games")
-      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id");
+      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id")
+      .eq("competition_slug", competitionSlug);
 
     if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
       const fallback = await supabase
@@ -334,7 +338,7 @@ export default function BracketPage() {
       });
       return changed ? next : prev;
     });
-  }, [teams]);
+  }, [competitionSlug, teams]);
 
   useEffect(() => {
     const load = async () => {
@@ -401,7 +405,7 @@ export default function BracketPage() {
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("lock_time")
+        .select("lock_time,competition_slug")
         .eq("id", poolId)
         .single();
 
@@ -411,14 +415,17 @@ export default function BracketPage() {
         return;
       }
 
-      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
-      const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
+      const nextCompetitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+      setCompetitionSlug(nextCompetitionSlug);
+      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, nextCompetitionSlug);
+      const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), nextCompetitionSlug);
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
       const teamQuery = await supabase
         .from("teams")
-        .select("id,name,region,seed,seed_in_region,espn_team_id");
+        .select("id,name,region,seed,seed_in_region,espn_team_id")
+        .eq("competition_slug", nextCompetitionSlug);
       let teamRows = (teamQuery.data ?? []) as Team[];
       let teamErr = teamQuery.error;
 
@@ -442,7 +449,8 @@ export default function BracketPage() {
 
       let { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id");
+        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id")
+        .eq("competition_slug", nextCompetitionSlug);
 
       if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
         const fallback = await supabase
@@ -643,7 +651,7 @@ export default function BracketPage() {
         const lookbackDays = 30;
         const lookaheadDays = 2;
         const res = await fetch(
-          `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+          `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}&competition=${competitionSlug}`,
           { cache: "no-store" },
         );
         const payload = (await res.json()) as LiveScoresResponse;
@@ -654,7 +662,7 @@ export default function BracketPage() {
           setLiveScores(nextScores);
 
           const hasAnyFinal = nextScores.some((game) => game.state === "FINAL");
-          if (hasAnyFinal) {
+          if (hasAnyFinal && competitionSlug === "march-madness") {
             const now = Date.now();
             const canForceSync = now - lastForcedSyncAtRef.current >= 15_000;
 
@@ -693,7 +701,7 @@ export default function BracketPage() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, [games, refreshBracketState, teamById]);
+  }, [competitionSlug, games, refreshBracketState, teamById]);
 
   useEffect(() => {
     if (!fitMode || loading) return;
@@ -1401,6 +1409,7 @@ export default function BracketPage() {
           flexWrap: "wrap",
           maxWidth: 1800,
           marginInline: "auto",
+          ...(competitionSlug === "world-cup" ? { display: "none" } : {}),
         }}
       >
         <div style={{ fontWeight: 900 }}>View:</div>
@@ -1435,6 +1444,14 @@ export default function BracketPage() {
         </button>
       </div>
 
+      {competitionSlug === "world-cup" ? (
+        <WorldCupBracketBoard
+          teams={teams}
+          games={displayGames}
+          highlightTeamIds={highlightTeamIds}
+        />
+      ) : null}
+
       <div
         ref={viewportRef}
         style={{
@@ -1445,6 +1462,7 @@ export default function BracketPage() {
           padding: 12,
           overflowX: "auto",
           overflowY: "hidden",
+          display: competitionSlug === "world-cup" ? "none" : undefined,
         }}
       >
         <div

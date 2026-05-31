@@ -16,6 +16,7 @@ type LocalBracketGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  competition_slug?: string | null;
 };
 
 type PropagationTarget = {
@@ -29,11 +30,12 @@ function norm(value: unknown) {
   return String(value ?? "").trim().toLowerCase();
 }
 
-function gameKey(round: string, region: string | null, slot: number): string {
+function gameKey(competitionSlug: string | null | undefined, round: string, region: string | null, slot: number): string {
+  const prefix = `${norm(competitionSlug) || "march-madness"}|`;
   if (round === "R64" || round === "R32" || round === "S16" || round === "E8") {
-    return `${round}|${norm(region)}|${slot}`;
+    return `${prefix}${round}|${norm(region)}|${slot}`;
   }
-  return `${round}|${slot}`;
+  return `${prefix}${round}|${slot}`;
 }
 
 function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
@@ -57,7 +59,12 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
     if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" };
     if (region === "west") return { round: "F4", region: null, slot: 2, side: "team1_id" };
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" };
-    return null;
+    return {
+      round: "F4",
+      region: null,
+      slot: Math.ceil(slot / 2),
+      side: slot % 2 === 1 ? "team1_id" : "team2_id",
+    };
   }
 
   if (round === "F4") {
@@ -72,7 +79,7 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>) {
   const { data: allGames, error: gamesErr } = await supabaseAdmin
     .from("games")
-    .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+    .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug");
   if (gamesErr) throw gamesErr;
 
   const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
@@ -85,7 +92,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     const round = String(g.round ?? "").toUpperCase();
     const slot = Number(g.slot);
     if (!Number.isFinite(slot) || slot < 1 || !round) continue;
-    byKey.set(gameKey(round, g.region ?? null, Math.trunc(slot)), g);
+    byKey.set(gameKey(g.competition_slug, round, g.region ?? null, Math.trunc(slot)), g);
   }
 
   const order: Record<string, number> = { R64: 1, R32: 2, S16: 3, E8: 4, F4: 5, CHIP: 6 };
@@ -108,7 +115,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     const targetRef = nextTargetForWinner(source);
     if (!targetRef) continue;
 
-    const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
+    const target = byKey.get(gameKey(source.competition_slug, targetRef.round, targetRef.region, targetRef.slot));
     if (!target) continue;
 
     const winnerId = source.winner_team_id ? String(source.winner_team_id) : null;

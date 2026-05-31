@@ -10,6 +10,7 @@ import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
+import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 
 type Pool = {
   id: string;
@@ -17,6 +18,7 @@ type Pool = {
   created_by: string;
   is_private: boolean | null;
   lock_time: string | null;
+  competition_slug?: string;
 };
 
 type StatusTone = "success" | "error" | "info";
@@ -130,8 +132,8 @@ function normalizeDraftName(value: string | null | undefined) {
     .toLowerCase();
 }
 
-function lockedEntriesMessage(lockTime: string | null | undefined) {
-  return `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime)}).`;
+function lockedEntriesMessage(lockTime: string | null | undefined, competitionSlug: CompetitionSlug) {
+  return `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime, competitionSlug)}).`;
 }
 
 function leaveEntryLabel(entry: LeaveEntryRow, index: number) {
@@ -489,6 +491,7 @@ export default function PoolPage() {
     [pool?.is_private, pool?.name, poolId]
   );
   const shareLink = sharePayload.url;
+  const competitionSlug = normalizeCompetitionSlug(pool?.competition_slug);
 
   useEffect(() => {
     const load = async () => {
@@ -498,7 +501,7 @@ export default function PoolPage() {
 
       const { data: poolData, error: poolErr } = await supabase
         .from("pools")
-        .select("id,name,created_by,is_private,lock_time")
+        .select("id,name,created_by,is_private,lock_time,competition_slug")
         .eq("id", poolId)
         .single();
 
@@ -629,7 +632,7 @@ export default function PoolPage() {
 
         try {
           const res = await fetch(
-            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}&competition=${competitionSlug}`,
             { cache: "no-store" }
           );
           const payload = (await res.json()) as LiveScoresResponse;
@@ -639,7 +642,9 @@ export default function PoolPage() {
           nextScores = payload.games ?? [];
         } catch (e: unknown) {
           apiError = e instanceof Error ? e.message : "Unknown API error";
-          nextScores = await fetchEspnDirectScores(lookbackDays, lookaheadDays);
+          nextScores = competitionSlug === "march-madness"
+            ? await fetchEspnDirectScores(lookbackDays, lookaheadDays)
+            : [];
         }
 
         if (!canceled) {
@@ -663,10 +668,10 @@ export default function PoolPage() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [competitionSlug]);
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
-  const entriesLocked = isDraftLocked(pool?.lock_time ?? null);
+  const entriesLocked = isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug);
   const selectedDraftCount = selectedDraftIds.size;
   const selectedLeaveCount = selectedLeaveEntryIds.size;
 
@@ -683,8 +688,8 @@ export default function PoolPage() {
   }
 
   async function openDraftModal() {
-    if (isDraftLocked(pool?.lock_time ?? null)) {
-      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null) });
+    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
+      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug) });
       return;
     }
 
@@ -709,6 +714,7 @@ export default function PoolPage() {
       .from("saved_drafts")
       .select("id,name,updated_at")
       .eq("user_id", user.id)
+      .eq("competition_slug", competitionSlug)
       .order("updated_at", { ascending: false });
 
     if (draftsQuery.error) {
@@ -912,8 +918,8 @@ export default function PoolPage() {
   }
 
   async function submitSelectedDrafts() {
-    if (isDraftLocked(pool?.lock_time ?? null)) {
-      setDraftModalMessage(lockedEntriesMessage(pool?.lock_time ?? null));
+    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
+      setDraftModalMessage(lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug));
       return;
     }
 
@@ -949,8 +955,8 @@ export default function PoolPage() {
     }
 
     const latestLockTime = (lockQuery.data as { lock_time: string | null }).lock_time;
-    if (isDraftLocked(latestLockTime)) {
-      setDraftModalMessage(lockedEntriesMessage(latestLockTime));
+    if (isDraftLocked(latestLockTime, new Date(), competitionSlug)) {
+      setDraftModalMessage(lockedEntriesMessage(latestLockTime, competitionSlug));
       return;
     }
 
@@ -1020,8 +1026,8 @@ export default function PoolPage() {
   }
 
   async function openLeaveModal() {
-    if (isDraftLocked(pool?.lock_time ?? null)) {
-      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null) });
+    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
+      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug) });
       return;
     }
 
@@ -1081,6 +1087,7 @@ export default function PoolPage() {
         .from("saved_drafts")
         .select("id,name,updated_at")
         .eq("user_id", user.id)
+        .eq("competition_slug", competitionSlug)
         .order("updated_at", { ascending: false });
 
       if (!draftsQuery.error) {
@@ -1181,8 +1188,8 @@ export default function PoolPage() {
   }
 
   async function submitLeaveSelection() {
-    if (isDraftLocked(pool?.lock_time ?? null)) {
-      setLeaveModalMessage(lockedEntriesMessage(pool?.lock_time ?? null));
+    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
+      setLeaveModalMessage(lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug));
       return;
     }
 
@@ -1306,10 +1313,10 @@ export default function PoolPage() {
     setIsMember(true);
     setJoinPassword("");
 
-    if (isDraftLocked(pool?.lock_time ?? null)) {
+    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
       setStatus({
         tone: "info",
-        text: `Joined ${pool?.name ?? "this pool"}. ${lockedEntriesMessage(pool?.lock_time ?? null)}`,
+        text: `Joined ${pool?.name ?? "this pool"}. ${lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug)}`,
       });
       trackEvent({
         eventName: "pool_join_success",
@@ -1603,7 +1610,7 @@ export default function PoolPage() {
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
             <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 14 }}>
               {entriesLocked
-                ? `Draft entry and leave are locked (${formatDraftLockTimeET(pool?.lock_time ?? null)}).`
+                ? `Draft entry and leave are locked (${formatDraftLockTimeET(pool?.lock_time ?? null, competitionSlug)}).`
                 : poolIsPrivate
                 ? "This is a private pool. Enter the pool password to join, then pick draft(s) to enter."
                 : "This is a public pool. Join now, then pick draft(s) to enter."}
@@ -1653,7 +1660,7 @@ export default function PoolPage() {
             <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
             <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link
-                href="/drafts"
+                href={competitionPath("/drafts", competitionSlug)}
                 className="ui-btn ui-btn--md ui-btn--secondary"
                 style={{ flex: "1 1 140px", minWidth: 120 }}
               >
@@ -1863,7 +1870,7 @@ export default function PoolPage() {
               >
                 <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
                 <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Open <Link href="/drafts">My Drafts</Link> to create one.
+                  Open <Link href={competitionPath("/drafts", competitionSlug)}>My Drafts</Link> to create one.
                 </p>
               </div>
             ) : null}
@@ -1885,7 +1892,7 @@ export default function PoolPage() {
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
               <Link
-                href="/drafts"
+                href={competitionPath("/drafts", competitionSlug)}
                 onClick={closeDraftModal}
                 style={{
                   padding: "10px 12px",

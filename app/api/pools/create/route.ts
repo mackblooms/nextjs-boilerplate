@@ -3,10 +3,12 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 import { OFFICIAL_DRAFT_LOCK_ISO } from "@/lib/draftLock";
+import { getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 
 type CreatePoolRequest = {
   name?: string;
   password?: string;
+  competitionSlug?: string;
 };
 
 function isMissingCiphertextColumnError(message: string | undefined): boolean {
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
     const body = (await req.json().catch(() => ({}))) as CreatePoolRequest;
     const poolName = body.name?.trim() ?? "";
     const password = body.password ?? "";
+    const competitionSlug = normalizeCompetitionSlug(body.competitionSlug);
 
     if (!poolName) {
       return NextResponse.json({ error: "Pool name is required." }, { status: 400 });
@@ -61,7 +64,10 @@ export async function POST(req: Request) {
         name: poolName,
         created_by: authData.user.id,
         is_private: true,
-        lock_time: OFFICIAL_DRAFT_LOCK_ISO,
+        lock_time: competitionSlug === "march-madness"
+          ? OFFICIAL_DRAFT_LOCK_ISO
+          : getCompetition(competitionSlug).draftLockIso,
+        competition_slug: competitionSlug,
         join_password_hash: joinPasswordHash,
         join_password_ciphertext: joinPasswordCiphertext,
       })

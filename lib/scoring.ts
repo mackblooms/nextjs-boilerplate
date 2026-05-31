@@ -32,6 +32,7 @@ export type ScoreEntriesResult = {
 };
 
 const BASE_POINTS_BY_ROUND: Record<string, number> = {
+  GROUP: 6,
   R64: 12,
   R32: 36,
   S16: 84,

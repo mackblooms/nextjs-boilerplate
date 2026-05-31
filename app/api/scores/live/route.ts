@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCronAuthorizationHeader } from "@/lib/adminAuth";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { runDailySync } from "@/app/api/admin/sync-scores/route";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 
 type EspnTeam = {
   id?: string | number;
@@ -185,7 +186,7 @@ function isNcaaTournamentEvent(event: EspnEvent) {
   return false;
 }
 
-function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
+function normalizeEvent(event: EspnEvent, competitionSlug: CompetitionSlug): LiveScoreRow | null {
   const comp = event.competitions?.[0];
   const competitors = comp?.competitors ?? [];
   const home = competitors.find((c) => c.homeAway === "home");
@@ -198,7 +199,9 @@ function normalizeEvent(event: EspnEvent): LiveScoreRow | null {
 
   const eventId = event.id?.trim() || null;
   const boxScoreUrl = eventId && /^\d+$/.test(eventId)
-    ? `https://www.espn.com/mens-college-basketball/boxscore/_/gameId/${eventId}`
+    ? competitionSlug === "world-cup"
+      ? `https://www.espn.com/soccer/match/_/gameId/${eventId}`
+      : `https://www.espn.com/mens-college-basketball/boxscore/_/gameId/${eventId}`
     : null;
 
   return {
@@ -264,6 +267,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const lookbackDays = toBoundedInt(url.searchParams.get("lookbackDays"), 1, 0, 45);
     const lookaheadDays = toBoundedInt(url.searchParams.get("lookaheadDays"), 1, 0, 14);
+    const competitionSlug = normalizeCompetitionSlug(url.searchParams.get("competition"));
     const rangeParams: string[] = [];
     for (let day = -lookbackDays; day <= lookaheadDays; day += SCOREBOARD_WINDOW_DAYS) {
       const endDay = Math.min(day + SCOREBOARD_WINDOW_DAYS - 1, lookaheadDays);
@@ -274,8 +278,9 @@ export async function GET(req: Request) {
 
     const payloads = await Promise.all(
       rangeParams.map(async (dateParam) => {
-        const endpoint =
-          `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateParam}&groups=50&limit=500`;
+        const endpoint = competitionSlug === "world-cup"
+          ? `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateParam}&limit=500`
+          : `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${dateParam}&groups=50&limit=500`;
         const res = await fetch(endpoint, { cache: "no-store" });
         if (!res.ok) {
           const text = await res.text();
@@ -289,7 +294,7 @@ export async function GET(req: Request) {
     const seenIds = new Set<string>();
     for (const payload of payloads) {
       for (const event of payload.events ?? []) {
-        if (!isNcaaTournamentEvent(event)) continue;
+        if (competitionSlug === "march-madness" && !isNcaaTournamentEvent(event)) continue;
         const id = event.id;
         if (!id) {
           rawEvents.push(event);
@@ -302,11 +307,13 @@ export async function GET(req: Request) {
     }
 
     const rows = rawEvents
-      .map(normalizeEvent)
+      .map((event) => normalizeEvent(event, competitionSlug))
       .filter((row): row is LiveScoreRow => row !== null)
       .sort(sortScores);
 
-    await runAutoScoreSync(req, rows);
+    if (competitionSlug === "march-madness") {
+      await runAutoScoreSync(req, rows);
+    }
 
     return NextResponse.json({
       ok: true,

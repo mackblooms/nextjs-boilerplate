@@ -78,7 +78,12 @@ function nextTargetForWinner(game: LiveOverlayGame) {
     if (region === "south") return { round: "F4", region: null, slot: 1, side: "team2_id" } as const;
     if (region === "west") return { round: "F4", region: null, slot: 2, side: "team1_id" } as const;
     if (region === "midwest") return { round: "F4", region: null, slot: 2, side: "team2_id" } as const;
-    return null;
+    return {
+      round: "F4",
+      region: null,
+      slot: Math.ceil(slot / 2),
+      side: slot % 2 === 1 ? "team1_id" : "team2_id",
+    } as const;
   }
 
   if (round === "F4") {
@@ -192,7 +197,7 @@ export function applyLiveScoreOverlay<TGame extends LiveOverlayGame, TTeam exten
     game.winner_team_id = live.team1Score > live.team2Score ? game.team1_id : game.team2_id;
   }
 
-  const order: Record<string, number> = { R64: 1, R32: 2, S16: 3, E8: 4, F4: 5, CHIP: 6 };
+  const order: Record<string, number> = { GROUP: 0, R64: 1, R32: 2, S16: 3, E8: 4, F4: 5, CHIP: 6 };
   const sorted = [...nextGames].sort((a, b) => {
     const diff = (order[String(a.round ?? "").toUpperCase()] ?? 99) - (order[String(b.round ?? "").toUpperCase()] ?? 99);
     if (diff !== 0) return diff;

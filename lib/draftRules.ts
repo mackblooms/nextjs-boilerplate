@@ -36,7 +36,11 @@ function getDraftError(summary: Omit<DraftSummary, "isValid" | "error">): string
   return null;
 }
 
-export function summarizeDraft(teamIds: Iterable<string>, teamById: Map<string, DraftableTeam>): DraftSummary {
+export function summarizeDraft(
+  teamIds: Iterable<string>,
+  teamById: Map<string, DraftableTeam>,
+  competitionSlug = "march-madness",
+): DraftSummary {
   let totalCost = 0;
   let count1 = 0;
   let count2 = 0;
@@ -54,13 +58,21 @@ export function summarizeDraft(teamIds: Iterable<string>, teamById: Map<string, 
 
   const remaining = DRAFT_BUDGET - totalCost;
   const detail = { totalCost, remaining, count1, count2, count141516 };
-  const error = getDraftError(detail);
+  const error = competitionSlug === "world-cup"
+    ? (summaryTotalCostError(detail.totalCost))
+    : getDraftError(detail);
 
   return {
     ...detail,
     isValid: error === null,
     error,
   };
+}
+
+function summaryTotalCostError(totalCost: number) {
+  return totalCost > DRAFT_BUDGET
+    ? `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`
+    : null;
 }
 
 export function sortDraftTeamsBySeedName<T extends { seed: number; name: string }>(a: T, b: T) {

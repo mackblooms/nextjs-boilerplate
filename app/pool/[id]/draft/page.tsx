@@ -23,12 +23,14 @@ import {
   type SavedDraftRow,
 } from "@/lib/savedDrafts";
 import { toSchoolDisplayName } from "@/lib/teamNames";
+import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 
 type PoolRow = {
   id: string;
   name: string;
   is_private: boolean | null;
   lock_time: string | null;
+  competition_slug?: string;
 };
 
 type TeamRow = DraftableTeam;
@@ -121,6 +123,7 @@ export default function PoolDraftPage() {
 
   const [locked, setLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
 
@@ -148,8 +151,8 @@ export default function PoolDraftPage() {
   );
 
   const selectedDraftSummary = useMemo(
-    () => summarizeDraft(selectedDraftPicks, teamById),
-    [selectedDraftPicks, teamById]
+    () => summarizeDraft(selectedDraftPicks, teamById, competitionSlug),
+    [competitionSlug, selectedDraftPicks, teamById]
   );
 
   const targetEntry = useMemo(
@@ -186,7 +189,7 @@ export default function PoolDraftPage() {
 
     const { data: poolRow, error: poolErr } = await supabase
       .from("pools")
-      .select("id,name,is_private,lock_time")
+      .select("id,name,is_private,lock_time,competition_slug")
       .eq("id", poolId)
       .single();
 
@@ -197,9 +200,11 @@ export default function PoolDraftPage() {
     }
 
     const typedPool = poolRow as PoolRow;
+    const nextCompetitionSlug = normalizeCompetitionSlug(typedPool.competition_slug);
+    setCompetitionSlug(nextCompetitionSlug);
     setPool(typedPool);
-    setLockTime(resolveDraftLockTime(typedPool.lock_time ?? null));
-    setLocked(isDraftLocked(typedPool.lock_time ?? null));
+    setLockTime(resolveDraftLockTime(typedPool.lock_time ?? null, nextCompetitionSlug));
+    setLocked(isDraftLocked(typedPool.lock_time ?? null, new Date(), nextCompetitionSlug));
 
     const { data: memRow, error: memErr } = await supabase
       .from("pool_members")
@@ -218,7 +223,8 @@ export default function PoolDraftPage() {
 
     const { data: gameRows, error: gameErr } = await supabase
       .from("games")
-      .select("round,team1_id,team2_id");
+      .select("round,team1_id,team2_id")
+      .eq("competition_slug", nextCompetitionSlug);
 
     if (gameErr) {
       setLoading(false);
@@ -229,13 +235,16 @@ export default function PoolDraftPage() {
     const r64TeamIds = Array.from(
       new Set(
         ((gameRows ?? []) as GameRow[])
-          .filter((g) => g.round === "R64")
+          .filter((g) => nextCompetitionSlug === "world-cup" || g.round === "R64")
           .flatMap((g) => [g.team1_id, g.team2_id])
           .filter((id): id is string => Boolean(id))
       )
     );
 
-    let teamQuery = supabase.from("teams").select("id,name,seed,cost");
+    let teamQuery = supabase
+      .from("teams")
+      .select("id,name,seed,cost")
+      .eq("competition_slug", nextCompetitionSlug);
     if (r64TeamIds.length > 0) {
       teamQuery = teamQuery.in("id", r64TeamIds);
     }
@@ -298,6 +307,7 @@ export default function PoolDraftPage() {
       .from("saved_drafts")
       .select("id,user_id,name,created_at,updated_at")
       .eq("user_id", user.id)
+      .eq("competition_slug", nextCompetitionSlug)
       .order("updated_at", { ascending: false });
 
     if (draftRowsQuery.error) {
@@ -660,7 +670,7 @@ export default function PoolDraftPage() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link href="/drafts" className="ui-btn ui-btn--md ui-btn--secondary">
+            <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
               Edit Drafts
             </Link>
             <Link href={`/pool/${poolId}/leaderboard`} className="ui-btn ui-btn--md ui-btn--primary">
@@ -840,7 +850,7 @@ export default function PoolDraftPage() {
                   : "Enter draft as new entry"}
             </button>
             <Link
-              href="/drafts"
+              href={competitionPath("/drafts", competitionSlug)}
               style={{
                 padding: "12px 14px",
                 borderRadius: 10,
@@ -878,8 +888,9 @@ export default function PoolDraftPage() {
 
           <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
             <div>
-              Rules: max {MAX_1_SEEDS} one-seeds, max {MAX_2_SEEDS} two-seeds, max {MAX_14_TO_16_SEEDS} seeds
-              14-16.
+              {competitionSlug === "world-cup"
+                ? `Rules: build any combination of national teams within the ${DRAFT_BUDGET}-point budget.`
+                : `Rules: max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
             </div>
             {targetEntry ? (
               <div>
@@ -909,7 +920,7 @@ export default function PoolDraftPage() {
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>{selectedDraft.name} teams</h2>
           {selectedDraftTeams.length === 0 ? (
             <p style={{ margin: 0, opacity: 0.8 }}>
-              This draft has no picks yet. Add teams in <Link href="/drafts">Draft Editor</Link>.
+              This draft has no picks yet. Add teams in <Link href={competitionPath("/drafts", competitionSlug)}>Draft Editor</Link>.
             </p>
           ) : (
             <div style={{ display: "grid", gap: 6 }}>
