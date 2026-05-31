@@ -13,25 +13,27 @@ Status: proposed launch rules, calibrated on May 31, 2026.
 
 ## Price Model
 
-Use a blended probability vector for each team:
-
-- 65% path-aware model probability.
-- 35% de-vigged median sportsbook probability.
+The current seeded board uses the path-aware model as its quantitative backbone, then
+applies conservative market-informed manual adjustments where publicly available
+sportsbook futures materially disagree.
 
 The path-aware input is the May 29, 2026 Goldman Sachs Monte Carlo model. It simulates
 50,000 tournaments, applies official group tiebreakers, accounts for all 495 possible
 Round-of-32 pairings, and includes Elo, recent competitive form, scoring talent,
 geography, and draw difficulty.
 
-The sportsbook input should use the median de-vigged implied probability across available
+Before drafts open, replace the manual market review with a reproducible sportsbook
+input using the median de-vigged implied probability across available
 books for each market. Use group qualification, group winner, semifinal, final, and
 tournament winner markets when available. Use the model's conditional stage ratios where
 a sportsbook stage market is unavailable. Median probabilities are preferable to a best
 price because they resist outliers and promotional lines.
 
-The launch prices below are integer buckets derived from expected score under the proposed
-rules, with market-informed adjustments where the model and sportsbooks materially
-disagree. Re-run the calibration once immediately before drafts open, then freeze it.
+The provisional launch prices below are integer buckets derived from full-path expected
+score under the proposed rules, with market-informed adjustments where public futures
+materially disagree. Re-run the calibration once immediately before drafts open, then
+freeze it. A sensible automated blend for that final run is 65% path-aware model
+probability and 35% de-vigged median sportsbook probability.
 
 ## Launch Price Board
 

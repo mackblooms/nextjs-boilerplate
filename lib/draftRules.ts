@@ -86,3 +86,12 @@ export function sortDraftTeamsBySeedName<T extends { seed: number; name: string 
   if (a.seed !== b.seed) return a.seed - b.seed;
   return a.name.localeCompare(b.name);
 }
+
+export function sortDraftTeamsForCompetition<T extends { cost: number; seed: number; name: string }>(
+  competitionSlug: string,
+) {
+  return (a: T, b: T) => {
+    if (competitionSlug === "world-cup" && a.cost !== b.cost) return b.cost - a.cost;
+    return sortDraftTeamsBySeedName(a, b);
+  };
+}

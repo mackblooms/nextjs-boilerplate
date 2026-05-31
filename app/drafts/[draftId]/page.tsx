@@ -10,7 +10,7 @@ import {
   MAX_1_SEEDS,
   MAX_2_SEEDS,
   WORLD_CUP_TEAM_COUNT,
-  sortDraftTeamsBySeedName,
+  sortDraftTeamsForCompetition,
   summarizeDraft,
   type DraftableTeam,
 } from "@/lib/draftRules";
@@ -81,8 +81,8 @@ export default function DraftDetailPage() {
       Array.from(selected)
         .map((teamId) => teamById.get(teamId))
         .filter(isTeamRow)
-        .sort(sortDraftTeamsBySeedName),
-    [selected, teamById]
+        .sort(sortDraftTeamsForCompetition(competitionSlug)),
+    [competitionSlug, selected, teamById]
   );
 
   const summary = useMemo(
@@ -195,7 +195,7 @@ export default function DraftDetailPage() {
         setMessage(teamErr.message);
         return;
       }
-      setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsBySeedName));
+      setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
 
       const { data: pickRows, error: pickErr } = await supabase
         .from("saved_draft_picks")

@@ -8,7 +8,7 @@ import { trySetEntryName } from "@/lib/poolEntry";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "@/lib/draftLock";
 import { trackEvent } from "@/lib/analytics";
 import {
-  sortDraftTeamsBySeedName,
+  sortDraftTeamsForCompetition,
   summarizeDraft,
   type DraftableTeam,
   DRAFT_BUDGET,
@@ -148,8 +148,8 @@ export default function PoolDraftPage() {
       Array.from(selectedDraftPicks)
         .map((teamId) => teamById.get(teamId))
         .filter(isTeamRow)
-        .sort(sortDraftTeamsBySeedName) as TeamRow[],
-    [selectedDraftPicks, teamById]
+        .sort(sortDraftTeamsForCompetition(competitionSlug)) as TeamRow[],
+    [competitionSlug, selectedDraftPicks, teamById]
   );
 
   const selectedDraftSummary = useMemo(
@@ -280,7 +280,7 @@ export default function PoolDraftPage() {
       setMessage(teamErr.message);
       return;
     }
-    setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsBySeedName));
+    setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
 
     if (!memRow) {
       setExistingEntries([]);
