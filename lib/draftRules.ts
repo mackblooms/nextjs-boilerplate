@@ -2,6 +2,7 @@ export const DRAFT_BUDGET = 100;
 export const MAX_1_SEEDS = 2;
 export const MAX_2_SEEDS = 2;
 export const MAX_14_TO_16_SEEDS = 6;
+export const WORLD_CUP_TEAM_COUNT = 8;
 
 export type DraftableTeam = {
   id: string;
@@ -16,6 +17,7 @@ export type DraftSummary = {
   count1: number;
   count2: number;
   count141516: number;
+  selectedCount: number;
   isValid: boolean;
   error: string | null;
 };
@@ -45,11 +47,13 @@ export function summarizeDraft(
   let count1 = 0;
   let count2 = 0;
   let count141516 = 0;
+  let selectedCount = 0;
 
   for (const teamId of teamIds) {
     const team = teamById.get(teamId);
     if (!team) continue;
 
+    selectedCount += 1;
     totalCost += team.cost;
     if (team.seed === 1) count1 += 1;
     if (team.seed === 2) count2 += 1;
@@ -57,9 +61,9 @@ export function summarizeDraft(
   }
 
   const remaining = DRAFT_BUDGET - totalCost;
-  const detail = { totalCost, remaining, count1, count2, count141516 };
+  const detail = { totalCost, remaining, count1, count2, count141516, selectedCount };
   const error = competitionSlug === "world-cup"
-    ? (summaryTotalCostError(detail.totalCost))
+    ? getWorldCupDraftError(detail.totalCost, detail.selectedCount)
     : getDraftError(detail);
 
   return {
@@ -69,10 +73,13 @@ export function summarizeDraft(
   };
 }
 
-function summaryTotalCostError(totalCost: number) {
-  return totalCost > DRAFT_BUDGET
-    ? `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`
-    : null;
+function getWorldCupDraftError(totalCost: number, selectedCount: number) {
+  if (totalCost > DRAFT_BUDGET) {
+    return `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`;
+  }
+  return selectedCount === WORLD_CUP_TEAM_COUNT
+    ? null
+    : `World Cup drafts must include exactly ${WORLD_CUP_TEAM_COUNT} teams.`;
 }
 
 export function sortDraftTeamsBySeedName<T extends { seed: number; name: string }>(a: T, b: T) {

@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
-import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = { draft_id: string };
@@ -177,7 +177,11 @@ function DraftsPageContent() {
 
     if (error || !created) {
       setCreating(false);
-      setMessage(error?.message ?? "Failed to create draft.");
+      setMessage(
+        isMissingCompetitionSlugColumn(error?.message)
+          ? "World Cup setup is not installed in the database yet. Run db/migrations/20260531_world_cup_competitions.sql in the Supabase SQL Editor, then try again."
+          : error?.message ?? "Failed to create draft.",
+      );
       return;
     }
 
