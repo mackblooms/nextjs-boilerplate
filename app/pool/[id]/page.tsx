@@ -11,6 +11,7 @@ import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type Pool = {
   id: string;
@@ -499,11 +500,21 @@ export default function PoolPage() {
       setStatus(null);
       setDraftedLoaded(false);
 
-      const { data: poolData, error: poolErr } = await supabase
+      let { data: poolData, error: poolErr } = await supabase
         .from("pools")
         .select("id,name,created_by,is_private,lock_time,competition_slug")
         .eq("id", poolId)
         .single();
+
+      if (canUseLegacyMarchMadnessFallback("march-madness", poolErr?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("id,name,created_by,is_private,lock_time")
+          .eq("id", poolId)
+          .single();
+        poolData = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+        poolErr = fallback.error;
+      }
 
       if (poolErr) {
         setStatus({ tone: "error", text: poolErr.message });
@@ -710,12 +721,20 @@ export default function PoolPage() {
       return;
     }
 
-    const draftsQuery = await supabase
+    let draftsQuery = await supabase
       .from("saved_drafts")
       .select("id,name,updated_at")
       .eq("user_id", user.id)
       .eq("competition_slug", competitionSlug)
       .order("updated_at", { ascending: false });
+
+    if (canUseLegacyMarchMadnessFallback(competitionSlug, draftsQuery.error?.message)) {
+      draftsQuery = await supabase
+        .from("saved_drafts")
+        .select("id,name,updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+    }
 
     if (draftsQuery.error) {
       setDraftModalLoading(false);
@@ -1083,12 +1102,20 @@ export default function PoolPage() {
 
     const unresolvedEntries = nextEntries.filter((entry) => !(entry.entry_name?.trim().length));
     if (unresolvedEntries.length > 0) {
-      const draftsQuery = await supabase
+      let draftsQuery = await supabase
         .from("saved_drafts")
         .select("id,name,updated_at")
         .eq("user_id", user.id)
         .eq("competition_slug", competitionSlug)
         .order("updated_at", { ascending: false });
+
+      if (canUseLegacyMarchMadnessFallback(competitionSlug, draftsQuery.error?.message)) {
+        draftsQuery = await supabase
+          .from("saved_drafts")
+          .select("id,name,updated_at")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false });
+      }
 
       if (!draftsQuery.error) {
         const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);

@@ -24,6 +24,7 @@ import {
 } from "@/lib/savedDrafts";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type PoolRow = {
   id: string;
@@ -187,11 +188,21 @@ export default function PoolDraftPage() {
       return;
     }
 
-    const { data: poolRow, error: poolErr } = await supabase
+    let { data: poolRow, error: poolErr } = await supabase
       .from("pools")
       .select("id,name,is_private,lock_time,competition_slug")
       .eq("id", poolId)
       .single();
+
+    if (canUseLegacyMarchMadnessFallback("march-madness", poolErr?.message)) {
+      const fallback = await supabase
+        .from("pools")
+        .select("id,name,is_private,lock_time")
+        .eq("id", poolId)
+        .single();
+      poolRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+      poolErr = fallback.error;
+    }
 
     if (poolErr) {
       setLoading(false);
@@ -221,10 +232,16 @@ export default function PoolDraftPage() {
 
     setIsMember(Boolean(memRow));
 
-    const { data: gameRows, error: gameErr } = await supabase
+    let { data: gameRows, error: gameErr } = await supabase
       .from("games")
       .select("round,team1_id,team2_id")
       .eq("competition_slug", nextCompetitionSlug);
+
+    if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, gameErr?.message)) {
+      const fallback = await supabase.from("games").select("round,team1_id,team2_id");
+      gameRows = fallback.data;
+      gameErr = fallback.error;
+    }
 
     if (gameErr) {
       setLoading(false);
@@ -249,7 +266,14 @@ export default function PoolDraftPage() {
       teamQuery = teamQuery.in("id", r64TeamIds);
     }
 
-    const { data: teamRows, error: teamErr } = await teamQuery;
+    let { data: teamRows, error: teamErr } = await teamQuery;
+    if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, teamErr?.message)) {
+      const fallback = r64TeamIds.length > 0
+        ? await supabase.from("teams").select("id,name,seed,cost").in("id", r64TeamIds)
+        : await supabase.from("teams").select("id,name,seed,cost");
+      teamRows = fallback.data;
+      teamErr = fallback.error;
+    }
     if (teamErr) {
       setLoading(false);
       setMessage(teamErr.message);
@@ -303,12 +327,20 @@ export default function PoolDraftPage() {
     setTargetEntryId("");
     setPoolAppliedTeamIds(new Set());
 
-    const draftRowsQuery = await supabase
+    let draftRowsQuery = await supabase
       .from("saved_drafts")
       .select("id,user_id,name,created_at,updated_at")
       .eq("user_id", user.id)
       .eq("competition_slug", nextCompetitionSlug)
       .order("updated_at", { ascending: false });
+
+    if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, draftRowsQuery.error?.message)) {
+      draftRowsQuery = await supabase
+        .from("saved_drafts")
+        .select("id,user_id,name,created_at,updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+    }
 
     if (draftRowsQuery.error) {
       setLoading(false);

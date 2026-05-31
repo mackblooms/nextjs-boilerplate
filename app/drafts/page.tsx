@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = { draft_id: string };
@@ -82,12 +83,25 @@ function DraftsPageContent() {
 
       setUserId(user.id);
 
-      const { data: draftRows, error: draftErr } = await supabase
+      let { data: draftRows, error: draftErr } = await supabase
         .from("saved_drafts")
         .select("id,name,created_at,updated_at,user_id,competition_slug")
         .eq("user_id", user.id)
         .eq("competition_slug", competitionSlug)
         .order("updated_at", { ascending: false });
+
+      if (canUseLegacyMarchMadnessFallback(competitionSlug, draftErr?.message)) {
+        const fallback = await supabase
+          .from("saved_drafts")
+          .select("id,name,created_at,updated_at,user_id")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false });
+        draftRows = (fallback.data ?? []).map((draft) => ({
+          ...draft,
+          competition_slug: null,
+        }));
+        draftErr = fallback.error;
+      }
 
       if (draftErr) {
         setLoading(false);

@@ -15,6 +15,7 @@ import {
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type Row = {
   entry_id: string;
@@ -807,11 +808,15 @@ export default function LeaderboardPage() {
 
       let liveScoreGames: LiveOverlayScoreGame[] = [];
       try {
-        const { data: scorePoolRow } = await supabase
+        let { data: scorePoolRow, error: scorePoolErr } = await supabase
           .from("pools")
           .select("competition_slug")
           .eq("id", poolId)
           .maybeSingle();
+        if (canUseLegacyMarchMadnessFallback("march-madness", scorePoolErr?.message)) {
+          scorePoolRow = null;
+          scorePoolErr = null;
+        }
         const scoreCompetitionSlug = normalizeCompetitionSlug(scorePoolRow?.competition_slug);
         const liveRes = await fetch(
           `/api/scores/live?lookbackDays=1&lookaheadDays=0&competition=${scoreCompetitionSlug}`,
@@ -885,11 +890,21 @@ export default function LeaderboardPage() {
 
       setStoredActivePoolId(poolId);
 
-      const { data: poolRow, error: poolErr } = await supabase
+      let { data: poolRow, error: poolErr } = await supabase
         .from("pools")
         .select("name,lock_time,created_by,competition_slug")
         .eq("id", poolId)
         .single();
+
+      if (canUseLegacyMarchMadnessFallback("march-madness", poolErr?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("name,lock_time,created_by")
+          .eq("id", poolId)
+          .single();
+        poolRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+        poolErr = fallback.error;
+      }
 
       if (poolErr) {
         setMsg(poolErr.message);
@@ -998,10 +1013,18 @@ export default function LeaderboardPage() {
         );
       }
 
-      const { data: teamRows, error: teamErr } = await supabase
+      let { data: teamRows, error: teamErr } = await supabase
         .from("teams")
         .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id")
         .eq("competition_slug", competitionSlug);
+
+      if (canUseLegacyMarchMadnessFallback(competitionSlug, teamErr?.message)) {
+        const fallback = await supabase
+          .from("teams")
+          .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
+        teamRows = fallback.data;
+        teamErr = fallback.error;
+      }
 
       if (teamErr) {
         setMsg(teamErr.message);
@@ -1013,10 +1036,16 @@ export default function LeaderboardPage() {
       const teamSeedById = new Map(teamRowsList.map((t) => [t.id, t.seed_in_region]));
 
       let gameRows: ScoringGameWithDate[] = [];
-      const gameQuery = await supabase
+      let gameQuery = await supabase
         .from("games")
         .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time")
         .eq("competition_slug", competitionSlug);
+
+      if (canUseLegacyMarchMadnessFallback(competitionSlug, gameQuery.error?.message)) {
+        gameQuery = await supabase
+          .from("games")
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
+      }
 
       if (!gameQuery.error) {
         gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];

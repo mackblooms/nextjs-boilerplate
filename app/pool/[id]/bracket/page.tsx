@@ -18,6 +18,7 @@ import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, matchLiveScoresToGames, type MatchedLiveGame } from "@/lib/liveBracket";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import WorldCupBracketBoard from "@/app/components/WorldCupBracketBoard";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type Team = {
   id: string;
@@ -403,11 +404,21 @@ export default function BracketPage() {
 
       setStoredActivePoolId(poolId);
 
-      const { data: poolRow, error: poolErr } = await supabase
+      let { data: poolRow, error: poolErr } = await supabase
         .from("pools")
         .select("lock_time,competition_slug")
         .eq("id", poolId)
         .single();
+
+      if (canUseLegacyMarchMadnessFallback("march-madness", poolErr?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("lock_time")
+          .eq("id", poolId)
+          .single();
+        poolRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+        poolErr = fallback.error;
+      }
 
       if (poolErr) {
         setMsg(poolErr.message);

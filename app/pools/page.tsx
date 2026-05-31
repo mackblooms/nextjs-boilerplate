@@ -7,6 +7,7 @@ import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type PoolRow = {
   id: string;
@@ -120,11 +121,23 @@ function PoolsPageContent() {
       setMyPoolsMsg("");
       setJoinStatus(null);
 
-      const { data: allRows, error: allErr } = await supabase
+      let { data: allRows, error: allErr } = await supabase
         .from("pools")
         .select("id,name,is_private,lock_time,competition_slug")
         .eq("competition_slug", competitionSlug)
         .order("name", { ascending: true });
+
+      if (canUseLegacyMarchMadnessFallback(competitionSlug, allErr?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("id,name,is_private,lock_time")
+          .order("name", { ascending: true });
+        allRows = (fallback.data ?? []).map((pool) => ({
+          ...pool,
+          competition_slug: null,
+        }));
+        allErr = fallback.error;
+      }
 
       if (allErr) {
         setAllPoolsMsg(allErr.message);
@@ -260,12 +273,20 @@ function PoolsPageContent() {
       return;
     }
 
-    const draftsQuery = await supabase
+    let draftsQuery = await supabase
       .from("saved_drafts")
       .select("id,name,updated_at")
       .eq("user_id", user.id)
       .eq("competition_slug", competitionSlug)
       .order("updated_at", { ascending: false });
+
+    if (canUseLegacyMarchMadnessFallback(competitionSlug, draftsQuery.error?.message)) {
+      draftsQuery = await supabase
+        .from("saved_drafts")
+        .select("id,name,updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+    }
 
     if (draftsQuery.error) {
       setDraftModalLoading(false);

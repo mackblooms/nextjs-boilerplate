@@ -15,6 +15,7 @@ import {
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
@@ -106,12 +107,23 @@ export default function DraftDetailPage() {
         return;
       }
 
-      const { data: draftRow, error: draftErr } = await supabase
+      let { data: draftRow, error: draftErr } = await supabase
         .from("saved_drafts")
         .select("id,name,updated_at,user_id,competition_slug")
         .eq("id", draftId)
         .eq("user_id", user.id)
         .maybeSingle();
+
+      if (canUseLegacyMarchMadnessFallback("march-madness", draftErr?.message)) {
+        const fallback = await supabase
+          .from("saved_drafts")
+          .select("id,name,updated_at,user_id")
+          .eq("id", draftId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        draftRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+        draftErr = fallback.error;
+      }
 
       if (draftErr) {
         setLoading(false);
@@ -135,10 +147,16 @@ export default function DraftDetailPage() {
       setDraftName(typedDraft.name);
       setRenameValue(typedDraft.name);
 
-      const { data: gameRows, error: gameErr } = await supabase
+      let { data: gameRows, error: gameErr } = await supabase
         .from("games")
         .select("round,team1_id,team2_id")
         .eq("competition_slug", nextCompetitionSlug);
+
+      if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, gameErr?.message)) {
+        const fallback = await supabase.from("games").select("round,team1_id,team2_id");
+        gameRows = fallback.data;
+        gameErr = fallback.error;
+      }
 
       if (gameErr) {
         setLoading(false);
@@ -163,7 +181,14 @@ export default function DraftDetailPage() {
         teamQuery = teamQuery.in("id", r64TeamIds);
       }
 
-      const { data: teamRows, error: teamErr } = await teamQuery;
+      let { data: teamRows, error: teamErr } = await teamQuery;
+      if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, teamErr?.message)) {
+        const fallback = r64TeamIds.length > 0
+          ? await supabase.from("teams").select("id,name,seed,cost").in("id", r64TeamIds)
+          : await supabase.from("teams").select("id,name,seed,cost");
+        teamRows = fallback.data;
+        teamErr = fallback.error;
+      }
       if (teamErr) {
         setLoading(false);
         setMessage(teamErr.message);

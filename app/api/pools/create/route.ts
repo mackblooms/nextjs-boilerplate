@@ -4,6 +4,7 @@ import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
 import { OFFICIAL_DRAFT_LOCK_ISO } from "@/lib/draftLock";
 import { getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
 type CreatePoolRequest = {
   name?: string;
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
     const joinPasswordHash = hashPoolPassword(password);
     const joinPasswordCiphertext = encryptPoolPassword(password);
 
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
+    let { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
       .insert({
         name: poolName,
@@ -73,6 +74,23 @@ export async function POST(req: Request) {
       })
       .select("id")
       .single();
+
+    if (canUseLegacyMarchMadnessFallback(competitionSlug, poolErr?.message)) {
+      const fallback = await supabaseAdmin
+        .from("pools")
+        .insert({
+          name: poolName,
+          created_by: authData.user.id,
+          is_private: true,
+          lock_time: OFFICIAL_DRAFT_LOCK_ISO,
+          join_password_hash: joinPasswordHash,
+          join_password_ciphertext: joinPasswordCiphertext,
+        })
+        .select("id")
+        .single();
+      poolRow = fallback.data;
+      poolErr = fallback.error;
+    }
 
     if (poolErr || !poolRow) {
       if (isMissingCiphertextColumnError(poolErr?.message)) {

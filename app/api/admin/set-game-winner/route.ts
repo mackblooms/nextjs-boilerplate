@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { requireSiteAdmin } from "@/lib/adminAuth";
+import { isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
 type SetWinnerRequest = {
   poolId?: string;
@@ -77,9 +78,19 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
 }
 
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>) {
-  const { data: allGames, error: gamesErr } = await supabaseAdmin
+  let { data: allGames, error: gamesErr } = await supabaseAdmin
     .from("games")
     .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug");
+  if (isMissingCompetitionSlugColumn(gamesErr?.message)) {
+    const fallback = await supabaseAdmin
+      .from("games")
+      .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+    allGames = (fallback.data ?? []).map((game) => ({
+      ...game,
+      competition_slug: null,
+    }));
+    gamesErr = fallback.error;
+  }
   if (gamesErr) throw gamesErr;
 
   const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
