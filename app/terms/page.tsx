@@ -107,8 +107,8 @@ export default function TermsPage() {
       <section className="legal-doc-section">
         <h2 style={{ marginTop: 0 }}>7. Intellectual Property and No Affiliation</h2>
         <p>
-          bracketball is independent and is not affiliated with, endorsed by, or sponsored by the
-          NCAA or any college or university.
+          bracketball is independent and is not affiliated with, endorsed by, or sponsored by any
+          league, governing body, tournament organizer, team, or school.
         </p>
         <p style={{ marginBottom: 0 }}>
           Team names, logos, trademarks, and other third-party intellectual property remain the
@@ -165,4 +165,3 @@ export default function TermsPage() {
     </main>
   );
 }
-

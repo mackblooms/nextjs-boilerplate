@@ -33,7 +33,7 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "bracketball",
-  description: "bracketball pool for march madness",
+  description: "draft, track, and compete across the biggest tournaments in sports",
 };
 
 export const viewport: Viewport = {
@@ -70,10 +70,10 @@ export default function RootLayout({
           <Analytics />
           <footer className="site-disclaimer" role="contentinfo">
             bracketball is an independent, unofficial platform and is not
-            affiliated with, endorsed by, or sponsored by the NCAA or any
-            college or university. All team names, trademarks, and other
-            intellectual property are the property of their respective owners and
-            are used solely for identification purposes.
+            affiliated with, endorsed by, or sponsored by any league, governing
+            body, tournament organizer, team, or school. All team names,
+            trademarks, and other intellectual property are the property of their
+            respective owners and are used solely for identification purposes.
             <nav aria-label="Legal links" className="site-disclaimer-links">
               <Link href="/terms">Terms of Service</Link>
               <span aria-hidden="true">|</span>

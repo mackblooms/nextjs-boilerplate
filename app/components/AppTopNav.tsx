@@ -914,6 +914,9 @@ export default function AppTopNav() {
               <Link href={homeHref} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Home
               </Link>
+              <Link href="/sports" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+                Sports
+              </Link>
               <Link href="/drafts" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Drafts
               </Link>

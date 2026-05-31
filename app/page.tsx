@@ -10,6 +10,7 @@ import { getStoredActivePoolId, setStoredActivePoolId } from "@/lib/activePool";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
+import CompetitionSwitcher from "./components/CompetitionSwitcher";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -267,6 +268,7 @@ function LandingPage({
               </Link>
             </div>
           </div>
+          <CompetitionSwitcher activeCompetition="march-madness" />
         </section>
     </main>
   );
@@ -1704,6 +1706,8 @@ function HomeContent() {
         padding: 16,
       }}
     >
+      <CompetitionSwitcher activeCompetition="march-madness" compact />
+
       <div
         style={{
           marginBottom: 16,

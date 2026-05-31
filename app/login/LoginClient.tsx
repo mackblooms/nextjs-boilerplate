@@ -247,8 +247,8 @@ export default function LoginClient() {
         </div>
         <h1 className="login-hero-title">draft smarter. climb faster.</h1>
         <p className="login-hero-copy">
-          Build private March Madness pools, draft teams by value, and track every score update in
-          real time.
+          Build private pools for the biggest tournaments in sports, draft teams by value, and
+          track every score update in real time.
         </p>
         <p className="login-hero-copy">
           Can you find the perfect draft strategy? Can you build the best combination of picks for

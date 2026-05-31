@@ -536,6 +536,7 @@ textarea::placeholder {
   place-items: center;
   margin-top: 12px;
   min-height: calc(100dvh - 360px);
+  gap: 14px;
 }
 
 .landing-center-card {
@@ -584,6 +585,172 @@ textarea::placeholder {
 .landing-action-button {
   min-width: 168px;
   text-decoration: none;
+}
+
+.sports-page-shell,
+.world-cup-page-shell {
+  max-width: 960px;
+}
+
+.sports-hero,
+.world-cup-hero {
+  padding: clamp(16px, 3vw, 26px);
+}
+
+.sports-hero {
+  display: grid;
+  gap: 8px;
+}
+
+.sports-hero h1,
+.world-cup-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.competition-switcher {
+  width: min(960px, 100%);
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+.competition-switcher--compact {
+  margin-bottom: 2px;
+}
+
+.competition-switcher-heading {
+  display: grid;
+  gap: 2px;
+}
+
+.competition-switcher-heading h2 {
+  margin: 0;
+  font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
+  font-size: 1.4rem;
+}
+
+.competition-switcher-eyebrow {
+  font-family: var(--font-app-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  opacity: 0.7;
+}
+
+.competition-switcher-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.competition-choice {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  text-decoration: none;
+}
+
+.competition-choice[data-active="true"] {
+  border-color: var(--highlight-border);
+  background: var(--highlight);
+}
+
+.competition-choice-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.competition-choice-sport,
+.competition-choice-status {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.competition-choice-status {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: var(--surface-muted);
+}
+
+.competition-choice-status[data-status="live"] {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.14);
+  color: #166534;
+}
+
+.competition-choice strong {
+  font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
+  font-size: 1.08rem;
+}
+
+.competition-choice > span:last-child {
+  font-size: 0.82rem;
+  line-height: 1.38;
+  opacity: 0.82;
+}
+
+.competition-switcher--compact .competition-switcher-grid {
+  max-width: 560px;
+}
+
+.competition-switcher--compact .competition-choice {
+  padding: 9px 10px;
+}
+
+.world-cup-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.42fr);
+  gap: 22px;
+  align-items: center;
+}
+
+.world-cup-hero-copy,
+.world-cup-format {
+  display: grid;
+  gap: 10px;
+}
+
+.world-cup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.world-cup-format {
+  border: 1px solid var(--highlight-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--highlight);
+}
+
+.world-cup-format span {
+  font-family: var(--font-app-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+}
+
+.world-cup-format strong {
+  border-top: 1px solid var(--highlight-border);
+  padding-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .competition-switcher-grid,
+  .world-cup-hero {
+    grid-template-columns: 1fr;
+  }
 }
 
 .back-arrow-button {
