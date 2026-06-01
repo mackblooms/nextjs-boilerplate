@@ -3,10 +3,10 @@ export const WORLD_CUP_TEAM_COSTS = [
   ["France", 23],
   ["Argentina", 22],
   ["Brazil", 20],
-  ["England", 19],
-  ["Germany", 19],
-  ["Netherlands", 19],
-  ["Portugal", 19],
+  ["England", 21],
+  ["Germany", 21],
+  ["Netherlands", 20],
+  ["Portugal", 20],
   ["Mexico", 18],
   ["Colombia", 17],
   ["Croatia", 17],
@@ -60,12 +60,9 @@ export const WORLD_CUP_SCORING_EVENTS = [
   ["Win final and become champion", 100],
 ] as const;
 
-export const WORLD_CUP_UNDERDOG_BONUS_EVENTS = [
+export const WORLD_CUP_VALUE_BONUS_EVENTS = [
   ["Group-stage win", "+4"],
   ["Advance from group", "+10"],
-] as const;
-
-export const WORLD_CUP_VALUE_RUN_BONUS_EVENTS = [
   ["Reach Round of 16", "+8"],
   ["Reach quarterfinal", "+16"],
   ["Reach semifinal", "+28"],

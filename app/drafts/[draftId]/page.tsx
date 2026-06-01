@@ -9,6 +9,8 @@ import {
   MAX_14_TO_16_SEEDS,
   MAX_1_SEEDS,
   MAX_2_SEEDS,
+  WORLD_CUP_ELITE_MINIMUM_COST,
+  WORLD_CUP_MAX_ELITE_TEAMS,
   sortDraftTeamsForCompetition,
   summarizeDraft,
   type DraftableTeam,
@@ -460,7 +462,12 @@ export default function DraftDetailPage() {
                   <b>{summary.count141516}/{MAX_14_TO_16_SEEDS}</b>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>{WORLD_CUP_ELITE_MINIMUM_COST}+ teams</span>
+                <b>{summary.countWorldCupElite}/{WORLD_CUP_MAX_ELITE_TEAMS}</b>
+              </div>
+            )}
           </div>
 
           <div

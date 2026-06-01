@@ -6,6 +6,7 @@ Status: proposed launch rules, calibrated on May 31, 2026.
 
 - Keep the existing 100-point draft budget.
 - Allow any number of teams while enforcing the 100-point budget.
+- Limit each draft to 3 teams priced 20 points or higher.
 - Price teams from their full tournament path, not reputation alone.
 - Reward group-stage results immediately.
 - Make low-priced teams genuinely exciting without making cheap-team accumulation the dominant strategy.
@@ -37,6 +38,10 @@ other major contenders too far down the board. Bonus EV is reported separately i
 of feeding back into price, because the bonuses intentionally preserve upside for value
 teams. Re-run the calibration once immediately before drafts open, then freeze it.
 
+Manual contender-tier overrides set England and Germany to 21 and Netherlands and
+Portugal to 20. These overrides keep the elite tier intuitive and work with the max-3
+elite-team draft cap.
+
 Until match-level group odds are imported, the audit estimates expected group-result
 points as `2 + 14 x P(advance to R32)`. This stays inside the possible 0-to-18 group
 points range and gives stronger group-stage teams appropriate credit.
@@ -61,11 +66,11 @@ points range and gives stronger group-stage teams appropriate credit.
 | D | Paraguay | 14 |
 | D | Australia | 13 |
 | D | Turkiye | 16 |
-| E | Germany | 19 |
+| E | Germany | 21 |
 | E | Curacao | 8 |
 | E | Cote d'Ivoire | 12 |
 | E | Ecuador | 16 |
-| F | Netherlands | 19 |
+| F | Netherlands | 20 |
 | F | Japan | 15 |
 | F | Sweden | 12 |
 | F | Tunisia | 10 |
@@ -85,11 +90,11 @@ points range and gives stronger group-stage teams appropriate credit.
 | J | Algeria | 12 |
 | J | Austria | 14 |
 | J | Jordan | 12 |
-| K | Portugal | 19 |
+| K | Portugal | 20 |
 | K | Colombia | 17 |
 | K | Uzbekistan | 12 |
 | K | Congo DR | 9 |
-| L | England | 19 |
+| L | England | 21 |
 | L | Croatia | 17 |
 | L | Ghana | 7 |
 | L | Panama | 12 |
@@ -114,23 +119,15 @@ more valuable, so a champion remains the center of a strong draft.
 Do not apply March Madness seed multipliers or opponent-based upset bonuses to World Cup
 results. Team costs already incorporate group strength and projected knockout path.
 
-## Underdog Bonus
+## Value Bonus
 
-Teams costing less than 10 points receive additional cumulative bonuses for group-stage
-success.
-
-| Result | Additional bonus |
-| --- | ---: |
-| Group-stage win | 4 |
-| Advance from group | 10 |
-
-## Value Run Bonus
-
-Teams costing 15 points or less receive additional cumulative bonuses for a knockout run.
-Teams below 10 can earn both bonus types.
+Teams costing less than 15 points receive additional cumulative bonuses whenever they
+outperform expectations, from the group stage through the championship.
 
 | Milestone | Additional bonus |
 | --- | ---: |
+| Group-stage win | 4 |
+| Advance from group | 10 |
 | Reach Round of 16 | 8 |
 | Reach quarterfinal | 16 |
 | Reach semifinal | 28 |
@@ -139,10 +136,9 @@ Teams below 10 can earn both bonus types.
 
 Examples:
 
-- An 8-point team that wins one group game, escapes its group, and reaches the
+- A 14-point team that wins one group game, escapes its group, and reaches the
   quarterfinal earns `4 + 10 + 8 + 16 = 38` bonus points.
-- A 15-point team that reaches the quarterfinal earns `8 + 16 = 24` bonus points.
-- A team priced above 15 receives base scoring only.
+- A team priced 15 or higher receives base scoring only.
 
 These are the World Cup equivalents of the March Madness underdog bonuses. They reward
 both immediate group-stage excitement and a sustained surprise run.
@@ -150,9 +146,9 @@ both immediate group-stage excitement and a sustained surprise run.
 ## Anti-Arbitrage Check
 
 Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
-across the 100-point budget. With the current board and bonuses, the highest projected-EV
-portfolio is `Spain, France, Argentina, Brazil, Qatar, Iraq`. Cheap-team accumulation does
-not dominate the optimizer.
+across the 100-point budget while enforcing the max-3 elite-team cap. Cheap-team
+accumulation must not dominate the optimizer. With the current rules, the highest
+projected-EV portfolio is `Spain, France, Argentina, Morocco, Australia, Iraq`.
 
 ## Implementation Notes
 

@@ -27,7 +27,7 @@ function scoreProjection(team, cost) {
     ? config.underdogBonus.groupWin * expectedGroupWins +
       config.underdogBonus.groupQualification * r32
     : 0;
-  const valueRunBonus = cost <= config.valueRunBonus.maximumCostInclusive
+  const valueRunBonus = cost < config.valueRunBonus.maximumCostExclusive
     ? config.valueRunBonus.roundOf16 * r16 +
       config.valueRunBonus.quarterfinal * qf +
       config.valueRunBonus.semifinal * sf +
@@ -64,7 +64,8 @@ const prices = normalizePrices(rows);
 const results = rows
   .map((row) => {
     const cost = prices.get(row.name);
-    return { ...row, cost, ...scoreProjection(row.raw, cost) };
+    const overriddenCost = config.priceOverrides[row.name] ?? cost;
+    return { ...row, cost: overriddenCost, ...scoreProjection(row.raw, overriddenCost) };
   })
   .sort((a, b) => b.cost - a.cost || b.total - a.total || a.name.localeCompare(b.name));
 
@@ -86,30 +87,33 @@ function printAudit() {
 if (require.main === module) printAudit();
 
 function bestPortfolio(budget = 100) {
-  const byBudget = Array(budget + 1).fill(null);
-  byBudget[0] = { expectedValue: 0, teams: [] };
+  const maximumEliteTeams = config.draftCaps.maximumEliteTeams;
+  const eliteMinimumCost = config.draftCaps.eliteMinimumCost;
+  const byBudget = Array.from({ length: budget + 1 }, () => Array(maximumEliteTeams + 1).fill(null));
+  byBudget[0][0] = { expectedValue: 0, teams: [] };
   for (const row of results) {
+    const eliteIncrement = row.cost >= eliteMinimumCost ? 1 : 0;
     for (let current = budget; current >= row.cost; current -= 1) {
-      const prior = byBudget[current - row.cost];
-      if (!prior) continue;
-      const expectedValue = prior.expectedValue + row.total;
-      if (!byBudget[current] || expectedValue > byBudget[current].expectedValue) {
-        byBudget[current] = { expectedValue, teams: [...prior.teams, row.name] };
+      for (let eliteCount = maximumEliteTeams; eliteCount >= eliteIncrement; eliteCount -= 1) {
+        const prior = byBudget[current - row.cost][eliteCount - eliteIncrement];
+        if (!prior) continue;
+        const expectedValue = prior.expectedValue + row.total;
+        if (!byBudget[current][eliteCount] || expectedValue > byBudget[current][eliteCount].expectedValue) {
+          byBudget[current][eliteCount] = { expectedValue, teams: [...prior.teams, row.name] };
+        }
       }
     }
   }
-  return byBudget.reduce(
-    (best, row, totalCost) =>
-      row && (!best || row.expectedValue > best.expectedValue) ? { ...row, totalCost } : best,
-    null,
-  );
+  return byBudget.flatMap((rows, totalCost) => rows.map((row, eliteCount) => row && ({ ...row, totalCost, eliteCount })))
+    .filter(Boolean)
+    .reduce((best, row) => (!best || row.expectedValue > best.expectedValue ? row : best), null);
 }
 
 if (require.main === module) {
   const portfolio = bestPortfolio();
   console.log("");
   console.log(`Best projected 100-point portfolio: ${portfolio.teams.join(", ")}`);
-  console.log(`Portfolio cost: ${portfolio.totalCost}; projected EV: ${portfolio.expectedValue.toFixed(1)}`);
+  console.log(`Portfolio cost: ${portfolio.totalCost}; elite teams: ${portfolio.eliteCount}; projected EV: ${portfolio.expectedValue.toFixed(1)}`);
 }
 
 module.exports = { bestPortfolio, results };

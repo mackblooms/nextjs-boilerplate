@@ -2,6 +2,8 @@ export const DRAFT_BUDGET = 100;
 export const MAX_1_SEEDS = 2;
 export const MAX_2_SEEDS = 2;
 export const MAX_14_TO_16_SEEDS = 6;
+export const WORLD_CUP_ELITE_MINIMUM_COST = 20;
+export const WORLD_CUP_MAX_ELITE_TEAMS = 3;
 
 export type DraftableTeam = {
   id: string;
@@ -17,6 +19,7 @@ export type DraftSummary = {
   count2: number;
   count141516: number;
   selectedCount: number;
+  countWorldCupElite: number;
   isValid: boolean;
   error: string | null;
 };
@@ -47,6 +50,7 @@ export function summarizeDraft(
   let count2 = 0;
   let count141516 = 0;
   let selectedCount = 0;
+  let countWorldCupElite = 0;
 
   for (const teamId of teamIds) {
     const team = teamById.get(teamId);
@@ -57,12 +61,13 @@ export function summarizeDraft(
     if (team.seed === 1) count1 += 1;
     if (team.seed === 2) count2 += 1;
     if (team.seed >= 14 && team.seed <= 16) count141516 += 1;
+    if (team.cost >= WORLD_CUP_ELITE_MINIMUM_COST) countWorldCupElite += 1;
   }
 
   const remaining = DRAFT_BUDGET - totalCost;
-  const detail = { totalCost, remaining, count1, count2, count141516, selectedCount };
+  const detail = { totalCost, remaining, count1, count2, count141516, selectedCount, countWorldCupElite };
   const error = competitionSlug === "world-cup"
-    ? getWorldCupDraftError(detail.totalCost)
+    ? getWorldCupDraftError(detail.totalCost, detail.countWorldCupElite)
     : getDraftError(detail);
 
   return {
@@ -72,9 +77,12 @@ export function summarizeDraft(
   };
 }
 
-function getWorldCupDraftError(totalCost: number) {
-  return totalCost > DRAFT_BUDGET
-    ? `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`
+function getWorldCupDraftError(totalCost: number, countEliteTeams: number) {
+  if (totalCost > DRAFT_BUDGET) {
+    return `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`;
+  }
+  return countEliteTeams > WORLD_CUP_MAX_ELITE_TEAMS
+    ? `World Cup drafts can include at most ${WORLD_CUP_MAX_ELITE_TEAMS} teams priced ${WORLD_CUP_ELITE_MINIMUM_COST} or higher.`
     : null;
 }
 

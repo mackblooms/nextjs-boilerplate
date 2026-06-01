@@ -12,12 +12,12 @@
     "championshipWin": 100
   },
   "underdogBonus": {
-    "maximumCostExclusive": 10,
+    "maximumCostExclusive": 15,
     "groupWin": 4,
     "groupQualification": 10
   },
   "valueRunBonus": {
-    "maximumCostInclusive": 15,
+    "maximumCostExclusive": 15,
     "roundOf16": 8,
     "quarterfinal": 16,
     "semifinal": 28,
@@ -28,6 +28,16 @@
     "minimum": 4,
     "maximum": 24,
     "curveExponent": 0.38
+  },
+  "priceOverrides": {
+    "England": 21,
+    "Germany": 21,
+    "Netherlands": 20,
+    "Portugal": 20
+  },
+  "draftCaps": {
+    "maximumEliteTeams": 3,
+    "eliteMinimumCost": 20
   },
   "teams": [
     ["Spain", "H", 99.1, 80.6, 65.1, 55.3, 37.5, 25.7],
