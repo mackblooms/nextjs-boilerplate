@@ -11,6 +11,7 @@
     "backup:run:7d": "powershell -ExecutionPolicy Bypass -File ./scripts/progress-backup.ps1 -RetentionDays 7",
     "backup:verify": "powershell -ExecutionPolicy Bypass -File ./scripts/restore-check.ps1",
     "sim:balance": "node scripts/scoring-balance-sim.js",
+    "sim:world-cup-pricing": "node scripts/world-cup-pricing-audit.js",
     "mobile:prepare-web": "node scripts/mobile-prepare-web.mjs",
     "mobile:sync": "npm run mobile:prepare-web && npx cap sync",
     "mobile:copy": "npm run mobile:prepare-web && npx cap copy",

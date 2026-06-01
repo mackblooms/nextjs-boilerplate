@@ -29,64 +29,70 @@ tournament winner markets when available. Use the model's conditional stage rati
 a sportsbook stage market is unavailable. Median probabilities are preferable to a best
 price because they resist outliers and promotional lines.
 
-The provisional launch prices below are integer buckets derived from full-path expected
-score under the proposed rules, with market-informed adjustments where public futures
-materially disagree. Re-run the calibration once immediately before drafts open, then
-freeze it. A sensible automated blend for that final run is 65% path-aware model
-probability and 35% de-vigged median sportsbook probability.
+The provisional launch prices below are integer buckets derived from full-path base-score
+expected value under the proposed rules. The reproducible audit is available through
+`npm run sim:world-cup-pricing`. Value Run Bonus EV is reported separately instead of
+feeding back into price, because the bonus intentionally preserves upside for inexpensive
+teams. Re-run the calibration once immediately before drafts open, then freeze it. A
+sensible automated blend for that final run is 65% path-aware model probability and 35%
+de-vigged median sportsbook probability.
+
+Until match-level group odds are imported, the audit estimates expected group-result
+points as `2 + 14 x P(advance to R32)`. This stays inside the possible 0-to-18 group
+points range and gives stronger group-stage teams appropriate credit.
 
 ## Launch Price Board
 
 | Group | Team | Cost |
 | --- | --- | ---: |
-| A | Mexico | 10 |
+| A | Mexico | 11 |
 | A | South Africa | 4 |
-| A | Korea Republic | 6 |
-| A | Czechia | 6 |
-| B | Canada | 8 |
+| A | Korea Republic | 7 |
+| A | Czechia | 7 |
+| B | Canada | 9 |
 | B | Bosnia and Herzegovina | 6 |
 | B | Qatar | 4 |
-| B | Switzerland | 9 |
-| C | Brazil | 17 |
-| C | Morocco | 7 |
+| B | Switzerland | 10 |
+| C | Brazil | 16 |
+| C | Morocco | 8 |
 | C | Haiti | 4 |
 | C | Scotland | 6 |
-| D | USA | 7 |
-| D | Paraguay | 7 |
-| D | Australia | 6 |
-| D | Turkiye | 8 |
+| D | USA | 8 |
+| D | Paraguay | 8 |
+| D | Australia | 7 |
+| D | Turkiye | 9 |
 | E | Germany | 13 |
 | E | Curacao | 4 |
-| E | Cote d'Ivoire | 5 |
-| E | Ecuador | 8 |
-| F | Netherlands | 13 |
-| F | Japan | 7 |
-| F | Sweden | 5 |
-| F | Tunisia | 4 |
-| G | Belgium | 9 |
+| E | Cote d'Ivoire | 6 |
+| E | Ecuador | 9 |
+| F | Netherlands | 14 |
+| F | Japan | 8 |
+| F | Sweden | 6 |
+| F | Tunisia | 5 |
+| G | Belgium | 10 |
 | G | Egypt | 6 |
-| G | IR Iran | 6 |
-| G | New Zealand | 5 |
+| G | IR Iran | 7 |
+| G | New Zealand | 6 |
 | H | Spain | 24 |
 | H | Cabo Verde | 5 |
 | H | Saudi Arabia | 4 |
-| H | Uruguay | 7 |
-| I | France | 22 |
+| H | Uruguay | 8 |
+| I | France | 21 |
 | I | Senegal | 8 |
 | I | Iraq | 4 |
-| I | Norway | 9 |
-| J | Argentina | 20 |
-| J | Algeria | 5 |
+| I | Norway | 10 |
+| J | Argentina | 19 |
+| J | Algeria | 6 |
 | J | Austria | 7 |
-| J | Jordan | 5 |
-| K | Portugal | 14 |
-| K | Colombia | 10 |
+| J | Jordan | 6 |
+| K | Portugal | 13 |
+| K | Colombia | 11 |
 | K | Uzbekistan | 6 |
-| K | Congo DR | 4 |
-| L | England | 15 |
-| L | Croatia | 9 |
+| K | Congo DR | 5 |
+| L | England | 14 |
+| L | Croatia | 10 |
 | L | Ghana | 4 |
-| L | Panama | 5 |
+| L | Panama | 6 |
 
 ## Base Scoring
 

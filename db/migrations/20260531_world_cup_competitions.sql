@@ -185,18 +185,18 @@ for each row execute function public.enforce_entry_pick_competition_match();
 -- region stores the official World Cup group.
 merge into public.teams as existing
 using (values
-  ('Mexico', 1, 1, 'Group A', 10, 'world-cup'), ('South Africa', 3, 3, 'Group A', 4, 'world-cup'), ('Korea Republic', 3, 3, 'Group A', 6, 'world-cup'), ('Czechia', 2, 2, 'Group A', 6, 'world-cup'),
-  ('Canada', 2, 2, 'Group B', 8, 'world-cup'), ('Bosnia and Herzegovina', 3, 3, 'Group B', 6, 'world-cup'), ('Qatar', 4, 4, 'Group B', 4, 'world-cup'), ('Switzerland', 2, 2, 'Group B', 9, 'world-cup'),
-  ('Brazil', 1, 1, 'Group C', 17, 'world-cup'), ('Morocco', 2, 2, 'Group C', 7, 'world-cup'), ('Haiti', 4, 4, 'Group C', 4, 'world-cup'), ('Scotland', 3, 3, 'Group C', 6, 'world-cup'),
-  ('USA', 2, 2, 'Group D', 7, 'world-cup'), ('Paraguay', 3, 3, 'Group D', 7, 'world-cup'), ('Australia', 3, 3, 'Group D', 6, 'world-cup'), ('Türkiye', 2, 2, 'Group D', 8, 'world-cup'),
-  ('Germany', 1, 1, 'Group E', 13, 'world-cup'), ('Curaçao', 4, 4, 'Group E', 4, 'world-cup'), ('Côte d''Ivoire', 3, 3, 'Group E', 5, 'world-cup'), ('Ecuador', 2, 2, 'Group E', 8, 'world-cup'),
-  ('Netherlands', 1, 1, 'Group F', 13, 'world-cup'), ('Japan', 2, 2, 'Group F', 7, 'world-cup'), ('Sweden', 3, 3, 'Group F', 5, 'world-cup'), ('Tunisia', 4, 4, 'Group F', 4, 'world-cup'),
-  ('Belgium', 1, 1, 'Group G', 9, 'world-cup'), ('Egypt', 3, 3, 'Group G', 6, 'world-cup'), ('IR Iran', 3, 3, 'Group G', 6, 'world-cup'), ('New Zealand', 4, 4, 'Group G', 5, 'world-cup'),
-  ('Spain', 1, 1, 'Group H', 24, 'world-cup'), ('Cabo Verde', 4, 4, 'Group H', 5, 'world-cup'), ('Saudi Arabia', 4, 4, 'Group H', 4, 'world-cup'), ('Uruguay', 2, 2, 'Group H', 7, 'world-cup'),
-  ('France', 1, 1, 'Group I', 22, 'world-cup'), ('Senegal', 2, 2, 'Group I', 8, 'world-cup'), ('Iraq', 4, 4, 'Group I', 4, 'world-cup'), ('Norway', 2, 2, 'Group I', 9, 'world-cup'),
-  ('Argentina', 1, 1, 'Group J', 20, 'world-cup'), ('Algeria', 3, 3, 'Group J', 5, 'world-cup'), ('Austria', 2, 2, 'Group J', 7, 'world-cup'), ('Jordan', 4, 4, 'Group J', 5, 'world-cup'),
-  ('Portugal', 1, 1, 'Group K', 14, 'world-cup'), ('Colombia', 2, 2, 'Group K', 10, 'world-cup'), ('Uzbekistan', 4, 4, 'Group K', 6, 'world-cup'), ('Congo DR', 3, 3, 'Group K', 4, 'world-cup'),
-  ('England', 1, 1, 'Group L', 15, 'world-cup'), ('Croatia', 2, 2, 'Group L', 9, 'world-cup'), ('Ghana', 3, 3, 'Group L', 4, 'world-cup'), ('Panama', 4, 4, 'Group L', 5, 'world-cup')
+  ('Mexico', 1, 1, 'Group A', 11, 'world-cup'), ('South Africa', 3, 3, 'Group A', 4, 'world-cup'), ('Korea Republic', 3, 3, 'Group A', 7, 'world-cup'), ('Czechia', 2, 2, 'Group A', 7, 'world-cup'),
+  ('Canada', 2, 2, 'Group B', 9, 'world-cup'), ('Bosnia and Herzegovina', 3, 3, 'Group B', 6, 'world-cup'), ('Qatar', 4, 4, 'Group B', 4, 'world-cup'), ('Switzerland', 2, 2, 'Group B', 10, 'world-cup'),
+  ('Brazil', 1, 1, 'Group C', 16, 'world-cup'), ('Morocco', 2, 2, 'Group C', 8, 'world-cup'), ('Haiti', 4, 4, 'Group C', 4, 'world-cup'), ('Scotland', 3, 3, 'Group C', 6, 'world-cup'),
+  ('USA', 2, 2, 'Group D', 8, 'world-cup'), ('Paraguay', 3, 3, 'Group D', 8, 'world-cup'), ('Australia', 3, 3, 'Group D', 7, 'world-cup'), ('Türkiye', 2, 2, 'Group D', 9, 'world-cup'),
+  ('Germany', 1, 1, 'Group E', 13, 'world-cup'), ('Curaçao', 4, 4, 'Group E', 4, 'world-cup'), ('Côte d''Ivoire', 3, 3, 'Group E', 6, 'world-cup'), ('Ecuador', 2, 2, 'Group E', 9, 'world-cup'),
+  ('Netherlands', 1, 1, 'Group F', 14, 'world-cup'), ('Japan', 2, 2, 'Group F', 8, 'world-cup'), ('Sweden', 3, 3, 'Group F', 6, 'world-cup'), ('Tunisia', 4, 4, 'Group F', 5, 'world-cup'),
+  ('Belgium', 1, 1, 'Group G', 10, 'world-cup'), ('Egypt', 3, 3, 'Group G', 6, 'world-cup'), ('IR Iran', 3, 3, 'Group G', 7, 'world-cup'), ('New Zealand', 4, 4, 'Group G', 6, 'world-cup'),
+  ('Spain', 1, 1, 'Group H', 24, 'world-cup'), ('Cabo Verde', 4, 4, 'Group H', 5, 'world-cup'), ('Saudi Arabia', 4, 4, 'Group H', 4, 'world-cup'), ('Uruguay', 2, 2, 'Group H', 8, 'world-cup'),
+  ('France', 1, 1, 'Group I', 21, 'world-cup'), ('Senegal', 2, 2, 'Group I', 8, 'world-cup'), ('Iraq', 4, 4, 'Group I', 4, 'world-cup'), ('Norway', 2, 2, 'Group I', 10, 'world-cup'),
+  ('Argentina', 1, 1, 'Group J', 19, 'world-cup'), ('Algeria', 3, 3, 'Group J', 6, 'world-cup'), ('Austria', 2, 2, 'Group J', 7, 'world-cup'), ('Jordan', 4, 4, 'Group J', 6, 'world-cup'),
+  ('Portugal', 1, 1, 'Group K', 13, 'world-cup'), ('Colombia', 2, 2, 'Group K', 11, 'world-cup'), ('Uzbekistan', 4, 4, 'Group K', 6, 'world-cup'), ('Congo DR', 3, 3, 'Group K', 5, 'world-cup'),
+  ('England', 1, 1, 'Group L', 14, 'world-cup'), ('Croatia', 2, 2, 'Group L', 10, 'world-cup'), ('Ghana', 3, 3, 'Group L', 4, 'world-cup'), ('Panama', 4, 4, 'Group L', 6, 'world-cup')
 ) as incoming(name, seed, seed_in_region, region, cost, competition_slug)
 on existing.competition_slug = incoming.competition_slug
 and existing.name = incoming.name
