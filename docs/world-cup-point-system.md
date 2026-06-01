@@ -5,7 +5,7 @@ Status: proposed launch rules, calibrated on May 31, 2026.
 ## Design Goals
 
 - Keep the existing 100-point draft budget.
-- Require exactly 8 teams in each World Cup squad.
+- Allow any number of teams while enforcing the 100-point budget.
 - Price teams from their full tournament path, not reputation alone.
 - Reward group-stage results immediately.
 - Make low-priced teams genuinely exciting without making cheap-team accumulation the dominant strategy.
@@ -31,11 +31,11 @@ price because they resist outliers and promotional lines.
 
 The provisional launch prices below are integer buckets derived from full-path base-score
 expected value under the proposed rules. The reproducible audit is available through
-`npm run sim:world-cup-pricing`. Value Run Bonus EV is reported separately instead of
-feeding back into price, because the bonus intentionally preserves upside for inexpensive
-teams. Re-run the calibration once immediately before drafts open, then freeze it. A
-sensible automated blend for that final run is 65% path-aware model probability and 35%
-de-vigged median sportsbook probability.
+`npm run sim:world-cup-pricing`. A `0.38` nonlinear curve compresses the raw EV gaps so
+the elite contender tier stays expensive without allowing Spain's model edge to push
+other major contenders too far down the board. Bonus EV is reported separately instead
+of feeding back into price, because the bonuses intentionally preserve upside for value
+teams. Re-run the calibration once immediately before drafts open, then freeze it.
 
 Until match-level group odds are imported, the audit estimates expected group-result
 points as `2 + 14 x P(advance to R32)`. This stays inside the possible 0-to-18 group
@@ -45,54 +45,54 @@ points range and gives stronger group-stage teams appropriate credit.
 
 | Group | Team | Cost |
 | --- | --- | ---: |
-| A | Mexico | 11 |
-| A | South Africa | 4 |
-| A | Korea Republic | 7 |
-| A | Czechia | 7 |
-| B | Canada | 9 |
-| B | Bosnia and Herzegovina | 6 |
-| B | Qatar | 4 |
-| B | Switzerland | 10 |
-| C | Brazil | 16 |
-| C | Morocco | 8 |
-| C | Haiti | 4 |
-| C | Scotland | 6 |
-| D | USA | 8 |
-| D | Paraguay | 8 |
-| D | Australia | 7 |
-| D | Turkiye | 9 |
-| E | Germany | 13 |
-| E | Curacao | 4 |
-| E | Cote d'Ivoire | 6 |
-| E | Ecuador | 9 |
-| F | Netherlands | 14 |
-| F | Japan | 8 |
-| F | Sweden | 6 |
-| F | Tunisia | 5 |
-| G | Belgium | 10 |
-| G | Egypt | 6 |
-| G | IR Iran | 7 |
-| G | New Zealand | 6 |
+| A | Mexico | 18 |
+| A | South Africa | 9 |
+| A | Korea Republic | 14 |
+| A | Czechia | 14 |
+| B | Canada | 16 |
+| B | Bosnia and Herzegovina | 13 |
+| B | Qatar | 7 |
+| B | Switzerland | 16 |
+| C | Brazil | 20 |
+| C | Morocco | 14 |
+| C | Haiti | 8 |
+| C | Scotland | 13 |
+| D | USA | 15 |
+| D | Paraguay | 14 |
+| D | Australia | 13 |
+| D | Turkiye | 16 |
+| E | Germany | 19 |
+| E | Curacao | 8 |
+| E | Cote d'Ivoire | 12 |
+| E | Ecuador | 16 |
+| F | Netherlands | 19 |
+| F | Japan | 15 |
+| F | Sweden | 12 |
+| F | Tunisia | 10 |
+| G | Belgium | 16 |
+| G | Egypt | 13 |
+| G | IR Iran | 14 |
+| G | New Zealand | 12 |
 | H | Spain | 24 |
-| H | Cabo Verde | 5 |
-| H | Saudi Arabia | 4 |
-| H | Uruguay | 8 |
-| I | France | 21 |
-| I | Senegal | 8 |
+| H | Cabo Verde | 10 |
+| H | Saudi Arabia | 9 |
+| H | Uruguay | 15 |
+| I | France | 23 |
+| I | Senegal | 15 |
 | I | Iraq | 4 |
-| I | Norway | 10 |
-| J | Argentina | 19 |
-| J | Algeria | 6 |
-| J | Austria | 7 |
-| J | Jordan | 6 |
-| K | Portugal | 13 |
-| K | Colombia | 11 |
-| K | Uzbekistan | 6 |
-| K | Congo DR | 5 |
-| L | England | 14 |
-| L | Croatia | 10 |
-| L | Ghana | 4 |
-| L | Panama | 6 |
+| I | Norway | 17 |
+| J | Argentina | 22 |
+| J | Algeria | 12 |
+| J | Austria | 14 |
+| J | Jordan | 12 |
+| K | Portugal | 19 |
+| K | Colombia | 17 |
+| K | Uzbekistan | 12 |
+| K | Congo DR | 9 |
+| L | England | 19 |
+| L | Croatia | 17 |
+| L | Ghana | 7 |
+| L | Panama | 12 |
 
 ## Base Scoring
 
@@ -114,31 +114,45 @@ more valuable, so a champion remains the center of a strong draft.
 Do not apply March Madness seed multipliers or opponent-based upset bonuses to World Cup
 results. Team costs already incorporate group strength and projected knockout path.
 
+## Underdog Bonus
+
+Teams costing less than 10 points receive additional cumulative bonuses for group-stage
+success.
+
+| Result | Additional bonus |
+| --- | ---: |
+| Group-stage win | 4 |
+| Advance from group | 10 |
+
 ## Value Run Bonus
 
-Low-priced teams receive an additional cumulative milestone bonus.
-
-```text
-value_unit = max(0, 10 - team_cost)
-```
+Teams costing 15 points or less receive additional cumulative bonuses for a knockout run.
+Teams below 10 can earn both bonus types.
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Advance from group | 1 x value_unit |
-| Reach Round of 16 | 2 x value_unit |
-| Reach quarterfinal | 4 x value_unit |
-| Reach semifinal | 6 x value_unit |
-| Reach final | 8 x value_unit |
-| Become champion | 12 x value_unit |
+| Reach Round of 16 | 8 |
+| Reach quarterfinal | 16 |
+| Reach semifinal | 28 |
+| Reach final | 42 |
+| Become champion | 60 |
 
 Examples:
 
-- A 6-point team that reaches the quarterfinal earns `4 + 8 + 16 = 28` bonus points.
-- A 4-point team that merely escapes its group earns 6 bonus points.
-- Teams costing 10 or more receive no Value Run Bonus.
+- An 8-point team that wins one group game, escapes its group, and reaches the
+  quarterfinal earns `4 + 10 + 8 + 16 = 38` bonus points.
+- A 15-point team that reaches the quarterfinal earns `8 + 16 = 24` bonus points.
+- A team priced above 15 receives base scoring only.
 
-This is the World Cup equivalent of the March Madness 14-to-16 seed bonus. It rewards a
-surprising run rather than a single noisy result.
+These are the World Cup equivalents of the March Madness underdog bonuses. They reward
+both immediate group-stage excitement and a sustained surprise run.
+
+## Anti-Arbitrage Check
+
+Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
+across the 100-point budget. With the current board and bonuses, the highest projected-EV
+portfolio is `Spain, France, Argentina, Brazil, Qatar, Iraq`. Cheap-team accumulation does
+not dominate the optimizer.
 
 ## Implementation Notes
 

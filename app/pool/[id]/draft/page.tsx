@@ -15,7 +15,6 @@ import {
   MAX_14_TO_16_SEEDS,
   MAX_1_SEEDS,
   MAX_2_SEEDS,
-  WORLD_CUP_TEAM_COUNT,
 } from "@/lib/draftRules";
 import {
   isMissingSavedDraftTablesError,
@@ -922,7 +921,7 @@ export default function PoolDraftPage() {
           <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
             <div>
               {competitionSlug === "world-cup"
-                ? `Rules: pick exactly ${WORLD_CUP_TEAM_COUNT} national teams within the ${DRAFT_BUDGET}-point budget.`
+                ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget.`
                 : `Rules: max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
             </div>
             {targetEntry ? (

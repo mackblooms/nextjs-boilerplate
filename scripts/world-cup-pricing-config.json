@@ -11,17 +11,23 @@
     "semifinalWin": 72,
     "championshipWin": 100
   },
-  "valueBonusWeights": {
-    "groupQualification": 1,
-    "roundOf16": 2,
-    "quarterfinal": 4,
-    "semifinal": 6,
-    "final": 8,
-    "champion": 12
+  "underdogBonus": {
+    "maximumCostExclusive": 10,
+    "groupWin": 4,
+    "groupQualification": 10
+  },
+  "valueRunBonus": {
+    "maximumCostInclusive": 15,
+    "roundOf16": 8,
+    "quarterfinal": 16,
+    "semifinal": 28,
+    "final": 42,
+    "champion": 60
   },
   "priceRange": {
     "minimum": 4,
-    "maximum": 24
+    "maximum": 24,
+    "curveExponent": 0.38
   },
   "teams": [
     ["Spain", "H", 99.1, 80.6, 65.1, 55.3, 37.5, 25.7],
