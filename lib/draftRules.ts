@@ -82,7 +82,7 @@ function getWorldCupDraftError(totalCost: number, countEliteTeams: number) {
     return `Draft is over budget (${totalCost}/${DRAFT_BUDGET}).`;
   }
   return countEliteTeams > WORLD_CUP_MAX_ELITE_TEAMS
-    ? `World Cup drafts can include at most ${WORLD_CUP_MAX_ELITE_TEAMS} teams priced ${WORLD_CUP_ELITE_MINIMUM_COST} or higher.`
+    ? `World Cup drafts can include at most ${WORLD_CUP_MAX_ELITE_TEAMS} Gold-or-higher teams priced ${WORLD_CUP_ELITE_MINIMUM_COST} or higher.`
     : null;
 }
 

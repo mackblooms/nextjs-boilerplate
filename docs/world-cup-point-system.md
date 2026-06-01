@@ -30,17 +30,13 @@ tournament winner markets when available. Use the model's conditional stage rati
 a sportsbook stage market is unavailable. Median probabilities are preferable to a best
 price because they resist outliers and promotional lines.
 
-The provisional launch prices below are integer buckets derived from full-path base-score
-expected value under the proposed rules. The reproducible audit is available through
-`npm run sim:world-cup-pricing`. A `0.38` nonlinear curve compresses the raw EV gaps so
-the elite contender tier stays expensive without allowing Spain's model edge to push
-other major contenders too far down the board. Bonus EV is reported separately instead
-of feeding back into price, because the bonuses intentionally preserve upside for value
-teams. Re-run the calibration once immediately before drafts open, then freeze it.
-
-Manual contender-tier overrides set England and Germany to 21 and Netherlands and
-Portugal to 20. These overrides keep the elite tier intuitive and work with the max-3
-elite-team draft cap.
+The provisional launch prices below are explicit tournament tiers informed by full-path
+base-score expected value under the proposed rules. The reproducible audit is available
+through `npm run sim:world-cup-pricing`. Tier buckets make the pricing easier to explain,
+limit false precision, and keep picking restrictions predictable. Bonus EV is reported
+separately instead of feeding back into price, because the bonuses intentionally preserve
+upside for value teams. Re-run the calibration once immediately before drafts open, then
+freeze it.
 
 Until match-level group odds are imported, the audit estimates expected group-result
 points as `2 + 14 x P(advance to R32)`. This stays inside the possible 0-to-18 group
@@ -48,56 +44,16 @@ points range and gives stronger group-stage teams appropriate credit.
 
 ## Launch Price Board
 
-| Group | Team | Cost |
-| --- | --- | ---: |
-| A | Mexico | 18 |
-| A | South Africa | 9 |
-| A | Korea Republic | 14 |
-| A | Czechia | 14 |
-| B | Canada | 16 |
-| B | Bosnia and Herzegovina | 13 |
-| B | Qatar | 7 |
-| B | Switzerland | 16 |
-| C | Brazil | 20 |
-| C | Morocco | 14 |
-| C | Haiti | 8 |
-| C | Scotland | 13 |
-| D | USA | 15 |
-| D | Paraguay | 14 |
-| D | Australia | 13 |
-| D | Turkiye | 16 |
-| E | Germany | 21 |
-| E | Curacao | 8 |
-| E | Cote d'Ivoire | 12 |
-| E | Ecuador | 16 |
-| F | Netherlands | 20 |
-| F | Japan | 15 |
-| F | Sweden | 12 |
-| F | Tunisia | 10 |
-| G | Belgium | 16 |
-| G | Egypt | 13 |
-| G | IR Iran | 14 |
-| G | New Zealand | 12 |
-| H | Spain | 24 |
-| H | Cabo Verde | 10 |
-| H | Saudi Arabia | 9 |
-| H | Uruguay | 15 |
-| I | France | 23 |
-| I | Senegal | 15 |
-| I | Iraq | 4 |
-| I | Norway | 17 |
-| J | Argentina | 22 |
-| J | Algeria | 12 |
-| J | Austria | 14 |
-| J | Jordan | 12 |
-| K | Portugal | 20 |
-| K | Colombia | 17 |
-| K | Uzbekistan | 12 |
-| K | Congo DR | 9 |
-| L | England | 21 |
-| L | Croatia | 17 |
-| L | Ghana | 7 |
-| L | Panama | 12 |
+| Tier | Cost | Teams |
+| --- | ---: | --- |
+| Diamond | 24 | Spain |
+| Platinum | 22 | Argentina, France |
+| Gold | 20 | Brazil, England, Germany, Netherlands, Portugal |
+| Silver | 17 | Belgium, Canada, Colombia, Croatia, Ecuador, Mexico, Norway, Switzerland, Turkiye |
+| Bronze | 14 | Australia, Austria, Czechia, IR Iran, Japan, Korea Republic, Morocco, Paraguay, Senegal, Uruguay, USA |
+| Value | 12 | Algeria, Bosnia and Herzegovina, Cote d'Ivoire, Egypt, Jordan, New Zealand, Panama, Scotland, Sweden, Uzbekistan |
+| Longshot | 10 | Cabo Verde, Congo DR, Curacao, Haiti, Saudi Arabia, South Africa, Tunisia |
+| Moonshot | 7 | Ghana, Iraq, Qatar |
 
 ## Base Scoring
 
@@ -119,36 +75,34 @@ more valuable, so a champion remains the center of a strong draft.
 Do not apply March Madness seed multipliers or opponent-based upset bonuses to World Cup
 results. Team costs already incorporate group strength and projected knockout path.
 
-## Value Bonus
+## Value Pick Bonuses
 
-Teams costing less than 15 points receive additional cumulative bonuses whenever they
-outperform expectations, from the group stage through the championship.
+Teams costing less than 15 points receive additional cumulative Value Run bonuses when
+they reach the Round of 16 and beyond.
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Group-stage win | 4 |
-| Advance from group | 10 |
 | Reach Round of 16 | 8 |
 | Reach quarterfinal | 16 |
 | Reach semifinal | 28 |
 | Reach final | 42 |
 | Become champion | 60 |
 
-Examples:
+Longshot- and Moonshot-tier teams costing 10 points or less also receive a Breakout Bonus:
 
-- A 14-point team that wins one group game, escapes its group, and reaches the
-  quarterfinal earns `4 + 10 + 8 + 16 = 38` bonus points.
-- A team priced 15 or higher receives base scoring only.
+| Milestone | Additional bonus |
+| --- | ---: |
+| Advance from group | 24 |
 
-These are the World Cup equivalents of the March Madness underdog bonuses. They reward
-both immediate group-stage excitement and a sustained surprise run.
+Every team receives the same 6 base points for a group-stage win. The Breakout Bonus is
+reserved for the harder achievement: a low-priced team surviving its group.
 
 ## Anti-Arbitrage Check
 
 Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
 across the 100-point budget while enforcing the max-3 elite-team cap. Cheap-team
 accumulation must not dominate the optimizer. With the current rules, the highest
-projected-EV portfolio is `Spain, France, Argentina, Morocco, Australia, Iraq`.
+projected-EV portfolio is `Spain, France, Argentina, Mexico, Senegal`.
 
 ## Implementation Notes
 

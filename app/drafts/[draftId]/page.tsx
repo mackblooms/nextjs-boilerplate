@@ -9,7 +9,6 @@ import {
   MAX_14_TO_16_SEEDS,
   MAX_1_SEEDS,
   MAX_2_SEEDS,
-  WORLD_CUP_ELITE_MINIMUM_COST,
   WORLD_CUP_MAX_ELITE_TEAMS,
   sortDraftTeamsForCompetition,
   summarizeDraft,
@@ -19,6 +18,7 @@ import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
+import { getWorldCupTierForCost } from "@/lib/worldCupRules";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
 type DraftRow = {
@@ -415,7 +415,9 @@ export default function DraftDetailPage() {
                       {toSchoolDisplayName(team.name)}
                     </div>
                     <div style={{ fontSize: 12, opacity: 0.75 }}>
-                      {competitionSlug === "world-cup" ? "Draft tier" : "Seed"} {team.seed}
+                      {competitionSlug === "world-cup"
+                        ? `${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"} tier`
+                        : `Seed ${team.seed}`}
                     </div>
                   </div>
                 </div>
@@ -464,7 +466,7 @@ export default function DraftDetailPage() {
               </>
             ) : (
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>{WORLD_CUP_ELITE_MINIMUM_COST}+ teams</span>
+                <span>Gold+ teams</span>
                 <b>{summary.countWorldCupElite}/{WORLD_CUP_MAX_ELITE_TEAMS}</b>
               </div>
             )}
@@ -495,7 +497,7 @@ export default function DraftDetailPage() {
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
             {competitionSlug === "world-cup"
-              ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget.`
+              ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget; max ${WORLD_CUP_MAX_ELITE_TEAMS} Gold-or-higher teams.`
               : `Rules: budget ${DRAFT_BUDGET}, max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
           </div>
 
@@ -515,7 +517,9 @@ export default function DraftDetailPage() {
                   }}
                 >
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    ({team.seed}) {toSchoolDisplayName(team.name)}
+                    {competitionSlug === "world-cup"
+                      ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
+                      : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
                   </span>
                   <b style={{ marginLeft: 8 }}>{team.cost}</b>
                 </div>

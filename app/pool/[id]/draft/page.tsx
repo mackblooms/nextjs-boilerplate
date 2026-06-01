@@ -27,6 +27,7 @@ import {
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { getWorldCupTierForCost } from "@/lib/worldCupRules";
 
 type PoolRow = {
   id: string;
@@ -923,7 +924,7 @@ export default function PoolDraftPage() {
           <div style={{ display: "grid", gap: 6, fontSize: 13, opacity: 0.8 }}>
             <div>
               {competitionSlug === "world-cup"
-                ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget; max ${WORLD_CUP_MAX_ELITE_TEAMS} teams priced ${WORLD_CUP_ELITE_MINIMUM_COST}+.`
+                ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget; max ${WORLD_CUP_MAX_ELITE_TEAMS} Gold-or-higher teams priced ${WORLD_CUP_ELITE_MINIMUM_COST}+.`
                 : `Rules: max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
             </div>
             {targetEntry ? (
@@ -974,7 +975,9 @@ export default function PoolDraftPage() {
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      ({team.seed}) {toSchoolDisplayName(team.name)}
+                      {competitionSlug === "world-cup"
+                        ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
+                        : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
                     </span>
                   </div>
                   <b>{team.cost}</b>

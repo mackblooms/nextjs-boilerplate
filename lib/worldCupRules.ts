@@ -1,53 +1,21 @@
-export const WORLD_CUP_TEAM_COSTS = [
-  ["Spain", 24],
-  ["France", 23],
-  ["Argentina", 22],
-  ["Brazil", 20],
-  ["England", 21],
-  ["Germany", 21],
-  ["Netherlands", 20],
-  ["Portugal", 20],
-  ["Mexico", 18],
-  ["Colombia", 17],
-  ["Croatia", 17],
-  ["Norway", 17],
-  ["Belgium", 16],
-  ["Canada", 16],
-  ["Ecuador", 16],
-  ["Switzerland", 16],
-  ["Turkiye", 16],
-  ["Japan", 15],
-  ["Senegal", 15],
-  ["Uruguay", 15],
-  ["USA", 15],
-  ["Austria", 14],
-  ["Czechia", 14],
-  ["IR Iran", 14],
-  ["Korea Republic", 14],
-  ["Morocco", 14],
-  ["Paraguay", 14],
-  ["Australia", 13],
-  ["Bosnia and Herzegovina", 13],
-  ["Egypt", 13],
-  ["Scotland", 13],
-  ["Algeria", 12],
-  ["Cote d'Ivoire", 12],
-  ["Jordan", 12],
-  ["New Zealand", 12],
-  ["Panama", 12],
-  ["Sweden", 12],
-  ["Uzbekistan", 12],
-  ["Cabo Verde", 10],
-  ["Tunisia", 10],
-  ["Congo DR", 9],
-  ["Saudi Arabia", 9],
-  ["South Africa", 9],
-  ["Curacao", 8],
-  ["Haiti", 8],
-  ["Ghana", 7],
-  ["Qatar", 7],
-  ["Iraq", 4],
+export const WORLD_CUP_DRAFT_TIERS = [
+  { name: "Diamond", cost: 24, teams: ["Spain"] },
+  { name: "Platinum", cost: 22, teams: ["Argentina", "France"] },
+  { name: "Gold", cost: 20, teams: ["Brazil", "England", "Germany", "Netherlands", "Portugal"] },
+  { name: "Silver", cost: 17, teams: ["Belgium", "Canada", "Colombia", "Croatia", "Ecuador", "Mexico", "Norway", "Switzerland", "Turkiye"] },
+  { name: "Bronze", cost: 14, teams: ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"] },
+  { name: "Value", cost: 12, teams: ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"] },
+  { name: "Longshot", cost: 10, teams: ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"] },
+  { name: "Moonshot", cost: 7, teams: ["Ghana", "Iraq", "Qatar"] },
 ] as const;
+
+export const WORLD_CUP_TEAM_COSTS = WORLD_CUP_DRAFT_TIERS.flatMap((tier) =>
+  tier.teams.map((team) => [team, tier.cost] as const),
+);
+
+export function getWorldCupTierForCost(cost: number) {
+  return WORLD_CUP_DRAFT_TIERS.find((tier) => tier.cost === cost);
+}
 
 export const WORLD_CUP_SCORING_EVENTS = [
   ["Group-stage win", 6],
@@ -60,12 +28,14 @@ export const WORLD_CUP_SCORING_EVENTS = [
   ["Win final and become champion", 100],
 ] as const;
 
-export const WORLD_CUP_VALUE_BONUS_EVENTS = [
-  ["Group-stage win", "+4"],
-  ["Advance from group", "+10"],
+export const WORLD_CUP_VALUE_RUN_BONUS_EVENTS = [
   ["Reach Round of 16", "+8"],
   ["Reach quarterfinal", "+16"],
   ["Reach semifinal", "+28"],
   ["Reach final", "+42"],
   ["Become champion", "+60"],
+] as const;
+
+export const WORLD_CUP_BREAKOUT_BONUS_EVENTS = [
+  ["Advance from group", "+24"],
 ] as const;

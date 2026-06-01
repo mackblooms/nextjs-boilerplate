@@ -22,10 +22,8 @@ function scoreProjection(team, cost) {
     config.basePoints.quarterfinalWin * sf +
     config.basePoints.semifinalWin * final +
     config.basePoints.championshipWin * champion;
-  const expectedGroupWins = groupPoints / 3;
-  const underdogBonus = cost < config.underdogBonus.maximumCostExclusive
-    ? config.underdogBonus.groupWin * expectedGroupWins +
-      config.underdogBonus.groupQualification * r32
+  const breakoutBonus = cost <= config.breakoutBonus.maximumCostInclusive
+    ? config.breakoutBonus.groupQualification * r32
     : 0;
   const valueRunBonus = cost < config.valueRunBonus.maximumCostExclusive
     ? config.valueRunBonus.roundOf16 * r16 +
@@ -34,25 +32,24 @@ function scoreProjection(team, cost) {
       config.valueRunBonus.final * final +
       config.valueRunBonus.champion * champion
     : 0;
-  const bonus = underdogBonus + valueRunBonus;
+  const bonus = breakoutBonus + valueRunBonus;
 
   return { base, bonus, total: base + bonus };
 }
 
-function normalizePrices(rows) {
-  const scores = rows.map((row) => scoreProjection(row.raw, config.priceRange.maximum).base);
-  const minimum = Math.min(...scores);
-  const maximum = Math.max(...scores);
-  return new Map(
-    rows.map((row, index) => [
-      row.name,
-      Math.round(
-        config.priceRange.minimum +
-          (config.priceRange.maximum - config.priceRange.minimum) *
-            Math.pow((scores[index] - minimum) / (maximum - minimum), config.priceRange.curveExponent),
-      ),
-    ]),
-  );
+function tierPrices(rows) {
+  const prices = new Map();
+  for (const [, cost, teams] of config.tiers) {
+    for (const team of teams) {
+      if (prices.has(team)) throw new Error(`Duplicate tier assignment for ${team}.`);
+      prices.set(team, cost);
+    }
+  }
+  for (const row of rows) {
+    if (!prices.has(row.name)) throw new Error(`Missing tier assignment for ${row.name}.`);
+  }
+  if (prices.size !== rows.length) throw new Error("Tier board contains a team without pricing inputs.");
+  return prices;
 }
 
 function pad(value, length) {
@@ -60,12 +57,11 @@ function pad(value, length) {
 }
 
 const rows = config.teams.map((raw) => ({ raw, name: raw[0], group: raw[1] }));
-const prices = normalizePrices(rows);
+const prices = tierPrices(rows);
 const results = rows
   .map((row) => {
     const cost = prices.get(row.name);
-    const overriddenCost = config.priceOverrides[row.name] ?? cost;
-    return { ...row, cost: overriddenCost, ...scoreProjection(row.raw, overriddenCost) };
+    return { ...row, cost, ...scoreProjection(row.raw, cost) };
   })
   .sort((a, b) => b.cost - a.cost || b.total - a.total || a.name.localeCompare(b.name));
 
@@ -73,7 +69,7 @@ function printAudit() {
   console.log("World Cup pricing audit");
   console.log("Model probabilities: Goldman Sachs, May 29, 2026");
   console.log("Group points approximation: floor + qualificationWeight * P(R32)");
-  console.log(`Prices: normalized base-score EV with ${config.priceRange.curveExponent} curve exponent; bonus EV is reported separately`);
+  console.log("Prices: explicit Diamond-through-Moonshot tournament tiers; bonus EV is reported separately");
   console.log("");
   console.log(`${pad("Team", 25)} ${pad("Grp", 4)} ${pad("Cost", 5)} ${pad("Base EV", 8)} ${pad("Bonus EV", 9)} Total EV`);
   console.log("-".repeat(69));

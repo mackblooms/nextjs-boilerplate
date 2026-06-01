@@ -41,7 +41,7 @@ begin
   end if;
 
   if v_elite_count > 3 then
-    raise exception 'World Cup drafts can include at most 3 teams priced 20 or higher.'
+    raise exception 'World Cup drafts can include at most 3 Gold-or-higher teams priced 20 or higher.'
       using errcode = 'P0001';
   end if;
 
@@ -95,7 +95,7 @@ begin
   end if;
 
   if v_elite_count > 3 then
-    raise exception 'World Cup entries can include at most 3 teams priced 20 or higher.'
+    raise exception 'World Cup entries can include at most 3 Gold-or-higher teams priced 20 or higher.'
       using errcode = 'P0001';
   end if;
 

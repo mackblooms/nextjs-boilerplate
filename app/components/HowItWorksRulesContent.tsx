@@ -3,9 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  WORLD_CUP_BREAKOUT_BONUS_EVENTS,
+  WORLD_CUP_DRAFT_TIERS,
   WORLD_CUP_SCORING_EVENTS,
-  WORLD_CUP_TEAM_COSTS,
-  WORLD_CUP_VALUE_BONUS_EVENTS,
+  WORLD_CUP_VALUE_RUN_BONUS_EVENTS,
 } from "@/lib/worldCupRules";
 
 const SEED_COSTS: Array<[number, number]> = [
@@ -88,8 +89,11 @@ function SoccerRules() {
           based on projected value across the full tournament path: group results, advancement
           odds, draw difficulty, and championship upside.
         </p>
-        <RulesTable columns={["National Team", "Draft Cost"]} rows={WORLD_CUP_TEAM_COSTS} />
-        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Spain costs 24 points, while long-shot teams at the bottom of the board cost 4 points.</p>
+        <RulesTable
+          columns={["Tier and National Teams", "Draft Cost"]}
+          rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [`${tier.name}: ${tier.teams.join(", ")}`, tier.cost])}
+        />
+        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 7 points.</p>
       </section>
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>2) Base Points Per Result</h2>
@@ -97,13 +101,15 @@ function SoccerRules() {
         <RulesTable columns={["Result", "Points"]} rows={WORLD_CUP_SCORING_EVENTS} />
       </section>
       <section className="legal-doc-section">
-        <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Value Bonus: Teams Below 15</h2>
-        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Teams priced below <b>15 points</b> earn extra cumulative bonuses whenever they outperform expectations, from the group stage through the championship.</p>
-        <RulesTable columns={["Result", "Additional Bonus"]} rows={WORLD_CUP_VALUE_BONUS_EVENTS} />
-        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: a 14-point team that wins one group game, escapes its group, and reaches the quarterfinal earns 4 + 10 + 8 + 16 = 38 bonus points.</p>
+        <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Bonuses for Value Picks</h2>
+        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Bronze-, Value-, Longshot-, and Moonshot-tier teams priced below <b>15 points</b> earn extra cumulative Value Run bonuses when they reach the Round of 16 and beyond.</p>
+        <RulesTable columns={["Value Run Result", "Additional Bonus"]} rows={WORLD_CUP_VALUE_RUN_BONUS_EVENTS} />
+        <p style={{ marginTop: 16, lineHeight: 1.6 }}>Longshot- and Moonshot-tier teams priced <b>10 points or lower</b> also earn a major Breakout Bonus for escaping the group stage.</p>
+        <RulesTable columns={["Breakout Result", "Additional Bonus"]} rows={WORLD_CUP_BREAKOUT_BONUS_EVENTS} />
+        <p style={{ marginTop: 10, opacity: 0.85 }}>Every team earns the same 6 base points for a group-stage win. The Breakout Bonus rewards the harder achievement: a low-priced team surviving its group.</p>
       </section>
       <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>4) Why Prices Differ</h2><p style={{ marginTop: 10, lineHeight: 1.6 }}>Price is not based only on the chance to win the championship. A team with a favorable group and an easier early knockout path can be valuable because it is likely to collect points before the final rounds.</p></section>
-      <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>5) Draft Rules</h2><ul style={{ marginTop: 10, lineHeight: 1.6 }}><li>Draft any number of national teams.</li><li>Stay at or below the 100-point budget.</li><li>Draft at most 3 elite teams priced 20 points or higher.</li><li>There are no pot, group, or roster-size caps.</li></ul></section>
+      <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>5) Draft Rules</h2><ul style={{ marginTop: 10, lineHeight: 1.6 }}><li>Draft any number of national teams.</li><li>Stay at or below the 100-point budget.</li><li>Draft at most 3 Gold-or-higher teams priced 20 points or higher.</li><li>There are no pot, group, or roster-size caps.</li></ul></section>
       <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>6) Tie-breakers</h2><ul style={{ marginTop: 10, lineHeight: 1.6 }}><li>Total points.</li><li>If tied: most semifinal teams drafted.</li><li>If still tied: most finalists drafted.</li><li>If still tied: split pot or commissioner decides.</li></ul></section>
       <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>7) FAQ / Edge Cases</h2><ul style={{ marginTop: 10, lineHeight: 1.6 }}><li><b>Group-stage draws:</b> each drafted team earns 2 points.</li><li><b>Third-place qualifiers:</b> official advancement to the Round of 32 earns the same advancement points.</li><li><b>Extra time and penalties:</b> knockout scoring follows official advancement.</li><li><b>Scoring updates:</b> automated when games go final.</li></ul></section>
     </>
