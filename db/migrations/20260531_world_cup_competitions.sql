@@ -183,9 +183,8 @@ for each row execute function public.enforce_entry_pick_competition_match();
 
 -- Pot-like seed values and costs support the existing value-draft UI.
 -- region stores the official World Cup group.
-insert into public.teams (name, seed, seed_in_region, region, cost, competition_slug)
-select values_table.*
-from (values
+merge into public.teams as existing
+using (values
   ('Mexico', 1, 1, 'Group A', 10, 'world-cup'), ('South Africa', 3, 3, 'Group A', 4, 'world-cup'), ('Korea Republic', 3, 3, 'Group A', 6, 'world-cup'), ('Czechia', 2, 2, 'Group A', 6, 'world-cup'),
   ('Canada', 2, 2, 'Group B', 8, 'world-cup'), ('Bosnia and Herzegovina', 3, 3, 'Group B', 6, 'world-cup'), ('Qatar', 4, 4, 'Group B', 4, 'world-cup'), ('Switzerland', 2, 2, 'Group B', 9, 'world-cup'),
   ('Brazil', 1, 1, 'Group C', 17, 'world-cup'), ('Morocco', 2, 2, 'Group C', 7, 'world-cup'), ('Haiti', 4, 4, 'Group C', 4, 'world-cup'), ('Scotland', 3, 3, 'Group C', 6, 'world-cup'),
@@ -198,11 +197,18 @@ from (values
   ('Argentina', 1, 1, 'Group J', 20, 'world-cup'), ('Algeria', 3, 3, 'Group J', 5, 'world-cup'), ('Austria', 2, 2, 'Group J', 7, 'world-cup'), ('Jordan', 4, 4, 'Group J', 5, 'world-cup'),
   ('Portugal', 1, 1, 'Group K', 14, 'world-cup'), ('Colombia', 2, 2, 'Group K', 10, 'world-cup'), ('Uzbekistan', 4, 4, 'Group K', 6, 'world-cup'), ('Congo DR', 3, 3, 'Group K', 4, 'world-cup'),
   ('England', 1, 1, 'Group L', 15, 'world-cup'), ('Croatia', 2, 2, 'Group L', 9, 'world-cup'), ('Ghana', 3, 3, 'Group L', 4, 'world-cup'), ('Panama', 4, 4, 'Group L', 5, 'world-cup')
-) as values_table(name, seed, seed_in_region, region, cost, competition_slug)
-where not exists (
-  select 1 from public.teams t
-  where t.competition_slug = 'world-cup' and t.name = values_table.name
-);
+) as incoming(name, seed, seed_in_region, region, cost, competition_slug)
+on existing.competition_slug = incoming.competition_slug
+and existing.name = incoming.name
+when matched then
+  update set
+    seed = incoming.seed,
+    seed_in_region = incoming.seed_in_region,
+    region = incoming.region,
+    cost = incoming.cost
+when not matched then
+  insert (name, seed, seed_in_region, region, cost, competition_slug)
+  values (incoming.name, incoming.seed, incoming.seed_in_region, incoming.region, incoming.cost, incoming.competition_slug);
 
 with group_teams as (
   select
