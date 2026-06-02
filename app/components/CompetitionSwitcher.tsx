@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { setStoredActiveCompetition } from "@/lib/activeCompetition";
 import { competitions, type CompetitionSlug } from "@/lib/competitions";
 
 export default function CompetitionSwitcher({
@@ -20,14 +23,19 @@ export default function CompetitionSwitcher({
       <div className="competition-switcher-grid">
         {competitions.map((competition) => {
           const isActive = activeCompetition === competition.slug;
+          const href =
+            competition.slug === "march-madness"
+              ? "/?competition=march-madness"
+              : competition.href;
 
           return (
             <Link
-              href={competition.href}
+              href={href}
               className="competition-choice"
               data-active={isActive ? "true" : undefined}
               key={competition.slug}
               aria-current={isActive ? "page" : undefined}
+              onClick={() => setStoredActiveCompetition(competition.slug)}
             >
               <span className="competition-choice-topline">
                 <span className="competition-choice-sport">{competition.sport}</span>

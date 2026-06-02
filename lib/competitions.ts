@@ -15,7 +15,7 @@ export type Competition = {
 export const competitions: Competition[] = [
   {
     slug: "march-madness",
-    sport: "college basketball",
+    sport: "NCAAB",
     name: "march madness",
     shortName: "march madness",
     description: "draft teams by value, join pools, and follow the full ncaa tournament.",

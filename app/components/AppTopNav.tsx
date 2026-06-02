@@ -225,13 +225,12 @@ export default function AppTopNav() {
   const competitionSlug =
     pathname === "/world-cup"
       ? "world-cup"
-      : pathname === "/"
-        ? "march-madness"
-        : explicitCompetition
-          ? normalizeCompetitionSlug(explicitCompetition)
-          : storedCompetitionSlug;
+      : explicitCompetition
+        ? normalizeCompetitionSlug(explicitCompetition)
+        : storedCompetitionSlug;
 
   useEffect(() => {
+    setStoredCompetitionSlug(competitionSlug);
     setStoredActiveCompetition(competitionSlug);
   }, [competitionSlug]);
 
@@ -599,7 +598,7 @@ export default function AppTopNav() {
       ? `/pool/${activePoolPathId}`
       : null;
 
-  const isHomeActive = pathname === competition.href;
+  const isHomeActive = pathname === "/" || pathname === competition.href;
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
   const isLeaderboardActive = activePoolBasePath

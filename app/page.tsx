@@ -6,8 +6,17 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
+import { getStoredActiveCompetition, setStoredActiveCompetition } from "@/lib/activeCompetition";
 import { getStoredActivePoolId, setStoredActivePoolId } from "@/lib/activePool";
+import CompetitionSwitcher from "@/app/components/CompetitionSwitcher";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
+import {
+  competitionPath,
+  getCompetition,
+  normalizeCompetitionSlug,
+  type CompetitionSlug,
+} from "@/lib/competitions";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 
@@ -84,6 +93,7 @@ type TeamLookupRow = {
 type PoolOption = {
   id: string;
   name: string;
+  competition_slug?: string | null;
 };
 
 type HomeDraftPool = {
@@ -202,10 +212,12 @@ function LandingPage({
   loginHref,
   invitePoolId,
   invitePoolName,
+  activeCompetitionSlug,
 }: {
   loginHref: string;
   invitePoolId?: string | null;
   invitePoolName?: string | null;
+  activeCompetitionSlug?: CompetitionSlug;
 }) {
   return (
     <main
@@ -235,6 +247,7 @@ function LandingPage({
               Build drafts that fit the budget and cap rules. Every win adds points, with scaled
               bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
             </p>
+            <CompetitionSwitcher activeCompetition={activeCompetitionSlug} compact />
             {invitePoolId ? (
               <p className="landing-invite-text">
                 You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
@@ -676,6 +689,10 @@ function ScorePanel({
 function HomeContent() {
   const searchParams = useSearchParams();
   const invitePoolId = searchParams.get("invite");
+  const competitionParam = searchParams.get("competition");
+  const [activeCompetitionSlug, setActiveCompetitionSlug] = useState<CompetitionSlug>(() =>
+    competitionParam ? normalizeCompetitionSlug(competitionParam) : getStoredActiveCompetition()
+  );
   const [invitePoolName, setInvitePoolName] = useState<string | null>(null);
   const [scores, setScores] = useState<LiveScoreGame[]>([]);
   const [scoresLoading, setScoresLoading] = useState(true);
@@ -698,6 +715,12 @@ function HomeContent() {
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
   const homeDraftsLoadedRef = useRef(false);
+  const activeCompetition = useMemo(() => getCompetition(activeCompetitionSlug), [activeCompetitionSlug]);
+  const competitionPoolPath = useMemo(() => competitionPath("/pools", activeCompetitionSlug), [activeCompetitionSlug]);
+  const competitionNewPoolPath = useMemo(
+    () => competitionPath("/pools/new", activeCompetitionSlug),
+    [activeCompetitionSlug]
+  );
 
   const loginHref = useMemo(() => {
     if (!invitePoolId) return "/login";
@@ -707,6 +730,14 @@ function HomeContent() {
     });
     return `/login?${params.toString()}`;
   }, [invitePoolId]);
+
+  useEffect(() => {
+    const nextCompetitionSlug = competitionParam
+      ? normalizeCompetitionSlug(competitionParam)
+      : getStoredActiveCompetition();
+    setActiveCompetitionSlug(nextCompetitionSlug);
+    setStoredActiveCompetition(nextCompetitionSlug);
+  }, [competitionParam]);
 
   useEffect(() => {
     const loadInvitePoolName = async () => {
@@ -799,13 +830,27 @@ function HomeContent() {
         return;
       }
 
-      const poolsRes = await supabase
+      let { data: poolsData, error: poolsError } = await supabase
         .from("pools")
-        .select("id,name")
+        .select("id,name,competition_slug")
         .in("id", memberPoolIds)
         .order("name", { ascending: true });
 
-      const nextPools = ((poolsRes.data ?? []) as PoolOption[]).sort(sortPoolsByName);
+      if (canUseLegacyMarchMadnessFallback(activeCompetitionSlug, poolsError?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("id,name")
+          .in("id", memberPoolIds)
+          .order("name", { ascending: true });
+        poolsData = (fallback.data ?? []).map((pool) => ({ ...pool, competition_slug: null }));
+        poolsError = fallback.error;
+      }
+
+      const nextPools = poolsError
+        ? []
+        : ((poolsData ?? []) as PoolOption[])
+            .filter((pool) => normalizeCompetitionSlug(pool.competition_slug) === activeCompetitionSlug)
+            .sort(sortPoolsByName);
       const storedPoolId = getStoredActivePoolId();
 
       if (!canceled) {
@@ -838,7 +883,7 @@ function HomeContent() {
       canceled = true;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [activeCompetitionSlug]);
 
   useEffect(() => {
     if (isAuthenticated !== true || !selectedPoolId) return;
@@ -975,18 +1020,29 @@ function HomeContent() {
       }
       setHomeDraftsMessage("");
 
-      const draftRes = await supabase
+      let { data: draftData, error: draftErr } = await supabase
         .from("saved_drafts")
-        .select("id,name,created_at,updated_at,user_id")
+        .select("id,name,created_at,updated_at,user_id,competition_slug")
         .eq("user_id", userId)
+        .eq("competition_slug", activeCompetitionSlug)
         .order("updated_at", { ascending: false });
 
-      if (draftRes.error) {
+      if (canUseLegacyMarchMadnessFallback(activeCompetitionSlug, draftErr?.message)) {
+        const fallback = await supabase
+          .from("saved_drafts")
+          .select("id,name,created_at,updated_at,user_id")
+          .eq("user_id", userId)
+          .order("updated_at", { ascending: false });
+        draftData = (fallback.data ?? []).map((draft) => ({ ...draft, competition_slug: null }));
+        draftErr = fallback.error;
+      }
+
+      if (draftErr) {
         if (!canceled) {
-          if (isMissingSavedDraftTablesError(draftRes.error.message)) {
+          if (isMissingSavedDraftTablesError(draftErr.message)) {
             setHomeDraftsMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
           } else {
-            setHomeDraftsMessage(draftRes.error.message);
+            setHomeDraftsMessage(draftErr.message);
           }
           setHomeDrafts([]);
           setHomeDraftPoolsByDraft({});
@@ -998,7 +1054,7 @@ function HomeContent() {
         return;
       }
 
-      const nextDrafts = ((draftRes.data ?? []) as SavedDraftRow[])
+      const nextDrafts = ((draftData ?? []) as SavedDraftRow[])
         .map((draft) => ({
           id: draft.id,
           name: draft.name,
@@ -1113,14 +1169,23 @@ function HomeContent() {
 
       const poolsById = new Map<string, PoolOption>();
       if (poolIds.length > 0) {
-        const poolsRes = await supabase
+        let { data: poolsData, error: poolsErr } = await supabase
           .from("pools")
-          .select("id,name")
+          .select("id,name,competition_slug")
           .in("id", poolIds);
 
-        if (poolsRes.error) {
+        if (canUseLegacyMarchMadnessFallback(activeCompetitionSlug, poolsErr?.message)) {
+          const fallback = await supabase
+            .from("pools")
+            .select("id,name")
+            .in("id", poolIds);
+          poolsData = (fallback.data ?? []).map((pool) => ({ ...pool, competition_slug: null }));
+          poolsErr = fallback.error;
+        }
+
+        if (poolsErr) {
           if (!canceled) {
-            setHomeDraftsMessage(poolsRes.error.message);
+            setHomeDraftsMessage(poolsErr.message);
             setHomeDraftPoolsByDraft(draftPoolsRecord);
             setHomeDraftPointsByDraft(draftPointsRecord);
             setHomeDraftsLoading(false);
@@ -1129,7 +1194,8 @@ function HomeContent() {
           return;
         }
 
-        for (const pool of (poolsRes.data ?? []) as PoolOption[]) {
+        for (const pool of (poolsData ?? []) as PoolOption[]) {
+          if (normalizeCompetitionSlug(pool.competition_slug) !== activeCompetitionSlug) continue;
           poolsById.set(pool.id, pool);
         }
       }
@@ -1461,7 +1527,7 @@ function HomeContent() {
     return () => {
       canceled = true;
     };
-  }, [isAuthenticated, userId]);
+  }, [activeCompetitionSlug, isAuthenticated, userId]);
 
   useEffect(() => {
     let canceled = false;
@@ -1475,7 +1541,7 @@ function HomeContent() {
 
         try {
           const res = await fetch(
-            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}`,
+            `/api/scores/live?lookbackDays=${lookbackDays}&lookaheadDays=${lookaheadDays}&competition=${activeCompetitionSlug}`,
             { cache: "no-store" }
           );
           const payload = (await res.json()) as LiveScoresResponse;
@@ -1485,7 +1551,9 @@ function HomeContent() {
           nextScores = payload.games ?? [];
         } catch (e: unknown) {
           apiError = e instanceof Error ? e.message : "Unknown API error";
-          nextScores = await fetchEspnDirectScores(lookbackDays, lookaheadDays);
+          nextScores = activeCompetitionSlug === "march-madness"
+            ? await fetchEspnDirectScores(lookbackDays, lookaheadDays)
+            : [];
         }
 
         if (!canceled) {
@@ -1509,7 +1577,7 @@ function HomeContent() {
       canceled = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [activeCompetitionSlug]);
 
   const trackedEspnSet = useMemo(() => new Set(trackedEspnIds), [trackedEspnIds]);
   const trackedKeySet = useMemo(() => new Set(trackedTeamKeys), [trackedTeamKeys]);
@@ -1691,6 +1759,7 @@ function HomeContent() {
         loginHref={loginHref}
         invitePoolId={invitePoolId}
         invitePoolName={invitePoolName}
+        activeCompetitionSlug={activeCompetitionSlug}
       />
     );
   }
@@ -1798,7 +1867,9 @@ function HomeContent() {
         >
           <div style={{ display: "grid", gap: 4 }}>
             <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
-            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>{homeDraftCountLabel}</p>
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+              {activeCompetition.shortName} - {homeDraftCountLabel}
+            </p>
           </div>
 
           {isAuthenticated !== true ? (
@@ -1950,7 +2021,7 @@ function HomeContent() {
                         )}
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           <Link
-                            href="/pools/new"
+                            href={competitionNewPoolPath}
                             style={{
                               padding: "6px 10px",
                               borderRadius: 8,
@@ -1963,7 +2034,7 @@ function HomeContent() {
                             Create Pool
                           </Link>
                           <Link
-                            href="/pools"
+                            href={competitionPoolPath}
                             style={{
                               padding: "6px 10px",
                               borderRadius: 8,
