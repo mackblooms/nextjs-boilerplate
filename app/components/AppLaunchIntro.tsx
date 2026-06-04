@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { App as CapacitorApp } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
 
 type LaunchIntroPhase = "hidden" | "mark" | "wordmark" | "exit";
 
@@ -13,7 +11,6 @@ const LAUNCH_INTRO_EXIT_MS = 560;
 
 export default function AppLaunchIntro() {
   const [phase, setPhase] = useState<LaunchIntroPhase>("mark");
-  const wasBackgroundedRef = useRef(false);
 
   useEffect(() => {
     if (phase === "hidden" || typeof window === "undefined") return undefined;
@@ -55,53 +52,6 @@ export default function AppLaunchIntro() {
       document.body.classList.remove("app-launch-active");
     };
   }, [phase]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-
-    let removeNativeListener: (() => void) | undefined;
-
-    const restartIntro = () => {
-      if (!wasBackgroundedRef.current) return;
-      wasBackgroundedRef.current = false;
-      setPhase("mark");
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        wasBackgroundedRef.current = true;
-        return;
-      }
-
-      if (document.visibilityState === "visible") restartIntro();
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    const setupNativeListener = async () => {
-      if (!Capacitor.isNativePlatform()) return;
-
-      const listener = await CapacitorApp.addListener("appStateChange", ({ isActive }) => {
-        if (!isActive) {
-          wasBackgroundedRef.current = true;
-          return;
-        }
-
-        restartIntro();
-      });
-
-      removeNativeListener = () => {
-        void listener.remove();
-      };
-    };
-
-    void setupNativeListener();
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      removeNativeListener?.();
-    };
-  }, []);
 
   if (phase === "hidden") return null;
 
