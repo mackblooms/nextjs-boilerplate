@@ -85,6 +85,13 @@ function entryLabel(entry: EntryRow, index: number) {
   return `Entry ${index + 1}`;
 }
 
+function normalizeDraftName(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 function toPickMap(draftIds: string[], rows: SavedDraftPickRow[]) {
   const out = new Map<string, Set<string>>();
   for (const id of draftIds) out.set(id, new Set());
@@ -113,6 +120,7 @@ export default function PoolDraftPage() {
   const [pool, setPool] = useState<PoolRow | null>(null);
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [existingEntries, setExistingEntries] = useState<EntryRow[]>([]);
+  const [entryPickMap, setEntryPickMap] = useState<Map<string, Set<string>>>(new Map());
   const [targetEntryId, setTargetEntryId] = useState("");
 
   const [teams, setTeams] = useState<TeamRow[]>([]);
@@ -171,6 +179,50 @@ export default function PoolDraftPage() {
         return sameTeamSet(draftPickSet, poolAppliedTeamIds);
       }) ?? null,
     [drafts, pickMap, poolAppliedTeamIds]
+  );
+
+  const enteredEntryIdByDraftId = useMemo(() => {
+    const out = new Map<string, string>();
+    const draftIdsByName = new Map<string, string[]>();
+
+    for (const draft of drafts) {
+      const key = normalizeDraftName(draft.name);
+      if (!key) continue;
+      const ids = draftIdsByName.get(key) ?? [];
+      ids.push(draft.id);
+      draftIdsByName.set(key, ids);
+    }
+
+    for (const entry of existingEntries) {
+      const matchingDraftIds = draftIdsByName.get(normalizeDraftName(entry.entry_name));
+      if (!matchingDraftIds) continue;
+      for (const draftId of matchingDraftIds) {
+        if (!out.has(draftId)) out.set(draftId, entry.id);
+      }
+    }
+
+    for (const draft of drafts) {
+      if (out.has(draft.id)) continue;
+      const draftPickSet = pickMap.get(draft.id) ?? new Set<string>();
+      if (draftPickSet.size === 0) continue;
+
+      for (const [entryId, entryPicks] of entryPickMap.entries()) {
+        if (entryPicks.size === 0) continue;
+        if (!sameTeamSet(draftPickSet, entryPicks)) continue;
+        out.set(draft.id, entryId);
+        break;
+      }
+    }
+
+    return out;
+  }, [drafts, entryPickMap, existingEntries, pickMap]);
+
+  const selectedDraftEnteredEntryId = selectedDraftId
+    ? enteredEntryIdByDraftId.get(selectedDraftId) ?? null
+    : null;
+
+  const selectedDraftAlreadyEnteredElsewhere = Boolean(
+    selectedDraftEnteredEntryId && selectedDraftEnteredEntryId !== targetEntryId,
   );
 
   const selectedIsApplied = useMemo(
@@ -286,6 +338,7 @@ export default function PoolDraftPage() {
 
     if (!memRow) {
       setExistingEntries([]);
+      setEntryPickMap(new Map());
       setTargetEntryId("");
       setPoolAppliedTeamIds(new Set());
       setLoading(false);
@@ -327,6 +380,28 @@ export default function PoolDraftPage() {
     }
 
     setExistingEntries(nextEntries);
+    const nextEntryPickMap = new Map<string, Set<string>>();
+    const entryIds = nextEntries.map((entry) => entry.id);
+    if (entryIds.length > 0) {
+      const entryPicksQuery = await supabase
+        .from("entry_picks")
+        .select("entry_id,team_id")
+        .in("entry_id", entryIds);
+
+      if (entryPicksQuery.error) {
+        setLoading(false);
+        setMessage(entryPicksQuery.error.message);
+        return;
+      }
+
+      for (const entryId of entryIds) nextEntryPickMap.set(entryId, new Set());
+      for (const row of (entryPicksQuery.data ?? []) as Array<{ entry_id: string; team_id: string }>) {
+        const picks = nextEntryPickMap.get(row.entry_id) ?? new Set<string>();
+        picks.add(row.team_id);
+        nextEntryPickMap.set(row.entry_id, picks);
+      }
+    }
+    setEntryPickMap(nextEntryPickMap);
     setTargetEntryId("");
     setPoolAppliedTeamIds(new Set());
 
@@ -547,6 +622,16 @@ export default function PoolDraftPage() {
       return;
     }
 
+    const isUpdatingExisting = targetEntryId.trim().length > 0;
+    if (selectedDraftAlreadyEnteredElsewhere) {
+      setMessage(
+        isUpdatingExisting
+          ? `"${selectedDraft.name}" is already entered in this pool. Choose that existing entry to update it.`
+          : `"${selectedDraft.name}" is already entered in this pool. Choose a different saved draft.`,
+      );
+      return;
+    }
+
     const { data: authData } = await supabase.auth.getUser();
     const user = authData.user;
     if (!user) {
@@ -557,7 +642,6 @@ export default function PoolDraftPage() {
     setApplying(true);
     setMessage("");
 
-    const isUpdatingExisting = targetEntryId.trim().length > 0;
     let resolvedEntryId = targetEntryId.trim();
     let createdEntry: EntryRow | null = null;
 
@@ -634,10 +718,20 @@ export default function PoolDraftPage() {
 
     if (createdEntry) {
       setExistingEntries((prev) => [...prev, createdEntry]);
+      setEntryPickMap((prev) => {
+        const next = new Map(prev);
+        next.set(createdEntry.id, new Set(selectedDraftPicks));
+        return next;
+      });
       setTargetEntryId("");
       setPoolAppliedTeamIds(new Set());
     } else {
       setPoolAppliedTeamIds(new Set(selectedDraftPicks));
+      setEntryPickMap((prev) => {
+        const next = new Map(prev);
+        next.set(resolvedEntryId, new Set(selectedDraftPicks));
+        return next;
+      });
       setExistingEntries((prev) =>
         prev.map((entry) =>
           entry.id === resolvedEntryId ? { ...entry, entry_name: selectedDraft.name } : entry
@@ -859,7 +953,14 @@ export default function PoolDraftPage() {
             <button
               type="button"
               onClick={() => void applyDraftToPool()}
-              disabled={applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0}
+              disabled={
+                applying ||
+                !selectedDraft ||
+                locked ||
+                !selectedDraftSummary.isValid ||
+                drafts.length === 0 ||
+                selectedDraftAlreadyEnteredElsewhere
+              }
               style={{
                 padding: "12px 14px",
                 borderRadius: 10,
@@ -867,18 +968,30 @@ export default function PoolDraftPage() {
                 background: "var(--surface)",
                 fontWeight: 900,
                 cursor:
-                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0
+                  applying ||
+                  !selectedDraft ||
+                  locked ||
+                  !selectedDraftSummary.isValid ||
+                  drafts.length === 0 ||
+                  selectedDraftAlreadyEnteredElsewhere
                     ? "not-allowed"
                     : "pointer",
                 opacity:
-                  applying || !selectedDraft || locked || !selectedDraftSummary.isValid || drafts.length === 0
+                  applying ||
+                  !selectedDraft ||
+                  locked ||
+                  !selectedDraftSummary.isValid ||
+                  drafts.length === 0 ||
+                  selectedDraftAlreadyEnteredElsewhere
                     ? 0.7
                     : 1,
               }}
             >
               {applying
                 ? "Saving..."
-                : targetEntryId
+                : selectedDraftAlreadyEnteredElsewhere
+                  ? "Draft already entered"
+                  : targetEntryId
                   ? selectedIsApplied
                     ? "Re-apply draft to selected entry"
                     : "Update selected entry"
@@ -931,6 +1044,11 @@ export default function PoolDraftPage() {
               <div>
                 Selected entry currently matches:{" "}
                 <b>{appliedDraft ? appliedDraft.name : poolAppliedTeamIds.size > 0 ? "Custom / unsaved mix" : "None"}</b>
+              </div>
+            ) : selectedDraftAlreadyEnteredElsewhere ? (
+              <div>
+                <b>{selectedDraft?.name}</b> is already entered in this pool. Pick a different saved draft, or choose
+                its existing entry if you need to update it.
               </div>
             ) : (
               <div>
