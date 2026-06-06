@@ -831,17 +831,14 @@ function PoolsPageContent() {
                 const entriesLocked = isPoolEntryLocked(pool, competitionSlug);
                 return (
                   <li key={pool.id}>
-                    <Link
-                      href={`/pool/${pool.id}/leaderboard`}
+                    <article
                       style={{
                         border: "1px solid var(--border-color)",
                         borderRadius: 14,
                         padding: 14,
                         background: "var(--surface)",
                         display: "grid",
-                        gap: 8,
-                        textDecoration: "none",
-                        color: "inherit",
+                        gap: 10,
                       }}
                     >
                       <div
@@ -869,15 +866,38 @@ function PoolsPageContent() {
                           {privacyLabel(pool)}
                         </span>
                       </div>
-                      <div style={{ fontSize: 13, opacity: 0.8 }}>Tap to open standings, bracket, and invite tools.</div>
+                      <div style={{ fontSize: 13, opacity: 0.8 }}>
+                        Open standings or enter one of your saved drafts into this pool.
+                      </div>
                       {entriesLocked ? (
                         <div style={{ fontSize: 12, opacity: 0.7 }}>
                           Entry changes locked at {formatDraftLockTimeET(pool.lock_time, competitionSlug)}
                         </div>
                       ) : (
-                        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Open leaderboard</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Entries are open</div>
                       )}
-                    </Link>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <Link
+                          href={`/pool/${pool.id}/leaderboard`}
+                          className="ui-btn ui-btn--md ui-btn--secondary"
+                          style={{ flex: "1 1 160px" }}
+                        >
+                          Leaderboard
+                        </Link>
+                        <Link
+                          href={`/pool/${pool.id}/draft`}
+                          className={`ui-btn ui-btn--md ${entriesLocked ? "ui-btn--secondary" : "ui-btn--primary"}`}
+                          style={{
+                            flex: "1 1 160px",
+                            opacity: entriesLocked ? 0.7 : 1,
+                            pointerEvents: entriesLocked ? "none" : undefined,
+                          }}
+                          aria-disabled={entriesLocked}
+                        >
+                          {entriesLocked ? "Entries Locked" : "Enter Drafts"}
+                        </Link>
+                      </div>
+                    </article>
                   </li>
                 );
               })}

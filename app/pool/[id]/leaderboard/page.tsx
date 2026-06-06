@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
@@ -2147,8 +2148,26 @@ export default function LeaderboardPage() {
               })}
 
               {displayRows.length === 0 ? (
-                <div style={{ padding: "12px 12px" }}>
-                  No entries yet. Have friends join and draft.
+                <div style={{ padding: "14px 12px", display: "grid", gap: 10 }}>
+                  <div style={{ display: "grid", gap: 4 }}>
+                    <div style={{ fontWeight: 900 }}>No entries yet.</div>
+                    <div style={{ fontSize: 13, opacity: 0.78 }}>
+                      Enter one of your saved drafts to put it on this leaderboard.
+                    </div>
+                  </div>
+                  {!draftLocked ? (
+                    <Link
+                      href={`/pool/${poolId}/draft`}
+                      className="ui-btn ui-btn--md ui-btn--primary"
+                      style={{ width: "fit-content" }}
+                    >
+                      Enter Drafts
+                    </Link>
+                  ) : (
+                    <div style={{ fontSize: 13, opacity: 0.78 }}>
+                      Entries are locked for this pool.
+                    </div>
+                  )}
                 </div>
               ) : null}
             </div>
