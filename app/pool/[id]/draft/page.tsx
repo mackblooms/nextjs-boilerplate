@@ -758,7 +758,7 @@ export default function PoolDraftPage() {
         </div>
 
         {lockTime ? (
-          <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>Lock time: {formatDraftLockTimeET(lockTime)}</p>
+          <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>Lock time: {formatDraftLockTimeET(lockTime, competitionSlug)}</p>
         ) : null}
       </section>
 

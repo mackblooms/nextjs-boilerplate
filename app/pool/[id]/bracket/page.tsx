@@ -57,6 +57,7 @@ type PlayerOption = {
 type PoolOption = {
   id: string;
   name: string;
+  competition_slug?: string | null;
 };
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -378,11 +379,24 @@ export default function BracketPage() {
         return;
       }
 
-      const { data: memberPoolRows, error: memberPoolErr } = await supabase
+      let { data: memberPoolRows, error: memberPoolErr } = await supabase
         .from("pools")
-        .select("id,name")
+        .select("id,name,competition_slug")
         .in("id", membershipPoolIds)
         .order("name", { ascending: true });
+
+      if (canUseLegacyMarchMadnessFallback("march-madness", memberPoolErr?.message)) {
+        const fallback = await supabase
+          .from("pools")
+          .select("id,name")
+          .in("id", membershipPoolIds)
+          .order("name", { ascending: true });
+        memberPoolRows = (fallback.data ?? []).map((pool) => ({
+          ...pool,
+          competition_slug: null,
+        }));
+        memberPoolErr = fallback.error;
+      }
 
       if (memberPoolErr) {
         setMemberPools([]);
@@ -394,7 +408,6 @@ export default function BracketPage() {
       const joinedPools = ((memberPoolRows ?? []) as PoolOption[]).sort((a, b) =>
         a.name.localeCompare(b.name),
       );
-      setMemberPools(joinedPools);
 
       if (!membershipPoolIds.includes(poolId)) {
         setMsg("Join this pool to view brackets.");
@@ -428,6 +441,11 @@ export default function BracketPage() {
 
       const nextCompetitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
       setCompetitionSlug(nextCompetitionSlug);
+      setMemberPools(
+        joinedPools.filter(
+          (memberPool) => normalizeCompetitionSlug(memberPool.competition_slug) === nextCompetitionSlug,
+        ),
+      );
       const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, nextCompetitionSlug);
       const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), nextCompetitionSlug);
       setLockTime(resolvedLockTime);
@@ -1234,7 +1252,7 @@ export default function BracketPage() {
             }}
           >
             Other members&apos; brackets stay hidden until draft lock
-            {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
+            {lockTime ? ` (${formatDraftLockTimeET(lockTime, competitionSlug)})` : ""}.
           </div>
         ) : null}
       </section>

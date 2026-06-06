@@ -832,6 +832,29 @@ textarea::placeholder {
   padding: 5px 7px;
 }
 
+.world-cup-group-games {
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  gap: 5px;
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.world-cup-group-game {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--surface);
+  display: grid;
+  gap: 4px;
+  padding: 4px;
+}
+
+.world-cup-group-game .world-cup-bracket-team {
+  background: var(--surface-muted);
+  font-size: 0.72rem;
+  padding: 4px 6px;
+}
+
 .world-cup-group-team[data-highlighted="true"],
 .world-cup-bracket-team[data-highlighted="true"] {
   border-color: var(--highlight-border);

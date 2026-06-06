@@ -7,6 +7,7 @@ type Team = {
 type Game = {
   id: string;
   round: string;
+  region: string | null;
   slot: number;
   team1_id: string | null;
   team2_id: string | null;
@@ -32,6 +33,18 @@ export default function WorldCupBracketBoard({
   highlightTeamIds: Set<string>;
 }) {
   const teamById = new Map(teams.map((team) => [team.id, team]));
+  const groupGamesByRegion = new Map<string, Game[]>();
+
+  for (const game of games) {
+    if (game.round !== "GROUP" || !game.region) continue;
+    const regionGames = groupGamesByRegion.get(game.region) ?? [];
+    regionGames.push(game);
+    groupGamesByRegion.set(game.region, regionGames);
+  }
+
+  for (const regionGames of groupGamesByRegion.values()) {
+    regionGames.sort((a, b) => a.slot - b.slot);
+  }
 
   const teamRow = (teamId: string | null, winnerId: string | null) => {
     const team = teamId ? teamById.get(teamId) : null;
@@ -45,6 +58,13 @@ export default function WorldCupBracketBoard({
       </div>
     );
   };
+
+  const groupGameRow = (game: Game) => (
+    <article className="world-cup-group-game" key={game.id}>
+      {teamRow(game.team1_id, game.winner_team_id)}
+      {teamRow(game.team2_id, game.winner_team_id)}
+    </article>
+  );
 
   return (
     <div className="world-cup-bracket-board">
@@ -68,6 +88,11 @@ export default function WorldCupBracketBoard({
                     {team.name}
                   </div>
                 ))}
+              {(groupGamesByRegion.get(group) ?? []).length > 0 ? (
+                <div className="world-cup-group-games">
+                  {(groupGamesByRegion.get(group) ?? []).map(groupGameRow)}
+                </div>
+              ) : null}
             </article>
           ))}
         </div>
