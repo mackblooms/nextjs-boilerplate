@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { withAvatarFallback } from "./avatar";
 import { scoreEntries, type ScoringGame } from "./scoring";
+import { normalizeCompetitionSlug } from "./competitions";
 
 type PoolLeaderboardRow = {
   entry_id: string;
@@ -221,6 +222,15 @@ export async function buildPoolArchiveSnapshot(
 
   const baseRows = (baseData ?? []) as PoolLeaderboardRow[];
   const entryIds = baseRows.map((row) => row.entry_id);
+  const { data: poolData, error: poolErr } = await supabaseAdmin
+    .from("pools")
+    .select("competition_slug")
+    .eq("id", poolId)
+    .single();
+  if (poolErr) {
+    throw poolErr;
+  }
+  const competitionSlug = normalizeCompetitionSlug(poolData?.competition_slug);
 
   let entryNameById = new Map<string, string | null>();
   if (entryIds.length > 0) {
@@ -272,7 +282,8 @@ export async function buildPoolArchiveSnapshot(
 
   const { data: gamesData, error: gamesErr } = await supabaseAdmin
     .from("games")
-    .select("round,team1_id,team2_id,winner_team_id");
+    .select("round,team1_id,team2_id,winner_team_id")
+    .eq("competition_slug", competitionSlug);
 
   if (gamesErr) {
     throw gamesErr;
@@ -284,13 +295,17 @@ export async function buildPoolArchiveSnapshot(
   const teamSeedById = new Map(
     teamRows.map((row) => [row.id, row.seed_in_region ?? row.seed ?? null]),
   );
+  const teamCostById = new Map(teamRows.map((row) => [row.id, row.cost ?? null]));
   const picksByEntry = new Map<string, string[]>();
   for (const row of pickRows) {
     const teamIds = picksByEntry.get(row.entry_id) ?? [];
     teamIds.push(row.team_id);
     picksByEntry.set(row.entry_id, teamIds);
   }
-  const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry);
+  const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry, {
+    competitionSlug,
+    teamCostById,
+  });
   const teamScores = scoredEntries.teamScoresByTeamId;
 
   const roundReachedOrderByTeam = new Map<string, number>();

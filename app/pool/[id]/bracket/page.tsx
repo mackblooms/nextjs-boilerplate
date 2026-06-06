@@ -25,6 +25,7 @@ type Team = {
   name: string;
   seed: number | null;
   seed_in_region: number | null;
+  cost: number | null;
   region: string | null;
   espn_team_id?: string | number | null;
 };
@@ -321,6 +322,7 @@ export default function BracketPage() {
         normalizeSeed(team.seed_in_region) ?? normalizeSeed(team.seed) ?? null,
       ]),
     );
+    const teamCostById = new Map(teams.map((team) => [team.id, team.cost ?? null]));
 
     const picksByEntry = new Map<string, string[]>();
     for (const row of (pickRows ?? []) as { entry_id: string; team_id: string }[]) {
@@ -329,7 +331,10 @@ export default function BracketPage() {
       picksByEntry.set(row.entry_id, entryPickIds);
     }
 
-    const scoredEntries = scoreEntries(latestGames, teamSeedById, picksByEntry);
+    const scoredEntries = scoreEntries(latestGames, teamSeedById, picksByEntry, {
+      competitionSlug,
+      teamCostById,
+    });
     setPlayers((prev) => {
       let changed = false;
       const next = prev.map((player) => {
@@ -453,7 +458,7 @@ export default function BracketPage() {
 
       const teamQuery = await supabase
         .from("teams")
-        .select("id,name,region,seed,seed_in_region,espn_team_id")
+        .select("id,name,region,seed,seed_in_region,cost,espn_team_id")
         .eq("competition_slug", nextCompetitionSlug);
       let teamRows = (teamQuery.data ?? []) as Team[];
       let teamErr = teamQuery.error;
@@ -461,7 +466,7 @@ export default function BracketPage() {
       if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
         const fallback = await supabase
           .from("teams")
-          .select("id,name,region,seed,seed_in_region");
+          .select("id,name,region,seed,seed_in_region,cost");
         teamRows = (fallback.data ?? []).map((row) => ({
           ...row,
           espn_team_id: null,
@@ -538,6 +543,9 @@ export default function BracketPage() {
           normalizeSeed(t.seed_in_region) ?? normalizeSeed(t.seed) ?? null,
         ]),
       );
+      const teamCostById = new Map(
+        (((teamRows as Team[] | null) ?? []) as Team[]).map((t) => [t.id, t.cost ?? null]),
+      );
       const picksByEntry = new Map<string, string[]>();
 
       let entryNameById = new Map<string, string | null>();
@@ -572,7 +580,10 @@ export default function BracketPage() {
           picksByEntry.set(row.entry_id, entryPickIds);
         }
       }
-      const scoredEntries = scoreEntries((gameRows as Game[] | null) ?? [], teamSeedById, picksByEntry);
+      const scoredEntries = scoreEntries((gameRows as Game[] | null) ?? [], teamSeedById, picksByEntry, {
+        competitionSlug: nextCompetitionSlug,
+        teamCostById,
+      });
 
       let profileByUser = new Map<
         string,

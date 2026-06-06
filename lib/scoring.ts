@@ -3,6 +3,9 @@ export type ScoringGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  status?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
 };
 
 export type TeamWinScoreEvent = {
@@ -31,6 +34,11 @@ export type ScoreEntriesResult = {
   perfectR64BonusByEntryId: Map<string, number>;
 };
 
+export type ScoringOptions = {
+  competitionSlug?: "march-madness" | "world-cup";
+  teamCostById?: Map<string, number | null>;
+};
+
 const BASE_POINTS_BY_ROUND: Record<string, number> = {
   GROUP: 6,
   R64: 12,
@@ -39,6 +47,22 @@ const BASE_POINTS_BY_ROUND: Record<string, number> = {
   E8: 180,
   F4: 300,
   CHIP: 360,
+};
+
+const WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND: Record<string, number> = {
+  R32: 18,
+  S16: 30,
+  E8: 48,
+  F4: 72,
+  CHIP: 100,
+};
+
+const WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND: Record<string, number> = {
+  R32: 8,
+  S16: 16,
+  E8: 28,
+  F4: 42,
+  CHIP: 60,
 };
 
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
@@ -57,10 +81,146 @@ function calcUpsetBonus(teamSeed: number | null | undefined, opponentSeed: numbe
   return Math.max(0, 4 * (teamSeed - opponentSeed));
 }
 
+function addScoreEvent(
+  totals: Map<string, number>,
+  eventsByTeamId: Map<string, TeamWinScoreEvent[]>,
+  event: TeamWinScoreEvent,
+) {
+  totals.set(event.teamId, (totals.get(event.teamId) ?? 0) + event.pointsAwarded);
+  const teamEvents = eventsByTeamId.get(event.teamId) ?? [];
+  teamEvents.push(event);
+  eventsByTeamId.set(event.teamId, teamEvents);
+}
+
+function isFinalStatus(status: unknown): boolean {
+  return String(status ?? "").trim().toLowerCase().startsWith("final");
+}
+
+function worldCupTeamCost(teamId: string, options: ScoringOptions): number | null {
+  const raw = options.teamCostById?.get(teamId);
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
+
+function scoreWorldCupTeamResultsDetailed(
+  games: ScoringGame[],
+  teamSeedById: Map<string, number | null>,
+  options: ScoringOptions,
+): TeamWinScoringResult {
+  const totals = new Map<string, number>();
+  const eventsByTeamId = new Map<string, TeamWinScoreEvent[]>();
+  const groupAdvancementAwarded = new Set<string>();
+
+  games.forEach((g, index) => {
+    const round = String(g.round ?? "").toUpperCase();
+
+    if (round === "GROUP") {
+      if (g.winner_team_id) {
+        addScoreEvent(totals, eventsByTeamId, {
+          gameIndex: index,
+          round,
+          teamId: g.winner_team_id,
+          opponentTeamId: g.team1_id === g.winner_team_id ? g.team2_id : g.team1_id,
+          winnerSeed: teamSeedById.get(g.winner_team_id) ?? null,
+          opponentSeed: null,
+          basePoints: 6,
+          seedMultiplier: 1,
+          scaledBasePoints: 6,
+          upsetBonus: 0,
+          historicBonus: 0,
+          pointsAwarded: 6,
+        });
+        return;
+      }
+
+      if (
+        isFinalStatus(g.status) &&
+        typeof g.team1_score === "number" &&
+        typeof g.team2_score === "number" &&
+        g.team1_score === g.team2_score
+      ) {
+        for (const teamId of [g.team1_id, g.team2_id]) {
+          if (!teamId) continue;
+          addScoreEvent(totals, eventsByTeamId, {
+            gameIndex: index,
+            round,
+            teamId,
+            opponentTeamId: teamId === g.team1_id ? g.team2_id : g.team1_id,
+            winnerSeed: teamSeedById.get(teamId) ?? null,
+            opponentSeed: null,
+            basePoints: 2,
+            seedMultiplier: 1,
+            scaledBasePoints: 2,
+            upsetBonus: 0,
+            historicBonus: 0,
+            pointsAwarded: 2,
+          });
+        }
+      }
+      return;
+    }
+
+    if (round === "R32") {
+      for (const teamId of [g.team1_id, g.team2_id]) {
+        if (!teamId || groupAdvancementAwarded.has(teamId)) continue;
+        groupAdvancementAwarded.add(teamId);
+        const cost = worldCupTeamCost(teamId, options);
+        const breakoutBonus = cost != null && cost <= 10 ? 24 : 0;
+        addScoreEvent(totals, eventsByTeamId, {
+          gameIndex: index,
+          round: "GROUP_ADVANCE",
+          teamId,
+          opponentTeamId: null,
+          winnerSeed: teamSeedById.get(teamId) ?? null,
+          opponentSeed: null,
+          basePoints: 12,
+          seedMultiplier: 1,
+          scaledBasePoints: 12,
+          upsetBonus: 0,
+          historicBonus: breakoutBonus,
+          pointsAwarded: 12 + breakoutBonus,
+        });
+      }
+    }
+
+    const winnerId = g.winner_team_id;
+    if (!winnerId) return;
+    const base = WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND[round] ?? 0;
+    if (!base) return;
+
+    const cost = worldCupTeamCost(winnerId, options);
+    const valueRunBonus = cost != null && cost < 15 ? WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND[round] ?? 0 : 0;
+    const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
+    addScoreEvent(totals, eventsByTeamId, {
+      gameIndex: index,
+      round,
+      teamId: winnerId,
+      opponentTeamId: opponentId,
+      winnerSeed: teamSeedById.get(winnerId) ?? null,
+      opponentSeed: opponentId ? (teamSeedById.get(opponentId) ?? null) : null,
+      basePoints: base,
+      seedMultiplier: 1,
+      scaledBasePoints: base,
+      upsetBonus: 0,
+      historicBonus: valueRunBonus,
+      pointsAwarded: base + valueRunBonus,
+    });
+  });
+
+  return {
+    teamScoresByTeamId: totals,
+    eventsByTeamId,
+  };
+}
+
 export function scoreTeamWinsDetailed(
   games: ScoringGame[],
   teamSeedById: Map<string, number | null>,
+  options: ScoringOptions = {},
 ): TeamWinScoringResult {
+  if (options.competitionSlug === "world-cup") {
+    return scoreWorldCupTeamResultsDetailed(games, teamSeedById, options);
+  }
+
   const totals = new Map<string, number>();
   const eventsByTeamId = new Map<string, TeamWinScoreEvent[]>();
   const historicAwarded = new Set<string>();
@@ -87,9 +247,7 @@ export function scoreTeamWinsDetailed(
     }
 
     const winScore = Math.round(scaledBase + upsetBonus + historicBonus);
-    totals.set(winnerId, (totals.get(winnerId) ?? 0) + winScore);
-    const teamEvents = eventsByTeamId.get(winnerId) ?? [];
-    teamEvents.push({
+    addScoreEvent(totals, eventsByTeamId, {
       gameIndex: index,
       round: g.round,
       teamId: winnerId,
@@ -103,7 +261,6 @@ export function scoreTeamWinsDetailed(
       historicBonus,
       pointsAwarded: winScore,
     });
-    eventsByTeamId.set(winnerId, teamEvents);
   });
 
   return {
@@ -112,16 +269,21 @@ export function scoreTeamWinsDetailed(
   };
 }
 
-export function scoreTeamWins(games: ScoringGame[], teamSeedById: Map<string, number | null>): Map<string, number> {
-  return scoreTeamWinsDetailed(games, teamSeedById).teamScoresByTeamId;
+export function scoreTeamWins(
+  games: ScoringGame[],
+  teamSeedById: Map<string, number | null>,
+  options: ScoringOptions = {},
+): Map<string, number> {
+  return scoreTeamWinsDetailed(games, teamSeedById, options).teamScoresByTeamId;
 }
 
 export function scoreEntries(
   games: ScoringGame[],
   teamSeedById: Map<string, number | null>,
   picksByEntry: Map<string, string[]>,
+  options: ScoringOptions = {},
 ): ScoreEntriesResult {
-  const teamScoresByTeamId = scoreTeamWins(games, teamSeedById);
+  const teamScoresByTeamId = scoreTeamWins(games, teamSeedById, options);
   const totalScoreByEntryId = new Map<string, number>();
   const perfectR64BonusByEntryId = new Map<string, number>();
 
@@ -140,7 +302,9 @@ export function scoreEntries(
     );
 
     const wentPerfectR64 =
-      uniqueTeamIds.length > 0 && uniqueTeamIds.every((teamId) => r64Winners.has(teamId));
+      options.competitionSlug !== "world-cup" &&
+      uniqueTeamIds.length > 0 &&
+      uniqueTeamIds.every((teamId) => r64Winners.has(teamId));
 
     const perfectBonus = wentPerfectR64
       ? uniqueTeamIds.reduce((sum, teamId) => {

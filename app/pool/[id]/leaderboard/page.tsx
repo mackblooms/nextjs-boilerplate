@@ -1035,6 +1035,7 @@ export default function LeaderboardPage() {
 
       const teamRowsList = ((teamRows as TeamSeedRow[] | null) ?? []);
       const teamSeedById = new Map(teamRowsList.map((t) => [t.id, t.seed_in_region]));
+      const teamCostById = new Map(teamRowsList.map((t) => [t.id, t.cost ?? null]));
 
       let gameRows: ScoringGameWithDate[] = [];
       let gameQuery = await supabase
@@ -1127,9 +1128,15 @@ export default function LeaderboardPage() {
         }
       }
 
-      const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry);
+      const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry, {
+        competitionSlug,
+        teamCostById,
+      });
       const teamScores = scoredEntries.teamScoresByTeamId;
-      const teamWinScoring = scoreTeamWinsDetailed(gameRows, teamSeedById);
+      const teamWinScoring = scoreTeamWinsDetailed(gameRows, teamSeedById, {
+        competitionSlug,
+        teamCostById,
+      });
       const teamWinEventsByTeamId = teamWinScoring.eventsByTeamId;
       const currentRoundReachedByTeam = roundReachedOrderByTeam(gameRows);
 
@@ -1321,7 +1328,10 @@ export default function LeaderboardPage() {
           return order > 0 && order < latestCompletedRoundOrder;
         });
 
-        const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry);
+        const priorScoredEntries = scoreEntries(priorGames, teamSeedById, picksByEntry, {
+          competitionSlug,
+          teamCostById,
+        });
         const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
         const priorComputed = baseRows.map((r) => {
           const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));

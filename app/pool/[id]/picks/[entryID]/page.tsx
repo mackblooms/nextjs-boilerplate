@@ -6,6 +6,7 @@ import { supabase } from "../../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../../lib/draftLock";
 import { scoreEntries, type ScoringGame } from "../../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../../lib/teamNames";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
 
 type PickRow = {
   team_id: string;
@@ -90,7 +91,7 @@ export default function PicksPage() {
 
       const { data: poolRow, error: poolErr } = await supabase
         .from("pools")
-        .select("lock_time")
+        .select("lock_time,competition_slug")
         .eq("id", poolId)
         .single();
 
@@ -100,8 +101,9 @@ export default function PicksPage() {
         return;
       }
 
-      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null);
-      const isLocked = isDraftLocked(poolRow?.lock_time ?? null);
+      const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+      const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, competitionSlug);
+      const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), competitionSlug);
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
@@ -155,7 +157,8 @@ export default function PicksPage() {
 
       const { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id");
+        .select("round,team1_id,team2_id,winner_team_id")
+        .eq("competition_slug", competitionSlug);
 
       if (gameErr) {
         setMsg(gameErr.message);
@@ -163,12 +166,10 @@ export default function PicksPage() {
         return;
       }
 
-      let seedById = new Map<string, number | null>();
-
       if (teamIds.length > 0) {
         const { data: teamRows, error: teamErr } = await supabase
           .from("teams")
-          .select("id,seed_in_region")
+          .select("id,seed_in_region,cost")
           .in("id", teamIds);
 
         if (teamErr) {
@@ -177,9 +178,32 @@ export default function PicksPage() {
           return;
         }
 
-        seedById = new Map(
+        const seedById = new Map(
           (teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]),
         );
+        const teamCostById = new Map((teamRows ?? []).map((t) => [t.id, t.cost ?? null]));
+        const picksByEntry = new Map<string, string[]>([
+          [
+            entryId,
+            ((pickRows ?? []) as { team_id: string }[]).map((row) => row.team_id).filter(Boolean),
+          ],
+        ]);
+        const scoredEntries = scoreEntries((gameRows ?? []) as ScoringGame[], seedById, picksByEntry, {
+          competitionSlug,
+          teamCostById,
+        });
+        const computedTeamScores = scoredEntries.teamScoresByTeamId;
+        setPerfectR64Bonus(scoredEntries.perfectR64BonusByEntryId.get(entryId) ?? 0);
+
+        const merged = (pickRows ?? []).map((p) => ({
+          ...p,
+          total_team_score: computedTeamScores.get(p.team_id) ?? 0,
+        }));
+
+        const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+        setPicks(sorted);
+        setLoading(false);
+        return;
       }
 
       const picksByEntry = new Map<string, string[]>([
@@ -188,7 +212,9 @@ export default function PicksPage() {
           ((pickRows ?? []) as { team_id: string }[]).map((row) => row.team_id).filter(Boolean),
         ],
       ]);
-      const scoredEntries = scoreEntries((gameRows ?? []) as ScoringGame[], seedById, picksByEntry);
+      const scoredEntries = scoreEntries((gameRows ?? []) as ScoringGame[], new Map(), picksByEntry, {
+        competitionSlug,
+      });
       const computedTeamScores = scoredEntries.teamScoresByTeamId;
       setPerfectR64Bonus(scoredEntries.perfectR64BonusByEntryId.get(entryId) ?? 0);
 

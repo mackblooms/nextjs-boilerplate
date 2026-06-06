@@ -124,6 +124,7 @@ type DraftPoolLeaderboardRow = {
 type DraftPoolTeamSeedRow = {
   id: string;
   seed_in_region: number | null;
+  cost: number | null;
 };
 
 type ScoreViewMode = "my-teams" | "all-scores";
@@ -1233,14 +1234,22 @@ function HomeContent() {
                 }
 
                 const [teamRes, gameRes] = await Promise.all([
-                  supabase.from("teams").select("id,seed_in_region"),
-                  supabase.from("games").select("round,team1_id,team2_id,winner_team_id"),
+                  supabase
+                    .from("teams")
+                    .select("id,seed_in_region,cost")
+                    .eq("competition_slug", activeCompetitionSlug),
+                  supabase
+                    .from("games")
+                    .select("round,team1_id,team2_id,winner_team_id")
+                    .eq("competition_slug", activeCompetitionSlug),
                 ]);
 
                 if (!teamRes.error && !gameRes.error) {
                   const teamSeedById = new Map<string, number | null>();
+                  const teamCostById = new Map<string, number | null>();
                   for (const row of (teamRes.data ?? []) as DraftPoolTeamSeedRow[]) {
                     teamSeedById.set(row.id, row.seed_in_region);
+                    teamCostById.set(row.id, row.cost ?? null);
                   }
 
                   const picksByEntry = new Map<string, string[]>();
@@ -1256,7 +1265,8 @@ function HomeContent() {
                   const scoredEntries = scoreEntries(
                     ((gameRes.data ?? []) as ScoringGame[]),
                     teamSeedById,
-                    picksByEntry
+                    picksByEntry,
+                    { competitionSlug: activeCompetitionSlug, teamCostById },
                   );
 
                   const rowsByPool = new Map<string, Array<{ entry_id: string; score: number }>>();

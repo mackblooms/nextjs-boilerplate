@@ -67,6 +67,7 @@ type LocalBracketGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  competition_slug?: string | null;
 };
 
 type FinalsApplyResult = {
@@ -94,6 +95,37 @@ type PropagationTarget = {
   region: string | null;
   slot: number;
   side: "team1_id" | "team2_id";
+};
+
+const WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT: Record<string, PropagationTarget> = {
+  "R32|1": { round: "S16", region: null, slot: 2, side: "team1_id" },
+  "R32|2": { round: "S16", region: null, slot: 1, side: "team1_id" },
+  "R32|3": { round: "S16", region: null, slot: 2, side: "team2_id" },
+  "R32|4": { round: "S16", region: null, slot: 3, side: "team1_id" },
+  "R32|5": { round: "S16", region: null, slot: 1, side: "team2_id" },
+  "R32|6": { round: "S16", region: null, slot: 3, side: "team2_id" },
+  "R32|7": { round: "S16", region: null, slot: 4, side: "team1_id" },
+  "R32|8": { round: "S16", region: null, slot: 4, side: "team2_id" },
+  "R32|9": { round: "S16", region: null, slot: 6, side: "team1_id" },
+  "R32|10": { round: "S16", region: null, slot: 6, side: "team2_id" },
+  "R32|11": { round: "S16", region: null, slot: 5, side: "team1_id" },
+  "R32|12": { round: "S16", region: null, slot: 5, side: "team2_id" },
+  "R32|13": { round: "S16", region: null, slot: 8, side: "team1_id" },
+  "R32|14": { round: "S16", region: null, slot: 7, side: "team1_id" },
+  "R32|15": { round: "S16", region: null, slot: 8, side: "team2_id" },
+  "R32|16": { round: "S16", region: null, slot: 7, side: "team2_id" },
+  "S16|1": { round: "E8", region: null, slot: 1, side: "team1_id" },
+  "S16|2": { round: "E8", region: null, slot: 1, side: "team2_id" },
+  "S16|3": { round: "E8", region: null, slot: 3, side: "team1_id" },
+  "S16|4": { round: "E8", region: null, slot: 3, side: "team2_id" },
+  "S16|5": { round: "E8", region: null, slot: 2, side: "team1_id" },
+  "S16|6": { round: "E8", region: null, slot: 2, side: "team2_id" },
+  "S16|7": { round: "E8", region: null, slot: 4, side: "team1_id" },
+  "S16|8": { round: "E8", region: null, slot: 4, side: "team2_id" },
+  "E8|1": { round: "F4", region: null, slot: 1, side: "team1_id" },
+  "E8|2": { round: "F4", region: null, slot: 1, side: "team2_id" },
+  "E8|3": { round: "F4", region: null, slot: 2, side: "team1_id" },
+  "E8|4": { round: "F4", region: null, slot: 2, side: "team2_id" },
 };
 
 type TeamIdentityRow = {
@@ -326,17 +358,28 @@ function collectFinalGames(games: SportsGame[]): FinalGame[] {
   return finals;
 }
 
-function gameKey(round: string, region: string | null, slot: number): string {
+function gameKey(
+  competitionSlug: string | null | undefined,
+  round: string,
+  region: string | null,
+  slot: number,
+): string {
+  const prefix = `${norm(competitionSlug) || "march-madness"}|`;
   if (round === "R64" || round === "R32" || round === "S16" || round === "E8") {
-    return `${round}|${norm(region)}|${slot}`;
+    return `${prefix}${round}|${norm(region)}|${slot}`;
   }
-  return `${round}|${slot}`;
+  return `${prefix}${round}|${slot}`;
 }
 
 function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
   const round = String(g.round ?? "").toUpperCase();
   const slot = Number(g.slot);
   if (!Number.isFinite(slot) || slot < 1) return null;
+
+  if (g.competition_slug === "world-cup") {
+    const mapped = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[`${round}|${Math.trunc(slot)}`];
+    if (mapped) return mapped;
+  }
 
   if (round === "R64" || round === "R32" || round === "S16") {
     const nextRound = round === "R64" ? "R32" : round === "R32" ? "S16" : "E8";
@@ -411,7 +454,7 @@ async function fetchGamesForPairMatching(
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, nowIso: string) {
   const { data: allGames, error: gamesErr } = await supabaseAdmin
     .from("games")
-    .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+    .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug");
   if (gamesErr) throw gamesErr;
 
   const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
@@ -424,7 +467,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     const round = String(g.round ?? "").toUpperCase();
     const slot = Number(g.slot);
     if (!Number.isFinite(slot) || slot < 1 || !round) continue;
-    byKey.set(gameKey(round, g.region ?? null, Math.trunc(slot)), g);
+    byKey.set(gameKey(g.competition_slug, round, g.region ?? null, Math.trunc(slot)), g);
   }
 
   const order: Record<string, number> = { R64: 1, R32: 2, S16: 3, E8: 4, F4: 5, CHIP: 6 };
@@ -462,7 +505,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
     const targetRef = nextTargetForWinner(source);
     if (!targetRef) continue;
 
-    const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
+    const target = byKey.get(gameKey(source.competition_slug, targetRef.round, targetRef.region, targetRef.slot));
     if (!target) continue;
 
     const updatePayload: Record<string, unknown> = { last_synced_at: nowIso };

@@ -27,6 +27,37 @@ type PropagationTarget = {
   side: "team1_id" | "team2_id";
 };
 
+const WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT: Record<string, PropagationTarget> = {
+  "R32|1": { round: "S16", region: null, slot: 2, side: "team1_id" },
+  "R32|2": { round: "S16", region: null, slot: 1, side: "team1_id" },
+  "R32|3": { round: "S16", region: null, slot: 2, side: "team2_id" },
+  "R32|4": { round: "S16", region: null, slot: 3, side: "team1_id" },
+  "R32|5": { round: "S16", region: null, slot: 1, side: "team2_id" },
+  "R32|6": { round: "S16", region: null, slot: 3, side: "team2_id" },
+  "R32|7": { round: "S16", region: null, slot: 4, side: "team1_id" },
+  "R32|8": { round: "S16", region: null, slot: 4, side: "team2_id" },
+  "R32|9": { round: "S16", region: null, slot: 6, side: "team1_id" },
+  "R32|10": { round: "S16", region: null, slot: 6, side: "team2_id" },
+  "R32|11": { round: "S16", region: null, slot: 5, side: "team1_id" },
+  "R32|12": { round: "S16", region: null, slot: 5, side: "team2_id" },
+  "R32|13": { round: "S16", region: null, slot: 8, side: "team1_id" },
+  "R32|14": { round: "S16", region: null, slot: 7, side: "team1_id" },
+  "R32|15": { round: "S16", region: null, slot: 8, side: "team2_id" },
+  "R32|16": { round: "S16", region: null, slot: 7, side: "team2_id" },
+  "S16|1": { round: "E8", region: null, slot: 1, side: "team1_id" },
+  "S16|2": { round: "E8", region: null, slot: 1, side: "team2_id" },
+  "S16|3": { round: "E8", region: null, slot: 3, side: "team1_id" },
+  "S16|4": { round: "E8", region: null, slot: 3, side: "team2_id" },
+  "S16|5": { round: "E8", region: null, slot: 2, side: "team1_id" },
+  "S16|6": { round: "E8", region: null, slot: 2, side: "team2_id" },
+  "S16|7": { round: "E8", region: null, slot: 4, side: "team1_id" },
+  "S16|8": { round: "E8", region: null, slot: 4, side: "team2_id" },
+  "E8|1": { round: "F4", region: null, slot: 1, side: "team1_id" },
+  "E8|2": { round: "F4", region: null, slot: 1, side: "team2_id" },
+  "E8|3": { round: "F4", region: null, slot: 2, side: "team1_id" },
+  "E8|4": { round: "F4", region: null, slot: 2, side: "team2_id" },
+};
+
 function norm(value: unknown) {
   return String(value ?? "").trim().toLowerCase();
 }
@@ -43,6 +74,11 @@ function nextTargetForWinner(g: LocalBracketGame): PropagationTarget | null {
   const round = String(g.round ?? "").toUpperCase();
   const slot = Number(g.slot);
   if (!Number.isFinite(slot) || slot < 1) return null;
+
+  if (g.competition_slug === "world-cup") {
+    const mapped = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[`${round}|${Math.trunc(slot)}`];
+    if (mapped) return mapped;
+  }
 
   if (round === "R64" || round === "R32" || round === "S16") {
     const nextRound = round === "R64" ? "R32" : round === "R32" ? "S16" : "E8";

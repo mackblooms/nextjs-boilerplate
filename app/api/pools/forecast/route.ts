@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
 
 type PoolEntryRow = {
   entry_id: string;
@@ -15,6 +16,7 @@ type EntryPickRow = {
 type TeamRow = {
   id: string;
   seed_in_region: number | null;
+  cost: number | null;
   espn_team_id: string | number | null;
 };
 
@@ -576,6 +578,16 @@ export async function GET(req: Request) {
     }
 
     const baseRows = (baseRowsData ?? []) as PoolEntryRow[];
+    const { data: poolRow, error: poolErr } = await supabaseAdmin
+      .from("pools")
+      .select("competition_slug")
+      .eq("id", poolId)
+      .single();
+    if (poolErr) {
+      return NextResponse.json({ error: poolErr.message }, { status: 400 });
+    }
+    const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+
     if (baseRows.length === 0) {
       return NextResponse.json({
         ok: true,
@@ -589,10 +601,14 @@ export async function GET(req: Request) {
     const entryIds = baseRows.map((row) => row.entry_id);
     const [picksResult, teamsResult, gamesResult] = await Promise.all([
       supabaseAdmin.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
-      supabaseAdmin.from("teams").select("id,seed_in_region,espn_team_id"),
+      supabaseAdmin
+        .from("teams")
+        .select("id,seed_in_region,cost,espn_team_id")
+        .eq("competition_slug", competitionSlug),
       supabaseAdmin
         .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id"),
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id")
+        .eq("competition_slug", competitionSlug),
     ]);
 
     if (picksResult.error) {
@@ -621,10 +637,12 @@ export async function GET(req: Request) {
     }
 
     const teamSeedById = new Map<string, number | null>();
+    const teamCostById = new Map<string, number | null>();
     const localTeamIdByEspnTeamId = new Map<string, string>();
     for (const team of teams) {
       const teamId = String(team.id);
       teamSeedById.set(teamId, team.seed_in_region ?? null);
+      teamCostById.set(teamId, team.cost ?? null);
       if (team.espn_team_id != null) {
         localTeamIdByEspnTeamId.set(String(team.espn_team_id), teamId);
       }
@@ -644,7 +662,8 @@ export async function GET(req: Request) {
       winner_team_id: game.winner_team_id,
     })) as ScoringGame[];
 
-    const currentScores = scoreEntries(currentScoringGames, teamSeedById, picksByEntry);
+    const scoringOptions = { competitionSlug, teamCostById };
+    const currentScores = scoreEntries(currentScoringGames, teamSeedById, picksByEntry, scoringOptions);
     const labelByEntryId = new Map<string, string>();
     for (const row of baseRows) {
       labelByEntryId.set(row.entry_id, row.display_name?.trim() || row.entry_id.slice(0, 8));
@@ -681,7 +700,7 @@ export async function GET(req: Request) {
         false,
         horizonRoundOrder,
       );
-      const projectedScores = scoreEntries(projectedGames, teamSeedById, picksByEntry);
+      const projectedScores = scoreEntries(projectedGames, teamSeedById, picksByEntry, scoringOptions);
 
       const scoreRows = entryIds.map((entryId) => ({
         entry_id: entryId,
@@ -714,7 +733,7 @@ export async function GET(req: Request) {
       true,
       horizonRoundOrder,
     );
-    const mostLikelyScores = scoreEntries(mostLikelyGames, teamSeedById, picksByEntry);
+    const mostLikelyScores = scoreEntries(mostLikelyGames, teamSeedById, picksByEntry, scoringOptions);
     const mostLikelyRows = entryIds.map((entryId) => ({
       entry_id: entryId,
       score: mostLikelyScores.totalScoreByEntryId.get(entryId) ?? 0,

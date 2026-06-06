@@ -23,6 +23,40 @@ const ROUNDS = [
   { key: "CHIP", label: "final", slots: 1 },
 ] as const;
 
+const WORLD_CUP_SLOT_LABELS: Record<string, [string, string]> = {
+  "R32|1": ["2A", "2B"],
+  "R32|2": ["1E", "3RD A/B/C/D/F"],
+  "R32|3": ["1F", "2C"],
+  "R32|4": ["1C", "2F"],
+  "R32|5": ["1I", "3RD C/D/F/G/H"],
+  "R32|6": ["2E", "2I"],
+  "R32|7": ["1A", "3RD C/E/F/H/I"],
+  "R32|8": ["1L", "3RD E/H/I/J/K"],
+  "R32|9": ["1D", "3RD B/E/F/I/J"],
+  "R32|10": ["1G", "3RD A/E/H/I/J"],
+  "R32|11": ["2K", "2L"],
+  "R32|12": ["1H", "2J"],
+  "R32|13": ["1B", "3RD E/F/G/I/J"],
+  "R32|14": ["1J", "2H"],
+  "R32|15": ["1K", "3RD D/E/I/J/L"],
+  "R32|16": ["2D", "2G"],
+  "S16|1": ["W74", "W77"],
+  "S16|2": ["W73", "W75"],
+  "S16|3": ["W76", "W78"],
+  "S16|4": ["W79", "W80"],
+  "S16|5": ["W83", "W84"],
+  "S16|6": ["W81", "W82"],
+  "S16|7": ["W86", "W88"],
+  "S16|8": ["W85", "W87"],
+  "E8|1": ["W89", "W90"],
+  "E8|2": ["W93", "W94"],
+  "E8|3": ["W91", "W92"],
+  "E8|4": ["W95", "W96"],
+  "F4|1": ["W97", "W98"],
+  "F4|2": ["W99", "W100"],
+  "CHIP|1": ["W101", "W102"],
+};
+
 export default function WorldCupBracketBoard({
   teams,
   games,
@@ -46,7 +80,7 @@ export default function WorldCupBracketBoard({
     regionGames.sort((a, b) => a.slot - b.slot);
   }
 
-  const teamRow = (teamId: string | null, winnerId: string | null) => {
+  const teamRow = (teamId: string | null, winnerId: string | null, fallbackLabel = "tbd") => {
     const team = teamId ? teamById.get(teamId) : null;
     return (
       <div
@@ -54,7 +88,7 @@ export default function WorldCupBracketBoard({
         data-highlighted={teamId && highlightTeamIds.has(teamId) ? "true" : undefined}
         data-winner={teamId && winnerId === teamId ? "true" : undefined}
       >
-        {team?.name ?? "tbd"}
+        {team?.name ?? fallbackLabel}
       </div>
     );
   };
@@ -114,10 +148,12 @@ export default function WorldCupBracketBoard({
                 <strong>{round.label}</strong>
                 {Array.from({ length: round.slots }, (_, index) => {
                   const game = roundGames[index];
+                  const slot = game?.slot ?? index + 1;
+                  const slotLabels = WORLD_CUP_SLOT_LABELS[`${round.key}|${slot}`] ?? ["tbd", "tbd"];
                   return (
                     <article className="world-cup-knockout-game" key={`${round.key}-${index + 1}`}>
-                      {teamRow(game?.team1_id ?? null, game?.winner_team_id ?? null)}
-                      {teamRow(game?.team2_id ?? null, game?.winner_team_id ?? null)}
+                      {teamRow(game?.team1_id ?? null, game?.winner_team_id ?? null, slotLabels[0])}
+                      {teamRow(game?.team2_id ?? null, game?.winner_team_id ?? null, slotLabels[1])}
                     </article>
                   );
                 })}
