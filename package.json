@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "audit:bracket": "node scripts/bracket-audit.mjs",
     "backup:run": "powershell -ExecutionPolicy Bypass -File ./scripts/progress-backup.ps1",
     "backup:run:7d": "powershell -ExecutionPolicy Bypass -File ./scripts/progress-backup.ps1 -RetentionDays 7",
     "backup:verify": "powershell -ExecutionPolicy Bypass -File ./scripts/restore-check.ps1",
@@ -41,6 +44,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
