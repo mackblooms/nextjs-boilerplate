@@ -93,7 +93,7 @@ function SoccerRules() {
           columns={["Tier and National Teams", "Draft Cost"]}
           rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [`${tier.name}: ${tier.teams.join(", ")}`, tier.cost])}
         />
-        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 7 points.</p>
+        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 5 points.</p>
       </section>
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>2) Base Points Per Result</h2>

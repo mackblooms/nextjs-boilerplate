@@ -3,10 +3,10 @@ export const WORLD_CUP_DRAFT_TIERS = [
   { name: "Platinum", cost: 22, teams: ["Argentina", "France"] },
   { name: "Gold", cost: 20, teams: ["Brazil", "England", "Germany", "Netherlands", "Portugal"] },
   { name: "Silver", cost: 17, teams: ["Belgium", "Canada", "Colombia", "Croatia", "Ecuador", "Mexico", "Norway", "Switzerland", "Turkiye"] },
-  { name: "Bronze", cost: 14, teams: ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"] },
-  { name: "Value", cost: 12, teams: ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"] },
-  { name: "Longshot", cost: 10, teams: ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"] },
-  { name: "Moonshot", cost: 7, teams: ["Ghana", "Iraq", "Qatar"] },
+  { name: "Bronze", cost: 13, teams: ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"] },
+  { name: "Value", cost: 11, teams: ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"] },
+  { name: "Longshot", cost: 8, teams: ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"] },
+  { name: "Moonshot", cost: 5, teams: ["Ghana", "Iraq", "Qatar"] },
 ] as const;
 
 export const WORLD_CUP_TEAM_COSTS = WORLD_CUP_DRAFT_TIERS.flatMap((tier) =>
