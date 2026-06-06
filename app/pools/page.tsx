@@ -886,7 +886,7 @@ function PoolsPageContent() {
                         </Link>
                         <Link
                           href={`/pool/${pool.id}/draft`}
-                          className={`ui-btn ui-btn--md ${entriesLocked ? "ui-btn--secondary" : "ui-btn--primary"}`}
+                          className="ui-btn ui-btn--md ui-btn--secondary"
                           style={{
                             flex: "1 1 160px",
                             opacity: entriesLocked ? 0.7 : 1,
