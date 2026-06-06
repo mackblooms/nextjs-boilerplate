@@ -64,8 +64,8 @@ export default function TermsPage() {
         <h2 style={{ marginTop: 0 }}>5. Game Rules and Scoring</h2>
         <p>
           bracketball gameplay, scoring, and contest structure are described on the{" "}
-          <Link href="/how-it-works">How It Works</Link> page (the &quot;Rules Page&quot;).
-          By participating in contests, you agree to those rules.
+          <Link href="/how-it-works">how it works</Link> page (the &quot;rules page&quot;).
+          by participating in contests, you agree to those rules.
         </p>
         <p>Current scoring mechanics include, among other things:</p>
         <ul>

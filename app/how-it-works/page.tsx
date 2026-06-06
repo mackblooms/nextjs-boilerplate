@@ -9,11 +9,11 @@ export default function HowItWorksPage() {
       </div>
 
       <h1 className="page-title" style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
-        bracketball: How It Works
+        bracketball: how it works
       </h1>
 
       <p style={{ marginTop: 0, lineHeight: 1.6 }}>
-        This page starts with draft budget rules, then scoring rules.
+        this page starts with draft budget rules, then scoring rules.
       </p>
 
       <HowItWorksRulesContent />

@@ -997,30 +997,30 @@ export default function AppTopNav() {
                 Navigate
               </h2>
               <Link href={competition.href} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Home
+                home
               </Link>
               <Link href="/sports" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Sports
+                sports
               </Link>
               <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Drafts
+                drafts
               </Link>
               <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Pools
+                pools
               </Link>
               <Link
                 href={activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
                 style={drawerActionStyle}
               >
-                Bracket
+                bracket
               </Link>
               <Link
                 href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
                 style={drawerActionStyle}
               >
-                Leaderboard
+                leaderboard
               </Link>
               {activePoolId && activePool?.created_by === userId ? (
                 <Link
@@ -1028,26 +1028,26 @@ export default function AppTopNav() {
                   onClick={() => setDrawerOpen(false)}
                   style={drawerActionStyle}
                 >
-                  Admin
+                  admin
                 </Link>
               ) : null}
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="Account options">
+            <section style={{ display: "grid", gap: 8 }} aria-label="account options">
               <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                Account
+                account
               </h2>
               <Link href="/profile" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Profile
+                profile
               </Link>
               <button type="button" onClick={signOut} style={drawerActionStyle}>
-                Log out
+                log out
               </button>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="Help and support">
+            <section style={{ display: "grid", gap: 8 }} aria-label="help and support">
               <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                Support
+                support
               </h2>
               <button
                 type="button"
@@ -1057,19 +1057,19 @@ export default function AppTopNav() {
                 }}
                 style={drawerActionStyle}
               >
-                Help Center
+                help center
               </button>
               <button type="button" onClick={openHowItWorksModal} style={drawerActionStyle}>
-                How it works
+                how it works
               </button>
               <a href="mailto:mack@bracketball.io" style={drawerActionStyle}>
                 Contact support
               </a>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="Legal links">
+            <section style={{ display: "grid", gap: 8 }} aria-label="legal links">
               <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                Legal
+                legal
               </h2>
               <Link href="/terms" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
                 Terms of service

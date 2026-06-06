@@ -350,7 +350,7 @@ export default function DraftDetailPage() {
           }}
         >
           <div style={{ display: "grid", gap: 6 }}>
-            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>{draftName || "Draft"}</h1>
+            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>{draftName || "draft"}</h1>
             <p style={{ margin: 0, opacity: 0.8 }}>
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
@@ -362,7 +362,7 @@ export default function DraftDetailPage() {
             value={renameValue}
             onChange={(event) => setRenameValue(event.target.value)}
             disabled={draftsLocked || saving}
-            placeholder="Draft name"
+            placeholder="draft name"
             style={{
               width: "100%",
               maxWidth: 400,
@@ -374,7 +374,7 @@ export default function DraftDetailPage() {
             disabled={saving || draftsLocked || !hasUnsavedChanges || !summary.isValid}
             variant={draftsLocked ? "ghost" : "primary"}
           >
-            {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
+            {saving ? "saving..." : draftsLocked ? "draft locked" : "save draft"}
           </UiButton>
         </div>
       </section>
@@ -416,8 +416,8 @@ export default function DraftDetailPage() {
                     </div>
                     <div style={{ fontSize: 12, opacity: 0.75 }}>
                       {competitionSlug === "world-cup"
-                        ? `${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"} tier`
-                        : `Seed ${team.seed}`}
+                        ? `${getWorldCupTierForCost(team.cost)?.name ?? "world cup"} tier`
+                        : `seed ${team.seed}`}
                     </div>
                   </div>
                 </div>
@@ -438,15 +438,15 @@ export default function DraftDetailPage() {
             height: "fit-content",
           }}
         >
-          <div style={{ fontWeight: 900, fontSize: 18 }}>Summary</div>
+          <div style={{ fontWeight: 900, fontSize: 18 }}>summary</div>
 
           <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Total cost</span>
+              <span>total cost</span>
               <b>{summary.totalCost}</b>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Remaining</span>
+              <span>remaining</span>
               <b>{summary.remaining}</b>
             </div>
             {competitionSlug === "march-madness" ? (
@@ -466,7 +466,7 @@ export default function DraftDetailPage() {
               </>
             ) : (
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Gold+ teams</span>
+                <span>gold+ teams</span>
                 <b>{summary.countWorldCupElite}/{WORLD_CUP_MAX_ELITE_TEAMS}</b>
               </div>
             )}
@@ -481,7 +481,7 @@ export default function DraftDetailPage() {
               fontWeight: 900,
             }}
           >
-            {summary.isValid ? "Draft is valid" : summary.error ?? "Draft is invalid"}
+            {summary.isValid ? "draft is valid" : summary.error ?? "draft is invalid"}
           </div>
 
           <UiButton
@@ -492,17 +492,17 @@ export default function DraftDetailPage() {
             size="lg"
             fullWidth
           >
-            {saving ? "Saving..." : draftsLocked ? "Draft Locked" : "Save Draft"}
+            {saving ? "saving..." : draftsLocked ? "draft locked" : "save draft"}
           </UiButton>
 
           <div style={{ fontSize: 13, opacity: 0.75 }}>
             {competitionSlug === "world-cup"
-              ? `Rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget; max ${WORLD_CUP_MAX_ELITE_TEAMS} Gold-or-higher teams.`
-              : `Rules: budget ${DRAFT_BUDGET}, max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
+              ? `rules: draft any number of national teams within the ${DRAFT_BUDGET}-point budget; max ${WORLD_CUP_MAX_ELITE_TEAMS} gold-or-higher teams.`
+              : `rules: budget ${DRAFT_BUDGET}, max ${MAX_1_SEEDS} one-seeds, max ${MAX_2_SEEDS} two-seeds, max ${MAX_14_TO_16_SEEDS} seeds 14-16.`}
           </div>
 
           <div style={{ display: "grid", gap: 4 }}>
-            <div style={{ fontWeight: 800, fontSize: 13 }}>Selected teams ({selectedTeams.length})</div>
+            <div style={{ fontWeight: 800, fontSize: 13 }}>selected teams ({selectedTeams.length})</div>
             <div style={{ display: "grid", gap: 4 }}>
               {selectedTeams.slice(0, 18).map((team) => (
                 <div

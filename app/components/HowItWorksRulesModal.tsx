@@ -77,7 +77,7 @@ export default function HowItWorksRulesModal() {
           }}
         >
           <h2 style={{ margin: 0, fontSize: 28, fontWeight: 900 }}>
-            bracketball: How It Works
+            bracketball: how it works
           </h2>
           <button
             type="button"

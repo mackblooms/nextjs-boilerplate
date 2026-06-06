@@ -105,6 +105,39 @@ body {
   overscroll-behavior-y: none;
 }
 
+body :where(
+  a,
+  b,
+  button,
+  code,
+  div,
+  figcaption,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  input,
+  label,
+  legend,
+  li,
+  option,
+  p,
+  pre,
+  select,
+  small,
+  span,
+  strong,
+  summary,
+  svg text,
+  td,
+  textarea,
+  th
+) {
+  text-transform: lowercase !important;
+}
+
 body.has-app-shell {
   padding-top: calc(90px + env(safe-area-inset-top));
   padding-bottom: calc(102px + env(safe-area-inset-bottom));
