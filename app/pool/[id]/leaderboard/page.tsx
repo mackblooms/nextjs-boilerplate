@@ -1616,7 +1616,6 @@ export default function LeaderboardPage() {
               fontSize: 12,
               fontWeight: 800,
               letterSpacing: 0.24,
-              textTransform: "uppercase",
               opacity: 0.62,
             }}
           >
