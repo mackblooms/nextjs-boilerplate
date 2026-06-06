@@ -1,6 +1,6 @@
 # World Cup Draft Pricing and Scoring
 
-Status: proposed launch rules, calibrated on May 31, 2026.
+Status: proposed launch rules, calibrated on June 6, 2026.
 
 ## Design Goals
 
@@ -31,9 +31,12 @@ a sportsbook stage market is unavailable. Median probabilities are preferable to
 price because they resist outliers and promotional lines.
 
 The provisional launch prices below are explicit tournament tiers informed by full-path
-base-score expected value under the proposed rules. The reproducible audit is available
-through `npm run sim:world-cup-pricing`. Tier buckets make the pricing easier to explain,
-limit false precision, and keep picking restrictions predictable. Bonus EV is reported
+base-score expected value under the proposed rules. The June 6 accessibility pass lowers
+Bronze, Value, Longshot, and Moonshot costs so drafts can include more teams, while
+keeping Value teams above the 10-point Breakout Bonus threshold to avoid a structural
+pricing loophole. The reproducible audit is available through
+`npm run sim:world-cup-pricing`. Tier buckets make the pricing easier to explain, limit
+false precision, and keep picking restrictions predictable. Bonus EV is reported
 separately instead of feeding back into price, because the bonuses intentionally preserve
 upside for value teams. Re-run the calibration once immediately before drafts open, then
 freeze it.
@@ -50,10 +53,10 @@ points range and gives stronger group-stage teams appropriate credit.
 | Platinum | 22 | Argentina, France |
 | Gold | 20 | Brazil, England, Germany, Netherlands, Portugal |
 | Silver | 17 | Belgium, Canada, Colombia, Croatia, Ecuador, Mexico, Norway, Switzerland, Turkiye |
-| Bronze | 14 | Australia, Austria, Czechia, IR Iran, Japan, Korea Republic, Morocco, Paraguay, Senegal, Uruguay, USA |
-| Value | 12 | Algeria, Bosnia and Herzegovina, Cote d'Ivoire, Egypt, Jordan, New Zealand, Panama, Scotland, Sweden, Uzbekistan |
-| Longshot | 10 | Cabo Verde, Congo DR, Curacao, Haiti, Saudi Arabia, South Africa, Tunisia |
-| Moonshot | 7 | Ghana, Iraq, Qatar |
+| Bronze | 13 | Australia, Austria, Czechia, IR Iran, Japan, Korea Republic, Morocco, Paraguay, Senegal, Uruguay, USA |
+| Value | 11 | Algeria, Bosnia and Herzegovina, Cote d'Ivoire, Egypt, Jordan, New Zealand, Panama, Scotland, Sweden, Uzbekistan |
+| Longshot | 8 | Cabo Verde, Congo DR, Curacao, Haiti, Saudi Arabia, South Africa, Tunisia |
+| Moonshot | 5 | Ghana, Iraq, Qatar |
 
 ## Base Scoring
 
@@ -102,7 +105,9 @@ reserved for the harder achievement: a low-priced team surviving its group.
 Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
 across the 100-point budget while enforcing the max-3 elite-team cap. Cheap-team
 accumulation must not dominate the optimizer. With the current rules, the highest
-projected-EV portfolio is `Spain, France, Argentina, Mexico, Senegal`.
+projected-EV portfolio is `Spain, France, Argentina, Senegal, Japan, Qatar`. It uses
+three elite teams and three sub-15 teams, so the new board creates room to follow more
+teams without making all-cheap accumulation the dominant strategy.
 
 ## Implementation Notes
 

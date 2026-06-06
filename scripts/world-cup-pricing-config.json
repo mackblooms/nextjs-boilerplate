@@ -8,10 +8,10 @@
     ["Platinum", 22, ["Argentina", "France"]],
     ["Gold", 20, ["Brazil", "England", "Germany", "Netherlands", "Portugal"]],
     ["Silver", 17, ["Belgium", "Canada", "Colombia", "Croatia", "Ecuador", "Mexico", "Norway", "Switzerland", "Turkiye"]],
-    ["Bronze", 14, ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"]],
-    ["Value", 12, ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"]],
-    ["Longshot", 10, ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"]],
-    ["Moonshot", 7, ["Ghana", "Iraq", "Qatar"]]
+    ["Bronze", 13, ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"]],
+    ["Value", 11, ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"]],
+    ["Longshot", 8, ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"]],
+    ["Moonshot", 5, ["Ghana", "Iraq", "Qatar"]]
   ],
   "basePoints": {
     "groupQualification": 12,
