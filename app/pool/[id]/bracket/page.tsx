@@ -41,6 +41,7 @@ type Game = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  sportsdata_game_id: number | null;
 };
 
 type PlayerOption = {
@@ -282,13 +283,13 @@ export default function BracketPage() {
   const refreshBracketState = useCallback(async () => {
     let { data: gameRows, error: gameErr } = await supabase
       .from("games")
-      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id")
+      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id")
       .eq("competition_slug", competitionSlug);
 
     if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
       const fallback = await supabase
         .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,sportsdata_game_id");
       gameRows = (fallback.data ?? []).map((row) => ({
         ...row,
         status: null,
@@ -483,13 +484,13 @@ export default function BracketPage() {
 
       let { data: gameRows, error: gameErr } = await supabase
         .from("games")
-        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id")
+        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id")
         .eq("competition_slug", nextCompetitionSlug);
 
       if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
         const fallback = await supabase
           .from("games")
-          .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+          .select("id,round,region,slot,team1_id,team2_id,winner_team_id,sportsdata_game_id");
         gameRows = (fallback.data ?? []).map((row) => ({
           ...row,
           status: null,
@@ -1030,6 +1031,7 @@ export default function BracketPage() {
   const renderGameBox = (
     children: ReactNode,
     meta?: string | null,
+    gameNumber?: number | null,
   ) => (
     <div
       style={{
@@ -1045,6 +1047,21 @@ export default function BracketPage() {
         justifyContent: "space-between",
       }}
     >
+      {gameNumber != null ? (
+        <div
+          style={{
+            fontSize: 8,
+            lineHeight: "10px",
+            fontWeight: 800,
+            opacity: 0.45,
+            textAlign: "right",
+            paddingBottom: 2,
+            letterSpacing: 0.2,
+          }}
+        >
+          G{gameNumber}
+        </div>
+      ) : null}
       <div style={{ display: "grid", gap: 4 }}>{children}</div>
       {meta ? (
         <div
@@ -1126,6 +1143,7 @@ export default function BracketPage() {
                       {renderTeam(bottomRow.teamId, g.winner_team_id, bottomRow.score)}
                     </>,
                     meta,
+                    g.sportsdata_game_id,
                   )}
                 </div>
               );
@@ -1642,6 +1660,7 @@ export default function BracketPage() {
                             )}
                           </>,
                           formatGameMeta(championship),
+                          championship?.sportsdata_game_id,
                         );
                       })()}
                     </div>

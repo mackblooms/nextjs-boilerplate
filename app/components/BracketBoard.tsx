@@ -21,6 +21,7 @@ export type BracketBoardGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  sportsdata_game_id?: number | null;
 };
 
 type LiveScoresResponse = {
@@ -270,7 +271,7 @@ export function BracketBoard({
     );
   };
 
-  const renderGameBox = (children: ReactNode, meta?: string | null) => (
+  const renderGameBox = (children: ReactNode, meta?: string | null, gameNumber?: number | null) => (
     <div
       style={{
         border: "1px solid var(--border-color)",
@@ -285,6 +286,21 @@ export function BracketBoard({
         justifyContent: "space-between",
       }}
     >
+      {gameNumber != null ? (
+        <div
+          style={{
+            fontSize: 8,
+            lineHeight: "10px",
+            fontWeight: 800,
+            opacity: 0.45,
+            textAlign: "right",
+            paddingBottom: 2,
+            letterSpacing: 0.2,
+          }}
+        >
+          G{gameNumber}
+        </div>
+      ) : null}
       <div style={{ display: "grid", gap: 6 }}>{children}</div>
       {meta ? (
         <div
@@ -358,6 +374,7 @@ export function BracketBoard({
                       {renderTeam(g.team2_id, g.winner_team_id, scoreForDisplay(g.id, "team2"))}
                     </>,
                     meta,
+                    g.sportsdata_game_id,
                   )}
                 </div>
               );
@@ -531,6 +548,7 @@ export function BracketBoard({
                   )}
                 </>,
                 formatGameMeta(championship),
+                championship?.sportsdata_game_id,
               )}
             </div>
           </div>
