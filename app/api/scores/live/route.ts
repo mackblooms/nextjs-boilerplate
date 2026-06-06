@@ -221,7 +221,7 @@ function normalizeEvent(event: EspnEvent, competitionSlug: CompetitionSlug): Liv
   };
 }
 
-async function runAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
+async function runAutoScoreSync(req: Request, rows: LiveScoreRow[], competitionSlug: CompetitionSlug) {
   const hasFinalGame = rows.some((row) => row.state === "FINAL");
   if (!hasFinalGame) return;
   if (autoSyncInFlight) {
@@ -247,7 +247,7 @@ async function runAutoScoreSync(req: Request, rows: LiveScoreRow[]) {
           "Content-Type": "application/json",
           ...(authorization ? { authorization } : {}),
         },
-        body: JSON.stringify({ lookbackDays: 3 }),
+        body: JSON.stringify({ lookbackDays: 3, competition: competitionSlug }),
         cache: "no-store",
       }).catch(() => undefined);
     } finally {
@@ -311,8 +311,8 @@ export async function GET(req: Request) {
       .filter((row): row is LiveScoreRow => row !== null)
       .sort(sortScores);
 
-    if (competitionSlug === "march-madness") {
-      await runAutoScoreSync(req, rows);
+    if (competitionSlug === "march-madness" || competitionSlug === "world-cup") {
+      await runAutoScoreSync(req, rows, competitionSlug);
     }
 
     return NextResponse.json({

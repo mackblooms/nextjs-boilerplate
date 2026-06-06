@@ -871,20 +871,54 @@ textarea::placeholder {
 
 .world-cup-knockout-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(180px, 1fr));
-  gap: 12px;
-  min-width: 980px;
+  grid-template-columns:
+    minmax(140px, 1.05fr)
+    minmax(136px, 0.96fr)
+    minmax(132px, 0.9fr)
+    minmax(128px, 0.84fr)
+    minmax(150px, 0.96fr)
+    minmax(128px, 0.84fr)
+    minmax(132px, 0.9fr)
+    minmax(136px, 0.96fr)
+    minmax(140px, 1.05fr);
+  gap: 10px;
+  min-width: 1180px;
 }
 
 .world-cup-knockout-round {
   display: grid;
   align-content: space-around;
   gap: 8px;
+  min-height: 680px;
 }
 
-.world-cup-knockout-round > strong {
+.world-cup-knockout-round[data-round="S16"] {
+  min-height: 610px;
+}
+
+.world-cup-knockout-round[data-round="E8"] {
+  min-height: 520px;
+}
+
+.world-cup-knockout-round[data-round="F4"],
+.world-cup-knockout-center {
+  min-height: 430px;
+}
+
+.world-cup-knockout-round > strong,
+.world-cup-knockout-center > strong {
   font-size: 0.8rem;
   text-align: center;
+}
+
+.world-cup-knockout-round[data-side="right"] .world-cup-knockout-game {
+  text-align: right;
+}
+
+.world-cup-knockout-center {
+  display: grid;
+  align-content: center;
+  gap: 8px;
 }
 
 .world-cup-knockout-game {

@@ -1,3 +1,10 @@
+import {
+  WORLD_CUP_LEFT_LAYOUT,
+  WORLD_CUP_RIGHT_LAYOUT,
+  WORLD_CUP_SLOT_LABELS,
+  type WorldCupRound,
+} from "@/lib/worldCupBracket";
+
 type Team = {
   id: string;
   name: string;
@@ -23,40 +30,6 @@ const ROUNDS = [
   { key: "CHIP", label: "final", slots: 1 },
 ] as const;
 
-const WORLD_CUP_SLOT_LABELS: Record<string, [string, string]> = {
-  "R32|1": ["2A", "2B"],
-  "R32|2": ["1E", "3RD A/B/C/D/F"],
-  "R32|3": ["1F", "2C"],
-  "R32|4": ["1C", "2F"],
-  "R32|5": ["1I", "3RD C/D/F/G/H"],
-  "R32|6": ["2E", "2I"],
-  "R32|7": ["1A", "3RD C/E/F/H/I"],
-  "R32|8": ["1L", "3RD E/H/I/J/K"],
-  "R32|9": ["1D", "3RD B/E/F/I/J"],
-  "R32|10": ["1G", "3RD A/E/H/I/J"],
-  "R32|11": ["2K", "2L"],
-  "R32|12": ["1H", "2J"],
-  "R32|13": ["1B", "3RD E/F/G/I/J"],
-  "R32|14": ["1J", "2H"],
-  "R32|15": ["1K", "3RD D/E/I/J/L"],
-  "R32|16": ["2D", "2G"],
-  "S16|1": ["W74", "W77"],
-  "S16|2": ["W73", "W75"],
-  "S16|3": ["W76", "W78"],
-  "S16|4": ["W79", "W80"],
-  "S16|5": ["W83", "W84"],
-  "S16|6": ["W81", "W82"],
-  "S16|7": ["W86", "W88"],
-  "S16|8": ["W85", "W87"],
-  "E8|1": ["W89", "W90"],
-  "E8|2": ["W93", "W94"],
-  "E8|3": ["W91", "W92"],
-  "E8|4": ["W95", "W96"],
-  "F4|1": ["W97", "W98"],
-  "F4|2": ["W99", "W100"],
-  "CHIP|1": ["W101", "W102"],
-};
-
 export default function WorldCupBracketBoard({
   teams,
   games,
@@ -80,6 +53,11 @@ export default function WorldCupBracketBoard({
     regionGames.sort((a, b) => a.slot - b.slot);
   }
 
+  const gamesByRoundSlot = new Map<string, Game>();
+  for (const game of games) {
+    gamesByRoundSlot.set(`${game.round}|${game.slot}`, game);
+  }
+
   const teamRow = (teamId: string | null, winnerId: string | null, fallbackLabel = "tbd") => {
     const team = teamId ? teamById.get(teamId) : null;
     return (
@@ -99,6 +77,28 @@ export default function WorldCupBracketBoard({
       {teamRow(game.team2_id, game.winner_team_id)}
     </article>
   );
+
+  const knockoutGame = (round: WorldCupRound, slot: number) => {
+    const game = gamesByRoundSlot.get(`${round}|${slot}`);
+    const slotLabels = WORLD_CUP_SLOT_LABELS[`${round}|${slot}`] ?? ["tbd", "tbd"];
+    return (
+      <article className="world-cup-knockout-game" key={`${round}-${slot}`}>
+        {teamRow(game?.team1_id ?? null, game?.winner_team_id ?? null, slotLabels[0])}
+        {teamRow(game?.team2_id ?? null, game?.winner_team_id ?? null, slotLabels[1])}
+      </article>
+    );
+  };
+
+  const roundLabel = (round: WorldCupRound) => ROUNDS.find((candidate) => candidate.key === round)?.label ?? round;
+  const sideRound = (round: Exclude<WorldCupRound, "CHIP">, side: "left" | "right") => {
+    const layout = side === "left" ? WORLD_CUP_LEFT_LAYOUT[round] : WORLD_CUP_RIGHT_LAYOUT[round];
+    return (
+      <div className="world-cup-knockout-round" data-side={side} data-round={round} key={`${side}-${round}`}>
+        <strong>{roundLabel(round)}</strong>
+        {layout.map((slot) => knockoutGame(round, slot))}
+      </div>
+    );
+  };
 
   return (
     <div className="world-cup-bracket-board">
@@ -138,28 +138,12 @@ export default function WorldCupBracketBoard({
           <strong>32 teams to one champion</strong>
         </div>
         <div className="world-cup-knockout-grid">
-          {ROUNDS.map((round) => {
-            const roundGames = games
-              .filter((game) => game.round === round.key)
-              .sort((a, b) => a.slot - b.slot);
-
-            return (
-              <div className="world-cup-knockout-round" key={round.key}>
-                <strong>{round.label}</strong>
-                {Array.from({ length: round.slots }, (_, index) => {
-                  const game = roundGames[index];
-                  const slot = game?.slot ?? index + 1;
-                  const slotLabels = WORLD_CUP_SLOT_LABELS[`${round.key}|${slot}`] ?? ["tbd", "tbd"];
-                  return (
-                    <article className="world-cup-knockout-game" key={`${round.key}-${index + 1}`}>
-                      {teamRow(game?.team1_id ?? null, game?.winner_team_id ?? null, slotLabels[0])}
-                      {teamRow(game?.team2_id ?? null, game?.winner_team_id ?? null, slotLabels[1])}
-                    </article>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {(["R32", "S16", "E8", "F4"] as const).map((round) => sideRound(round, "left"))}
+          <div className="world-cup-knockout-center">
+            <strong>final</strong>
+            {knockoutGame("CHIP", 1)}
+          </div>
+          {(["F4", "E8", "S16", "R32"] as const).map((round) => sideRound(round, "right"))}
         </div>
       </section>
     </div>
