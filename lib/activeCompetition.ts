@@ -7,12 +7,15 @@ import {
 const ACTIVE_COMPETITION_STORAGE_KEY = "bb:active-competition";
 
 export function getStoredActiveCompetition(): CompetitionSlug {
-  if (typeof window === "undefined") return DEFAULT_COMPETITION_SLUG;
+  if (typeof window === "undefined") return "world-cup";
 
   try {
-    return normalizeCompetitionSlug(window.localStorage.getItem(ACTIVE_COMPETITION_STORAGE_KEY));
+    const stored = window.localStorage.getItem(ACTIVE_COMPETITION_STORAGE_KEY);
+    // No stored preference yet → default to the active competition.
+    if (!stored) return "world-cup";
+    return normalizeCompetitionSlug(stored);
   } catch {
-    return DEFAULT_COMPETITION_SLUG;
+    return "world-cup";
   }
 }
 

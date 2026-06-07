@@ -89,7 +89,7 @@ export default function DraftDetailPage() {
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [savedSelected, setSavedSelected] = useState<Set<string>>(new Set());
-  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("world-cup");
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
