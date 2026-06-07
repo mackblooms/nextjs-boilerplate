@@ -687,12 +687,16 @@ function ScorePanel({
   );
 }
 
-function HomeContent() {
+export function HomeContent({
+  forcedCompetitionSlug,
+}: {
+  forcedCompetitionSlug?: CompetitionSlug;
+} = {}) {
   const searchParams = useSearchParams();
   const invitePoolId = searchParams.get("invite");
   const competitionParam = searchParams.get("competition");
   const [activeCompetitionSlug, setActiveCompetitionSlug] = useState<CompetitionSlug>(() =>
-    competitionParam ? normalizeCompetitionSlug(competitionParam) : getStoredActiveCompetition()
+    forcedCompetitionSlug ?? (competitionParam ? normalizeCompetitionSlug(competitionParam) : getStoredActiveCompetition())
   );
   const [invitePoolName, setInvitePoolName] = useState<string | null>(null);
   const [scores, setScores] = useState<LiveScoreGame[]>([]);
@@ -733,12 +737,12 @@ function HomeContent() {
   }, [invitePoolId]);
 
   useEffect(() => {
-    const nextCompetitionSlug = competitionParam
+    const nextCompetitionSlug = forcedCompetitionSlug ?? (competitionParam
       ? normalizeCompetitionSlug(competitionParam)
-      : getStoredActiveCompetition();
+      : getStoredActiveCompetition());
     setActiveCompetitionSlug(nextCompetitionSlug);
     setStoredActiveCompetition(nextCompetitionSlug);
-  }, [competitionParam]);
+  }, [competitionParam, forcedCompetitionSlug]);
 
   useEffect(() => {
     const loadInvitePoolName = async () => {
