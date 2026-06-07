@@ -57,12 +57,22 @@ const WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND: Record<string, number> = {
   CHIP: 100,
 };
 
-const WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND: Record<string, number> = {
-  R32: 4,
-  S16: 8,
-  E8: 14,
-  F4: 21,
-  CHIP: 30,
+const WORLD_CUP_LONGSHOT_BONUS_BY_ROUND: Record<string, number> = {
+  GROUP_ADVANCE: 25,
+  R32: 50,
+  S16: 75,
+  E8: 100,
+  F4: 150,
+  CHIP: 200,
+};
+
+const WORLD_CUP_VALUE_BONUS_BY_ROUND: Record<string, number> = {
+  GROUP_ADVANCE: 5,
+  R32: 10,
+  S16: 20,
+  E8: 40,
+  F4: 80,
+  CHIP: 160,
 };
 
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
@@ -99,6 +109,13 @@ function isFinalStatus(status: unknown): boolean {
 function worldCupTeamCost(teamId: string, options: ScoringOptions): number | null {
   const raw = options.teamCostById?.get(teamId);
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
+
+function worldCupValuePickBonus(cost: number | null, round: string): number {
+  if (cost == null) return 0;
+  if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
+  if (cost <= 10) return WORLD_CUP_VALUE_BONUS_BY_ROUND[round] ?? 0;
+  return 0;
 }
 
 function scoreWorldCupTeamResultsDetailed(
@@ -164,7 +181,7 @@ function scoreWorldCupTeamResultsDetailed(
         if (!teamId || groupAdvancementAwarded.has(teamId)) continue;
         groupAdvancementAwarded.add(teamId);
         const cost = worldCupTeamCost(teamId, options);
-        const breakoutBonus = cost != null && cost <= 5 ? 6 : 0;
+        const breakoutBonus = worldCupValuePickBonus(cost, "GROUP_ADVANCE");
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round: "GROUP_ADVANCE",
@@ -188,7 +205,7 @@ function scoreWorldCupTeamResultsDetailed(
     if (!base) return;
 
     const cost = worldCupTeamCost(winnerId, options);
-    const valueRunBonus = cost != null && cost < 10 ? WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND[round] ?? 0 : 0;
+    const valueRunBonus = worldCupValuePickBonus(cost, round);
     const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
     addScoreEvent(totals, eventsByTeamId, {
       gameIndex: index,

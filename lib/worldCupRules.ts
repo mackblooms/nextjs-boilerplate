@@ -51,13 +51,21 @@ export const WORLD_CUP_SCORING_EVENTS = [
 ] as const;
 
 export const WORLD_CUP_VALUE_RUN_BONUS_EVENTS = [
-  ["Reach Round of 16", "+4"],
-  ["Reach quarterfinal", "+8"],
-  ["Reach semifinal", "+14"],
-  ["Reach final", "+21"],
-  ["Become champion", "+30"],
+  ["Reach Round of 32", "+5"],
+  ["Reach Round of 16", "+10"],
+  ["Reach quarterfinal", "+20"],
+  ["Reach semifinal", "+40"],
+  ["Reach final", "+80"],
+  ["Become champion", "+160"],
 ] as const;
 
-export const WORLD_CUP_BREAKOUT_BONUS_EVENTS = [
-  ["Advance from group", "+6"],
+export const WORLD_CUP_LONGSHOT_BONUS_EVENTS = [
+  ["Reach Round of 32", "+25"],
+  ["Reach Round of 16", "+50"],
+  ["Reach quarterfinal", "+75"],
+  ["Reach semifinal", "+100"],
+  ["Reach final", "+150"],
+  ["Become champion", "+200"],
 ] as const;
+
+export const WORLD_CUP_BREAKOUT_BONUS_EVENTS = WORLD_CUP_LONGSHOT_BONUS_EVENTS;

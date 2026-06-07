@@ -33,6 +33,8 @@ type Row = {
   rank_delta: number | null;
 };
 
+type BaseLeaderboardRow = Pick<Row, "entry_id" | "user_id" | "display_name">;
+
 type DraftedTeam = {
   team_id: string;
   team_name: string;
@@ -932,11 +934,10 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const baseRows = (data ?? []) as Omit<
-        Row,
-        "total_score" | "rank" | "rank_delta" | "full_name" | "entry_name" | "avatar_url"
-      >[];
-      const entryIds = baseRows.map((r) => r.entry_id);
+      const baseRows = (data ?? []) as BaseLeaderboardRow[];
+      let activeBaseRows = baseRows;
+      let entryIds = activeBaseRows.map((r) => r.entry_id);
+      let latestPicksByEntry: Record<string, string[]> | null = null;
 
       let draftNameByEntry = new Map<string, string>();
       const token = await getAccessToken();
@@ -951,7 +952,22 @@ export default function LeaderboardPage() {
           if (draftNameRes.ok) {
             const payload = (await draftNameRes.json().catch(() => ({}))) as {
               draftNamesByEntry?: Record<string, string>;
+              entries?: Array<{
+                entry_id: string;
+                user_id: string;
+                display_name: string | null;
+              }>;
+              picksByEntry?: Record<string, string[]>;
             };
+            if (Array.isArray(payload.entries)) {
+              activeBaseRows = payload.entries.map((entry) => ({
+                entry_id: entry.entry_id,
+                user_id: entry.user_id,
+                display_name: entry.display_name,
+              }));
+              entryIds = activeBaseRows.map((entry) => entry.entry_id);
+            }
+            latestPicksByEntry = payload.picksByEntry ?? null;
             draftNameByEntry = new Map(
               Object.entries(payload.draftNamesByEntry ?? {}).map(([entryId, draftName]) => [
                 entryId,
@@ -964,7 +980,7 @@ export default function LeaderboardPage() {
         }
       }
 
-      const userIds = Array.from(new Set(baseRows.map((r) => r.user_id)));
+      const userIds = Array.from(new Set(activeBaseRows.map((r) => r.user_id)));
       let profileByUser = new Map<
         string,
         { full_name: string | null; avatar_url: string | null }
@@ -1045,7 +1061,14 @@ export default function LeaderboardPage() {
         if (game.winner_team_id) gameTeamIds.add(game.winner_team_id);
       }
 
-      if (entryIds.length > 0) {
+      if (latestPicksByEntry) {
+        picksByEntry = new Map(
+          Object.entries(latestPicksByEntry).map(([entryId, teamIds]) => [
+            entryId,
+            Array.isArray(teamIds) ? teamIds.map(String) : [],
+          ]),
+        );
+      } else if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
           .select("entry_id,team_id")
@@ -1194,7 +1217,7 @@ export default function LeaderboardPage() {
         setPopularTeams([]);
       }
 
-      const computed = baseRows
+      const computed = activeBaseRows
         .map((r) => {
           const totalScore = scoredEntries.totalScoreByEntryId.get(r.entry_id) ?? 0;
           const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
@@ -1282,7 +1305,7 @@ export default function LeaderboardPage() {
           teamCostById,
         });
         const priorRoundReachedByTeam = roundReachedOrderByTeam(priorGames);
-        const priorComputed = baseRows.map((r) => {
+        const priorComputed = activeBaseRows.map((r) => {
           const entryTeamIds = Array.from(new Set(picksByEntry.get(r.entry_id) ?? []));
           const finalFourCount = entryTeamIds.reduce((sum, teamId) => {
             return sum + ((priorRoundReachedByTeam.get(teamId) ?? 0) >= ROUND_ORDER.F4 ? 1 : 0);

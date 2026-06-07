@@ -3,8 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  WORLD_CUP_BREAKOUT_BONUS_EVENTS,
   WORLD_CUP_DRAFT_TIERS,
+  WORLD_CUP_LONGSHOT_BONUS_EVENTS,
   WORLD_CUP_SCORING_EVENTS,
   WORLD_CUP_VALUE_RUN_BONUS_EVENTS,
 } from "@/lib/worldCupRules";
@@ -102,11 +102,11 @@ function SoccerRules() {
       </section>
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Bonuses for Value Picks</h2>
-        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Value-, Longshot-, and Moonshot-tier teams priced below <b>10 points</b> earn extra cumulative Value Run bonuses when they reach the Round of 16 and beyond.</p>
-        <RulesTable columns={["Value Run Result", "Additional Bonus"]} rows={WORLD_CUP_VALUE_RUN_BONUS_EVENTS} />
-        <p style={{ marginTop: 16, lineHeight: 1.6 }}>Longshot- and Moonshot-tier teams priced <b>5 points or lower</b> also earn a Breakout Bonus for escaping the group stage.</p>
-        <RulesTable columns={["Breakout Result", "Additional Bonus"]} rows={WORLD_CUP_BREAKOUT_BONUS_EVENTS} />
-        <p style={{ marginTop: 10, opacity: 0.85 }}>Every team earns the same 6 base points for a group-stage win. The Breakout Bonus rewards the harder achievement: a low-priced team surviving its group.</p>
+        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Bronze- and Value-tier teams priced <b>10 points or lower</b> earn extra cumulative Value Run bonuses when they advance.</p>
+        <RulesTable columns={["10-Point-or-Lower Result", "Additional Bonus"]} rows={WORLD_CUP_VALUE_RUN_BONUS_EVENTS} />
+        <p style={{ marginTop: 16, lineHeight: 1.6 }}>Longshot- and Moonshot-tier teams priced <b>5 points or lower</b> use a larger longshot bonus schedule instead.</p>
+        <RulesTable columns={["5-Point-or-Lower Result", "Additional Bonus"]} rows={WORLD_CUP_LONGSHOT_BONUS_EVENTS} />
+        <p style={{ marginTop: 10, opacity: 0.85 }}>Every team earns the same 6 base points for a group-stage win. Value bonuses reward the harder achievement: a low-priced team surviving its group and continuing to advance.</p>
       </section>
       <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>4) Why Prices Differ</h2><p style={{ marginTop: 10, lineHeight: 1.6 }}>Price is not based only on the chance to win the championship. A team with a favorable group and an easier early knockout path can be valuable because it is likely to collect points before the final rounds.</p></section>
       <section className="legal-doc-section"><h2 style={{ fontSize: 20, fontWeight: 900 }}>5) Draft Rules</h2><ul style={{ marginTop: 10, lineHeight: 1.6 }}><li>Draft any number of national teams.</li><li>Stay at or below the 100-point budget.</li><li>Draft at most 3 Gold-or-higher teams priced 20 points or higher.</li><li>There are no pot, group, or roster-size caps.</li></ul></section>

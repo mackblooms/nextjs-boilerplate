@@ -33,9 +33,9 @@ price because they resist outliers and promotional lines.
 The provisional launch prices below are explicit tournament tiers informed by full-path
 base-score expected value under the proposed rules. The June 6 accessibility pass keeps
 the top tier expensive, then lowers Silver through Moonshot costs so drafts can include
-more teams. Longshot and Moonshot teams now sit at tiny-cost prices, with a reduced
-bonus layer so cheap-team accumulation does not become a structural pricing loophole.
-The reproducible audit is available through
+more teams. Longshot and Moonshot teams now sit at tiny-cost prices, with a tiered
+bonus layer that creates meaningful upside without making cheap-team accumulation a
+structural pricing loophole. The reproducible audit is available through
 `npm run sim:world-cup-pricing`. Tier buckets make the pricing easier to explain, limit
 false precision, and keep picking restrictions predictable. Bonus EV is reported
 separately instead of feeding back into price, because the bonuses intentionally preserve
@@ -81,35 +81,45 @@ results. Team costs already incorporate group strength and projected knockout pa
 
 ## Value Pick Bonuses
 
-Teams costing less than 10 points receive additional cumulative Value Run bonuses when
-they reach the Round of 16 and beyond.
+Teams costing 10 points or less receive additional cumulative Value Run bonuses when
+they advance.
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Reach Round of 16 | 4 |
-| Reach quarterfinal | 8 |
-| Reach semifinal | 14 |
-| Reach final | 21 |
-| Become champion | 30 |
+| Reach Round of 32 | 5 |
+| Reach Round of 16 | 10 |
+| Reach quarterfinal | 20 |
+| Reach semifinal | 40 |
+| Reach final | 80 |
+| Become champion | 160 |
 
-Longshot- and Moonshot-tier teams costing 5 points or less also receive a Breakout Bonus:
+Longshot- and Moonshot-tier teams costing 5 points or less use the larger longshot
+bonus schedule instead:
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Advance from group | 6 |
+| Reach Round of 32 | 25 |
+| Reach Round of 16 | 50 |
+| Reach quarterfinal | 75 |
+| Reach semifinal | 100 |
+| Reach final | 150 |
+| Become champion | 200 |
 
-Every team receives the same 6 base points for a group-stage win. The Breakout Bonus is
-reserved for the harder achievement: a low-priced team surviving its group.
+Every team receives the same 6 base points for a group-stage win. Value bonuses are
+reserved for the harder achievement: a low-priced team surviving its group and
+continuing to advance.
 
 ## Anti-Arbitrage Check
 
 Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
 across the 100-point budget while enforcing the max-3 elite-team cap. Cheap-team
 accumulation must not dominate the optimizer. With the current rules, the highest
-projected-EV portfolio is Spain, France, Argentina, Scotland, Bosnia and Herzegovina,
-Egypt, Cabo Verde, Qatar, and Ghana. It uses three elite teams and six lower-cost
-teams, so the new board creates room to follow more teams without making all-cheap
-accumulation the dominant strategy.
+projected-EV portfolio is Spain, France, Senegal, Japan, USA, Cabo Verde, Tunisia,
+Congo DR, Qatar, Ghana, and Iraq. It uses two elite teams, three Bronze teams, and six
+Longshot/Moonshot teams, with a projected EV of 574.8. The best no-elite portfolio
+remains lower at 533.1 projected EV. The board
+therefore creates real value-pick incentives without making all-cheap accumulation the
+dominant strategy.
 
 ## Implementation Notes
 

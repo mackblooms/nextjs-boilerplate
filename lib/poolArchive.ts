@@ -2,12 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { withAvatarFallback } from "./avatar";
 import { scoreEntries, type ScoringGame } from "./scoring";
 import { normalizeCompetitionSlug } from "./competitions";
-
-type PoolLeaderboardRow = {
-  entry_id: string;
-  user_id: string;
-  display_name: string | null;
-};
+import { loadLatestPoolEntries } from "./latestPoolEntries";
 
 type EntryNameRow = {
   id: string;
@@ -211,17 +206,6 @@ export async function buildPoolArchiveSnapshot(
 ): Promise<PoolArchiveSnapshot> {
   const resolvedSeason = normalizeSeason(season);
 
-  const { data: baseData, error: baseErr } = await supabaseAdmin
-    .from("pool_leaderboard")
-    .select("entry_id,user_id,display_name")
-    .eq("pool_id", poolId);
-
-  if (baseErr) {
-    throw baseErr;
-  }
-
-  const baseRows = (baseData ?? []) as PoolLeaderboardRow[];
-  const entryIds = baseRows.map((row) => row.entry_id);
   const { data: poolData, error: poolErr } = await supabaseAdmin
     .from("pools")
     .select("competition_slug")
@@ -231,6 +215,9 @@ export async function buildPoolArchiveSnapshot(
     throw poolErr;
   }
   const competitionSlug = normalizeCompetitionSlug(poolData?.competition_slug);
+  const latestEntries = await loadLatestPoolEntries(supabaseAdmin, poolId, competitionSlug);
+  const baseRows = latestEntries.entries;
+  const entryIds = baseRows.map((row) => row.entry_id);
 
   let entryNameById = new Map<string, string | null>();
   if (entryIds.length > 0) {
@@ -251,19 +238,9 @@ export async function buildPoolArchiveSnapshot(
   const userIds = Array.from(new Set(baseRows.map((row) => row.user_id)));
   const profileByUser = await loadProfiles(supabaseAdmin, userIds);
 
-  let pickRows: EntryPickRow[] = [];
-  if (entryIds.length > 0) {
-    const { data, error } = await supabaseAdmin
-      .from("entry_picks")
-      .select("entry_id,team_id")
-      .in("entry_id", entryIds);
-
-    if (error) {
-      throw error;
-    }
-
-    pickRows = (data as EntryPickRow[] | null) ?? [];
-  }
+  const pickRows: EntryPickRow[] = Array.from(latestEntries.picksByEntry.entries()).flatMap(
+    ([entry_id, teamIds]) => teamIds.map((team_id) => ({ entry_id, team_id })),
+  );
 
   const teamIds = Array.from(new Set(pickRows.map((row) => row.team_id)));
   let teamRows: TeamLookupRow[] = [];
@@ -376,7 +353,7 @@ export async function buildPoolArchiveSnapshot(
         row.user_id,
         profileByUser.get(row.user_id)?.avatar_url ?? null,
       ),
-      entry_name: entryNameById.get(row.entry_id) ?? null,
+      entry_name: row.latest_draft_name ?? entryNameById.get(row.entry_id) ?? row.entry_name ?? null,
       total_score: totalScore,
       final_four_count: finalFourCount,
       championship_count: championshipCount,

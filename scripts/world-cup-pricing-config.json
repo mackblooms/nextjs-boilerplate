@@ -21,18 +21,32 @@
     "semifinalWin": 72,
     "championshipWin": 100
   },
-  "breakoutBonus": {
-    "maximumCostInclusive": 5,
-    "groupQualification": 6
-  },
-  "valueRunBonus": {
-    "maximumCostExclusive": 10,
-    "roundOf16": 4,
-    "quarterfinal": 8,
-    "semifinal": 14,
-    "final": 21,
-    "champion": 30
-  },
+  "bonusTiers": [
+    {
+      "name": "5-point-or-lower longshot",
+      "maximumCostInclusive": 5,
+      "bonuses": {
+        "groupQualification": 25,
+        "roundOf16": 50,
+        "quarterfinal": 75,
+        "semifinal": 100,
+        "final": 150,
+        "champion": 200
+      }
+    },
+    {
+      "name": "10-point-or-lower value",
+      "maximumCostInclusive": 10,
+      "bonuses": {
+        "groupQualification": 5,
+        "roundOf16": 10,
+        "quarterfinal": 20,
+        "semifinal": 40,
+        "final": 80,
+        "champion": 160
+      }
+    }
+  ],
   "draftCaps": {
     "maximumEliteTeams": 3,
     "eliteMinimumCost": 20

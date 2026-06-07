@@ -1,41 +1,7 @@
 import { NextResponse } from "next/server";
-import { sameTeamSet } from "@/lib/savedDrafts";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-
-type PoolEntryRow = {
-  entry_id: string;
-  user_id: string;
-};
-
-type EntryPickRow = {
-  entry_id: string;
-  team_id: string;
-};
-
-type SavedDraftRow = {
-  id: string;
-  user_id: string;
-  name: string;
-  updated_at: string;
-};
-
-type SavedDraftPickRow = {
-  draft_id: string;
-  team_id: string;
-};
-
-type EntryNameRow = {
-  id: string;
-  entry_name: string | null;
-};
-
-function overlapCount(a: Set<string>, b: Set<string>) {
-  let overlap = 0;
-  for (const value of a) {
-    if (b.has(value)) overlap += 1;
-  }
-  return overlap;
-}
+import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -43,23 +9,6 @@ function getBearerToken(req: Request): string | null {
   const [scheme, token] = authHeader.split(" ");
   if (scheme?.toLowerCase() !== "bearer" || !token) return null;
   return token;
-}
-
-function isMissingSavedDraftTablesError(error: { message?: string; code?: string } | null | undefined) {
-  const message = (error?.message ?? "").toLowerCase();
-  return (
-    error?.code === "42P01" ||
-    message.includes("saved_drafts") ||
-    message.includes("saved_draft_picks")
-  );
-}
-
-function isMissingEntryNameError(error: { message?: string } | null | undefined) {
-  const message = error?.message ?? "";
-  return (
-    message.includes("column entries.entry_name does not exist") ||
-    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
-  );
 }
 
 export async function GET(req: Request) {
@@ -97,181 +46,32 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Join this pool to view draft names." }, { status: 403 });
     }
 
-    const { data: baseData, error: baseErr } = await supabaseAdmin
-      .from("pool_leaderboard")
-      .select("entry_id,user_id")
-      .eq("pool_id", poolId);
+    const { data: poolRow, error: poolErr } = await supabaseAdmin
+      .from("pools")
+      .select("competition_slug")
+      .eq("id", poolId)
+      .single();
 
-    if (baseErr) {
-      return NextResponse.json({ error: baseErr.message }, { status: 400 });
+    if (poolErr) {
+      return NextResponse.json({ error: poolErr.message }, { status: 400 });
     }
 
-    const baseRows = (baseData ?? []) as PoolEntryRow[];
-    if (baseRows.length === 0) {
-      return NextResponse.json({ ok: true, draftNamesByEntry: {} });
-    }
-
-    const entryIds = baseRows.map((row) => row.entry_id);
-    const userIds = Array.from(new Set(baseRows.map((row) => row.user_id)));
-    const draftNamesByEntry = new Map<string, string>();
-
-    const entryNameById = new Map<string, string>();
-    const entryNameResult = await supabaseAdmin
-      .from("entries")
-      .select("id,entry_name")
-      .in("id", entryIds);
-    if (!entryNameResult.error) {
-      for (const row of (entryNameResult.data ?? []) as EntryNameRow[]) {
-        const trimmed = row.entry_name?.trim();
-        if (trimmed) {
-          entryNameById.set(row.id, trimmed);
-          draftNamesByEntry.set(row.id, trimmed);
-        }
-      }
-    } else if (!isMissingEntryNameError(entryNameResult.error)) {
-      return NextResponse.json({ error: entryNameResult.error.message }, { status: 400 });
-    }
-
-    const { data: entryPickData, error: entryPickErr } = await supabaseAdmin
-      .from("entry_picks")
-      .select("entry_id,team_id")
-      .in("entry_id", entryIds);
-
-    if (entryPickErr) {
-      return NextResponse.json({ error: entryPickErr.message }, { status: 400 });
-    }
-
-    const entryPicksByEntry = new Map<string, Set<string>>();
-    for (const row of (entryPickData ?? []) as EntryPickRow[]) {
-      const picks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
-      picks.add(row.team_id);
-      entryPicksByEntry.set(row.entry_id, picks);
-    }
-
-    const { data: draftData, error: draftErr } = await supabaseAdmin
-      .from("saved_drafts")
-      .select("id,user_id,name,updated_at")
-      .in("user_id", userIds);
-
-    if (draftErr) {
-      if (isMissingSavedDraftTablesError(draftErr)) {
-        return NextResponse.json({ ok: true, draftNamesByEntry: {} });
-      }
-      return NextResponse.json({ error: draftErr.message }, { status: 400 });
-    }
-
-    const draftRows = ((draftData ?? []) as SavedDraftRow[]).sort(
-      (a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at),
+    const latestEntries = await loadLatestPoolEntries(
+      supabaseAdmin,
+      poolId,
+      normalizeCompetitionSlug(poolRow?.competition_slug),
     );
-    if (draftRows.length === 0) {
-      return NextResponse.json({ ok: true, draftNamesByEntry: {} });
-    }
-
-    const draftIds = draftRows.map((row) => row.id);
-    const { data: draftPickData, error: draftPickErr } = await supabaseAdmin
-      .from("saved_draft_picks")
-      .select("draft_id,team_id")
-      .in("draft_id", draftIds);
-
-    if (draftPickErr) {
-      if (isMissingSavedDraftTablesError(draftPickErr)) {
-        return NextResponse.json({ ok: true, draftNamesByEntry: {} });
-      }
-      return NextResponse.json({ error: draftPickErr.message }, { status: 400 });
-    }
-
-    const draftPicksByDraft = new Map<string, Set<string>>();
-    for (const row of (draftPickData ?? []) as SavedDraftPickRow[]) {
-      const picks = draftPicksByDraft.get(row.draft_id) ?? new Set<string>();
-      picks.add(row.team_id);
-      draftPicksByDraft.set(row.draft_id, picks);
-    }
-
-    const draftsByUser = new Map<string, SavedDraftRow[]>();
-    for (const draft of draftRows) {
-      const list = draftsByUser.get(draft.user_id) ?? [];
-      list.push(draft);
-      draftsByUser.set(draft.user_id, list);
-    }
-
-    for (const row of baseRows) {
-      const userDrafts = draftsByUser.get(row.user_id) ?? [];
-      if (userDrafts.length === 0) continue;
-
-      const entryPicks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
-      let resolvedDraftName: string | null = null;
-
-      if (entryPicks.size > 0) {
-        for (const draft of userDrafts) {
-          const draftPicks = draftPicksByDraft.get(draft.id);
-          if (!draftPicks || draftPicks.size === 0) continue;
-          if (!sameTeamSet(entryPicks, draftPicks)) continue;
-          const trimmed = draft.name.trim();
-          if (trimmed) {
-            resolvedDraftName = trimmed;
-          }
-          break;
-        }
-      }
-
-      if (!resolvedDraftName) {
-        let bestOverlap = 0;
-        let bestEntryShare = 0;
-        let bestDraftShare = 0;
-        let bestUpdatedAt = Number.NEGATIVE_INFINITY;
-
-        if (entryPicks.size > 0) {
-          for (const draft of userDrafts) {
-            const trimmed = draft.name.trim();
-            if (!trimmed) continue;
-
-            const draftPicks = draftPicksByDraft.get(draft.id);
-            if (!draftPicks || draftPicks.size === 0) continue;
-
-            const overlap = overlapCount(entryPicks, draftPicks);
-            if (overlap === 0) continue;
-
-            const entryShare = overlap / entryPicks.size;
-            const draftShare = overlap / draftPicks.size;
-            const updatedAt = Date.parse(draft.updated_at);
-
-            const isBetter =
-              overlap > bestOverlap ||
-              (overlap === bestOverlap && entryShare > bestEntryShare) ||
-              (overlap === bestOverlap &&
-                entryShare === bestEntryShare &&
-                draftShare > bestDraftShare) ||
-              (overlap === bestOverlap &&
-                entryShare === bestEntryShare &&
-                draftShare === bestDraftShare &&
-                updatedAt > bestUpdatedAt);
-
-            if (isBetter) {
-              bestOverlap = overlap;
-              bestEntryShare = entryShare;
-              bestDraftShare = draftShare;
-              bestUpdatedAt = updatedAt;
-              resolvedDraftName = trimmed;
-            }
-          }
-        }
-      }
-
-      if (!resolvedDraftName) {
-        const storedName = entryNameById.get(row.entry_id);
-        if (storedName) {
-          resolvedDraftName = storedName;
-        }
-      }
-
-      if (resolvedDraftName) {
-        draftNamesByEntry.set(row.entry_id, resolvedDraftName);
-      }
+    const draftNamesByEntry = new Map<string, string>();
+    for (const row of latestEntries.entries) {
+      const name = row.latest_draft_name?.trim() || row.entry_name?.trim();
+      if (name) draftNamesByEntry.set(row.entry_id, name);
     }
 
     return NextResponse.json({
       ok: true,
       draftNamesByEntry: Object.fromEntries(draftNamesByEntry),
+      entries: latestEntries.entries,
+      picksByEntry: Object.fromEntries(latestEntries.picksByEntry),
     });
   } catch (error: unknown) {
     return NextResponse.json(

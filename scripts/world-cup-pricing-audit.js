@@ -22,17 +22,15 @@ function scoreProjection(team, cost) {
     config.basePoints.quarterfinalWin * sf +
     config.basePoints.semifinalWin * final +
     config.basePoints.championshipWin * champion;
-  const breakoutBonus = cost <= config.breakoutBonus.maximumCostInclusive
-    ? config.breakoutBonus.groupQualification * r32
+  const bonusTier = config.bonusTiers.find((tier) => cost <= tier.maximumCostInclusive);
+  const bonus = bonusTier
+    ? bonusTier.bonuses.groupQualification * r32 +
+      bonusTier.bonuses.roundOf16 * r16 +
+      bonusTier.bonuses.quarterfinal * qf +
+      bonusTier.bonuses.semifinal * sf +
+      bonusTier.bonuses.final * final +
+      bonusTier.bonuses.champion * champion
     : 0;
-  const valueRunBonus = cost < config.valueRunBonus.maximumCostExclusive
-    ? config.valueRunBonus.roundOf16 * r16 +
-      config.valueRunBonus.quarterfinal * qf +
-      config.valueRunBonus.semifinal * sf +
-      config.valueRunBonus.final * final +
-      config.valueRunBonus.champion * champion
-    : 0;
-  const bonus = breakoutBonus + valueRunBonus;
 
   return { base, bonus, total: base + bonus };
 }

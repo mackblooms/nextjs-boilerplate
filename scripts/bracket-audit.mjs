@@ -60,7 +60,8 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const BASE_PTS = { R64: 12, R32: 36, S16: 84, E8: 180, F4: 300, CHIP: 360 };
 const WC_WIN_PTS = { R32: 18, S16: 30, E8: 48, F4: 72, CHIP: 100 };
-const WC_VALUE_RUN = { R32: 4, S16: 8, E8: 14, F4: 21, CHIP: 30 };
+const WC_LONGSHOT_BONUS = { GROUP_ADVANCE: 25, R32: 50, S16: 75, E8: 100, F4: 150, CHIP: 200 };
+const WC_VALUE_BONUS = { GROUP_ADVANCE: 5, R32: 10, S16: 20, E8: 40, F4: 80, CHIP: 160 };
 const HISTORIC = { 14: 24, 15: 40, 16: 56 };
 
 function seedMult(seed) {
@@ -70,6 +71,13 @@ function seedMult(seed) {
 
 function isFinal(status) {
   return String(status ?? "").trim().toLowerCase().startsWith("final");
+}
+
+function wcValuePickBonus(cost, round) {
+  if (cost == null) return 0;
+  if (cost <= 5) return WC_LONGSHOT_BONUS[round] ?? 0;
+  if (cost <= 10) return WC_VALUE_BONUS[round] ?? 0;
+  return 0;
 }
 
 function scoreTeamWinsMM(games, seedById) {
@@ -118,7 +126,7 @@ function scoreTeamWinsWC(games, costById) {
         if (!id || advanceAwarded.has(id)) continue;
         advanceAwarded.add(id);
         const cost = costById?.get(id) ?? null;
-        const breakout = cost != null && cost <= 5 ? 6 : 0;
+        const breakout = wcValuePickBonus(cost, "GROUP_ADVANCE");
         totals.set(id, (totals.get(id) ?? 0) + 12 + breakout);
       }
     }
@@ -127,7 +135,7 @@ function scoreTeamWinsWC(games, costById) {
     const base = WC_WIN_PTS[round] ?? 0;
     if (!base) continue;
     const cost = costById?.get(winnerId) ?? null;
-    const valueRun = cost != null && cost < 10 ? (WC_VALUE_RUN[round] ?? 0) : 0;
+    const valueRun = wcValuePickBonus(cost, round);
     totals.set(winnerId, (totals.get(winnerId) ?? 0) + base + valueRun);
   }
   return totals;

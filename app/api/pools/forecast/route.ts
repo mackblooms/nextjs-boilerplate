@@ -2,16 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
-
-type PoolEntryRow = {
-  entry_id: string;
-  display_name: string | null;
-};
-
-type EntryPickRow = {
-  entry_id: string;
-  team_id: string;
-};
+import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
 
 type TeamRow = {
   id: string;
@@ -568,16 +559,6 @@ export async function GET(req: Request) {
     if ("error" in access) return access.error;
 
     const supabaseAdmin = getSupabaseAdmin();
-    const { data: baseRowsData, error: baseRowsErr } = await supabaseAdmin
-      .from("pool_leaderboard")
-      .select("entry_id,display_name")
-      .eq("pool_id", poolId);
-
-    if (baseRowsErr) {
-      return NextResponse.json({ error: baseRowsErr.message }, { status: 400 });
-    }
-
-    const baseRows = (baseRowsData ?? []) as PoolEntryRow[];
     const { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
       .select("competition_slug")
@@ -587,6 +568,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: poolErr.message }, { status: 400 });
     }
     const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+    const latestEntries = await loadLatestPoolEntries(supabaseAdmin, poolId, competitionSlug);
+    const baseRows = latestEntries.entries;
 
     if (baseRows.length === 0) {
       return NextResponse.json({
@@ -601,8 +584,7 @@ export async function GET(req: Request) {
     const entryIds = baseRows.map((row) => row.entry_id);
     const forecastTeamsBase = supabaseAdmin.from("teams").select("id,seed_in_region,cost,espn_team_id");
     const forecastGamesBase = supabaseAdmin.from("games").select("id,round,region,slot,team1_id,team2_id,winner_team_id");
-    const [picksResult, teamsResult, gamesResult] = await Promise.all([
-      supabaseAdmin.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
+    const [teamsResult, gamesResult] = await Promise.all([
       competitionSlug === "world-cup"
         ? forecastTeamsBase.eq("competition_slug", "world-cup")
         : forecastTeamsBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
@@ -611,9 +593,6 @@ export async function GET(req: Request) {
         : forecastGamesBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
     ]);
 
-    if (picksResult.error) {
-      return NextResponse.json({ error: picksResult.error.message }, { status: 400 });
-    }
     if (teamsResult.error) {
       return NextResponse.json({ error: teamsResult.error.message }, { status: 400 });
     }
@@ -621,20 +600,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: gamesResult.error.message }, { status: 400 });
     }
 
-    const picksRows = (picksResult.data ?? []) as EntryPickRow[];
     const teams = (teamsResult.data ?? []) as TeamRow[];
     const games = ((gamesResult.data ?? []) as GameRow[]).map((game) => ({
       ...game,
       id: String(game.id),
     }));
 
-    const picksByEntry = new Map<string, string[]>();
-    for (const entryId of entryIds) picksByEntry.set(entryId, []);
-    for (const pick of picksRows) {
-      const picks = picksByEntry.get(pick.entry_id) ?? [];
-      picks.push(pick.team_id);
-      picksByEntry.set(pick.entry_id, picks);
-    }
+    const picksByEntry = latestEntries.picksByEntry;
+    for (const entryId of entryIds) picksByEntry.set(entryId, picksByEntry.get(entryId) ?? []);
 
     const teamSeedById = new Map<string, number | null>();
     const teamCostById = new Map<string, number | null>();

@@ -180,6 +180,7 @@ export default function BracketPage() {
   const [highlightTeamIds, setHighlightTeamIds] = useState<Set<string>>(
     new Set(),
   );
+  const [latestTeamIdsByEntry, setLatestTeamIdsByEntry] = useState<Record<string, string[]>>({});
   const [myEntryIds, setMyEntryIds] = useState<Set<string>>(new Set());
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
@@ -488,11 +489,50 @@ export default function BracketPage() {
         return;
       }
 
-      const basePlayers = (playerRows ?? []) as {
+      let basePlayers = (playerRows ?? []) as {
         entry_id: string;
         user_id: string;
         display_name: string | null;
       }[];
+      let latestPicksByEntry: Record<string, string[]> | null = null;
+      let latestEntryNameById = new Map<string, string>();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token ?? null;
+      if (token) {
+        try {
+          const latestRes = await fetch(`/api/pools/draft-names?poolId=${encodeURIComponent(poolId)}`, {
+            headers: { authorization: `Bearer ${token}` },
+          });
+          if (latestRes.ok) {
+            const payload = (await latestRes.json().catch(() => ({}))) as {
+              entries?: Array<{
+                entry_id: string;
+                user_id: string;
+                display_name: string | null;
+                entry_name: string | null;
+              }>;
+              picksByEntry?: Record<string, string[]>;
+              draftNamesByEntry?: Record<string, string>;
+            };
+            if (Array.isArray(payload.entries)) {
+              basePlayers = payload.entries.map((entry) => ({
+                entry_id: entry.entry_id,
+                user_id: entry.user_id,
+                display_name: entry.display_name,
+              }));
+              latestEntryNameById = new Map(
+                payload.entries.map((entry) => [entry.entry_id, entry.entry_name ?? ""]),
+              );
+            }
+            for (const [entryId, name] of Object.entries(payload.draftNamesByEntry ?? {})) {
+              latestEntryNameById.set(entryId, String(name));
+            }
+            latestPicksByEntry = payload.picksByEntry ?? null;
+          }
+        } catch {
+          // Fall back to persisted entry picks if the latest-draft lookup is unavailable.
+        }
+      }
 
       const myEntries = basePlayers.filter((p) => p.user_id === user.id).map((p) => p.entry_id);
       const myEntryIdsSet = new Set(myEntries);
@@ -533,7 +573,11 @@ export default function BracketPage() {
         );
       }
 
-      if (entryIds.length > 0) {
+      if (latestPicksByEntry) {
+        for (const [entryId, teamIds] of Object.entries(latestPicksByEntry)) {
+          picksByEntry.set(entryId, Array.isArray(teamIds) ? teamIds.map(String) : []);
+        }
+      } else if (entryIds.length > 0) {
         const { data: pickRows, error: picksErr } = await supabase
           .from("entry_picks")
           .select("entry_id,team_id")
@@ -550,6 +594,7 @@ export default function BracketPage() {
           picksByEntry.set(row.entry_id, entryPickIds);
         }
       }
+      setLatestTeamIdsByEntry(Object.fromEntries(picksByEntry));
       const scoredEntries = scoreEntries((gameRows as Game[] | null) ?? [], teamSeedById, picksByEntry, {
         competitionSlug: nextCompetitionSlug,
         teamCostById,
@@ -610,7 +655,7 @@ export default function BracketPage() {
           entry_id: p.entry_id,
           user_id: p.user_id,
           display_name: p.display_name,
-          entry_name: entryNameById.get(p.entry_id) ?? null,
+          entry_name: latestEntryNameById.get(p.entry_id) || (entryNameById.get(p.entry_id) ?? null),
           total_score: scoredEntries.totalScoreByEntryId.get(p.entry_id) ?? 0,
           full_name: profile?.full_name ?? null,
           favorite_team: favoriteTeam,
@@ -640,6 +685,11 @@ export default function BracketPage() {
     const loadHighlights = async () => {
       setHighlightTeamIds(new Set());
       if (!selectedEntryId) return;
+      const latestTeamIds = latestTeamIdsByEntry[selectedEntryId];
+      if (latestTeamIds) {
+        setHighlightTeamIds(new Set(latestTeamIds));
+        return;
+      }
 
       const selectedPlayerForHighlights = players.find((player) => player.entry_id === selectedEntryId) ?? null;
       const canUseSavedDraftHighlights =
@@ -693,7 +743,7 @@ export default function BracketPage() {
     };
 
     void loadHighlights();
-  }, [competitionSlug, draftLocked, myEntryIds, players, selectedEntryId]);
+  }, [competitionSlug, draftLocked, latestTeamIdsByEntry, myEntryIds, players, selectedEntryId]);
 
   useEffect(() => {
     let canceled = false;
