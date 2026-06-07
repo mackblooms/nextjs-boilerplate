@@ -614,9 +614,44 @@ export default function BracketPage() {
       setHighlightTeamIds(new Set());
       if (!selectedEntryId) return;
 
+      const selectedPlayerForHighlights = players.find((player) => player.entry_id === selectedEntryId) ?? null;
+      const canUseSavedDraftHighlights =
+        !draftLocked &&
+        selectedPlayerForHighlights != null &&
+        myEntryIds.has(selectedEntryId);
+
       if (!draftLocked && !myEntryIds.has(selectedEntryId)) {
         setMsg("Drafts are private until lock. You can only view your own entries right now.");
         return;
+      }
+
+      if (canUseSavedDraftHighlights) {
+        const entryName = selectedPlayerForHighlights.entry_name?.trim();
+        if (entryName) {
+          const { data: draftRows, error: draftErr } = await supabase
+            .from("saved_drafts")
+            .select("id")
+            .eq("user_id", selectedPlayerForHighlights.user_id)
+            .eq("competition_slug", competitionSlug)
+            .eq("name", entryName)
+            .order("updated_at", { ascending: false })
+            .limit(1);
+
+          if (!draftErr && draftRows && draftRows.length > 0) {
+            const draftId = String(draftRows[0].id);
+            const { data: savedPickRows, error: savedPickErr } = await supabase
+              .from("saved_draft_picks")
+              .select("team_id")
+              .eq("draft_id", draftId);
+
+            if (!savedPickErr) {
+              setHighlightTeamIds(
+                new Set((savedPickRows ?? []).map((row) => row.team_id as string)),
+              );
+              return;
+            }
+          }
+        }
       }
 
       const { data, error } = await supabase
@@ -635,7 +670,7 @@ export default function BracketPage() {
     };
 
     void loadHighlights();
-  }, [draftLocked, myEntryIds, selectedEntryId]);
+  }, [competitionSlug, draftLocked, myEntryIds, players, selectedEntryId]);
 
   useEffect(() => {
     let canceled = false;
