@@ -82,15 +82,16 @@ function printAudit() {
 
 if (require.main === module) printAudit();
 
-function bestPortfolio(budget = 100) {
+function bestPortfolio(budget = 100, options = {}) {
   const maximumEliteTeams = config.draftCaps.maximumEliteTeams;
   const eliteMinimumCost = config.draftCaps.eliteMinimumCost;
+  const eliteCap = options.maximumEliteTeams ?? maximumEliteTeams;
   const byBudget = Array.from({ length: budget + 1 }, () => Array(maximumEliteTeams + 1).fill(null));
   byBudget[0][0] = { expectedValue: 0, teams: [] };
   for (const row of results) {
     const eliteIncrement = row.cost >= eliteMinimumCost ? 1 : 0;
     for (let current = budget; current >= row.cost; current -= 1) {
-      for (let eliteCount = maximumEliteTeams; eliteCount >= eliteIncrement; eliteCount -= 1) {
+      for (let eliteCount = eliteCap; eliteCount >= eliteIncrement; eliteCount -= 1) {
         const prior = byBudget[current - row.cost][eliteCount - eliteIncrement];
         if (!prior) continue;
         const expectedValue = prior.expectedValue + row.total;
@@ -107,9 +108,11 @@ function bestPortfolio(budget = 100) {
 
 if (require.main === module) {
   const portfolio = bestPortfolio();
+  const noElitePortfolio = bestPortfolio(100, { maximumEliteTeams: 0 });
   console.log("");
   console.log(`Best projected 100-point portfolio: ${portfolio.teams.join(", ")}`);
   console.log(`Portfolio cost: ${portfolio.totalCost}; elite teams: ${portfolio.eliteCount}; projected EV: ${portfolio.expectedValue.toFixed(1)}`);
+  console.log(`Best no-elite portfolio EV: ${noElitePortfolio.expectedValue.toFixed(1)} (${noElitePortfolio.teams.join(", ")})`);
 }
 
 module.exports = { bestPortfolio, results };

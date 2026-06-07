@@ -67,68 +67,68 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     expect(r.teamScoresByTeamId.get("t2")).toBe(12); // GROUP_ADVANCE only
   });
 
-  it("R32: cost ≤ 10 earns +24 breakout bonus on GROUP_ADVANCE (36 total)", () => {
+  it("R32: cost ≤ 5 earns +6 breakout bonus on GROUP_ADVANCE (18 total)", () => {
     const r = wc(
       [{ round: "R32", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 10], ["t2", 10]),
+      costs(["t1", 5], ["t2", 5]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(62); // (12+24) + (18+8)
-    expect(r.teamScoresByTeamId.get("t2")).toBe(36); // (12+24)
+    expect(r.teamScoresByTeamId.get("t1")).toBe(40); // (12+6) + (18+4)
+    expect(r.teamScoresByTeamId.get("t2")).toBe(18); // 12+6
   });
 
-  it("R32: cost = 11 (> 10) gets no breakout bonus, but cost < 15 still earns value run", () => {
+  it("R32: cost = 7 (> 5) gets no breakout bonus, but cost < 10 still earns value run", () => {
     const r = wc(
       [{ round: "R32", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 11], ["t2", 22]),
+      costs(["t1", 7], ["t2", 22]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(38); // 12 + (18+8)
+    expect(r.teamScoresByTeamId.get("t1")).toBe(34); // 12 + (18+4)
   });
 
-  it("R32: cost = 15 (not < 15) earns no value run bonus", () => {
+  it("R32: cost = 10 (not < 10) earns no value run bonus", () => {
     const r = wc(
       [{ round: "R32", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 15], ["t2", 22]),
+      costs(["t1", 10], ["t2", 22]),
     );
     expect(r.teamScoresByTeamId.get("t1")).toBe(30); // 12 + 18 only
   });
 
   // Knockout round points
-  it("S16 win: 30 pts base; cost < 15 adds 16 pts value run", () => {
+  it("S16 win: 30 pts base; cost < 10 adds 8 pts value run", () => {
     const r = wc(
       [{ round: "S16", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 10], ["t2", 22]),
+      costs(["t1", 7], ["t2", 22]),
     );
     // No GROUP_ADVANCE (team didn't appear in R32 in this test data)
-    expect(r.teamScoresByTeamId.get("t1")).toBe(46); // 30 + 16
+    expect(r.teamScoresByTeamId.get("t1")).toBe(38); // 30 + 8
   });
 
-  it("E8 win: 48 pts base; cost < 15 adds 28 pts value run", () => {
+  it("E8 win: 48 pts base; cost < 10 adds 14 pts value run", () => {
     const r = wc(
       [{ round: "E8", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 10], ["t2", 22]),
+      costs(["t1", 7], ["t2", 22]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(76); // 48 + 28
+    expect(r.teamScoresByTeamId.get("t1")).toBe(62); // 48 + 14
   });
 
-  it("F4 win: 72 pts base; cost < 15 adds 42 pts value run", () => {
+  it("F4 win: 72 pts base; cost < 10 adds 21 pts value run", () => {
     const r = wc(
       [{ round: "F4", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 10], ["t2", 22]),
+      costs(["t1", 7], ["t2", 22]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(114); // 72 + 42
+    expect(r.teamScoresByTeamId.get("t1")).toBe(93); // 72 + 21
   });
 
-  it("CHIP win: 100 pts base; cost < 15 adds 60 pts value run", () => {
+  it("CHIP win: 100 pts base; cost < 10 adds 30 pts value run", () => {
     const r = wc(
       [{ round: "CHIP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
-      costs(["t1", 10], ["t2", 22]),
+      costs(["t1", 7], ["t2", 22]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(160); // 100 + 60
+    expect(r.teamScoresByTeamId.get("t1")).toBe(130); // 100 + 30
   });
 
   // Full run from group to champion
-  it("full run with cost=10: 458 total pts across all stages", () => {
-    // GROUP_ADVANCE 36 + R32 26 + S16 46 + E8 76 + F4 114 + CHIP 160 = 458
+  it("full run with cost=5: 363 total pts across all stages", () => {
+    // GROUP_ADVANCE 18 + R32 22 + S16 38 + E8 62 + F4 93 + CHIP 130 = 363
     const r = wc(
       [
         { round: "R32",  team1_id: "t1", team2_id: "t2", winner_team_id: "t1" },
@@ -137,9 +137,9 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
         { round: "F4",   team1_id: "t1", team2_id: "t5", winner_team_id: "t1" },
         { round: "CHIP", team1_id: "t1", team2_id: "t6", winner_team_id: "t1" },
       ],
-      costs(["t1", 10], ["t2", 22], ["t3", 22], ["t4", 22], ["t5", 22], ["t6", 22]),
+      costs(["t1", 5], ["t2", 22], ["t3", 22], ["t4", 22], ["t5", 22], ["t6", 22]),
     );
-    expect(r.teamScoresByTeamId.get("t1")).toBe(458);
+    expect(r.teamScoresByTeamId.get("t1")).toBe(363);
   });
 
   it("full run with cost=22 (no bonuses): 12+18+30+48+72+100 = 280 total pts", () => {

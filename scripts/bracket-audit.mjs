@@ -60,7 +60,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const BASE_PTS = { R64: 12, R32: 36, S16: 84, E8: 180, F4: 300, CHIP: 360 };
 const WC_WIN_PTS = { R32: 18, S16: 30, E8: 48, F4: 72, CHIP: 100 };
-const WC_VALUE_RUN = { R32: 8, S16: 16, E8: 28, F4: 42, CHIP: 60 };
+const WC_VALUE_RUN = { R32: 4, S16: 8, E8: 14, F4: 21, CHIP: 30 };
 const HISTORIC = { 14: 24, 15: 40, 16: 56 };
 
 function seedMult(seed) {
@@ -118,7 +118,7 @@ function scoreTeamWinsWC(games, costById) {
         if (!id || advanceAwarded.has(id)) continue;
         advanceAwarded.add(id);
         const cost = costById?.get(id) ?? null;
-        const breakout = cost != null && cost <= 10 ? 24 : 0;
+        const breakout = cost != null && cost <= 5 ? 6 : 0;
         totals.set(id, (totals.get(id) ?? 0) + 12 + breakout);
       }
     }
@@ -127,7 +127,7 @@ function scoreTeamWinsWC(games, costById) {
     const base = WC_WIN_PTS[round] ?? 0;
     if (!base) continue;
     const cost = costById?.get(winnerId) ?? null;
-    const valueRun = cost != null && cost < 15 ? (WC_VALUE_RUN[round] ?? 0) : 0;
+    const valueRun = cost != null && cost < 10 ? (WC_VALUE_RUN[round] ?? 0) : 0;
     totals.set(winnerId, (totals.get(winnerId) ?? 0) + base + valueRun);
   }
   return totals;

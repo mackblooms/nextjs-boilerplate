@@ -7,11 +7,11 @@
     ["Diamond", 24, ["Spain"]],
     ["Platinum", 22, ["Argentina", "France"]],
     ["Gold", 20, ["Brazil", "England", "Germany", "Netherlands", "Portugal"]],
-    ["Silver", 17, ["Belgium", "Canada", "Colombia", "Croatia", "Ecuador", "Mexico", "Norway", "Switzerland", "Turkiye"]],
-    ["Bronze", 13, ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"]],
-    ["Value", 11, ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"]],
-    ["Longshot", 8, ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"]],
-    ["Moonshot", 5, ["Ghana", "Iraq", "Qatar"]]
+    ["Silver", 16, ["Belgium", "Canada", "Colombia", "Croatia", "Ecuador", "Mexico", "Norway", "Switzerland", "Turkiye"]],
+    ["Bronze", 10, ["Australia", "Austria", "Czechia", "IR Iran", "Japan", "Korea Republic", "Morocco", "Paraguay", "Senegal", "Uruguay", "USA"]],
+    ["Value", 7, ["Algeria", "Bosnia and Herzegovina", "Cote d'Ivoire", "Egypt", "Jordan", "New Zealand", "Panama", "Scotland", "Sweden", "Uzbekistan"]],
+    ["Longshot", 5, ["Cabo Verde", "Congo DR", "Curacao", "Haiti", "Saudi Arabia", "South Africa", "Tunisia"]],
+    ["Moonshot", 3, ["Ghana", "Iraq", "Qatar"]]
   ],
   "basePoints": {
     "groupQualification": 12,
@@ -22,16 +22,16 @@
     "championshipWin": 100
   },
   "breakoutBonus": {
-    "maximumCostInclusive": 10,
-    "groupQualification": 24
+    "maximumCostInclusive": 5,
+    "groupQualification": 6
   },
   "valueRunBonus": {
-    "maximumCostExclusive": 15,
-    "roundOf16": 8,
-    "quarterfinal": 16,
-    "semifinal": 28,
-    "final": 42,
-    "champion": 60
+    "maximumCostExclusive": 10,
+    "roundOf16": 4,
+    "quarterfinal": 8,
+    "semifinal": 14,
+    "final": 21,
+    "champion": 30
   },
   "draftCaps": {
     "maximumEliteTeams": 3,

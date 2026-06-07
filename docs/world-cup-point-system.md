@@ -31,10 +31,11 @@ a sportsbook stage market is unavailable. Median probabilities are preferable to
 price because they resist outliers and promotional lines.
 
 The provisional launch prices below are explicit tournament tiers informed by full-path
-base-score expected value under the proposed rules. The June 6 accessibility pass lowers
-Bronze, Value, Longshot, and Moonshot costs so drafts can include more teams, while
-keeping Value teams above the 10-point Breakout Bonus threshold to avoid a structural
-pricing loophole. The reproducible audit is available through
+base-score expected value under the proposed rules. The June 6 accessibility pass keeps
+the top tier expensive, then lowers Silver through Moonshot costs so drafts can include
+more teams. Longshot and Moonshot teams now sit at tiny-cost prices, with a reduced
+bonus layer so cheap-team accumulation does not become a structural pricing loophole.
+The reproducible audit is available through
 `npm run sim:world-cup-pricing`. Tier buckets make the pricing easier to explain, limit
 false precision, and keep picking restrictions predictable. Bonus EV is reported
 separately instead of feeding back into price, because the bonuses intentionally preserve
@@ -52,11 +53,11 @@ points range and gives stronger group-stage teams appropriate credit.
 | Diamond | 24 | Spain |
 | Platinum | 22 | Argentina, France |
 | Gold | 20 | Brazil, England, Germany, Netherlands, Portugal |
-| Silver | 17 | Belgium, Canada, Colombia, Croatia, Ecuador, Mexico, Norway, Switzerland, Turkiye |
-| Bronze | 13 | Australia, Austria, Czechia, IR Iran, Japan, Korea Republic, Morocco, Paraguay, Senegal, Uruguay, USA |
-| Value | 11 | Algeria, Bosnia and Herzegovina, Cote d'Ivoire, Egypt, Jordan, New Zealand, Panama, Scotland, Sweden, Uzbekistan |
-| Longshot | 8 | Cabo Verde, Congo DR, Curacao, Haiti, Saudi Arabia, South Africa, Tunisia |
-| Moonshot | 5 | Ghana, Iraq, Qatar |
+| Silver | 16 | Belgium, Canada, Colombia, Croatia, Ecuador, Mexico, Norway, Switzerland, Turkiye |
+| Bronze | 10 | Australia, Austria, Czechia, IR Iran, Japan, Korea Republic, Morocco, Paraguay, Senegal, Uruguay, USA |
+| Value | 7 | Algeria, Bosnia and Herzegovina, Cote d'Ivoire, Egypt, Jordan, New Zealand, Panama, Scotland, Sweden, Uzbekistan |
+| Longshot | 5 | Cabo Verde, Congo DR, Curacao, Haiti, Saudi Arabia, South Africa, Tunisia |
+| Moonshot | 3 | Ghana, Iraq, Qatar |
 
 ## Base Scoring
 
@@ -80,22 +81,22 @@ results. Team costs already incorporate group strength and projected knockout pa
 
 ## Value Pick Bonuses
 
-Teams costing less than 15 points receive additional cumulative Value Run bonuses when
+Teams costing less than 10 points receive additional cumulative Value Run bonuses when
 they reach the Round of 16 and beyond.
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Reach Round of 16 | 8 |
-| Reach quarterfinal | 16 |
-| Reach semifinal | 28 |
-| Reach final | 42 |
-| Become champion | 60 |
+| Reach Round of 16 | 4 |
+| Reach quarterfinal | 8 |
+| Reach semifinal | 14 |
+| Reach final | 21 |
+| Become champion | 30 |
 
-Longshot- and Moonshot-tier teams costing 10 points or less also receive a Breakout Bonus:
+Longshot- and Moonshot-tier teams costing 5 points or less also receive a Breakout Bonus:
 
 | Milestone | Additional bonus |
 | --- | ---: |
-| Advance from group | 24 |
+| Advance from group | 6 |
 
 Every team receives the same 6 base points for a group-stage win. The Breakout Bonus is
 reserved for the harder achievement: a low-priced team surviving its group.
@@ -105,9 +106,10 @@ reserved for the harder achievement: a low-priced team surviving its group.
 Because roster size is unlimited, each pricing run includes a 0/1 knapsack optimization
 across the 100-point budget while enforcing the max-3 elite-team cap. Cheap-team
 accumulation must not dominate the optimizer. With the current rules, the highest
-projected-EV portfolio is `Spain, France, Argentina, Senegal, Japan, Qatar`. It uses
-three elite teams and three sub-15 teams, so the new board creates room to follow more
-teams without making all-cheap accumulation the dominant strategy.
+projected-EV portfolio is Spain, France, Argentina, Scotland, Bosnia and Herzegovina,
+Egypt, Cabo Verde, Qatar, and Ghana. It uses three elite teams and six lower-cost
+teams, so the new board creates room to follow more teams without making all-cheap
+accumulation the dominant strategy.
 
 ## Implementation Notes
 

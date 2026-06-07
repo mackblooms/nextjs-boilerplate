@@ -93,7 +93,7 @@ function SoccerRules() {
           columns={["Tier and National Teams", "Draft Cost"]}
           rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [`${tier.name}: ${tier.teams.join(", ")}`, tier.cost])}
         />
-        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 5 points.</p>
+        <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 3 points.</p>
       </section>
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>2) Base Points Per Result</h2>
@@ -102,9 +102,9 @@ function SoccerRules() {
       </section>
       <section className="legal-doc-section">
         <h2 style={{ fontSize: 20, fontWeight: 900 }}>3) Bonuses for Value Picks</h2>
-        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Bronze-, Value-, Longshot-, and Moonshot-tier teams priced below <b>15 points</b> earn extra cumulative Value Run bonuses when they reach the Round of 16 and beyond.</p>
+        <p style={{ marginTop: 10, lineHeight: 1.6 }}>Value-, Longshot-, and Moonshot-tier teams priced below <b>10 points</b> earn extra cumulative Value Run bonuses when they reach the Round of 16 and beyond.</p>
         <RulesTable columns={["Value Run Result", "Additional Bonus"]} rows={WORLD_CUP_VALUE_RUN_BONUS_EVENTS} />
-        <p style={{ marginTop: 16, lineHeight: 1.6 }}>Longshot- and Moonshot-tier teams priced <b>10 points or lower</b> also earn a major Breakout Bonus for escaping the group stage.</p>
+        <p style={{ marginTop: 16, lineHeight: 1.6 }}>Longshot- and Moonshot-tier teams priced <b>5 points or lower</b> also earn a Breakout Bonus for escaping the group stage.</p>
         <RulesTable columns={["Breakout Result", "Additional Bonus"]} rows={WORLD_CUP_BREAKOUT_BONUS_EVENTS} />
         <p style={{ marginTop: 10, opacity: 0.85 }}>Every team earns the same 6 base points for a group-stage win. The Breakout Bonus rewards the harder achievement: a low-priced team surviving its group.</p>
       </section>

@@ -58,11 +58,11 @@ const WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND: Record<string, number> = {
 };
 
 const WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND: Record<string, number> = {
-  R32: 8,
-  S16: 16,
-  E8: 28,
-  F4: 42,
-  CHIP: 60,
+  R32: 4,
+  S16: 8,
+  E8: 14,
+  F4: 21,
+  CHIP: 30,
 };
 
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
@@ -164,7 +164,7 @@ function scoreWorldCupTeamResultsDetailed(
         if (!teamId || groupAdvancementAwarded.has(teamId)) continue;
         groupAdvancementAwarded.add(teamId);
         const cost = worldCupTeamCost(teamId, options);
-        const breakoutBonus = cost != null && cost <= 10 ? 24 : 0;
+        const breakoutBonus = cost != null && cost <= 5 ? 6 : 0;
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round: "GROUP_ADVANCE",
@@ -188,7 +188,7 @@ function scoreWorldCupTeamResultsDetailed(
     if (!base) return;
 
     const cost = worldCupTeamCost(winnerId, options);
-    const valueRunBonus = cost != null && cost < 15 ? WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND[round] ?? 0 : 0;
+    const valueRunBonus = cost != null && cost < 10 ? WORLD_CUP_VALUE_RUN_BONUS_BY_WIN_ROUND[round] ?? 0 : 0;
     const opponentId = g.team1_id === winnerId ? g.team2_id : g.team2_id === winnerId ? g.team1_id : null;
     addScoreEvent(totals, eventsByTeamId, {
       gameIndex: index,
