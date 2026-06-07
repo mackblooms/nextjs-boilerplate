@@ -73,6 +73,7 @@ export default function ProfilePage() {
   const [pushPermission, setPushPermission] = useState<PushPermissionState>("unknown");
   const [pushMessage, setPushMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const loadedProfileRef = useRef<ProfileRow | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -133,17 +134,18 @@ export default function ProfilePage() {
         selectedColumns.splice(missingIndex, 1);
       }
 
+      loadedProfileRef.current = row;
       const resolvedFullName = row?.full_name?.trim() || row?.display_name?.trim() || "";
       const profileExists = Boolean(resolvedFullName) && Boolean(row?.favorite_team?.trim());
 
       setHasProfile(profileExists);
       setIsEditing(onboarding ? true : !profileExists);
 
-      if (resolvedFullName) setFullName(resolvedFullName);
-      if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
-      if (row?.favorite_soccer_team) setFavoriteSoccerTeam(row.favorite_soccer_team);
+      setFullName(resolvedFullName);
+      setFavoriteTeam(row?.favorite_team ?? "");
+      setFavoriteSoccerTeam(row?.favorite_soccer_team ?? "");
       setAvatarUrl(withAvatarFallback(authData.user.id, row?.avatar_url));
-      if (row?.bio) setBio(row.bio);
+      setBio(row?.bio ?? "");
 
       setLoading(false);
     };
@@ -426,6 +428,7 @@ export default function ProfilePage() {
     const legalName = fullName.trim();
     const team = favoriteTeam.trim();
     const soccerTeam = favoriteSoccerTeam.trim();
+    const existingProfile = loadedProfileRef.current;
 
     if (!legalName || legalName.split(/\s+/).length < 2) {
       setMsg("Please enter your full name (first and last).");
@@ -452,7 +455,7 @@ export default function ProfilePage() {
       display_name: legalName,
       full_name: legalName,
       favorite_team: team,
-      favorite_soccer_team: soccerTeam || null,
+      favorite_soccer_team: soccerTeam || existingProfile?.favorite_soccer_team || null,
       avatar_url: withAvatarFallback(authData.user.id, avatarUrl),
       bio: bio.trim() || null,
     };
