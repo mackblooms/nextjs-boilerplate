@@ -15,7 +15,7 @@ import {
 } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
-import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 
@@ -423,6 +423,12 @@ function formatPointsDelta(value: number) {
   return String(value);
 }
 
+function formatTeamLabel(name: string, seed: number | null, competitionSlug: CompetitionSlug) {
+  const displayName = toSchoolDisplayName(name);
+  if (competitionSlug === "world-cup") return displayName;
+  return `${seed != null ? `#${seed} ` : ""}${displayName}`;
+}
+
 function formatExpectedScore(value: number) {
   if (!Number.isFinite(value)) return "-";
   if (Math.abs(value - Math.round(value)) < 0.05) return String(Math.round(value));
@@ -601,6 +607,7 @@ export default function LeaderboardPage() {
   const [forecastHorizonRound, setForecastHorizonRound] = useState<ForecastRoundCode | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
+  const [poolCompetitionSlug, setPoolCompetitionSlug] = useState<CompetitionSlug>("march-madness");
 
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -917,6 +924,7 @@ export default function LeaderboardPage() {
       }
 
       const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+      setPoolCompetitionSlug(competitionSlug);
       const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, competitionSlug);
       const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), competitionSlug);
       setLockTime(resolvedLockTime);
@@ -2116,8 +2124,7 @@ export default function LeaderboardPage() {
                                     textOverflow: "ellipsis",
                                   }}
                                 >
-                                  {team.seed != null ? `#${team.seed} ` : ""}
-                                  {toSchoolDisplayName(team.team_name)}
+                                  {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
                                 </span>
                               </div>
                             ))}
@@ -2449,8 +2456,7 @@ export default function LeaderboardPage() {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {team.seed != null ? `#${team.seed} ` : ""}
-                          {toSchoolDisplayName(team.team_name)}
+                          {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
                         </span>
                       </div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>{team.points}</div>
@@ -2519,8 +2525,7 @@ export default function LeaderboardPage() {
                             textOverflow: "ellipsis",
                           }}
                         >
-                          {event.seed != null ? `#${event.seed} ` : ""}
-                          {toSchoolDisplayName(event.team_name)}
+                          {formatTeamLabel(event.team_name, event.seed, poolCompetitionSlug)}
                         </span>
                       </div>
                       <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
@@ -2765,13 +2770,16 @@ export default function LeaderboardPage() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "80px 1fr 170px 120px",
+                    gridTemplateColumns:
+                      poolCompetitionSlug === "world-cup"
+                        ? "1fr 170px 120px"
+                        : "80px 1fr 170px 120px",
                     padding: "9px 12px",
                     borderBottom: "1px solid var(--border-color)",
                     fontWeight: 900,
                   }}
                 >
-                  <div>Seed</div>
+                  {poolCompetitionSlug === "world-cup" ? null : <div>Seed</div>}
                   <div>Team</div>
                   <div>Result</div>
                   <div style={{ textAlign: "right" }}>Points</div>
@@ -2782,13 +2790,18 @@ export default function LeaderboardPage() {
                     key={team.team_id}
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "80px 1fr 170px 120px",
+                      gridTemplateColumns:
+                        poolCompetitionSlug === "world-cup"
+                          ? "1fr 170px 120px"
+                          : "80px 1fr 170px 120px",
                       padding: "10px 12px",
                       borderBottom: "1px solid var(--border-color)",
                       alignItems: "center",
                     }}
                   >
-                    <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
+                    {poolCompetitionSlug === "world-cup" ? null : (
+                      <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
+                    )}
                     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                       <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
                     </div>
