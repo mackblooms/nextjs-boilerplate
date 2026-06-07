@@ -626,30 +626,26 @@ export default function BracketPage() {
       }
 
       if (canUseSavedDraftHighlights) {
-        const entryName = selectedPlayerForHighlights.entry_name?.trim();
-        if (entryName) {
-          const { data: draftRows, error: draftErr } = await supabase
-            .from("saved_drafts")
-            .select("id")
-            .eq("user_id", selectedPlayerForHighlights.user_id)
-            .eq("competition_slug", competitionSlug)
-            .eq("name", entryName)
-            .order("updated_at", { ascending: false })
-            .limit(1);
+        const { data: draftRows, error: draftErr } = await supabase
+          .from("saved_drafts")
+          .select("id")
+          .eq("user_id", selectedPlayerForHighlights.user_id)
+          .eq("competition_slug", competitionSlug)
+          .order("updated_at", { ascending: false })
+          .limit(1);
 
-          if (!draftErr && draftRows && draftRows.length > 0) {
-            const draftId = String(draftRows[0].id);
-            const { data: savedPickRows, error: savedPickErr } = await supabase
-              .from("saved_draft_picks")
-              .select("team_id")
-              .eq("draft_id", draftId);
+        if (!draftErr && draftRows && draftRows.length > 0) {
+          const draftId = String(draftRows[0].id);
+          const { data: savedPickRows, error: savedPickErr } = await supabase
+            .from("saved_draft_picks")
+            .select("team_id")
+            .eq("draft_id", draftId);
 
-            if (!savedPickErr) {
-              setHighlightTeamIds(
-                new Set((savedPickRows ?? []).map((row) => row.team_id as string)),
-              );
-              return;
-            }
+          if (!savedPickErr) {
+            setHighlightTeamIds(
+              new Set((savedPickRows ?? []).map((row) => row.team_id as string)),
+            );
+            return;
           }
         }
       }
