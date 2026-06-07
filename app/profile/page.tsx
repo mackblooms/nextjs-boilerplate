@@ -480,6 +480,16 @@ export default function ProfilePage() {
       }
 
       const missingColumn = getMissingProfilesColumn(error);
+      if (missingColumn === "favorite_soccer_team" && soccerTeam) {
+        setMsg("Favorite soccer team can't be saved until the profile database column is added.");
+        trackEvent({
+          eventName: "profile_save_failure",
+          userId: authData.user.id,
+          metadata: { reason: "missing_favorite_soccer_team_column", onboarding },
+        });
+        return;
+      }
+
       if (!missingColumn || !(missingColumn in payload)) {
         setMsg(error.message);
         trackEvent({
