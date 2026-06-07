@@ -219,11 +219,6 @@ function DraftsPageContent() {
   }
 
   async function deleteDraft(draftId: string, draftName: string) {
-    if (isDraftLibraryLocked(competitionSlug)) {
-      setMessage(lockMessage);
-      return;
-    }
-
     const ok = window.confirm(`Delete "${draftName}"?`);
     if (!ok) return;
 
@@ -376,7 +371,7 @@ function DraftsPageContent() {
                 <UiButton
                   type="button"
                   onClick={() => void deleteDraft(draft.id, draft.name)}
-                  disabled={deletingDraftId === draft.id || draftsLocked}
+                  disabled={deletingDraftId === draft.id}
                   aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
                   title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
                   variant="danger"

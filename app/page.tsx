@@ -1881,11 +1881,6 @@ export function HomeContent({
   };
 
   const deleteHomeDraft = async (draft: HomeDraftRow) => {
-    if (isDraftLibraryLocked(activeCompetitionSlug)) {
-      setHomeDraftsMessage(draftLibraryLockMessage(activeCompetitionSlug));
-      return;
-    }
-
     const ok = window.confirm(`Delete "${draft.name}"?`);
     if (!ok) return;
 

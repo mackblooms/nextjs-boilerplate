@@ -345,11 +345,6 @@ export default function DraftDetailPage() {
   }
 
   async function deleteDraft() {
-    if (isDraftLibraryLocked(competitionSlug)) {
-      setMessage(lockMessage);
-      return;
-    }
-
     const ok = window.confirm(`Delete "${draftName || "this draft"}"?`);
     if (!ok) return;
 
@@ -413,7 +408,7 @@ export default function DraftDetailPage() {
           <UiButton
             type="button"
             onClick={() => void deleteDraft()}
-            disabled={deleting || draftsLocked}
+            disabled={deleting}
             variant="danger"
             aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
             title={deleting ? "Deleting..." : `Delete ${draftName || "draft"}`}
