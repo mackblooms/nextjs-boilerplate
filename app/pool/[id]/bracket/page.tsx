@@ -54,6 +54,7 @@ type PlayerOption = {
   full_name: string | null;
   favorite_team: string | null;
   favorite_soccer_team: string | null;
+  display_favorite_team: string | null;
   avatar_url: string | null;
   bio: string | null;
 };
@@ -605,6 +606,11 @@ export default function BracketPage() {
 
       const opts: PlayerOption[] = visiblePlayers.map((p) => {
         const profile = profileByUser.get(p.user_id);
+        const favoriteTeam = profile?.favorite_team ?? null;
+        const favoriteSoccerTeam = profile?.favorite_soccer_team ?? null;
+        const displayFavoriteTeam =
+          nextCompetitionSlug === "world-cup" ? favoriteSoccerTeam : favoriteTeam;
+
         return {
           entry_id: p.entry_id,
           user_id: p.user_id,
@@ -612,11 +618,9 @@ export default function BracketPage() {
           entry_name: entryNameById.get(p.entry_id) ?? null,
           total_score: scoredEntries.totalScoreByEntryId.get(p.entry_id) ?? 0,
           full_name: profile?.full_name ?? null,
-          favorite_team:
-            nextCompetitionSlug === "world-cup"
-              ? profile?.favorite_soccer_team ?? null
-              : profile?.favorite_team ?? null,
-          favorite_soccer_team: profile?.favorite_soccer_team ?? null,
+          favorite_team: favoriteTeam,
+          favorite_soccer_team: favoriteSoccerTeam,
+          display_favorite_team: displayFavoriteTeam,
           avatar_url: profile?.avatar_url ?? null,
           bio: profile?.bio ?? null,
         };
@@ -1416,7 +1420,7 @@ export default function BracketPage() {
                 flexWrap: "wrap",
               }}
             >
-              {selectedPlayer.favorite_team ? (
+              {selectedPlayer.display_favorite_team ? (
                 <span
                   style={{
                     border: "1px solid var(--border-color)",
@@ -1427,7 +1431,7 @@ export default function BracketPage() {
                     background: "var(--surface-muted)",
                   }}
                 >
-                  Favorite team: {selectedPlayer.favorite_team}
+                  Favorite team: {selectedPlayer.display_favorite_team}
                 </span>
               ) : null}
             </div>
