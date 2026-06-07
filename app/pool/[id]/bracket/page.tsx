@@ -1460,6 +1460,7 @@ export default function BracketPage() {
           teams={teams}
           games={displayGames}
           highlightTeamIds={highlightTeamIds}
+          layout="side-groups"
         />
       ) : null}
 

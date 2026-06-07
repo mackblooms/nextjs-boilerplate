@@ -34,10 +34,12 @@ export default function WorldCupBracketBoard({
   teams,
   games,
   highlightTeamIds,
+  layout = "stacked",
 }: {
   teams: Team[];
   games: Game[];
   highlightTeamIds: Set<string>;
+  layout?: "stacked" | "side-groups";
 }) {
   const teamById = new Map(teams.map((team) => [team.id, team]));
   const groupGamesByRegion = new Map<string, Game[]>();
@@ -100,8 +102,10 @@ export default function WorldCupBracketBoard({
     );
   };
 
+  const showGroupGames = layout === "stacked";
+
   return (
-    <div className="world-cup-bracket-board">
+    <div className="world-cup-bracket-board" data-layout={layout}>
       <section className="world-cup-groups" aria-label="World cup groups">
         <div className="world-cup-board-heading">
           <span>group stage</span>
@@ -122,7 +126,7 @@ export default function WorldCupBracketBoard({
                     {team.name}
                   </div>
                 ))}
-              {(groupGamesByRegion.get(group) ?? []).length > 0 ? (
+              {showGroupGames && (groupGamesByRegion.get(group) ?? []).length > 0 ? (
                 <div className="world-cup-group-games">
                   {(groupGamesByRegion.get(group) ?? []).map(groupGameRow)}
                 </div>
