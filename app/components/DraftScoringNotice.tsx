@@ -1,22 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-const HIDDEN_KEY = "bb:draft-scoring-notice-hidden";
+import { useState } from "react";
 
 export default function DraftScoringNotice() {
   const [hidden, setHidden] = useState(false);
-
-  useEffect(() => {
-    setHidden(window.localStorage.getItem(HIDDEN_KEY) === "true");
-  }, []);
 
   function openScoringGuide() {
     window.dispatchEvent(new Event("bb:open-how-it-works"));
   }
 
   function hideNotice() {
-    window.localStorage.setItem(HIDDEN_KEY, "true");
     setHidden(true);
   }
 

@@ -1451,8 +1451,8 @@ textarea::placeholder {
 
 .draft-scoring-notice {
   position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
+  left: max(16px, env(safe-area-inset-left));
+  top: clamp(96px, 18vh, 150px);
   z-index: 1800;
   width: min(330px, calc(100vw - 32px));
   display: grid;
@@ -1513,8 +1513,8 @@ textarea::placeholder {
 
 @media (max-width: 680px) {
   .draft-scoring-notice {
-    right: max(10px, env(safe-area-inset-right));
-    bottom: max(82px, env(safe-area-inset-bottom));
+    left: max(10px, env(safe-area-inset-left));
+    top: 92px;
     width: min(310px, calc(100vw - 20px));
   }
 }

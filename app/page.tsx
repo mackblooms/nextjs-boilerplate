@@ -1188,9 +1188,11 @@ export function HomeContent({
         .eq("user_id", userId);
 
       let entryRows: DraftPoolEntryRow[] = [];
+      let entryNameColumnAvailable = true;
       if (!entryWithNameRes.error) {
         entryRows = (entryWithNameRes.data ?? []) as DraftPoolEntryRow[];
       } else if (isMissingEntryNameError(entryWithNameRes.error.message)) {
+        entryNameColumnAvailable = false;
         const entryFallbackRes = await supabase
           .from("entries")
           .select("id,pool_id")
@@ -1260,6 +1262,8 @@ export function HomeContent({
           poolsById.set(pool.id, pool);
         }
       }
+
+      const activeCompetitionEntryRows = entryRows.filter((entry) => poolsById.has(entry.pool_id));
 
       if (entryIds.length > 0) {
         const entryPicksByEntry = new Map<string, Set<string>>();
@@ -1439,7 +1443,7 @@ export function HomeContent({
           draftIdsByName.set(key, list);
         }
 
-        for (const entry of entryRows) {
+        for (const entry of activeCompetitionEntryRows) {
           const entryNameKey = normalizeDraftName(entry.entry_name);
           if (!entryNameKey) continue;
           const exactDraftIds = draftIdsByName.get(entryNameKey) ?? [];
@@ -1458,7 +1462,7 @@ export function HomeContent({
           const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
           if (draftPicks.size === 0) continue;
 
-          for (const entry of entryRows) {
+          for (const entry of activeCompetitionEntryRows) {
             const entryPicks = entryPicksByEntry.get(entry.id);
             if (!entryPicks || entryPicks.size === 0) continue;
             if (!sameTeamSet(draftPicks, entryPicks)) continue;
@@ -1473,7 +1477,7 @@ export function HomeContent({
 
         // Fallback for older schemas (no entry_name) or when a draft changed
         // after entering a pool: match the closest draft by team overlap.
-        for (const entry of entryRows) {
+        for (const entry of activeCompetitionEntryRows) {
           if (matchedEntryIds.has(entry.id)) continue;
           const entryPicks = entryPicksByEntry.get(entry.id);
           if (!entryPicks || entryPicks.size === 0) continue;
@@ -1510,15 +1514,15 @@ export function HomeContent({
 
           if (!bestDraftId) continue;
 
-          const minimumOverlap = Math.min(3, entryPicks.size);
+          const minimumOverlap = entryNameColumnAvailable ? Math.min(3, entryPicks.size) : 1;
           if (bestOverlap < minimumOverlap) continue;
-          if (bestEntryShare < 0.6) continue;
+          if (entryNameColumnAvailable && bestEntryShare < 0.6) continue;
 
           matchedEntryIdsByDraft.get(bestDraftId)?.add(entry.id);
           matchedEntryIds.add(entry.id);
         }
 
-        const entryById = new Map(entryRows.map((entry) => [entry.id, entry]));
+        const entryById = new Map(activeCompetitionEntryRows.map((entry) => [entry.id, entry]));
         for (const draft of nextDrafts) {
           const matchedEntries = Array.from(matchedEntryIdsByDraft.get(draft.id) ?? []);
           const draftPicks = draftPicksByDraft.get(draft.id) ?? new Set<string>();
