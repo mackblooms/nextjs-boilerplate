@@ -18,11 +18,18 @@ type ProfileRow = {
   display_name: string | null;
   full_name: string | null;
   favorite_team: string | null;
+  favorite_soccer_team: string | null;
   avatar_url: string | null;
   bio: string | null;
 };
 
-const OPTIONAL_PROFILE_COLUMNS = ["full_name", "favorite_team", "avatar_url", "bio"] as const;
+const OPTIONAL_PROFILE_COLUMNS = [
+  "full_name",
+  "favorite_team",
+  "favorite_soccer_team",
+  "avatar_url",
+  "bio",
+] as const;
 
 function getMissingProfilesColumn(error: { message?: string; code?: string } | null) {
   if (!error || error.code !== "PGRST204" || !error.message?.includes("profiles")) {
@@ -49,6 +56,7 @@ export default function ProfilePage() {
 
   const [fullName, setFullName] = useState("");
   const [favoriteTeam, setFavoriteTeam] = useState("");
+  const [favoriteSoccerTeam, setFavoriteSoccerTeam] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
   const [msg, setMsg] = useState("");
@@ -81,7 +89,6 @@ export default function ProfilePage() {
 
       const selectedColumns = [
         "display_name",
-        "favorite_team",
         ...OPTIONAL_PROFILE_COLUMNS,
       ] as string[];
 
@@ -101,6 +108,7 @@ export default function ProfilePage() {
                 display_name: selectedRow.display_name ?? null,
                 full_name: selectedRow.full_name ?? null,
                 favorite_team: selectedRow.favorite_team ?? null,
+                favorite_soccer_team: selectedRow.favorite_soccer_team ?? null,
                 avatar_url: selectedRow.avatar_url ?? null,
                 bio: selectedRow.bio ?? null,
               }
@@ -133,6 +141,7 @@ export default function ProfilePage() {
 
       if (resolvedFullName) setFullName(resolvedFullName);
       if (row?.favorite_team) setFavoriteTeam(row.favorite_team);
+      if (row?.favorite_soccer_team) setFavoriteSoccerTeam(row.favorite_soccer_team);
       setAvatarUrl(withAvatarFallback(authData.user.id, row?.avatar_url));
       if (row?.bio) setBio(row.bio);
 
@@ -416,6 +425,7 @@ export default function ProfilePage() {
 
     const legalName = fullName.trim();
     const team = favoriteTeam.trim();
+    const soccerTeam = favoriteSoccerTeam.trim();
 
     if (!legalName || legalName.split(/\s+/).length < 2) {
       setMsg("Please enter your full name (first and last).");
@@ -442,6 +452,7 @@ export default function ProfilePage() {
       display_name: legalName,
       full_name: legalName,
       favorite_team: team,
+      favorite_soccer_team: soccerTeam || null,
       avatar_url: withAvatarFallback(authData.user.id, avatarUrl),
       bio: bio.trim() || null,
     };
@@ -685,6 +696,17 @@ export default function ProfilePage() {
           />
 
           <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
+            Favorite soccer team
+          </label>
+          <input
+            value={favoriteSoccerTeam}
+            onChange={(e) => setFavoriteSoccerTeam(e.target.value)}
+            placeholder="e.g., USA"
+            className="ui-control ui-control--full"
+            style={{ marginBottom: 12 }}
+          />
+
+          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
             Bio (optional)
           </label>
           <textarea
@@ -767,14 +789,17 @@ export default function ProfilePage() {
                 {fullName || "Full name"}
               </div>
               <div style={{ marginTop: 4, fontSize: 13, opacity: 0.74 }}>
-                {favoriteTeam ? `Pulling for ${favoriteTeam}` : "Favorite team not set yet"}
+                {favoriteTeam ? `Pulling for ${favoriteTeam}` : "Favorite college team not set yet"}
               </div>
             </div>
           </div>
 
           <div style={{ display: "grid", gap: 8 }}>
             <div>
-              <b>Favorite team:</b> {favoriteTeam || "Not set"}
+              <b>Favorite college team:</b> {favoriteTeam || "Not set"}
+            </div>
+            <div>
+              <b>Favorite soccer team:</b> {favoriteSoccerTeam || "Not set"}
             </div>
             <div>
               <b>Bio:</b> {bio || "No bio yet."}

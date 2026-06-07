@@ -53,6 +53,17 @@ type PlayerOption = {
   total_score: number;
   full_name: string | null;
   favorite_team: string | null;
+  favorite_soccer_team: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+};
+
+type ProfileLookupRow = {
+  user_id: string;
+  display_name: string | null;
+  full_name: string | null;
+  favorite_team: string | null;
+  favorite_soccer_team?: string | null;
   avatar_url: string | null;
   bio: string | null;
 };
@@ -84,6 +95,14 @@ type LiveScoresResponse = {
   games?: LiveScoreGame[];
   error?: string;
 };
+
+function isMissingFavoriteSoccerTeamColumn(error: { code?: string; message?: string } | null) {
+  return Boolean(
+    error?.code === "PGRST204" &&
+      error.message?.includes("favorite_soccer_team") &&
+      error.message.includes("profiles"),
+  );
+}
 
 type RoundKey = "R64" | "R32" | "S16" | "E8";
 
@@ -544,34 +563,38 @@ export default function BracketPage() {
         {
           full_name: string | null;
           favorite_team: string | null;
+          favorite_soccer_team: string | null;
           avatar_url: string | null;
           bio: string | null;
         }
       >();
 
       if (userIds.length > 0) {
-        const { data: profileRows } = await supabase
+        let profileRows: ProfileLookupRow[] | null = null;
+
+        const profileResult = await supabase
           .from("profiles")
-          .select("user_id,display_name,full_name,favorite_team,avatar_url,bio")
+          .select("user_id,display_name,full_name,favorite_team,favorite_soccer_team,avatar_url,bio")
           .in("user_id", userIds);
 
+        if (isMissingFavoriteSoccerTeamColumn(profileResult.error)) {
+          const fallbackResult = await supabase
+            .from("profiles")
+            .select("user_id,display_name,full_name,favorite_team,avatar_url,bio")
+            .in("user_id", userIds);
+
+          profileRows = (fallbackResult.data as ProfileLookupRow[] | null) ?? null;
+        } else {
+          profileRows = (profileResult.data as ProfileLookupRow[] | null) ?? null;
+        }
+
         profileByUser = new Map(
-          (
-            (profileRows as
-              | {
-                  user_id: string;
-                  display_name: string | null;
-                  full_name: string | null;
-                  favorite_team: string | null;
-                  avatar_url: string | null;
-                  bio: string | null;
-                }[]
-              | null) ?? []
-          ).map((row) => [
+          (profileRows ?? []).map((row) => [
             row.user_id,
             {
               full_name: row.full_name ?? row.display_name,
               favorite_team: row.favorite_team,
+              favorite_soccer_team: row.favorite_soccer_team ?? null,
               avatar_url: row.avatar_url,
               bio: row.bio,
             },
@@ -588,7 +611,11 @@ export default function BracketPage() {
           entry_name: entryNameById.get(p.entry_id) ?? null,
           total_score: scoredEntries.totalScoreByEntryId.get(p.entry_id) ?? 0,
           full_name: profile?.full_name ?? null,
-          favorite_team: profile?.favorite_team ?? null,
+          favorite_team:
+            nextCompetitionSlug === "world-cup"
+              ? profile?.favorite_soccer_team ?? null
+              : profile?.favorite_team ?? null,
+          favorite_soccer_team: profile?.favorite_soccer_team ?? null,
           avatar_url: profile?.avatar_url ?? null,
           bio: profile?.bio ?? null,
         };
