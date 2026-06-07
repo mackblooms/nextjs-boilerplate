@@ -97,10 +97,11 @@ type LiveScoresResponse = {
 };
 
 function isMissingFavoriteSoccerTeamColumn(error: { code?: string; message?: string } | null) {
-  return Boolean(
-    error?.code === "PGRST204" &&
-      error.message?.includes("favorite_soccer_team") &&
-      error.message.includes("profiles"),
+  const message = error?.message?.toLowerCase() ?? "";
+  return (
+    message.includes("profiles") &&
+    message.includes("column") &&
+    (message.includes("favorite_soccer_team") || message.includes("favorite__soccer__team"))
   );
 }
 

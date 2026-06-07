@@ -32,17 +32,29 @@ const OPTIONAL_PROFILE_COLUMNS = [
 ] as const;
 
 function getMissingProfilesColumn(error: { message?: string; code?: string } | null) {
-  if (!error || error.code !== "PGRST204" || !error.message?.includes("profiles")) {
+  if (!error?.message) {
     return null;
   }
 
+  const message = error.message.toLowerCase();
   const match = error.message.match(/Could not find the '([^']+)' column/);
-  if (!match) return null;
+  if (match) {
+    const column = match[1];
+    return OPTIONAL_PROFILE_COLUMNS.includes(column as (typeof OPTIONAL_PROFILE_COLUMNS)[number])
+      ? column
+      : null;
+  }
 
-  const column = match[1];
-  return OPTIONAL_PROFILE_COLUMNS.includes(column as (typeof OPTIONAL_PROFILE_COLUMNS)[number])
-    ? column
-    : null;
+  if (!message.includes("profiles") || !message.includes("column")) {
+    return null;
+  }
+
+  return (
+    OPTIONAL_PROFILE_COLUMNS.find((column) => {
+      const doubledUnderscoreColumn = column.replaceAll("_", "__");
+      return message.includes(column) || message.includes(doubledUnderscoreColumn);
+    }) ?? null
+  );
 }
 
 export default function ProfilePage() {
