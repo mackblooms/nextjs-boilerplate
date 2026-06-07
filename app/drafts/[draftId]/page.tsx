@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import {
@@ -15,10 +15,11 @@ import {
   type DraftableTeam,
 } from "@/lib/draftRules";
 import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
-import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
+import DraftScoringNotice from "../../components/DraftScoringNotice";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
 type DraftRow = {
@@ -53,8 +54,31 @@ function isTeamRow(value: TeamRow | undefined): value is TeamRow {
   return Boolean(value);
 }
 
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width={17}
+      height={17}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
 export default function DraftDetailPage() {
   const params = useParams<{ draftId: string }>();
+  const router = useRouter();
   const draftId = params.draftId;
 
   const [loading, setLoading] = useState(true);
@@ -68,6 +92,7 @@ export default function DraftDetailPage() {
   const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
 
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const draftsLocked = isDraftLibraryLocked(competitionSlug);
   const lockMessage = draftLibraryLockMessage(competitionSlug);
 
@@ -319,6 +344,32 @@ export default function DraftDetailPage() {
     setMessage("Draft saved.");
   }
 
+  async function deleteDraft() {
+    if (isDraftLibraryLocked(competitionSlug)) {
+      setMessage(lockMessage);
+      return;
+    }
+
+    const ok = window.confirm(`Delete "${draftName || "this draft"}"?`);
+    if (!ok) return;
+
+    setDeleting(true);
+    setMessage("");
+
+    const { error } = await supabase
+      .from("saved_drafts")
+      .delete()
+      .eq("id", draftId);
+
+    if (error) {
+      setDeleting(false);
+      setMessage(error.message);
+      return;
+    }
+
+    router.push(competitionPath("/drafts", competitionSlug));
+  }
+
   if (loading) {
     return (
       <main className="page-shell page-shell--stack" style={{ maxWidth: 1050 }}>
@@ -332,6 +383,7 @@ export default function DraftDetailPage() {
 
   return (
     <main className="page-shell page-shell--stack" style={{ maxWidth: 1100 }}>
+      <DraftScoringNotice />
       <section
         className="page-surface"
         style={{
@@ -358,6 +410,24 @@ export default function DraftDetailPage() {
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
           </div>
+          <UiButton
+            type="button"
+            onClick={() => void deleteDraft()}
+            disabled={deleting || draftsLocked}
+            variant="danger"
+            aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
+            title={deleting ? "Deleting..." : `Delete ${draftName || "draft"}`}
+            style={{
+              width: 42,
+              height: 42,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+            }}
+          >
+            <TrashIcon />
+          </UiButton>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

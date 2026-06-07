@@ -172,6 +172,15 @@ function normalizeDraftName(value: string | null | undefined) {
     .toLowerCase();
 }
 
+function draftNamesLikelyMatch(a: string | null | undefined, b: string | null | undefined) {
+  const left = normalizeDraftName(a);
+  const right = normalizeDraftName(b);
+  if (!left || !right) return false;
+  if (left === right) return true;
+  if (left.length < 4 || right.length < 4) return false;
+  return left.includes(right) || right.includes(left);
+}
+
 function formatPlace(place: number | null) {
   if (!place || place < 1) return "Place unavailable";
   const mod100 = place % 100;
@@ -206,6 +215,28 @@ function PenIcon() {
     >
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
     </svg>
   );
 }
@@ -722,6 +753,7 @@ export function HomeContent({
   const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
   const [renamingDraftId, setRenamingDraftId] = useState<string | null>(null);
+  const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
   const homeDraftsLoadedRef = useRef(false);
   const activeCompetition = useMemo(() => getCompetition(activeCompetitionSlug), [activeCompetitionSlug]);
   const competitionPoolPath = useMemo(() => competitionPath("/pools", activeCompetitionSlug), [activeCompetitionSlug]);
@@ -793,6 +825,7 @@ export function HomeContent({
       setHomeDraftsLoading(false);
       homeDraftsLoadedRef.current = false;
       setPersonalizedLoaded(true);
+      setDeletingDraftId(null);
     };
 
     const loadUserPools = async () => {
@@ -1033,6 +1066,7 @@ export function HomeContent({
       setHomeDraftsMessage("");
       setRenamingDraftId(null);
       homeDraftsLoadedRef.current = false;
+      setDeletingDraftId(null);
     };
 
     const loadHomeDrafts = async () => {
@@ -1408,8 +1442,13 @@ export function HomeContent({
         for (const entry of entryRows) {
           const entryNameKey = normalizeDraftName(entry.entry_name);
           if (!entryNameKey) continue;
-          const matchingDraftIds = draftIdsByName.get(entryNameKey);
-          if (!matchingDraftIds || matchingDraftIds.length === 0) continue;
+          const exactDraftIds = draftIdsByName.get(entryNameKey) ?? [];
+          const fuzzyDraftIds = exactDraftIds.length
+            ? []
+            : nextDrafts
+                .filter((draft) => draftNamesLikelyMatch(draft.name, entry.entry_name))
+                .map((draft) => draft.id);
+          const matchingDraftIds = exactDraftIds.length ? exactDraftIds : fuzzyDraftIds;
           for (const draftId of matchingDraftIds) {
             matchedEntryIdsByDraft.get(draftId)?.add(entry.id);
           }
@@ -1837,6 +1876,49 @@ export function HomeContent({
     setRenamingDraftId(null);
   };
 
+  const deleteHomeDraft = async (draft: HomeDraftRow) => {
+    if (isDraftLibraryLocked(activeCompetitionSlug)) {
+      setHomeDraftsMessage(draftLibraryLockMessage(activeCompetitionSlug));
+      return;
+    }
+
+    const ok = window.confirm(`Delete "${draft.name}"?`);
+    if (!ok) return;
+
+    setDeletingDraftId(draft.id);
+    setHomeDraftsMessage("");
+
+    const { error } = await supabase
+      .from("saved_drafts")
+      .delete()
+      .eq("id", draft.id);
+
+    if (error) {
+      setDeletingDraftId(null);
+      setHomeDraftsMessage(error.message);
+      return;
+    }
+
+    setHomeDrafts((prev) => prev.filter((row) => row.id !== draft.id));
+    setHomeDraftPoolsByDraft((prev) => {
+      const next = { ...prev };
+      delete next[draft.id];
+      return next;
+    });
+    setHomeDraftPointsByDraft((prev) => {
+      const next = { ...prev };
+      delete next[draft.id];
+      return next;
+    });
+    setExpandedDraftPools((prev) => {
+      const next = { ...prev };
+      delete next[draft.id];
+      return next;
+    });
+    setDeletingDraftId(null);
+    setHomeDraftsMessage(`Deleted "${draft.name}".`);
+  };
+
   if (isAuthenticated !== true) {
     return (
       <LandingPage
@@ -2032,6 +2114,29 @@ export function HomeContent({
                           }}
                         >
                           <PenIcon />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteHomeDraft(draft)}
+                          disabled={deletingDraftId === draft.id}
+                          aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                          title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 8,
+                            border: "1px solid #dc2626",
+                            background: "rgba(220, 38, 38, 0.12)",
+                            color: "#dc2626",
+                            cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
+                            opacity: deletingDraftId === draft.id ? 0.7 : 1,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <TrashIcon />
                         </button>
                       </div>
                       <div className="home-draft-points" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>

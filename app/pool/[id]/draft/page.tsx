@@ -28,6 +28,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
+import DraftScoringNotice from "../../../components/DraftScoringNotice";
 
 type PoolRow = {
   id: string;
@@ -781,6 +782,7 @@ export default function PoolDraftPage() {
 
   return (
     <main className="page-shell page-shell--stack" style={{ maxWidth: 1000 }}>
+      <DraftScoringNotice />
       <section
         className="page-surface"
         style={{
