@@ -114,11 +114,6 @@ type Region = (typeof REGIONS)[number];
 const isRegion = (value: string | null): value is Region =>
   value !== null && REGIONS.includes(value as Region);
 
-function isMissingColumnError(message: string) {
-  const msg = message.toLowerCase();
-  return msg.includes("column") && msg.includes("does not exist");
-}
-
 function normalizeSeed(value: unknown): number | null {
   if (value == null) return null;
   const n = Number(value);
