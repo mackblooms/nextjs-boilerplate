@@ -1,7 +1,13 @@
--- Update the saved-draft write lock to be competition-aware.
--- The original trigger hardcoded the march-madness tip time for all rows,
--- which blocked world-cup draft writes even before the world cup starts.
+-- Replace the single hardcoded march-madness lock with a competition-aware check.
+-- Also drop the lock trigger on saved_draft_picks: that table has no competition_slug
+-- column, so the trigger crashed on cascaded deletes. The saved_drafts trigger is
+-- sufficient since picks can only be written via a draft row.
 
+-- Drop triggers first so we can safely replace the functions.
+drop trigger if exists trg_saved_drafts_lock_writes on public.saved_drafts;
+drop trigger if exists trg_saved_draft_picks_lock_writes on public.saved_draft_picks;
+
+-- Competition-aware lock check: takes the row's competition_slug.
 create or replace function public.saved_draft_write_lock_active(competition text)
 returns boolean
 language sql
@@ -9,10 +15,11 @@ stable
 as $$
   select case competition
     when 'world-cup' then now() >= '2026-06-11T19:00:00+00'::timestamptz
-    else now() >= '2026-03-19T16:15:00+00'::timestamptz  -- march-madness default
+    else now() >= '2026-03-19T16:15:00+00'::timestamptz
   end;
 $$;
 
+-- Updated trigger function: uses the draft row's own competition_slug.
 create or replace function public.enforce_saved_draft_write_lock()
 returns trigger
 language plpgsql
@@ -20,7 +27,6 @@ as $$
 declare
   slug text;
 begin
-  -- For DELETE use OLD row; for INSERT/UPDATE use NEW row.
   if TG_OP = 'DELETE' then
     slug := OLD.competition_slug;
   else
@@ -38,3 +44,9 @@ begin
   return NEW;
 end;
 $$;
+
+-- Recreate trigger on saved_drafts only (not saved_draft_picks).
+create trigger trg_saved_drafts_lock_writes
+before insert or update or delete on public.saved_drafts
+for each row
+execute function public.enforce_saved_draft_write_lock();
