@@ -70,6 +70,14 @@ function isMissingAvatarColumnError(error: { message?: string; code?: string } |
   );
 }
 
+function isMissingEntryNameError(error: { message?: string } | null) {
+  const message = error?.message ?? "";
+  return (
+    message.includes("column entries.entry_name does not exist") ||
+    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
 function rankRows<
   T extends {
     total_score: number;
@@ -226,13 +234,15 @@ export async function buildPoolArchiveSnapshot(
       .select("id,entry_name")
       .in("id", entryIds);
 
-    if (entryErr) {
+    if (entryErr && !isMissingEntryNameError(entryErr)) {
       throw entryErr;
     }
 
-    entryNameById = new Map(
-      (((entryRows as EntryNameRow[] | null) ?? []).map((row) => [row.id, row.entry_name])),
-    );
+    if (!entryErr) {
+      entryNameById = new Map(
+        (((entryRows as EntryNameRow[] | null) ?? []).map((row) => [row.id, row.entry_name])),
+      );
+    }
   }
 
   const userIds = Array.from(new Set(baseRows.map((row) => row.user_id)));

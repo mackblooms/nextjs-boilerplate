@@ -63,6 +63,14 @@ function isMissingSavedDraftCompetitionError(message?: string | null) {
   );
 }
 
+function isMissingEntryNameError(message?: string | null) {
+  const text = message ?? "";
+  return (
+    text.includes("column entries.entry_name does not exist") ||
+    text.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
 function toPickMap(rows: EntryPickRow[]) {
   const out = new Map<string, Set<string>>();
   for (const row of rows) {
@@ -138,11 +146,15 @@ export async function loadLatestPoolEntries(
       supabase.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
     ]);
 
-    if (entryNameResult.error) throw entryNameResult.error;
+    if (entryNameResult.error && !isMissingEntryNameError(entryNameResult.error.message)) {
+      throw entryNameResult.error;
+    }
     if (entryPickResult.error) throw entryPickResult.error;
 
-    for (const row of (entryNameResult.data ?? []) as EntryNameRow[]) {
-      entryNameById.set(row.id, row.entry_name ?? null);
+    if (!entryNameResult.error) {
+      for (const row of (entryNameResult.data ?? []) as EntryNameRow[]) {
+        entryNameById.set(row.id, row.entry_name ?? null);
+      }
     }
     for (const [entryId, picks] of toPickMap((entryPickResult.data ?? []) as EntryPickRow[])) {
       entryPicksByEntry.set(entryId, picks);
