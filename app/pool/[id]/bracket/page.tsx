@@ -19,6 +19,7 @@ import { applyLiveScoreOverlay, matchLiveScoresToGames, type MatchedLiveGame } f
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import WorldCupBracketBoard from "@/app/components/WorldCupBracketBoard";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 
 type Team = {
   id: string;
@@ -281,31 +282,16 @@ export default function BracketPage() {
   };
 
   const refreshBracketState = useCallback(async () => {
-    const gamesBaseQuery = supabase
-      .from("games")
-      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id");
-    let { data: gameRows, error: gameErr } = await (
-      competitionSlug === "world-cup"
-        ? gamesBaseQuery.eq("competition_slug", "world-cup")
-        : gamesBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
-    );
-
-    if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
-      const fallback = await supabase
-        .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,sportsdata_game_id");
-      gameRows = (fallback.data ?? []).map((row) => ({
-        ...row,
-        status: null,
-        start_time: null,
-        game_date: null,
-      })) as Game[];
-      gameErr = fallback.error;
+    let snapshot;
+    try {
+      snapshot = await fetchCompetitionSnapshot(competitionSlug);
+    } catch {
+      return;
     }
 
-    if (gameErr) return;
+    setTeams(snapshot.teams as Team[]);
 
-    const latestGames = ((gameRows ?? []) as Game[]).map((game) => ({
+    const latestGames = (snapshot.games as Game[]).map((game) => ({
       ...game,
       slot: Number(game.slot),
     }));
@@ -461,63 +447,18 @@ export default function BracketPage() {
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
-      const teamsBaseQuery = supabase
-        .from("teams")
-        .select("id,name,region,seed,seed_in_region,cost,espn_team_id");
-      const teamQuery = await (
-        nextCompetitionSlug === "world-cup"
-          ? teamsBaseQuery.eq("competition_slug", "world-cup")
-          : teamsBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
-      );
-      let teamRows = (teamQuery.data ?? []) as Team[];
-      let teamErr = teamQuery.error;
-
-      if (teamErr && isMissingColumnError(teamErr.message ?? "")) {
-        const fallback = await supabase
-          .from("teams")
-          .select("id,name,region,seed,seed_in_region,cost");
-        teamRows = (fallback.data ?? []).map((row) => ({
-          ...row,
-          espn_team_id: null,
-        })) as Team[];
-        teamErr = fallback.error;
-      }
-
-      if (teamErr) {
-        setMsg(teamErr.message);
+      let snapshot;
+      try {
+        snapshot = await fetchCompetitionSnapshot(nextCompetitionSlug);
+      } catch (error) {
+        setMsg(error instanceof Error ? error.message : "Unable to load competition data.");
         setLoading(false);
         return;
       }
-      setTeams((teamRows ?? []) as Team[]);
-
-      const gamesInitBaseQuery = supabase
-        .from("games")
-        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id");
-      let { data: gameRows, error: gameErr } = await (
-        nextCompetitionSlug === "world-cup"
-          ? gamesInitBaseQuery.eq("competition_slug", "world-cup")
-          : gamesInitBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
-      );
-
-      if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
-        const fallback = await supabase
-          .from("games")
-          .select("id,round,region,slot,team1_id,team2_id,winner_team_id,sportsdata_game_id");
-        gameRows = (fallback.data ?? []).map((row) => ({
-          ...row,
-          status: null,
-          start_time: null,
-          game_date: null,
-        })) as Game[];
-        gameErr = fallback.error;
-      }
-
-      if (gameErr) {
-        setMsg(gameErr.message);
-        setLoading(false);
-        return;
-      }
-      setGames((gameRows ?? []) as Game[]);
+      const teamRows = snapshot.teams as Team[];
+      const gameRows = snapshot.games as Game[];
+      setTeams(teamRows);
+      setGames(gameRows);
 
       const { data: playerRows, error: playerErr } = await supabase
         .from("pool_leaderboard")

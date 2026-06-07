@@ -17,6 +17,7 @@ import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 
 type Row = {
   entry_id: string;
@@ -1014,80 +1015,20 @@ export default function LeaderboardPage() {
         );
       }
 
-      const teamsBaseQuery = supabase
-        .from("teams")
-        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
-      let { data: teamRows, error: teamErr } = await (
-        competitionSlug === "world-cup"
-          ? teamsBaseQuery.eq("competition_slug", "world-cup")
-          : teamsBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
-      );
-
-      if (canUseLegacyMarchMadnessFallback(competitionSlug, teamErr?.message)) {
-        const fallback = await supabase
-          .from("teams")
-          .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
-        teamRows = fallback.data;
-        teamErr = fallback.error;
-      }
-
-      if (teamErr) {
-        setMsg(teamErr.message);
+      let snapshot;
+      try {
+        snapshot = await fetchCompetitionSnapshot(competitionSlug);
+      } catch (error) {
+        setMsg(error instanceof Error ? error.message : "Unable to load competition data.");
         setLoading(false);
         return;
       }
 
-      const teamRowsList = ((teamRows as TeamSeedRow[] | null) ?? []);
+      const teamRowsList = snapshot.teams as TeamSeedRow[];
       const teamSeedById = new Map(teamRowsList.map((t) => [t.id, t.seed_in_region]));
       const teamCostById = new Map(teamRowsList.map((t) => [t.id, t.cost ?? null]));
 
-      let gameRows: ScoringGameWithDate[] = [];
-      const gamesBaseQuery = supabase
-        .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
-      let gameQuery = await (
-        competitionSlug === "world-cup"
-          ? gamesBaseQuery.eq("competition_slug", "world-cup")
-          : gamesBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
-      );
-
-      if (canUseLegacyMarchMadnessFallback(competitionSlug, gameQuery.error?.message)) {
-        gameQuery = await supabase
-          .from("games")
-          .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
-      }
-
-      if (!gameQuery.error) {
-        gameRows = (gameQuery.data as ScoringGameWithDate[] | null) ?? [];
-      } else if (isMissingColumnError(gameQuery.error)) {
-        const fallback = await supabase
-          .from("games")
-          .select("id,round,region,slot,team1_id,team2_id,winner_team_id");
-
-        if (fallback.error) {
-          setMsg(fallback.error.message);
-          setLoading(false);
-          return;
-        }
-
-        gameRows = ((((fallback.data as unknown) as Array<{
-          id: string;
-          round: string;
-          region: string | null;
-          slot: number;
-          team1_id: string | null;
-          team2_id: string | null;
-          winner_team_id: string | null;
-        }> | null) ?? []).map((row) => ({
-          ...row,
-          game_date: null,
-          start_time: null,
-        })));
-      } else {
-        setMsg(gameQuery.error.message);
-        setLoading(false);
-        return;
-      }
+      let gameRows = snapshot.games as ScoringGameWithDate[];
 
       gameRows = applyLiveScoreOverlay(gameRows, teamRowsList, liveScoreGames).map((game) => ({
         ...game,
