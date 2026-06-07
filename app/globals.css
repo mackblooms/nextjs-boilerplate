@@ -1450,13 +1450,13 @@ textarea::placeholder {
 }
 
 .draft-scoring-notice {
-  position: fixed;
-  left: max(16px, env(safe-area-inset-left));
-  top: clamp(96px, 18vh, 150px);
-  z-index: 1800;
-  width: min(330px, calc(100vw - 32px));
+  position: sticky;
+  top: 16px;
+  z-index: 20;
+  width: min(330px, 100%);
   display: grid;
   gap: 10px;
+  justify-self: start;
   padding: 14px;
   border: 1px solid var(--highlight-border);
   border-radius: 12px;
@@ -1495,33 +1495,42 @@ textarea::placeholder {
   0%,
   78%,
   100% {
-    transform: translateY(0);
+    translate: 0 0;
   }
 
   84% {
-    transform: translateY(-12px);
+    translate: 0 -12px;
   }
 
   90% {
-    transform: translateY(0);
+    translate: 0 0;
   }
 
   95% {
-    transform: translateY(-5px);
+    translate: 0 -5px;
   }
 }
 
 @media (max-width: 680px) {
   .draft-scoring-notice {
-    left: max(10px, env(safe-area-inset-left));
-    top: 92px;
-    width: min(310px, calc(100vw - 20px));
+    width: 100%;
+  }
+}
+
+@media (min-width: 1780px) {
+  .draft-scoring-notice {
+    position: fixed;
+    left: calc((100vw - 1100px) / 2 - 350px);
+    top: 50%;
+    width: 330px;
+    transform: translateY(-50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .draft-scoring-notice {
     animation: none;
+    translate: 0 0;
   }
 }
 
