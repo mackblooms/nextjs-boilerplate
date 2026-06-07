@@ -17,6 +17,28 @@ export function getWorldCupTierForCost(cost: number) {
   return WORLD_CUP_DRAFT_TIERS.find((tier) => tier.cost === cost);
 }
 
+function normalizeWorldCupTeamName(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+const WORLD_CUP_TEAM_COST_BY_NORMALIZED_NAME = new Map(
+  WORLD_CUP_TEAM_COSTS.map(([team, cost]) => [normalizeWorldCupTeamName(team), cost]),
+);
+
+export function getWorldCupCostForTeamName(name: string) {
+  return WORLD_CUP_TEAM_COST_BY_NORMALIZED_NAME.get(normalizeWorldCupTeamName(name)) ?? null;
+}
+
+export function withWorldCupDraftCost<T extends { name: string; cost: number | null }>(team: T): T & { cost: number } {
+  return {
+    ...team,
+    cost: getWorldCupCostForTeamName(team.name) ?? team.cost ?? 0,
+  };
+}
+
 export const WORLD_CUP_SCORING_EVENTS = [
   ["Group-stage win", 6],
   ["Group-stage draw", 2],

@@ -27,7 +27,7 @@ import {
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
-import { getWorldCupTierForCost } from "@/lib/worldCupRules";
+import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 
 type PoolRow = {
   id: string;
@@ -334,7 +334,10 @@ export default function PoolDraftPage() {
       setMessage(teamErr.message);
       return;
     }
-    setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
+    const normalizedTeamRows = ((teamRows ?? []) as TeamRow[]).map((team) =>
+      nextCompetitionSlug === "world-cup" ? withWorldCupDraftCost(team) : team,
+    );
+    setTeams(normalizedTeamRows.sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
 
     if (!memRow) {
       setExistingEntries([]);

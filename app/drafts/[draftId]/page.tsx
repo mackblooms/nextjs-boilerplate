@@ -18,7 +18,7 @@ import { isMissingSavedDraftTablesError } from "@/lib/savedDrafts";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
-import { getWorldCupTierForCost } from "@/lib/worldCupRules";
+import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
 type DraftRow = {
@@ -196,7 +196,10 @@ export default function DraftDetailPage() {
         setMessage(teamErr.message);
         return;
       }
-      setTeams(((teamRows ?? []) as TeamRow[]).sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
+      const normalizedTeamRows = ((teamRows ?? []) as TeamRow[]).map((team) =>
+        nextCompetitionSlug === "world-cup" ? withWorldCupDraftCost(team) : team,
+      );
+      setTeams(normalizedTeamRows.sort(sortDraftTeamsForCompetition(nextCompetitionSlug)));
 
       const { data: pickRows, error: pickErr } = await supabase
         .from("saved_draft_picks")
