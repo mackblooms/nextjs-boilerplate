@@ -3,7 +3,7 @@
 import { type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { getStoredActiveCompetition, setStoredActiveCompetition } from "@/lib/activeCompetition";
@@ -16,9 +16,10 @@ import {
   normalizeCompetitionSlug,
   type CompetitionSlug,
 } from "@/lib/competitions";
-import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
+import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { toSchoolDisplayName } from "@/lib/teamNames";
-import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
+import { defaultDraftName, isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -692,6 +693,7 @@ export function HomeContent({
 }: {
   forcedCompetitionSlug?: CompetitionSlug;
 } = {}) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const invitePoolId = searchParams.get("invite");
   const competitionParam = searchParams.get("competition");
@@ -715,6 +717,7 @@ export function HomeContent({
   const [homeDrafts, setHomeDrafts] = useState<HomeDraftRow[]>([]);
   const [homeDraftsLoading, setHomeDraftsLoading] = useState(false);
   const [homeDraftsMessage, setHomeDraftsMessage] = useState("");
+  const [creatingHomeDraft, setCreatingHomeDraft] = useState(false);
   const [homeDraftPoolsByDraft, setHomeDraftPoolsByDraft] = useState<Record<string, HomeDraftPool[]>>({});
   const [homeDraftPointsByDraft, setHomeDraftPointsByDraft] = useState<Record<string, number>>({});
   const [expandedDraftPools, setExpandedDraftPools] = useState<Record<string, boolean>>({});
@@ -753,15 +756,21 @@ export function HomeContent({
 
       const { data } = await supabase
         .from("pools")
-        .select("name")
+        .select("name,competition_slug")
         .eq("id", invitePoolId)
         .maybeSingle();
 
       setInvitePoolName(data?.name ?? null);
+
+      if (!forcedCompetitionSlug && !competitionParam && data?.competition_slug) {
+        const inviteCompetitionSlug = normalizeCompetitionSlug(data.competition_slug);
+        setActiveCompetitionSlug(inviteCompetitionSlug);
+        setStoredActiveCompetition(inviteCompetitionSlug);
+      }
     };
 
     void loadInvitePoolName();
-  }, [invitePoolId]);
+  }, [competitionParam, forcedCompetitionSlug, invitePoolId]);
 
   useEffect(() => {
     let canceled = false;
@@ -856,6 +865,19 @@ export function HomeContent({
         : ((poolsData ?? []) as PoolOption[])
             .filter((pool) => normalizeCompetitionSlug(pool.competition_slug) === activeCompetitionSlug)
             .sort(sortPoolsByName);
+
+      if (!forcedCompetitionSlug && !competitionParam && nextPools.length === 0 && poolsData?.length) {
+        const fallbackCompetitionSlug = normalizeCompetitionSlug((poolsData[0] as PoolOption).competition_slug);
+        if (fallbackCompetitionSlug !== activeCompetitionSlug) {
+          setStoredActiveCompetition(fallbackCompetitionSlug);
+          if (!canceled) {
+            setActiveCompetitionSlug(fallbackCompetitionSlug);
+            setPersonalizedLoaded(true);
+          }
+          return;
+        }
+      }
+
       const storedPoolId = getStoredActivePoolId();
 
       if (!canceled) {
@@ -1722,6 +1744,54 @@ export function HomeContent({
     setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
   };
 
+  const createHomeDraft = async () => {
+    if (isDraftLibraryLocked(activeCompetitionSlug)) {
+      setHomeDraftsMessage(draftLibraryLockMessage(activeCompetitionSlug));
+      return;
+    }
+
+    if (!userId) {
+      setHomeDraftsMessage("Please log in to create drafts.");
+      return;
+    }
+
+    const name = defaultDraftName(homeDrafts.length + 1);
+    setCreatingHomeDraft(true);
+    setHomeDraftsMessage("");
+
+    const { data: created, error } = await supabase
+      .from("saved_drafts")
+      .insert({
+        user_id: userId,
+        name,
+        competition_slug: activeCompetitionSlug,
+      })
+      .select("id,name,created_at,updated_at")
+      .single();
+
+    if (error || !created) {
+      setCreatingHomeDraft(false);
+      setHomeDraftsMessage(
+        isMissingCompetitionSlugColumn(error?.message)
+          ? "World Cup setup is not installed in the database yet. Run db/migrations/20260531_world_cup_competitions.sql in the Supabase SQL Editor, then try again."
+          : error?.message ?? "Failed to create draft."
+      );
+      return;
+    }
+
+    const nextDraft: HomeDraftRow = {
+      id: created.id as string,
+      name: created.name as string,
+      created_at: created.created_at as string,
+      updated_at: created.updated_at as string,
+    };
+
+    setHomeDrafts((prev) => [nextDraft, ...prev].sort(sortDraftsByUpdatedAt));
+    setHomeDraftPoolsByDraft((prev) => ({ ...prev, [nextDraft.id]: [] }));
+    setHomeDraftPointsByDraft((prev) => ({ ...prev, [nextDraft.id]: 0 }));
+    router.push(competitionPath(`/drafts/${nextDraft.id}`, activeCompetitionSlug));
+  };
+
   const renameHomeDraft = async (draft: HomeDraftRow) => {
     if (!userId) {
       setHomeDraftsMessage("Please log in to rename drafts.");
@@ -1927,7 +1997,7 @@ export function HomeContent({
                     >
                       <div className="home-draft-meta" style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0, flex: 1 }}>
                         <Link
-                          href={`/drafts/${draft.id}`}
+                          href={competitionPath(`/drafts/${draft.id}`, activeCompetitionSlug)}
                           className="home-draft-link"
                           style={{
                             color: "inherit",
@@ -2012,7 +2082,7 @@ export function HomeContent({
                             {pools.map((pool) => (
                               <Link
                                 key={pool.id}
-                                href="/pools"
+                                href={competitionPoolPath}
                                 style={{
                                   color: "inherit",
                                   textDecoration: "none",
@@ -2070,6 +2140,20 @@ export function HomeContent({
                 );
               })}
             </div>
+          ) : null}
+
+          {isAuthenticated === true ? (
+            <button
+              type="button"
+              onClick={() => void createHomeDraft()}
+              disabled={creatingHomeDraft}
+              className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full"
+              style={{
+                fontWeight: 900,
+              }}
+            >
+              {creatingHomeDraft ? "Creating Draft..." : "Create New Draft"}
+            </button>
           ) : null}
 
           {homeDraftsMessage ? (
