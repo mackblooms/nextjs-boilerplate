@@ -50,6 +50,25 @@ function TrashIcon() {
   );
 }
 
+function PencilIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      width="17"
+      height="17"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
 function DraftsPageContent() {
   const searchParams = useSearchParams();
   const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
@@ -333,6 +352,22 @@ function DraftsPageContent() {
               </div>
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <UiLinkButton
+                  href={competitionPath(`/drafts/${draft.id}`, competitionSlug)}
+                  aria-label={`Edit ${draft.name}`}
+                  title={`Edit ${draft.name}`}
+                  size="sm"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                  }}
+                >
+                  <PencilIcon />
+                </UiLinkButton>
                 <UiLinkButton
                   href={competitionPath("/pools", competitionSlug)}
                 >
