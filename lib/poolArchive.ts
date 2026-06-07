@@ -280,10 +280,14 @@ export async function buildPoolArchiveSnapshot(
     teamRows = (data as TeamLookupRow[] | null) ?? [];
   }
 
-  const { data: gamesData, error: gamesErr } = await supabaseAdmin
+  const archiveGamesBase = supabaseAdmin
     .from("games")
-    .select("round,team1_id,team2_id,winner_team_id")
-    .eq("competition_slug", competitionSlug);
+    .select("round,team1_id,team2_id,winner_team_id");
+  const { data: gamesData, error: gamesErr } = await (
+    competitionSlug === "world-cup"
+      ? archiveGamesBase.eq("competition_slug", "world-cup")
+      : archiveGamesBase.or("competition_slug.eq.march-madness,competition_slug.is.null")
+  );
 
   if (gamesErr) {
     throw gamesErr;

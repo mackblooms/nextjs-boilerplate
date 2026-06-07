@@ -1014,10 +1014,14 @@ export default function LeaderboardPage() {
         );
       }
 
-      let { data: teamRows, error: teamErr } = await supabase
+      const teamsBaseQuery = supabase
         .from("teams")
-        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id")
-        .eq("competition_slug", competitionSlug);
+        .select("id,seed_in_region,region,name,cost,logo_url,espn_team_id");
+      let { data: teamRows, error: teamErr } = await (
+        competitionSlug === "world-cup"
+          ? teamsBaseQuery.eq("competition_slug", "world-cup")
+          : teamsBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+      );
 
       if (canUseLegacyMarchMadnessFallback(competitionSlug, teamErr?.message)) {
         const fallback = await supabase
@@ -1038,10 +1042,14 @@ export default function LeaderboardPage() {
       const teamCostById = new Map(teamRowsList.map((t) => [t.id, t.cost ?? null]));
 
       let gameRows: ScoringGameWithDate[] = [];
-      let gameQuery = await supabase
+      const gamesBaseQuery = supabase
         .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time")
-        .eq("competition_slug", competitionSlug);
+        .select("id,round,region,slot,team1_id,team2_id,winner_team_id,game_date,start_time");
+      let gameQuery = await (
+        competitionSlug === "world-cup"
+          ? gamesBaseQuery.eq("competition_slug", "world-cup")
+          : gamesBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+      );
 
       if (canUseLegacyMarchMadnessFallback(competitionSlug, gameQuery.error?.message)) {
         gameQuery = await supabase

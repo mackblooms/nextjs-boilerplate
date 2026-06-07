@@ -599,16 +599,16 @@ export async function GET(req: Request) {
     }
 
     const entryIds = baseRows.map((row) => row.entry_id);
+    const forecastTeamsBase = supabaseAdmin.from("teams").select("id,seed_in_region,cost,espn_team_id");
+    const forecastGamesBase = supabaseAdmin.from("games").select("id,round,region,slot,team1_id,team2_id,winner_team_id");
     const [picksResult, teamsResult, gamesResult] = await Promise.all([
       supabaseAdmin.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
-      supabaseAdmin
-        .from("teams")
-        .select("id,seed_in_region,cost,espn_team_id")
-        .eq("competition_slug", competitionSlug),
-      supabaseAdmin
-        .from("games")
-        .select("id,round,region,slot,team1_id,team2_id,winner_team_id")
-        .eq("competition_slug", competitionSlug),
+      competitionSlug === "world-cup"
+        ? forecastTeamsBase.eq("competition_slug", "world-cup")
+        : forecastTeamsBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
+      competitionSlug === "world-cup"
+        ? forecastGamesBase.eq("competition_slug", "world-cup")
+        : forecastGamesBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
     ]);
 
     if (picksResult.error) {

@@ -1233,15 +1233,15 @@ function HomeContent() {
                   entryPicksByEntry.set(row.entry_id, picks);
                 }
 
+                const homeTeamsBase = supabase.from("teams").select("id,seed_in_region,cost");
+                const homeGamesBase = supabase.from("games").select("round,team1_id,team2_id,winner_team_id");
                 const [teamRes, gameRes] = await Promise.all([
-                  supabase
-                    .from("teams")
-                    .select("id,seed_in_region,cost")
-                    .eq("competition_slug", activeCompetitionSlug),
-                  supabase
-                    .from("games")
-                    .select("round,team1_id,team2_id,winner_team_id")
-                    .eq("competition_slug", activeCompetitionSlug),
+                  activeCompetitionSlug === "world-cup"
+                    ? homeTeamsBase.eq("competition_slug", "world-cup")
+                    : homeTeamsBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
+                  activeCompetitionSlug === "world-cup"
+                    ? homeGamesBase.eq("competition_slug", "world-cup")
+                    : homeGamesBase.or("competition_slug.eq.march-madness,competition_slug.is.null"),
                 ]);
 
                 if (!teamRes.error && !gameRes.error) {

@@ -281,10 +281,14 @@ export default function BracketPage() {
   };
 
   const refreshBracketState = useCallback(async () => {
-    let { data: gameRows, error: gameErr } = await supabase
+    const gamesBaseQuery = supabase
       .from("games")
-      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id")
-      .eq("competition_slug", competitionSlug);
+      .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id");
+    let { data: gameRows, error: gameErr } = await (
+      competitionSlug === "world-cup"
+        ? gamesBaseQuery.eq("competition_slug", "world-cup")
+        : gamesBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+    );
 
     if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
       const fallback = await supabase
@@ -457,10 +461,14 @@ export default function BracketPage() {
       setLockTime(resolvedLockTime);
       setDraftLocked(isLocked);
 
-      const teamQuery = await supabase
+      const teamsBaseQuery = supabase
         .from("teams")
-        .select("id,name,region,seed,seed_in_region,cost,espn_team_id")
-        .eq("competition_slug", nextCompetitionSlug);
+        .select("id,name,region,seed,seed_in_region,cost,espn_team_id");
+      const teamQuery = await (
+        nextCompetitionSlug === "world-cup"
+          ? teamsBaseQuery.eq("competition_slug", "world-cup")
+          : teamsBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+      );
       let teamRows = (teamQuery.data ?? []) as Team[];
       let teamErr = teamQuery.error;
 
@@ -482,10 +490,14 @@ export default function BracketPage() {
       }
       setTeams((teamRows ?? []) as Team[]);
 
-      let { data: gameRows, error: gameErr } = await supabase
+      const gamesInitBaseQuery = supabase
         .from("games")
-        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id")
-        .eq("competition_slug", nextCompetitionSlug);
+        .select("id,round,region,slot,status,start_time,game_date,team1_id,team2_id,winner_team_id,sportsdata_game_id");
+      let { data: gameRows, error: gameErr } = await (
+        nextCompetitionSlug === "world-cup"
+          ? gamesInitBaseQuery.eq("competition_slug", "world-cup")
+          : gamesInitBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+      );
 
       if (gameErr && isMissingColumnError(gameErr.message ?? "")) {
         const fallback = await supabase

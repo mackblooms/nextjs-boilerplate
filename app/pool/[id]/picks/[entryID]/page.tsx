@@ -155,10 +155,14 @@ export default function PicksPage() {
         new Set((pickRows ?? []).map((p) => p.team_id).filter(Boolean)),
       );
 
-      const { data: gameRows, error: gameErr } = await supabase
+      const picksGamesBaseQuery = supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id")
-        .eq("competition_slug", competitionSlug);
+        .select("round,team1_id,team2_id,winner_team_id");
+      const { data: gameRows, error: gameErr } = await (
+        competitionSlug === "world-cup"
+          ? picksGamesBaseQuery.eq("competition_slug", "world-cup")
+          : picksGamesBaseQuery.or("competition_slug.eq.march-madness,competition_slug.is.null")
+      );
 
       if (gameErr) {
         setMsg(gameErr.message);
