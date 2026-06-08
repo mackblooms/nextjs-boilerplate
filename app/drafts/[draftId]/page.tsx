@@ -337,11 +337,45 @@ export default function DraftDetailPage() {
       }
     }
 
+    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionErr || !accessToken) {
+      setSaving(false);
+      setMessage(
+        sessionErr
+          ? `Draft saved, but linked pool entries were not updated: ${sessionErr.message}`
+          : "Draft saved, but linked pool entries were not updated: missing auth token."
+      );
+      return;
+    }
+
+    const syncRes = await fetch("/api/drafts/sync-linked-entries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ draftId }),
+    });
+    const syncJson = (await syncRes.json().catch(() => ({}))) as {
+      syncedEntries?: number;
+      error?: string;
+    };
+    if (!syncRes.ok) {
+      setSaving(false);
+      setMessage(`Draft saved, but linked pool entries were not updated: ${syncJson.error ?? "Unknown error"}`);
+      return;
+    }
+
     setDraftName(nextName);
     setRenameValue(nextName);
     setSavedSelected(new Set(selected));
     setSaving(false);
-    setMessage("Draft saved.");
+    setMessage(
+      syncJson.syncedEntries && syncJson.syncedEntries > 0
+        ? `Draft saved and updated ${syncJson.syncedEntries} pool ${syncJson.syncedEntries === 1 ? "entry" : "entries"}.`
+        : "Draft saved."
+    );
   }
 
   async function deleteDraft() {

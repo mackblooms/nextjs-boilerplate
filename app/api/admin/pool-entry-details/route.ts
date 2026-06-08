@@ -270,6 +270,7 @@ export async function POST(req: Request) {
     }
 
     const entryDraftNameById = new Map<string, string | null>();
+    const linkedPicksByEntry = new Map<string, Set<string>>();
     const linkedDraftIds = Array.from(
       new Set(
         Array.from(savedDraftIdByEntryId.values()).filter((draftId): draftId is string => Boolean(draftId)),
@@ -289,6 +290,26 @@ export async function POST(req: Request) {
         for (const [entryId, savedDraftId] of savedDraftIdByEntryId) {
           if (!savedDraftId) continue;
           entryDraftNameById.set(entryId, nameByDraftId.get(savedDraftId) ?? null);
+        }
+      }
+
+      const { data: linkedDraftPickRows, error: linkedDraftPickErr } = await supabaseAdmin
+        .from("saved_draft_picks")
+        .select("draft_id,team_id")
+        .in("draft_id", linkedDraftIds);
+
+      if (!linkedDraftPickErr) {
+        const picksByDraft = new Map<string, Set<string>>();
+        for (const row of (linkedDraftPickRows ?? []) as DraftPickRow[]) {
+          const picks = picksByDraft.get(row.draft_id) ?? new Set<string>();
+          picks.add(row.team_id);
+          picksByDraft.set(row.draft_id, picks);
+        }
+
+        for (const [entryId, savedDraftId] of savedDraftIdByEntryId) {
+          if (!savedDraftId) continue;
+          const draftPicks = picksByDraft.get(savedDraftId);
+          if (draftPicks) linkedPicksByEntry.set(entryId, draftPicks);
         }
       }
     }
@@ -363,7 +384,7 @@ export async function POST(req: Request) {
 
     const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
     for (const row of allLeaderboardRows) {
-      const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
+      const picks = linkedPicksByEntry.get(row.entry_id) ?? picksByEntry.get(row.entry_id) ?? new Set<string>();
       const pickSignature = toSignature(picks);
       const profile = profileByUser.get(row.user_id);
 

@@ -39,6 +39,16 @@ type LeaveEntryRow = {
   entry_name: string | null;
 };
 
+type EntryDraftLinkRow = {
+  id: string;
+  saved_draft_id: string | null;
+};
+
+type EntryPickRow = {
+  entry_id: string;
+  team_id: string;
+};
+
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
 type LiveScoreGame = {
@@ -546,14 +556,25 @@ export default function PoolPage() {
 
       setIsMember(!!memberRow);
 
-      const { data: entryRows } = await supabase
+      const { data: initialEntryRows, error: entryRowsErr } = await supabase
         .from("entries")
-        .select("id")
+        .select("id,saved_draft_id")
         .eq("pool_id", poolId)
         .eq("user_id", user.id);
 
+      let entryRows = initialEntryRows;
+      if (entryRowsErr?.message?.includes("saved_draft_id")) {
+        const fallback = await supabase
+          .from("entries")
+          .select("id")
+          .eq("pool_id", poolId)
+          .eq("user_id", user.id);
+        entryRows = fallback.data?.map((row) => ({ ...row, saved_draft_id: null })) ?? null;
+      }
+
+      const entries = (entryRows ?? []) as EntryDraftLinkRow[];
       const entryIds = Array.from(
-        new Set(((entryRows ?? []) as Array<{ id: string }>).map((row) => row.id).filter(Boolean))
+        new Set(entries.map((row) => row.id).filter(Boolean))
       );
 
       if (entryIds.length === 0) {
@@ -565,14 +586,40 @@ export default function PoolPage() {
         return;
       }
 
+      const linkedDraftIds = Array.from(
+        new Set(entries.map((row) => row.saved_draft_id).filter((id): id is string => Boolean(id)))
+      );
+      const draftPicksByDraft = new Map<string, Set<string>>();
+
+      if (linkedDraftIds.length > 0) {
+        const { data: draftPickRows } = await supabase
+          .from("saved_draft_picks")
+          .select("draft_id,team_id")
+          .in("draft_id", linkedDraftIds);
+
+        for (const row of (draftPickRows ?? []) as SavedDraftPickRow[]) {
+          const picks = draftPicksByDraft.get(row.draft_id) ?? new Set<string>();
+          picks.add(row.team_id);
+          draftPicksByDraft.set(row.draft_id, picks);
+        }
+      }
+
       const { data: pickRows } = await supabase
         .from("entry_picks")
         .select("entry_id,team_id")
         .in("entry_id", entryIds);
 
-      const pickedTeamIds = Array.from(
-        new Set(((pickRows ?? []) as Array<{ entry_id: string; team_id: string }>).map((p) => p.team_id).filter(Boolean))
-      );
+      const picksByEntry = new Map<string, Set<string>>();
+      for (const row of (pickRows ?? []) as EntryPickRow[]) {
+        const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
+        picks.add(row.team_id);
+        picksByEntry.set(row.entry_id, picks);
+      }
+
+      const pickedTeamIds = Array.from(new Set(entries.flatMap((entry) => {
+        const linkedPicks = entry.saved_draft_id ? draftPicksByDraft.get(entry.saved_draft_id) : null;
+        return Array.from(linkedPicks ?? picksByEntry.get(entry.id) ?? []);
+      }).filter(Boolean)));
 
       if (pickedTeamIds.length === 0) {
         setDraftedEspnIds([]);

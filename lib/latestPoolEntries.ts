@@ -22,6 +22,10 @@ type EntryNameRow = {
   entry_name: string | null;
 };
 
+type EntryDetailRow = EntryNameRow & {
+  saved_draft_id: string | null;
+};
+
 type EntryPickRow = {
   entry_id: string;
   team_id: string;
@@ -68,6 +72,14 @@ function isMissingEntryNameError(message?: string | null) {
   return (
     text.includes("column entries.entry_name does not exist") ||
     text.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function isMissingEntrySavedDraftIdError(message?: string | null) {
+  const text = message ?? "";
+  return (
+    text.includes("column entries.saved_draft_id does not exist") ||
+    text.includes("Could not find the 'saved_draft_id' column of 'entries' in the schema cache")
   );
 }
 
@@ -138,23 +150,34 @@ export async function loadLatestPoolEntries(
   }
 
   const entryNameById = new Map<string, string | null>();
+  const savedDraftIdByEntry = new Map<string, string | null>();
   const entryPicksByEntry = new Map<string, Set<string>>();
 
   if (entryIds.length > 0) {
     const [entryNameResult, entryPickResult] = await Promise.all([
-      supabase.from("entries").select("id,entry_name").in("id", entryIds),
+      supabase.from("entries").select("id,entry_name,saved_draft_id").in("id", entryIds),
       supabase.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
     ]);
 
-    if (entryNameResult.error && !isMissingEntryNameError(entryNameResult.error.message)) {
-      throw entryNameResult.error;
-    }
     if (entryPickResult.error) throw entryPickResult.error;
 
     if (!entryNameResult.error) {
-      for (const row of (entryNameResult.data ?? []) as EntryNameRow[]) {
+      for (const row of (entryNameResult.data ?? []) as EntryDetailRow[]) {
         entryNameById.set(row.id, row.entry_name ?? null);
+        savedDraftIdByEntry.set(row.id, row.saved_draft_id ?? null);
       }
+    } else if (isMissingEntrySavedDraftIdError(entryNameResult.error.message)) {
+      const fallback = await supabase.from("entries").select("id,entry_name").in("id", entryIds);
+      if (fallback.error && !isMissingEntryNameError(fallback.error.message)) {
+        throw fallback.error;
+      }
+      if (!fallback.error) {
+        for (const row of (fallback.data ?? []) as EntryNameRow[]) {
+          entryNameById.set(row.id, row.entry_name ?? null);
+        }
+      }
+    } else if (!isMissingEntryNameError(entryNameResult.error.message)) {
+      throw entryNameResult.error;
     }
     for (const [entryId, picks] of toPickMap((entryPickResult.data ?? []) as EntryPickRow[])) {
       entryPicksByEntry.set(entryId, picks);
@@ -162,7 +185,26 @@ export async function loadLatestPoolEntries(
   }
 
   const draftRows = await loadSavedDrafts(supabase, userIds, normalizeCompetitionSlug(competitionSlug));
-  const draftIds = draftRows.map((row) => row.id);
+  const draftById = new Map(draftRows.map((draft) => [draft.id, draft]));
+  const linkedDraftIds = Array.from(
+    new Set(
+      Array.from(savedDraftIdByEntry.values()).filter((draftId): draftId is string => Boolean(draftId)),
+    ),
+  );
+  const missingLinkedDraftIds = linkedDraftIds.filter((draftId) => !draftById.has(draftId));
+  if (missingLinkedDraftIds.length > 0) {
+    const { data, error } = await supabase
+      .from("saved_drafts")
+      .select("id,user_id,name,updated_at")
+      .in("id", missingLinkedDraftIds);
+    if (error) throw error;
+    for (const draft of (data ?? []) as SavedDraftRow[]) {
+      draftById.set(draft.id, draft);
+    }
+  }
+
+  const draftRowsWithLinked = Array.from(draftById.values()).sort(sortDraftsByUpdatedAt);
+  const draftIds = draftRowsWithLinked.map((row) => row.id);
   let draftPicksByDraft = new Map<string, Set<string>>();
 
   if (draftIds.length > 0) {
@@ -175,15 +217,8 @@ export async function loadLatestPoolEntries(
     draftPicksByDraft = toDraftPickMap((data ?? []) as SavedDraftPickRow[]);
   }
 
-  const rowsByUser = new Map<string, PoolLeaderboardRow[]>();
-  for (const row of baseRows) {
-    const list = rowsByUser.get(row.user_id) ?? [];
-    list.push(row);
-    rowsByUser.set(row.user_id, list);
-  }
-
   const draftsByUser = new Map<string, SavedDraftRow[]>();
-  for (const draft of draftRows) {
+  for (const draft of draftRowsWithLinked) {
     const list = draftsByUser.get(draft.user_id) ?? [];
     list.push(draft);
     draftsByUser.set(draft.user_id, list);
@@ -192,45 +227,40 @@ export async function loadLatestPoolEntries(
   const entries: LatestPoolEntryRow[] = [];
   const picksByEntry = new Map<string, string[]>();
 
-  for (const [userId, userRows] of rowsByUser) {
-    const userDrafts = draftsByUser.get(userId) ?? [];
-    const latestDraft =
-      userDrafts.find((draft) => (draftPicksByDraft.get(draft.id)?.size ?? 0) > 0) ??
-      userDrafts[0] ??
+  for (const row of baseRows) {
+    const userDrafts = draftsByUser.get(row.user_id) ?? [];
+    const linkedDraftId = savedDraftIdByEntry.get(row.entry_id);
+    const linkedDraft = linkedDraftId ? draftById.get(linkedDraftId) ?? null : null;
+
+    const entryPicks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
+    const entryNameKey = normalizeDraftName(entryNameById.get(row.entry_id));
+    const matchedDraft = linkedDraft ??
+      userDrafts.find((draft) => normalizeDraftName(draft.name) === entryNameKey) ??
+      userDrafts.find((draft) => sameTeamSet(entryPicks, draftPicksByDraft.get(draft.id) ?? new Set<string>())) ??
       null;
 
-    let selectedRow = userRows[0];
-    let selectedPicks = entryPicksByEntry.get(selectedRow.entry_id) ?? new Set<string>();
-    let entryName = entryNameById.get(selectedRow.entry_id) ?? null;
+    let selectedPicks = entryPicks;
+    let entryName = entryNameById.get(row.entry_id) ?? null;
     let latestDraftName: string | null = null;
 
-    if (latestDraft) {
-      const latestDraftPicks = draftPicksByDraft.get(latestDraft.id) ?? new Set<string>();
-      const latestDraftNameKey = normalizeDraftName(latestDraft.name);
-      const byName = userRows.find(
-        (row) => normalizeDraftName(entryNameById.get(row.entry_id)) === latestDraftNameKey,
-      );
-      const byPicks = userRows.find((row) =>
-        sameTeamSet(entryPicksByEntry.get(row.entry_id) ?? new Set<string>(), latestDraftPicks),
-      );
-
-      selectedRow = byName ?? byPicks ?? selectedRow;
-      selectedPicks = latestDraftPicks.size > 0
+    if (matchedDraft) {
+      const latestDraftPicks = draftPicksByDraft.get(matchedDraft.id) ?? new Set<string>();
+      selectedPicks = linkedDraft || latestDraftPicks.size > 0
         ? latestDraftPicks
-        : entryPicksByEntry.get(selectedRow.entry_id) ?? new Set<string>();
-      latestDraftName = latestDraft.name.trim() || null;
-      entryName = latestDraftName ?? entryNameById.get(selectedRow.entry_id) ?? null;
+        : entryPicks;
+      latestDraftName = matchedDraft.name.trim() || null;
+      entryName = latestDraftName ?? entryNameById.get(row.entry_id) ?? null;
     }
 
     entries.push({
-      entry_id: selectedRow.entry_id,
-      user_id: selectedRow.user_id,
-      display_name: selectedRow.display_name,
+      entry_id: row.entry_id,
+      user_id: row.user_id,
+      display_name: row.display_name,
       entry_name: entryName,
-      latest_draft_id: latestDraft?.id ?? null,
+      latest_draft_id: matchedDraft?.id ?? null,
       latest_draft_name: latestDraftName,
     });
-    picksByEntry.set(selectedRow.entry_id, Array.from(selectedPicks));
+    picksByEntry.set(row.entry_id, Array.from(selectedPicks));
   }
 
   return { entries, picksByEntry };
