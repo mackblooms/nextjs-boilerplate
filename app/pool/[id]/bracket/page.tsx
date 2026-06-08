@@ -318,12 +318,6 @@ export default function BracketPage() {
     const entryIds = playerEntryIdsRef.current;
     if (entryIds.length === 0) return;
 
-    const { data: pickRows, error: picksErr } = await supabase
-      .from("entry_picks")
-      .select("entry_id,team_id")
-      .in("entry_id", entryIds);
-    if (picksErr) return;
-
     const teamSeedById = new Map(
       teams.map((team) => [
         team.id,
@@ -333,10 +327,22 @@ export default function BracketPage() {
     const teamCostById = new Map(teams.map((team) => [team.id, team.cost ?? null]));
 
     const picksByEntry = new Map<string, string[]>();
-    for (const row of (pickRows ?? []) as { entry_id: string; team_id: string }[]) {
-      const entryPickIds = picksByEntry.get(row.entry_id) ?? [];
-      entryPickIds.push(row.team_id);
-      picksByEntry.set(row.entry_id, entryPickIds);
+    if (Object.keys(latestTeamIdsByEntry).length > 0) {
+      for (const entryId of entryIds) {
+        picksByEntry.set(entryId, latestTeamIdsByEntry[entryId] ?? []);
+      }
+    } else {
+      const { data: pickRows, error: picksErr } = await supabase
+        .from("entry_picks")
+        .select("entry_id,team_id")
+        .in("entry_id", entryIds);
+      if (picksErr) return;
+
+      for (const row of (pickRows ?? []) as { entry_id: string; team_id: string }[]) {
+        const entryPickIds = picksByEntry.get(row.entry_id) ?? [];
+        entryPickIds.push(row.team_id);
+        picksByEntry.set(row.entry_id, entryPickIds);
+      }
     }
 
     const scoredEntries = scoreEntries(latestGames, teamSeedById, picksByEntry, {
@@ -353,7 +359,7 @@ export default function BracketPage() {
       });
       return changed ? next : prev;
     });
-  }, [competitionSlug, teams]);
+  }, [competitionSlug, latestTeamIdsByEntry, teams]);
 
   useEffect(() => {
     const load = async () => {

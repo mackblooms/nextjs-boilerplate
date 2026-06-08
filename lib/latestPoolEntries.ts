@@ -234,9 +234,14 @@ export async function loadLatestPoolEntries(
 
     const entryPicks = entryPicksByEntry.get(row.entry_id) ?? new Set<string>();
     const entryNameKey = normalizeDraftName(entryNameById.get(row.entry_id));
+    const latestUserDraft =
+      userDrafts.find((draft) => (draftPicksByDraft.get(draft.id)?.size ?? 0) > 0) ??
+      userDrafts[0] ??
+      null;
     const matchedDraft = linkedDraft ??
       userDrafts.find((draft) => normalizeDraftName(draft.name) === entryNameKey) ??
       userDrafts.find((draft) => sameTeamSet(entryPicks, draftPicksByDraft.get(draft.id) ?? new Set<string>())) ??
+      latestUserDraft ??
       null;
 
     let selectedPicks = entryPicks;

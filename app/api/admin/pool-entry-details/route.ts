@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireSiteAdmin } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
 
 type PoolRow = {
   id: string;
@@ -128,7 +130,7 @@ export async function POST(req: Request) {
     if ("response" in auth) return auth.response;
 
     const body = await req.json().catch(() => ({}));
-    const poolIds = Array.isArray(body.poolIds)
+    const poolIds: string[] = Array.isArray(body.poolIds)
       ? Array.from(new Set(body.poolIds.filter((id: unknown): id is string => typeof id === "string" && Boolean(id.trim()))))
       : [];
 
@@ -147,7 +149,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: poolErr.message }, { status: 400 });
     }
 
-    const competitionByPoolId = new Map(
+    const competitionByPoolId = new Map<string, string | null>(
       ((poolRows ?? []) as PoolRow[]).map((pool) => [pool.id, pool.competition_slug ?? null]),
     );
 
@@ -410,24 +412,38 @@ export async function POST(req: Request) {
       }
     }
 
-    const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
-    for (const row of allLeaderboardRows) {
-      const picks = linkedPicksByEntry.get(row.entry_id) ?? picksByEntry.get(row.entry_id) ?? new Set<string>();
-      const pickSignature = toSignature(picks);
-      const profile = profileByUser.get(row.user_id);
+    const latestEntriesByPool = new Map<
+      string,
+      Awaited<ReturnType<typeof loadLatestPoolEntries>>
+    >();
+    for (const targetPoolId of poolIds) {
+      const competitionSlug = normalizeCompetitionSlug(competitionByPoolId.get(targetPoolId));
+      latestEntriesByPool.set(
+        targetPoolId,
+        await loadLatestPoolEntries(supabaseAdmin, targetPoolId, competitionSlug),
+      );
+    }
 
-      if (!groupedEntries[row.pool_id]) groupedEntries[row.pool_id] = [];
-      groupedEntries[row.pool_id].push({
-        pool_id: row.pool_id,
-        entry_id: row.entry_id,
-        user_id: row.user_id,
-        display_name: profile?.display_name ?? row.display_name,
-        full_name: profile?.full_name ?? null,
-        entry_name: entryNameById.get(row.entry_id) ?? null,
-        draft_name: entryDraftNameById.get(row.entry_id) ?? null,
-        picks_count: picks.size,
-        pick_signature: pickSignature,
-      });
+    const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
+    for (const [targetPoolId, latestEntries] of latestEntriesByPool) {
+      for (const row of latestEntries.entries) {
+        const picks = new Set(latestEntries.picksByEntry.get(row.entry_id) ?? []);
+        const pickSignature = toSignature(picks);
+        const profile = profileByUser.get(row.user_id);
+
+        if (!groupedEntries[targetPoolId]) groupedEntries[targetPoolId] = [];
+        groupedEntries[targetPoolId].push({
+          pool_id: targetPoolId,
+          entry_id: row.entry_id,
+          user_id: row.user_id,
+          display_name: profile?.display_name ?? row.display_name,
+          full_name: profile?.full_name ?? null,
+          entry_name: row.entry_name,
+          draft_name: row.latest_draft_name,
+          picks_count: picks.size,
+          pick_signature: pickSignature,
+        });
+      }
     }
 
     return NextResponse.json({
