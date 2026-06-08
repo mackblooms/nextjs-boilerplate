@@ -324,7 +324,7 @@ export default function PoolDraftPage() {
       return;
     }
 
-    let entriesWithNames = await supabase
+    const entriesWithNames = await supabase
       .from("entries")
       .select("id,entry_name,saved_draft_id")
       .eq("pool_id", poolId)
@@ -332,24 +332,53 @@ export default function PoolDraftPage() {
 
     let nextEntries: EntryRow[] = [];
     if (entriesWithNames.error && isMissingSavedDraftIdError(entriesWithNames.error.message)) {
-      entriesWithNames = await supabase
+      const entriesWithoutSavedDraftId = await supabase
         .from("entries")
         .select("id,entry_name")
         .eq("pool_id", poolId)
         .eq("user_id", user.id);
-    }
 
-    if (
+      if (entriesWithoutSavedDraftId.error && !isMissingEntryNameError(entriesWithoutSavedDraftId.error.message)) {
+        setLoading(false);
+        setMessage(entriesWithoutSavedDraftId.error.message);
+        return;
+      }
+
+      if (entriesWithoutSavedDraftId.error && isMissingEntryNameError(entriesWithoutSavedDraftId.error.message)) {
+        const fallbackEntries = await supabase
+          .from("entries")
+          .select("id")
+          .eq("pool_id", poolId)
+          .eq("user_id", user.id);
+
+        if (fallbackEntries.error) {
+          setLoading(false);
+          setMessage(fallbackEntries.error.message);
+          return;
+        }
+
+        nextEntries = ((fallbackEntries.data ?? []) as Array<{ id: string }>).map((entry) => ({
+          id: entry.id,
+          entry_name: null,
+          saved_draft_id: null,
+        }));
+      } else {
+        nextEntries = ((entriesWithoutSavedDraftId.data ?? []) as Array<{ id: string; entry_name: string | null }>).map(
+          (entry) => ({
+            id: entry.id,
+            entry_name: entry.entry_name,
+            saved_draft_id: null,
+          }),
+        );
+      }
+    } else if (
       entriesWithNames.error &&
-      !isMissingEntryNameError(entriesWithNames.error.message) &&
-      !isMissingSavedDraftIdError(entriesWithNames.error.message)
+      !isMissingEntryNameError(entriesWithNames.error.message)
     ) {
       setLoading(false);
       setMessage(entriesWithNames.error.message);
       return;
-    }
-
-    if (entriesWithNames.error && isMissingEntryNameError(entriesWithNames.error.message)) {
+    } else if (entriesWithNames.error && isMissingEntryNameError(entriesWithNames.error.message)) {
       const fallbackEntries = await supabase
         .from("entries")
         .select("id")
@@ -365,6 +394,7 @@ export default function PoolDraftPage() {
       nextEntries = ((fallbackEntries.data ?? []) as Array<{ id: string }>).map((entry) => ({
         id: entry.id,
         entry_name: null,
+        saved_draft_id: null,
       }));
     } else {
       nextEntries = (entriesWithNames.data ?? []) as EntryRow[];
