@@ -43,6 +43,10 @@ type EntryNameRow = {
   entry_name: string | null;
 };
 
+type EntryDetailRow = EntryNameRow & {
+  saved_draft_id: string | null;
+};
+
 type EntryIdOnlyRow = {
   id: string;
 };
@@ -78,7 +82,18 @@ type AdminPoolEntrySummary = {
 
 type ProfileNameRow = {
   user_id: string;
+  display_name: string | null;
   full_name: string | null;
+};
+
+type ProfileName = {
+  display_name: string | null;
+  full_name: string | null;
+};
+
+type DraftNameRow = {
+  id: string;
+  name: string | null;
 };
 
 function memberPrimaryLabel(member: PoolMemberRow) {
@@ -107,6 +122,14 @@ function isMissingEntryNameError(message?: string) {
   return (
     message.includes("column entries.entry_name does not exist") ||
     message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
+  );
+}
+
+function isMissingSavedDraftIdError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.saved_draft_id does not exist") ||
+    message.includes("Could not find the 'saved_draft_id' column of 'entries' in the schema cache")
   );
 }
 
@@ -477,16 +500,22 @@ export default function AdminPage() {
         new Set(allLeaderboardRows.map((row) => row.user_id))
       );
 
-      let fullNameByUser = new Map<string, string | null>();
+      let profileByUser = new Map<string, ProfileName>();
       if (allUserIds.length > 0) {
         const { data: profileRows, error: profileErr } = await supabase
           .from("profiles")
-          .select("user_id,full_name")
+          .select("user_id,display_name,full_name")
           .in("user_id", allUserIds);
 
         if (!profileErr) {
-          fullNameByUser = new Map(
-            ((profileRows ?? []) as ProfileNameRow[]).map((row) => [row.user_id, row.full_name ?? null])
+          profileByUser = new Map(
+            ((profileRows ?? []) as ProfileNameRow[]).map((row) => [
+              row.user_id,
+              {
+                display_name: row.display_name ?? null,
+                full_name: row.full_name ?? null,
+              },
+            ])
           );
         }
       }
@@ -500,10 +529,11 @@ export default function AdminPage() {
           seenMembers.add(key);
 
           if (!groupedMembers[row.pool_id]) groupedMembers[row.pool_id] = [];
+          const profile = profileByUser.get(row.user_id);
           groupedMembers[row.pool_id].push({
             user_id: row.user_id,
-            display_name: row.display_name,
-            full_name: fullNameByUser.get(row.user_id) ?? null,
+            display_name: profile?.display_name ?? row.display_name,
+            full_name: profile?.full_name ?? null,
           });
         }
         for (const id of Object.keys(groupedMembers)) {
@@ -517,16 +547,42 @@ export default function AdminPage() {
       const allEntryIds = Array.from(new Set(allLeaderboardRows.map((row) => row.entry_id)));
 
       let entryNameById = new Map<string, string | null>();
+      let savedDraftIdByEntryId = new Map<string, string | null>();
       if (allEntryIds.length > 0) {
         const withName = await supabase
           .from("entries")
-          .select("id,entry_name")
+          .select("id,entry_name,saved_draft_id")
           .in("id", allEntryIds);
 
         if (!withName.error) {
           entryNameById = new Map(
-            ((withName.data ?? []) as EntryNameRow[]).map((row) => [row.id, row.entry_name ?? null]),
+            ((withName.data ?? []) as EntryDetailRow[]).map((row) => [row.id, row.entry_name ?? null]),
           );
+          savedDraftIdByEntryId = new Map(
+            ((withName.data ?? []) as EntryDetailRow[]).map((row) => [row.id, row.saved_draft_id ?? null]),
+          );
+        } else if (isMissingSavedDraftIdError(withName.error.message)) {
+          const fallbackWithName = await supabase
+            .from("entries")
+            .select("id,entry_name")
+            .in("id", allEntryIds);
+
+          if (!fallbackWithName.error) {
+            entryNameById = new Map(
+              ((fallbackWithName.data ?? []) as EntryNameRow[]).map((row) => [row.id, row.entry_name ?? null]),
+            );
+          } else if (isMissingEntryNameError(fallbackWithName.error.message)) {
+            const fallback = await supabase
+              .from("entries")
+              .select("id")
+              .in("id", allEntryIds);
+
+            if (!fallback.error) {
+              entryNameById = new Map(
+                ((fallback.data ?? []) as EntryIdOnlyRow[]).map((row) => [row.id, null]),
+              );
+            }
+          }
         } else if (isMissingEntryNameError(withName.error.message)) {
           const fallback = await supabase
             .from("entries")
@@ -559,9 +615,29 @@ export default function AdminPage() {
 
       // For entries missing a name, try to match them to a saved draft by pick signature.
       const entryDraftNameById = new Map<string, string | null>();
+      const linkedDraftIds = Array.from(
+        new Set(
+          Array.from(savedDraftIdByEntryId.values()).filter((draftId): draftId is string => Boolean(draftId))
+        )
+      );
+      if (linkedDraftIds.length > 0) {
+        const { data: linkedDraftRows } = await supabase
+          .from("saved_drafts")
+          .select("id,name")
+          .in("id", linkedDraftIds);
+
+        for (const draft of (linkedDraftRows ?? []) as DraftNameRow[]) {
+          const draftName = draft.name?.trim();
+          if (!draftName) continue;
+          for (const [entryId, savedDraftId] of savedDraftIdByEntryId) {
+            if (savedDraftId === draft.id) entryDraftNameById.set(entryId, draftName);
+          }
+        }
+      }
+
       const unnamedUserIds = new Set<string>();
       for (const row of allLeaderboardRows) {
-        if (!entryNameById.get(row.entry_id)?.trim()) {
+        if (!entryNameById.get(row.entry_id)?.trim() && !entryDraftNameById.get(row.entry_id)?.trim()) {
           unnamedUserIds.add(row.user_id);
         }
       }
@@ -593,7 +669,7 @@ export default function AdminPage() {
             draftBySignature.set(`${d.user_id}::${sig}`, d.name);
           }
           for (const row of allLeaderboardRows) {
-            if (entryNameById.get(row.entry_id)?.trim()) continue;
+            if (entryNameById.get(row.entry_id)?.trim() || entryDraftNameById.get(row.entry_id)?.trim()) continue;
             const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
             if (picks.size === 0) continue;
             const sig = Array.from(picks).sort().join("|");
@@ -607,14 +683,15 @@ export default function AdminPage() {
       for (const row of allLeaderboardRows) {
         const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
         const pickSignature = picks.size > 0 ? Array.from(picks).sort().join("|") : null;
+        const profile = profileByUser.get(row.user_id);
 
         if (!groupedEntries[row.pool_id]) groupedEntries[row.pool_id] = [];
         groupedEntries[row.pool_id].push({
           pool_id: row.pool_id,
           entry_id: row.entry_id,
           user_id: row.user_id,
-          display_name: row.display_name,
-          full_name: fullNameByUser.get(row.user_id) ?? null,
+          display_name: profile?.display_name ?? row.display_name,
+          full_name: profile?.full_name ?? null,
           entry_name: entryNameById.get(row.entry_id) ?? null,
           draft_name: entryDraftNameById.get(row.entry_id) ?? null,
           picks_count: picks.size,
