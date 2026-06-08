@@ -353,6 +353,7 @@ function DraftsPageContent() {
             const enterPoolHref = returnPoolId
               ? competitionPathWithParams(`/pool/${returnPoolId}`, competitionSlug, {
                   enterDrafts: "1",
+                  autoEnterDraft: "1",
                   draftId: draft.id,
                 })
               : competitionPath("/pools", competitionSlug);

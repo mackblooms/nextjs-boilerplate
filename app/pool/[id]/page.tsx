@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -486,10 +486,11 @@ export default function PoolPage() {
   const router = useRouter();
   const poolId = params.id;
   const [initialDraftPrompt] = useState(() => {
-    if (typeof window === "undefined") return { shouldOpen: false, draftId: "" };
+    if (typeof window === "undefined") return { shouldOpen: false, autoEnter: false, draftId: "" };
     const params = new URLSearchParams(window.location.search);
     return {
       shouldOpen: params.get("enterDrafts") === "1",
+      autoEnter: params.get("autoEnterDraft") === "1",
       draftId: params.get("draftId")?.trim() ?? "",
     };
   });
@@ -781,7 +782,7 @@ export default function PoolPage() {
     setSelectedDraftIds(new Set());
   }
 
-  const openDraftModal = useCallback(async (initialDraftId?: string) => {
+  async function openDraftModal(initialDraftId?: string, autoEnterDraft = false) {
     const requestedDraftId = initialDraftId?.trim() ?? "";
 
     if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
@@ -951,20 +952,43 @@ export default function PoolPage() {
       }
     }
 
-    setDraftPickMap(nextPickMap);
-    setAlreadyEnteredDraftIds(enteredDrafts);
+    let selectedDrafts = new Set<string>();
+    let autoEnterDrafts = new Set<string>();
+
     if (requestedDraftId) {
       const matchingDraft = drafts.find((draft) => draft.id === requestedDraftId);
       if (matchingDraft && !enteredDrafts.has(requestedDraftId)) {
-        setSelectedDraftIds(new Set([requestedDraftId]));
+        selectedDrafts = new Set([requestedDraftId]);
+        if (autoEnterDraft && (nextPickMap.get(requestedDraftId)?.size ?? 0) > 0) {
+          autoEnterDrafts = selectedDrafts;
+        }
       } else if (matchingDraft) {
         setDraftModalMessage(`"${matchingDraft.name}" is already entered in this pool.`);
       } else {
         setDraftModalMessage("That draft was not found in your saved drafts.");
       }
+    } else if (autoEnterDraft) {
+      const enterableDrafts = drafts.filter(
+        (draft) => !enteredDrafts.has(draft.id) && (nextPickMap.get(draft.id)?.size ?? 0) > 0,
+      );
+
+      if (enterableDrafts.length === 1) {
+        selectedDrafts = new Set([enterableDrafts[0].id]);
+        autoEnterDrafts = selectedDrafts;
+      } else if (enterableDrafts.length > 1) {
+        setDraftModalMessage("Choose which draft to enter into this new pool.");
+      }
     }
+
+    setDraftPickMap(nextPickMap);
+    setAlreadyEnteredDraftIds(enteredDrafts);
+    setSelectedDraftIds(selectedDrafts);
     setDraftModalLoading(false);
-  }, [competitionSlug, pool?.lock_time, poolId]);
+
+    if (autoEnterDrafts.size > 0) {
+      await submitSelectedDrafts(autoEnterDrafts, drafts, nextPickMap, enteredDrafts);
+    }
+  }
 
   useEffect(() => {
     if (!initialDraftPrompt.shouldOpen || autoDraftPromptHandled || loading || isMember !== true || !pool || draftModalOpen) {
@@ -972,20 +996,21 @@ export default function PoolPage() {
     }
 
     setAutoDraftPromptHandled(true);
-    void openDraftModal(initialDraftPrompt.draftId);
+    void openDraftModal(initialDraftPrompt.draftId, initialDraftPrompt.autoEnter);
 
     const nextParams = new URLSearchParams(window.location.search);
     nextParams.delete("enterDrafts");
+    nextParams.delete("autoEnterDraft");
     nextParams.delete("draftId");
     const query = nextParams.toString();
     window.history.replaceState(null, "", `/pool/${poolId}${query ? `?${query}` : ""}`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     autoDraftPromptHandled,
     draftModalOpen,
     initialDraftPrompt,
     isMember,
     loading,
-    openDraftModal,
     pool,
     poolId,
   ]);
@@ -1058,13 +1083,18 @@ export default function PoolPage() {
     return { id: insertFallback.data.id as string };
   }
 
-  async function submitSelectedDrafts() {
+  async function submitSelectedDrafts(
+    draftIdsToSubmit = selectedDraftIds,
+    draftRowsSource = availableDrafts,
+    pickMapSource = draftPickMap,
+    enteredDraftIdsSource = alreadyEnteredDraftIds,
+  ) {
     if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
       setDraftModalMessage(lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug));
       return;
     }
 
-    if (selectedDraftIds.size === 0) {
+    if (draftIdsToSubmit.size === 0) {
       setDraftModalMessage("Select at least one draft.");
       return;
     }
@@ -1076,8 +1106,8 @@ export default function PoolPage() {
       return;
     }
 
-    const selectedRows = availableDrafts.filter(
-      (draft) => selectedDraftIds.has(draft.id) && !alreadyEnteredDraftIds.has(draft.id)
+    const selectedRows = draftRowsSource.filter(
+      (draft) => draftIdsToSubmit.has(draft.id) && !enteredDraftIdsSource.has(draft.id)
     );
     if (selectedRows.length === 0) {
       setDraftModalMessage("Selected draft(s) are already in this pool.");
@@ -1109,7 +1139,7 @@ export default function PoolPage() {
 
     try {
       for (const draft of selectedRows) {
-        const draftPickSet = draftPickMap.get(draft.id) ?? new Set<string>();
+        const draftPickSet = pickMapSource.get(draft.id) ?? new Set<string>();
         const draftPickIds = Array.from(draftPickSet);
         if (draftPickIds.length === 0) {
           skippedEmpty += 1;
@@ -1783,6 +1813,32 @@ export default function PoolPage() {
           {copyMsg ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{copyMsg}</p> : null}
         </div>
 
+        {isPoolCreator ? (
+          <section
+            className="pool-card-section"
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 12,
+              padding: 12,
+              background: "var(--surface-muted)",
+              width: "100%",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Creator controls</h2>
+            <button
+              type="button"
+              onClick={() => void deletePool()}
+              disabled={deletingPool}
+              className="ui-btn ui-btn--md ui-btn--danger"
+              style={{ width: "fit-content", maxWidth: "100%" }}
+            >
+              {deletingPool ? "Deleting..." : "Delete Pool"}
+            </button>
+          </section>
+        ) : null}
+
         {isMember === false && !loading ? (
           <section
             className="pool-card-section pool-card-section--accent"
@@ -1885,17 +1941,6 @@ export default function PoolPage() {
               >
                 Leaderboard
               </Link>
-              {isPoolCreator ? (
-                <button
-                  type="button"
-                  onClick={() => void deletePool()}
-                  disabled={deletingPool}
-                  className="ui-btn ui-btn--md ui-btn--danger"
-                  style={{ flex: "1 1 140px", minWidth: 120 }}
-                >
-                  {deletingPool ? "Deleting..." : "Delete Pool"}
-                </button>
-              ) : null}
             </div>
             {entriesLocked ? (
               <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>

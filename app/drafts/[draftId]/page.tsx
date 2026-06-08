@@ -391,6 +391,7 @@ export default function DraftDetailPage() {
       router.push(
         competitionPathWithParams(`/pool/${returnPoolId}`, competitionSlug, {
           enterDrafts: "1",
+          autoEnterDraft: "1",
           draftId,
         }),
       );
