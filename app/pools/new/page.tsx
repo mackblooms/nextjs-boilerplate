@@ -109,7 +109,7 @@ function NewPoolPageContent() {
       poolId: body.poolId,
     });
 
-    router.push(`/pool/${body.poolId}`);
+    router.push(`/pool/${body.poolId}?enterDrafts=1`);
   }
 
   return (

@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
-import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
+import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
@@ -26,6 +26,17 @@ function formatUpdatedAt(value: string) {
 
 function sortDrafts(rows: DraftRow[]) {
   return [...rows].sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+}
+
+function competitionPathWithParams(
+  path: string,
+  competitionSlug: CompetitionSlug,
+  params: Record<string, string>,
+) {
+  const search = new URLSearchParams(params);
+  if (competitionSlug !== "march-madness") search.set("competition", competitionSlug);
+  const query = search.toString();
+  return query ? `${path}?${query}` : path;
 }
 
 function TrashIcon() {
@@ -71,8 +82,10 @@ function PencilIcon() {
 
 function DraftsPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
   const competition = getCompetition(competitionSlug);
+  const returnPoolId = searchParams.get("returnPoolId")?.trim() ?? "";
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -215,6 +228,14 @@ function DraftsPageContent() {
     setPickCountByDraft((prev) => ({ ...prev, [nextDraft.id]: 0 }));
     setNewDraftName("");
     setCreating(false);
+
+    if (returnPoolId) {
+      router.push(
+        competitionPathWithParams(`/drafts/${nextDraft.id}`, competitionSlug, { returnPoolId }),
+      );
+      return;
+    }
+
     setMessage(`Created "${nextDraft.name}".`);
   }
 
@@ -325,7 +346,18 @@ function DraftsPageContent() {
 
       {hasDrafts ? (
         <section style={{ display: "grid", gap: 10 }}>
-          {drafts.map((draft) => (
+          {drafts.map((draft) => {
+            const draftHref = returnPoolId
+              ? competitionPathWithParams(`/drafts/${draft.id}`, competitionSlug, { returnPoolId })
+              : competitionPath(`/drafts/${draft.id}`, competitionSlug);
+            const enterPoolHref = returnPoolId
+              ? competitionPathWithParams(`/pool/${returnPoolId}`, competitionSlug, {
+                  enterDrafts: "1",
+                  draftId: draft.id,
+                })
+              : competitionPath("/pools", competitionSlug);
+
+            return (
             <UiCard
               as="article"
               className="drafts-draft-card"
@@ -340,7 +372,7 @@ function DraftsPageContent() {
             >
               <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
                 <Link
-                  href={competitionPath(`/drafts/${draft.id}`, competitionSlug)}
+                  href={draftHref}
                   className="drafts-draft-link"
                   title={`Open ${draft.name}`}
                   style={{
@@ -361,7 +393,7 @@ function DraftsPageContent() {
 
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <UiLinkButton
-                  href={competitionPath(`/drafts/${draft.id}`, competitionSlug)}
+                  href={draftHref}
                   aria-label={`Edit ${draft.name}`}
                   title={`Edit ${draft.name}`}
                   size="sm"
@@ -377,9 +409,9 @@ function DraftsPageContent() {
                   <PencilIcon />
                 </UiLinkButton>
                 <UiLinkButton
-                  href={competitionPath("/pools", competitionSlug)}
+                  href={enterPoolHref}
                 >
-                  Join Pool(s)
+                  {returnPoolId ? "Enter in Pool" : "Join Pool(s)"}
                 </UiLinkButton>
                 <UiButton
                   type="button"
@@ -401,7 +433,8 @@ function DraftsPageContent() {
                 </UiButton>
               </div>
             </UiCard>
-          ))}
+          );
+          })}
         </section>
       ) : (
         <UiCard>

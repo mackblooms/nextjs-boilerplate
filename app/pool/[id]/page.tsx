@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
@@ -12,6 +12,17 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+
+function competitionPathWithParams(
+  path: string,
+  competitionSlug: CompetitionSlug,
+  params: Record<string, string>,
+) {
+  const search = new URLSearchParams(params);
+  if (competitionSlug !== "march-madness") search.set("competition", competitionSlug);
+  const query = search.toString();
+  return query ? `${path}?${query}` : path;
+}
 
 type Pool = {
   id: string;
@@ -472,7 +483,16 @@ function ScoreSidebar({
 
 export default function PoolPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const poolId = params.id;
+  const [initialDraftPrompt] = useState(() => {
+    if (typeof window === "undefined") return { shouldOpen: false, draftId: "" };
+    const params = new URLSearchParams(window.location.search);
+    return {
+      shouldOpen: params.get("enterDrafts") === "1",
+      draftId: params.get("draftId")?.trim() ?? "",
+    };
+  });
   const canNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
@@ -481,6 +501,7 @@ export default function PoolPage() {
   const [status, setStatus] = useState<StatusMessage | null>(null);
   const [copyMsg, setCopyMsg] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isMember, setIsMember] = useState<boolean | null>(null);
   const [joinPassword, setJoinPassword] = useState("");
   const [joining, setJoining] = useState(false);
@@ -501,10 +522,12 @@ export default function PoolPage() {
   const [scores, setScores] = useState<LiveScoreGame[]>([]);
   const [scoresLoading, setScoresLoading] = useState(true);
   const [scoresError, setScoresError] = useState<string | null>(null);
+  const [deletingPool, setDeletingPool] = useState(false);
   const [draftedEspnIds, setDraftedEspnIds] = useState<string[]>([]);
   const [draftedTeamKeys, setDraftedTeamKeys] = useState<string[]>([]);
   const [draftedTeamCount, setDraftedTeamCount] = useState(0);
   const [draftedLoaded, setDraftedLoaded] = useState(false);
+  const [autoDraftPromptHandled, setAutoDraftPromptHandled] = useState(false);
   const sharePayload = useMemo(
     () => buildPoolInviteShareData(poolId, pool?.name ?? null, pool?.is_private ?? true),
     [pool?.is_private, pool?.name, poolId]
@@ -546,6 +569,7 @@ export default function PoolPage() {
       const user = authData.user;
 
       if (!user) {
+        setCurrentUserId(null);
         setIsMember(false);
         setDraftedEspnIds([]);
         setDraftedTeamKeys([]);
@@ -554,6 +578,8 @@ export default function PoolPage() {
         setLoading(false);
         return;
       }
+
+      setCurrentUserId(user.id);
 
       const { data: memberRow } = await supabase
         .from("pool_members")
@@ -738,8 +764,10 @@ export default function PoolPage() {
 
   const poolIsPrivate = (pool?.is_private ?? true) !== false;
   const entriesLocked = isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug);
+  const isPoolCreator = Boolean(pool?.created_by && currentUserId === pool.created_by);
   const selectedDraftCount = selectedDraftIds.size;
   const selectedLeaveCount = selectedLeaveEntryIds.size;
+  const createDraftForPoolHref = competitionPathWithParams("/drafts", competitionSlug, { returnPoolId: poolId });
 
   function closeDraftModal() {
     if (draftModalSubmitting) return;
@@ -753,7 +781,9 @@ export default function PoolPage() {
     setSelectedDraftIds(new Set());
   }
 
-  async function openDraftModal() {
+  const openDraftModal = useCallback(async (initialDraftId?: string) => {
+    const requestedDraftId = initialDraftId?.trim() ?? "";
+
     if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
       setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug) });
       return;
@@ -923,8 +953,42 @@ export default function PoolPage() {
 
     setDraftPickMap(nextPickMap);
     setAlreadyEnteredDraftIds(enteredDrafts);
+    if (requestedDraftId) {
+      const matchingDraft = drafts.find((draft) => draft.id === requestedDraftId);
+      if (matchingDraft && !enteredDrafts.has(requestedDraftId)) {
+        setSelectedDraftIds(new Set([requestedDraftId]));
+      } else if (matchingDraft) {
+        setDraftModalMessage(`"${matchingDraft.name}" is already entered in this pool.`);
+      } else {
+        setDraftModalMessage("That draft was not found in your saved drafts.");
+      }
+    }
     setDraftModalLoading(false);
-  }
+  }, [competitionSlug, pool?.lock_time, poolId]);
+
+  useEffect(() => {
+    if (!initialDraftPrompt.shouldOpen || autoDraftPromptHandled || loading || isMember !== true || !pool || draftModalOpen) {
+      return;
+    }
+
+    setAutoDraftPromptHandled(true);
+    void openDraftModal(initialDraftPrompt.draftId);
+
+    const nextParams = new URLSearchParams(window.location.search);
+    nextParams.delete("enterDrafts");
+    nextParams.delete("draftId");
+    const query = nextParams.toString();
+    window.history.replaceState(null, "", `/pool/${poolId}${query ? `?${query}` : ""}`);
+  }, [
+    autoDraftPromptHandled,
+    draftModalOpen,
+    initialDraftPrompt,
+    isMember,
+    loading,
+    openDraftModal,
+    pool,
+    poolId,
+  ]);
 
   function toggleDraftSelection(draftId: string) {
     if (alreadyEnteredDraftIds.has(draftId)) return;
@@ -1090,6 +1154,44 @@ export default function PoolPage() {
         (skippedEmpty > 0 ? ` Skipped ${skippedEmpty} empty draft${skippedEmpty === 1 ? "" : "s"}.` : ""),
     });
     setReloadKey((prev) => prev + 1);
+  }
+
+  async function deletePool() {
+    if (!pool || deletingPool) return;
+
+    const ok = window.confirm(
+      `Delete "${pool.name}" permanently? This removes all pool entries, picks, and member access.`,
+    );
+    if (!ok) return;
+
+    setDeletingPool(true);
+    setStatus(null);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setDeletingPool(false);
+      setStatus({ tone: "error", text: "Please log in first." });
+      return;
+    }
+
+    const res = await fetch("/api/pools/delete", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ poolId }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setDeletingPool(false);
+      setStatus({ tone: "error", text: body.error ?? "Failed to delete pool." });
+      return;
+    }
+
+    router.push(competitionPath("/pools", competitionSlug));
   }
 
   function closeLeaveModal() {
@@ -1783,6 +1885,17 @@ export default function PoolPage() {
               >
                 Leaderboard
               </Link>
+              {isPoolCreator ? (
+                <button
+                  type="button"
+                  onClick={() => void deletePool()}
+                  disabled={deletingPool}
+                  className="ui-btn ui-btn--md ui-btn--danger"
+                  style={{ flex: "1 1 140px", minWidth: 120 }}
+                >
+                  {deletingPool ? "Deleting..." : "Delete Pool"}
+                </button>
+              ) : null}
             </div>
             {entriesLocked ? (
               <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
@@ -1955,7 +2068,10 @@ export default function PoolPage() {
               >
                 <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
                 <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Open <Link href={competitionPath("/drafts", competitionSlug)}>My Drafts</Link> to create one.
+                  <Link href={createDraftForPoolHref} onClick={closeDraftModal}>
+                    Create a draft
+                  </Link>{" "}
+                  and you can enter it here after saving.
                 </p>
               </div>
             ) : null}
@@ -1977,7 +2093,7 @@ export default function PoolPage() {
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
               <Link
-                href={competitionPath("/drafts", competitionSlug)}
+                href={createDraftForPoolHref}
                 onClick={closeDraftModal}
                 style={{
                   padding: "10px 12px",
@@ -1991,7 +2107,7 @@ export default function PoolPage() {
                   alignItems: "center",
                 }}
               >
-                Manage Drafts
+                Create Draft
               </Link>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <button

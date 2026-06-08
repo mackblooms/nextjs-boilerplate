@@ -50,6 +50,17 @@ function sameSet(a: Set<string>, b: Set<string>) {
   return true;
 }
 
+function competitionPathWithParams(
+  path: string,
+  competitionSlug: CompetitionSlug,
+  params: Record<string, string>,
+) {
+  const search = new URLSearchParams(params);
+  if (competitionSlug !== "march-madness") search.set("competition", competitionSlug);
+  const query = search.toString();
+  return query ? `${path}?${query}` : path;
+}
+
 function isTeamRow(value: TeamRow | undefined): value is TeamRow {
   return Boolean(value);
 }
@@ -80,6 +91,10 @@ export default function DraftDetailPage() {
   const params = useParams<{ draftId: string }>();
   const router = useRouter();
   const draftId = params.draftId;
+  const [returnPoolId] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("returnPoolId")?.trim() ?? "";
+  });
 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -371,6 +386,17 @@ export default function DraftDetailPage() {
     setRenameValue(nextName);
     setSavedSelected(new Set(selected));
     setSaving(false);
+
+    if (returnPoolId) {
+      router.push(
+        competitionPathWithParams(`/pool/${returnPoolId}`, competitionSlug, {
+          enterDrafts: "1",
+          draftId,
+        }),
+      );
+      return;
+    }
+
     setMessage(
       syncJson.syncedEntries && syncJson.syncedEntries > 0
         ? `Draft saved and updated ${syncJson.syncedEntries} pool ${syncJson.syncedEntries === 1 ? "entry" : "entries"}.`
