@@ -9,7 +9,6 @@ import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } 
 import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
-import DraftScoringNotice from "../components/DraftScoringNotice";
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 type DraftPickRow = { draft_id: string };
@@ -296,7 +295,6 @@ function DraftsPageContent() {
 
   return (
     <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
-      <DraftScoringNotice />
       <section
         className="page-surface"
         style={{
