@@ -9,7 +9,7 @@ import { trackEvent } from "@/lib/analytics";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { buildPoolInviteShareData } from "@/lib/poolInvite";
 import { toSchoolDisplayName } from "@/lib/teamNames";
-import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
+import { sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
@@ -153,13 +153,6 @@ function isSingleEntryPerPoolConstraintError(message?: string) {
       lowered.includes("pool_id") &&
       lowered.includes("user_id"))
   );
-}
-
-function normalizeDraftName(value: string | null | undefined) {
-  return (value ?? "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
 }
 
 function lockedEntriesMessage(lockTime: string | null | undefined, competitionSlug: CompetitionSlug) {
@@ -782,228 +775,19 @@ export default function PoolPage() {
     setSelectedDraftIds(new Set());
   }
 
-  async function openDraftModal(initialDraftId?: string, autoEnterDraft = false) {
-    const requestedDraftId = initialDraftId?.trim() ?? "";
-
-    if (isDraftLocked(pool?.lock_time ?? null, new Date(), competitionSlug)) {
-      setStatus({ tone: "error", text: lockedEntriesMessage(pool?.lock_time ?? null, competitionSlug) });
-      return;
-    }
-
-    setDraftModalOpen(true);
-    setDraftModalLoading(true);
-    setDraftModalSubmitting(false);
-    setDraftModalMessage("");
-    setAvailableDrafts([]);
-    setDraftPickMap(new Map());
-    setAlreadyEnteredDraftIds(new Set());
-    setSelectedDraftIds(new Set());
-
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData.user;
-    if (!user) {
-      setDraftModalLoading(false);
-      setDraftModalMessage("Please log in first.");
-      return;
-    }
-
-    let draftsQuery = await supabase
-      .from("saved_drafts")
-      .select("id,name,updated_at")
-      .eq("user_id", user.id)
-      .eq("competition_slug", competitionSlug)
-      .order("updated_at", { ascending: false });
-
-    if (canUseLegacyMarchMadnessFallback(competitionSlug, draftsQuery.error?.message)) {
-      draftsQuery = await supabase
-        .from("saved_drafts")
-        .select("id,name,updated_at")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false });
-    }
-
-    if (draftsQuery.error) {
-      setDraftModalLoading(false);
-      if (isMissingSavedDraftTablesError(draftsQuery.error.message)) {
-        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
-        return;
-      }
-      setDraftModalMessage(draftsQuery.error.message);
-      return;
-    }
-
-    const drafts = ((draftsQuery.data ?? []) as DraftRow[]).sort(sortDraftsByUpdatedAt);
-    setAvailableDrafts(drafts);
-
-    if (drafts.length === 0) {
-      setDraftModalLoading(false);
-      setDraftModalMessage("No saved drafts yet. Create one first.");
-      return;
-    }
-
-    const draftIds = drafts.map((draft) => draft.id);
-    const picksQuery = await supabase
-      .from("saved_draft_picks")
-      .select("draft_id,team_id")
-      .in("draft_id", draftIds);
-
-    if (picksQuery.error) {
-      setDraftModalLoading(false);
-      if (isMissingSavedDraftTablesError(picksQuery.error.message)) {
-        setDraftModalMessage("Saved drafts are not migrated yet. Run db/migrations/20260316_saved_drafts.sql.");
-        return;
-      }
-      setDraftModalMessage(picksQuery.error.message);
-      return;
-    }
-
-    const nextPickMap = new Map<string, Set<string>>();
-    for (const draftId of draftIds) {
-      nextPickMap.set(draftId, new Set());
-    }
-    for (const row of (picksQuery.data ?? []) as SavedDraftPickRow[]) {
-      const picks = nextPickMap.get(row.draft_id) ?? new Set<string>();
-      picks.add(row.team_id);
-      nextPickMap.set(row.draft_id, picks);
-    }
-
-    const entryRowsWithNamesQuery = await supabase
-      .from("entries")
-      .select("id,entry_name")
-      .eq("pool_id", poolId)
-      .eq("user_id", user.id);
-
-    if (entryRowsWithNamesQuery.error && !isMissingEntryNameError(entryRowsWithNamesQuery.error.message)) {
-      setDraftModalLoading(false);
-      setDraftModalMessage(entryRowsWithNamesQuery.error.message);
-      return;
-    }
-
-    let entryRows: LeaveEntryRow[] = [];
-    if (entryRowsWithNamesQuery.error && isMissingEntryNameError(entryRowsWithNamesQuery.error.message)) {
-      const fallbackEntryRowsQuery = await supabase
-        .from("entries")
-        .select("id")
-        .eq("pool_id", poolId)
-        .eq("user_id", user.id);
-
-      if (fallbackEntryRowsQuery.error) {
-        setDraftModalLoading(false);
-        setDraftModalMessage(fallbackEntryRowsQuery.error.message);
-        return;
-      }
-
-      entryRows = ((fallbackEntryRowsQuery.data ?? []) as Array<{ id: string }>).map((row) => ({
-        id: row.id,
-        entry_name: null,
-      }));
-    } else {
-      entryRows = (entryRowsWithNamesQuery.data ?? []) as LeaveEntryRow[];
-    }
-
-    const entryIds = entryRows.map((row) => row.id);
-    const entryPickMap = new Map<string, Set<string>>();
-    if (entryIds.length > 0) {
-      const entryPicksQuery = await supabase
-        .from("entry_picks")
-        .select("entry_id,team_id")
-        .in("entry_id", entryIds);
-
-      if (entryPicksQuery.error) {
-        setDraftModalLoading(false);
-        setDraftModalMessage(entryPicksQuery.error.message);
-        return;
-      }
-
-      for (const entryId of entryIds) entryPickMap.set(entryId, new Set());
-      for (const row of (entryPicksQuery.data ?? []) as Array<{ entry_id: string; team_id: string }>) {
-        const picks = entryPickMap.get(row.entry_id) ?? new Set<string>();
-        picks.add(row.team_id);
-        entryPickMap.set(row.entry_id, picks);
-      }
-    }
-
-    const enteredDrafts = new Set<string>();
-    const draftIdsByName = new Map<string, string[]>();
-    for (const draft of drafts) {
-      const key = normalizeDraftName(draft.name);
-      if (!key) continue;
-      const list = draftIdsByName.get(key) ?? [];
-      list.push(draft.id);
-      draftIdsByName.set(key, list);
-    }
-    for (const entry of entryRows) {
-      const matchingDraftIds = draftIdsByName.get(normalizeDraftName(entry.entry_name));
-      if (!matchingDraftIds) continue;
-      for (const draftId of matchingDraftIds) {
-        enteredDrafts.add(draftId);
-      }
-    }
-
-    for (const draft of drafts) {
-      const draftPicks = nextPickMap.get(draft.id) ?? new Set<string>();
-      if (draftPicks.size === 0) continue;
-      for (const entryPicks of entryPickMap.values()) {
-        if (entryPicks.size === 0) continue;
-        if (sameTeamSet(draftPicks, entryPicks)) {
-          enteredDrafts.add(draft.id);
-          break;
-        }
-      }
-    }
-
-    let selectedDrafts = new Set<string>();
-    let autoEnterDrafts = new Set<string>();
-
-    if (requestedDraftId) {
-      const matchingDraft = drafts.find((draft) => draft.id === requestedDraftId);
-      if (matchingDraft && !enteredDrafts.has(requestedDraftId)) {
-        selectedDrafts = new Set([requestedDraftId]);
-        if (autoEnterDraft && (nextPickMap.get(requestedDraftId)?.size ?? 0) > 0) {
-          autoEnterDrafts = selectedDrafts;
-        }
-      } else if (matchingDraft) {
-        setDraftModalMessage(`"${matchingDraft.name}" is already entered in this pool.`);
-      } else {
-        setDraftModalMessage("That draft was not found in your saved drafts.");
-      }
-    } else if (autoEnterDraft) {
-      const enterableDrafts = drafts.filter(
-        (draft) => !enteredDrafts.has(draft.id) && (nextPickMap.get(draft.id)?.size ?? 0) > 0,
-      );
-
-      if (enterableDrafts.length === 1) {
-        selectedDrafts = new Set([enterableDrafts[0].id]);
-        autoEnterDrafts = selectedDrafts;
-      } else if (enterableDrafts.length > 1) {
-        setDraftModalMessage("Choose which draft to enter into this new pool.");
-      }
-    }
-
-    setDraftPickMap(nextPickMap);
-    setAlreadyEnteredDraftIds(enteredDrafts);
-    setSelectedDraftIds(selectedDrafts);
-    setDraftModalLoading(false);
-
-    if (autoEnterDrafts.size > 0) {
-      await submitSelectedDrafts(autoEnterDrafts, drafts, nextPickMap, enteredDrafts);
-    }
-  }
-
   useEffect(() => {
     if (!initialDraftPrompt.shouldOpen || autoDraftPromptHandled || loading || isMember !== true || !pool || draftModalOpen) {
       return;
     }
 
     setAutoDraftPromptHandled(true);
-    void openDraftModal(initialDraftPrompt.draftId, initialDraftPrompt.autoEnter);
-
-    const nextParams = new URLSearchParams(window.location.search);
-    nextParams.delete("enterDrafts");
-    nextParams.delete("autoEnterDraft");
-    nextParams.delete("draftId");
-    const query = nextParams.toString();
-    window.history.replaceState(null, "", `/pool/${poolId}${query ? `?${query}` : ""}`);
+    router.replace(
+      competitionPathWithParams(
+        `/pool/${poolId}/draft`,
+        competitionSlug,
+        initialDraftPrompt.draftId ? { draftId: initialDraftPrompt.draftId } : {},
+      ),
+    );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     autoDraftPromptHandled,
@@ -1013,6 +797,7 @@ export default function PoolPage() {
     loading,
     pool,
     poolId,
+    router,
   ]);
 
   function toggleDraftSelection(draftId: string) {
@@ -1555,8 +1340,7 @@ export default function PoolPage() {
       metadata: { location: "pool_page", is_private: poolIsPrivate, entries_locked: false },
     });
     setJoining(false);
-    setReloadKey((prev) => prev + 1);
-    await openDraftModal();
+    router.push(competitionPath(`/pool/${poolId}/draft`, competitionSlug));
   }
 
   async function copyShareLink() {
@@ -1909,15 +1693,19 @@ export default function PoolPage() {
               >
                 My Drafts
               </Link>
-              <button
-                type="button"
-                onClick={() => void openDraftModal()}
-                disabled={entriesLocked}
+              <Link
+                href={competitionPath(`/pool/${poolId}/draft`, competitionSlug)}
+                aria-disabled={entriesLocked}
                 className="ui-btn ui-btn--md ui-btn--primary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                style={{
+                  flex: "1 1 140px",
+                  minWidth: 120,
+                  pointerEvents: entriesLocked ? "none" : undefined,
+                  opacity: entriesLocked ? 0.7 : undefined,
+                }}
               >
                 Enter Drafts
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => void openLeaveModal()}

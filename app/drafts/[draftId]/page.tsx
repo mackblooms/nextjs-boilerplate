@@ -389,11 +389,7 @@ export default function DraftDetailPage() {
 
     if (returnPoolId) {
       router.push(
-        competitionPathWithParams(`/pool/${returnPoolId}`, competitionSlug, {
-          enterDrafts: "1",
-          autoEnterDraft: "1",
-          draftId,
-        }),
+        competitionPathWithParams(`/pool/${returnPoolId}/draft`, competitionSlug, { draftId }),
       );
       return;
     }
