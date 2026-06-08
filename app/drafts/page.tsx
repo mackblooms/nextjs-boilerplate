@@ -225,14 +225,27 @@ function DraftsPageContent() {
     setDeletingDraftId(draftId);
     setMessage("");
 
-    const { error } = await supabase
-      .from("saved_drafts")
-      .delete()
-      .eq("id", draftId);
-
-    if (error) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
       setDeletingDraftId(null);
-      setMessage(error.message);
+      setMessage("Please log in first.");
+      return;
+    }
+
+    const res = await fetch("/api/drafts/delete", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ draftId }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setDeletingDraftId(null);
+      setMessage(body.error ?? "Failed to delete draft.");
       return;
     }
 

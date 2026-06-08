@@ -499,7 +499,7 @@ export default function PoolDraftPage() {
     };
   }, [isMember, targetEntryId]);
 
-  async function createPoolEntry(poolIdValue: string, userId: string, entryName: string): Promise<EntryRow> {
+  async function createPoolEntry(poolIdValue: string, userId: string, entryName: string, savedDraftId?: string): Promise<EntryRow> {
     const trimmedName = entryName.trim();
     const insertWithName = await supabase
       .from("entries")
@@ -507,6 +507,7 @@ export default function PoolDraftPage() {
         pool_id: poolIdValue,
         user_id: userId,
         entry_name: trimmedName || "My Bracket",
+        ...(savedDraftId ? { saved_draft_id: savedDraftId } : {}),
       })
       .select("id,entry_name")
       .single();
@@ -530,6 +531,7 @@ export default function PoolDraftPage() {
       .insert({
         pool_id: poolIdValue,
         user_id: userId,
+        ...(savedDraftId ? { saved_draft_id: savedDraftId } : {}),
       })
       .select("id")
       .single();
@@ -651,7 +653,7 @@ export default function PoolDraftPage() {
 
     if (!isUpdatingExisting) {
       try {
-        createdEntry = await createPoolEntry(poolId, user.id, selectedDraft.name);
+        createdEntry = await createPoolEntry(poolId, user.id, selectedDraft.name, selectedDraft.id);
         resolvedEntryId = createdEntry.id;
       } catch (error: unknown) {
         setApplying(false);
@@ -718,6 +720,10 @@ export default function PoolDraftPage() {
         setMessage(entryNameErr);
         return;
       }
+      await supabase
+        .from("entries")
+        .update({ saved_draft_id: selectedDraft.id })
+        .eq("id", resolvedEntryId);
     }
 
     if (createdEntry) {

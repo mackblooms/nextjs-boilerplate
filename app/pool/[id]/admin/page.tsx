@@ -59,6 +59,7 @@ type AdminPoolEntryRow = {
   display_name: string | null;
   full_name: string | null;
   entry_name: string | null;
+  draft_name: string | null;
   picks_count: number;
   pick_signature: string | null;
 };
@@ -556,6 +557,52 @@ export default function AdminPage() {
         }
       }
 
+      // For entries missing a name, try to match them to a saved draft by pick signature.
+      const entryDraftNameById = new Map<string, string | null>();
+      const unnamedUserIds = new Set<string>();
+      for (const row of allLeaderboardRows) {
+        if (!entryNameById.get(row.entry_id)?.trim()) {
+          unnamedUserIds.add(row.user_id);
+        }
+      }
+      if (unnamedUserIds.size > 0) {
+        type DraftRow = { id: string; name: string; user_id: string };
+        type DraftPickRow = { draft_id: string; team_id: string };
+        const { data: draftRows } = await supabase
+          .from("saved_drafts")
+          .select("id,name,user_id")
+          .in("user_id", Array.from(unnamedUserIds));
+        if (draftRows && draftRows.length > 0) {
+          const drafts = draftRows as DraftRow[];
+          const draftIds = drafts.map((d) => d.id);
+          const { data: draftPickRows } = await supabase
+            .from("saved_draft_picks")
+            .select("draft_id,team_id")
+            .in("draft_id", draftIds);
+          const picksByDraft = new Map<string, Set<string>>();
+          for (const r of (draftPickRows ?? []) as DraftPickRow[]) {
+            const s = picksByDraft.get(r.draft_id) ?? new Set<string>();
+            s.add(r.team_id);
+            picksByDraft.set(r.draft_id, s);
+          }
+          const draftBySignature = new Map<string, string>();
+          for (const d of drafts) {
+            const picks = picksByDraft.get(d.id) ?? new Set<string>();
+            if (picks.size === 0) continue;
+            const sig = Array.from(picks).sort().join("|");
+            draftBySignature.set(`${d.user_id}::${sig}`, d.name);
+          }
+          for (const row of allLeaderboardRows) {
+            if (entryNameById.get(row.entry_id)?.trim()) continue;
+            const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
+            if (picks.size === 0) continue;
+            const sig = Array.from(picks).sort().join("|");
+            const matched = draftBySignature.get(`${row.user_id}::${sig}`);
+            if (matched) entryDraftNameById.set(row.entry_id, matched);
+          }
+        }
+      }
+
       const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
       for (const row of allLeaderboardRows) {
         const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
@@ -569,6 +616,7 @@ export default function AdminPage() {
           display_name: row.display_name,
           full_name: fullNameByUser.get(row.user_id) ?? null,
           entry_name: entryNameById.get(row.entry_id) ?? null,
+          draft_name: entryDraftNameById.get(row.entry_id) ?? null,
           picks_count: picks.size,
           pick_signature: pickSignature,
         });
@@ -1625,7 +1673,8 @@ export default function AdminPage() {
               </p>
 
               {activePoolModalEntrySummary.rows.map((entry) => {
-                const draftLabel = entry.entry_name?.trim() || "Unnamed draft";
+                const draftLabel = entry.entry_name?.trim() || entry.draft_name?.trim() || "Unnamed draft";
+                const labelIsFromDraftLibrary = !entry.entry_name?.trim() && !!entry.draft_name?.trim();
                 const ownerLabel =
                   entry.full_name?.trim() ||
                   entry.display_name?.trim() ||
@@ -1655,6 +1704,11 @@ export default function AdminPage() {
                     >
                       <div style={{ fontWeight: 800, minWidth: 0 }}>
                         <span>{draftLabel}</span>
+                        {labelIsFromDraftLibrary && (
+                          <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 600, opacity: 0.55 }}>
+                            (draft library)
+                          </span>
+                        )}
                         <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, opacity: 0.75 }}>
                           ({ownerLabel})
                         </span>
