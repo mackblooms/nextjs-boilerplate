@@ -1517,16 +1517,6 @@ textarea::placeholder {
   }
 }
 
-@media (min-width: 1780px) {
-  .draft-scoring-notice {
-    position: fixed;
-    left: calc((100vw - 1100px) / 2 - 350px);
-    top: 50%;
-    width: 330px;
-    transform: translateY(-50%);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .draft-scoring-notice {
     animation: none;
