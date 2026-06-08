@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import {
   isProfileComplete,
@@ -13,8 +13,8 @@ type GateStatus = "checking" | "allowed" | "blocked";
 
 const PROFILE_COMPLETED_EVENT = "bb:profile-completed";
 
-function getProfileRedirect(pathname: string, searchParams: URLSearchParams) {
-  const currentQuery = searchParams.toString();
+function getProfileRedirect(pathname: string, queryString: string) {
+  const currentQuery = queryString;
   const currentPath = `${pathname}${currentQuery ? `?${currentQuery}` : ""}`;
   const params = new URLSearchParams({ onboarding: "1" });
 
@@ -35,24 +35,33 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<GateStatus>("checking");
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  const hasCheckedRef = useRef(false);
 
   const isProfileRoute = pathname === "/profile";
+  const queryString = searchParams.toString();
   const redirectTarget = useMemo(
-    () => getProfileRedirect(pathname, searchParams),
-    [pathname, searchParams],
+    () => getProfileRedirect(pathname, queryString),
+    [pathname, queryString],
   );
+  const effectiveStatus: GateStatus =
+    !isProfileRoute && profileComplete === false ? "blocked" : status;
 
   useEffect(() => {
     let canceled = false;
 
-    async function checkProfile() {
-      setStatus("checking");
+    async function checkProfile(showChecking = false) {
+      if (showChecking && !hasCheckedRef.current) {
+        setStatus("checking");
+      }
 
       const { data: sessionData } = await supabase.auth.getSession();
       if (canceled) return;
+      hasCheckedRef.current = true;
 
       const userId = sessionData.session?.user.id;
       if (!userId) {
+        setProfileComplete(null);
         setStatus("allowed");
         return;
       }
@@ -66,11 +75,15 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
       if (canceled) return;
 
       if (error) {
+        setProfileComplete(false);
         setStatus(isProfileRoute ? "allowed" : "blocked");
         return;
       }
 
-      if (isProfileComplete((data as ProfileCompletionRow | null) ?? null)) {
+      const complete = isProfileComplete((data as ProfileCompletionRow | null) ?? null);
+      setProfileComplete(complete);
+
+      if (complete) {
         setStatus("allowed");
         return;
       }
@@ -78,13 +91,14 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
       setStatus(isProfileRoute ? "allowed" : "blocked");
     }
 
-    void checkProfile();
+    void checkProfile(true);
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(() => {
       void checkProfile();
     });
 
     const onProfileCompleted = () => {
+      setProfileComplete(true);
       setStatus("allowed");
     };
     window.addEventListener(PROFILE_COMPLETED_EVENT, onProfileCompleted);
@@ -94,14 +108,14 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
       authSubscription.subscription.unsubscribe();
       window.removeEventListener(PROFILE_COMPLETED_EVENT, onProfileCompleted);
     };
-  }, [isProfileRoute, pathname, searchParams]);
+  }, [isProfileRoute, pathname, queryString]);
 
   useEffect(() => {
-    if (status !== "blocked" || isProfileRoute) return;
+    if (effectiveStatus !== "blocked" || isProfileRoute) return;
     router.replace(redirectTarget);
-  }, [isProfileRoute, redirectTarget, router, status]);
+  }, [effectiveStatus, isProfileRoute, redirectTarget, router]);
 
-  if (status === "checking" || (status === "blocked" && !isProfileRoute)) {
+  if (effectiveStatus === "checking" || (effectiveStatus === "blocked" && !isProfileRoute)) {
     return (
       <main className="page-shell page-shell--stack" style={{ maxWidth: 620 }}>
         <section className="page-surface" style={{ padding: 16, display: "grid", gap: 8 }}>
@@ -118,4 +132,3 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
 
   return <>{children}</>;
 }
-
