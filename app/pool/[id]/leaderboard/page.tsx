@@ -15,7 +15,7 @@ import {
 } from "../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../lib/teamNames";
 import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBracket";
-import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 
@@ -594,6 +594,7 @@ export default function LeaderboardPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [isPoolOwner, setIsPoolOwner] = useState(false);
+  const [deletingPool, setDeletingPool] = useState(false);
   const [showTeamInsights, setShowTeamInsights] = useState(false);
   const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
@@ -1539,6 +1540,44 @@ export default function LeaderboardPage() {
     }
   }
 
+  async function deletePool() {
+    if (deletingPool) return;
+
+    const ok = window.confirm(
+      `Delete "${activePoolName || "this pool"}" permanently? This removes all pool entries, picks, and member access.`,
+    );
+    if (!ok) return;
+
+    setDeletingPool(true);
+    setMsg("");
+
+    const token = await getAccessToken();
+    if (!token) {
+      setDeletingPool(false);
+      setMsg("Session expired. Redirecting to login...");
+      redirectToLogin();
+      return;
+    }
+
+    const res = await fetch("/api/pools/delete", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ poolId }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setDeletingPool(false);
+      setMsg(body.error ?? "Failed to delete pool.");
+      return;
+    }
+
+    router.push(competitionPath("/pools", poolCompetitionSlug));
+  }
+
   useEffect(() => {
     if (forecastModeOn && openBreakdownEntryId) {
       setOpenBreakdownEntryId(null);
@@ -1656,6 +1695,16 @@ export default function LeaderboardPage() {
           >
             Share Invite
           </button>
+          {isPoolOwner ? (
+            <button
+              className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--danger"
+              type="button"
+              onClick={() => void deletePool()}
+              disabled={deletingPool}
+            >
+              {deletingPool ? "Deleting..." : "Delete Pool"}
+            </button>
+          ) : null}
         </div>
       </section>
 
