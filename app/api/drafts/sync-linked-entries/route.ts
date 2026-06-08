@@ -109,14 +109,30 @@ export async function POST(req: Request) {
       .eq("saved_draft_id", draftId)
       .eq("user_id", userId);
 
+    let entries: EntryWithPool[] = [];
     if (entriesResult.error) {
-      if (isMissingEntrySavedDraftIdError(entriesResult.error.message)) {
-        return NextResponse.json({ syncedEntries: 0 });
+      if (!isMissingEntrySavedDraftIdError(entriesResult.error.message)) {
+        return NextResponse.json({ error: entriesResult.error.message }, { status: 400 });
       }
-      return NextResponse.json({ error: entriesResult.error.message }, { status: 400 });
+    } else {
+      entries = ((entriesResult.data ?? []) as unknown as EntryWithPool[]).filter((entry) => entry.id);
     }
 
-    const entries = ((entriesResult.data ?? []) as unknown as EntryWithPool[]).filter((entry) => entry.id);
+    const namedEntriesResult = await supabaseAdmin
+      .from("entries")
+      .select("id,pool_id,pool:pools(lock_time,competition_slug)")
+      .eq("user_id", userId)
+      .ilike("entry_name", draftName);
+
+    if (!namedEntriesResult.error) {
+      const existingIds = new Set(entries.map((entry) => entry.id));
+      for (const entry of (namedEntriesResult.data ?? []) as unknown as EntryWithPool[]) {
+        if (!entry.id || existingIds.has(entry.id)) continue;
+        entries.push(entry);
+        existingIds.add(entry.id);
+      }
+    }
+
     if (entries.length === 0) {
       return NextResponse.json({ syncedEntries: 0 });
     }
@@ -137,11 +153,22 @@ export async function POST(req: Request) {
 
     const { error: updateNameErr } = await supabaseAdmin
       .from("entries")
-      .update({ entry_name: draftName })
+      .update({ entry_name: draftName, saved_draft_id: draftId })
       .in("id", entryIds);
 
     if (updateNameErr) {
-      return NextResponse.json({ error: updateNameErr.message }, { status: 400 });
+      if (!isMissingEntrySavedDraftIdError(updateNameErr.message)) {
+        return NextResponse.json({ error: updateNameErr.message }, { status: 400 });
+      }
+
+      const { error: fallbackNameErr } = await supabaseAdmin
+        .from("entries")
+        .update({ entry_name: draftName })
+        .in("id", entryIds);
+
+      if (fallbackNameErr) {
+        return NextResponse.json({ error: fallbackNameErr.message }, { status: 400 });
+      }
     }
 
     const { error: deleteErr } = await supabaseAdmin

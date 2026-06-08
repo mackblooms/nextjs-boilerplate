@@ -115,6 +115,13 @@ function toSignature(picks: Set<string>) {
   return picks.size > 0 ? Array.from(picks).sort().join("|") : null;
 }
 
+function normalizeDraftName(value: string | null | undefined) {
+  return (value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 export async function POST(req: Request) {
   try {
     const auth = await requireSiteAdmin(req);
@@ -316,7 +323,7 @@ export async function POST(req: Request) {
 
     const unresolvedUserIds = new Set<string>();
     for (const row of allLeaderboardRows) {
-      if (!entryNameById.get(row.entry_id)?.trim() && !entryDraftNameById.get(row.entry_id)?.trim()) {
+      if (!savedDraftIdByEntryId.get(row.entry_id) && !entryDraftNameById.get(row.entry_id)?.trim()) {
         unresolvedUserIds.add(row.user_id);
       }
     }
@@ -357,26 +364,47 @@ export async function POST(req: Request) {
           }
 
           const draftByUserCompetitionSignature = new Map<string, string>();
+          const draftIdByUserCompetitionName = new Map<string, string>();
           for (const draft of drafts) {
             const picks = picksByDraft.get(draft.id) ?? new Set<string>();
             const draftName = draft.name?.trim();
+            const competitionSlug = draft.competition_slug ?? "";
+            if (draftName) {
+              const normalizedName = normalizeDraftName(draftName);
+              draftIdByUserCompetitionName.set(`${draft.user_id}::${competitionSlug}::${normalizedName}`, draft.id);
+              draftIdByUserCompetitionName.set(`${draft.user_id}::::${normalizedName}`, draft.id);
+            }
             if (picks.size === 0 || !draftName) continue;
             const signature = toSignature(picks);
             if (!signature) continue;
-            const competitionSlug = draft.competition_slug ?? "";
-            draftByUserCompetitionSignature.set(`${draft.user_id}::${competitionSlug}::${signature}`, draftName);
-            draftByUserCompetitionSignature.set(`${draft.user_id}::::${signature}`, draftName);
+            draftByUserCompetitionSignature.set(`${draft.user_id}::${competitionSlug}::${signature}`, draft.id);
+            draftByUserCompetitionSignature.set(`${draft.user_id}::::${signature}`, draft.id);
           }
 
           for (const row of allLeaderboardRows) {
-            if (entryNameById.get(row.entry_id)?.trim() || entryDraftNameById.get(row.entry_id)?.trim()) continue;
-            const signature = toSignature(picksByEntry.get(row.entry_id) ?? new Set<string>());
-            if (!signature) continue;
             const competitionSlug = competitionByPoolId.get(row.pool_id) ?? "";
-            const matched =
-              draftByUserCompetitionSignature.get(`${row.user_id}::${competitionSlug}::${signature}`) ??
-              draftByUserCompetitionSignature.get(`${row.user_id}::::${signature}`);
-            if (matched) entryDraftNameById.set(row.entry_id, matched);
+            const entryName = normalizeDraftName(entryNameById.get(row.entry_id));
+            let matchedDraftId = entryName
+              ? draftIdByUserCompetitionName.get(`${row.user_id}::${competitionSlug}::${entryName}`) ??
+                draftIdByUserCompetitionName.get(`${row.user_id}::::${entryName}`) ??
+                null
+              : null;
+
+            if (!matchedDraftId) {
+              const signature = toSignature(picksByEntry.get(row.entry_id) ?? new Set<string>());
+              if (!signature) continue;
+              matchedDraftId =
+                draftByUserCompetitionSignature.get(`${row.user_id}::${competitionSlug}::${signature}`) ??
+                draftByUserCompetitionSignature.get(`${row.user_id}::::${signature}`) ??
+                null;
+            }
+
+            if (!matchedDraftId) continue;
+            const matchedDraft = drafts.find((draft) => draft.id === matchedDraftId);
+            const draftName = matchedDraft?.name?.trim();
+            const draftPicks = picksByDraft.get(matchedDraftId);
+            if (draftName) entryDraftNameById.set(row.entry_id, draftName);
+            if (draftPicks) linkedPicksByEntry.set(row.entry_id, draftPicks);
           }
         }
       }

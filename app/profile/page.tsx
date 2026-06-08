@@ -7,6 +7,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import { withAvatarFallback } from "../../lib/avatar";
+import { notifyProfileCompleted } from "../components/ProfileCompletionGate";
 import { trackEvent } from "@/lib/analytics";
 import {
   getPushInstallationId,
@@ -504,6 +505,7 @@ export default function ProfilePage() {
     }
 
     setHasProfile(true);
+    notifyProfileCompleted();
     trackEvent({
       eventName: "profile_save_success",
       userId: authData.user.id,

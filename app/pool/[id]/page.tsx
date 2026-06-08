@@ -125,6 +125,14 @@ function isMissingEntryNameError(message?: string) {
   );
 }
 
+function isMissingSavedDraftIdError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column entries.saved_draft_id does not exist") ||
+    message.includes("Could not find the 'saved_draft_id' column of 'entries' in the schema cache")
+  );
+}
+
 function isSingleEntryPerPoolConstraintError(message?: string) {
   if (!message) return false;
   const lowered = message.toLowerCase();
@@ -938,13 +946,14 @@ export default function PoolPage() {
     setSelectedDraftIds(new Set());
   }
 
-  async function createEntry(poolIdValue: string, userId: string, entryName: string): Promise<{ id: string }> {
+  async function createEntry(poolIdValue: string, userId: string, entryName: string, savedDraftId: string): Promise<{ id: string }> {
     const insertWithName = await supabase
       .from("entries")
       .insert({
         pool_id: poolIdValue,
         user_id: userId,
         entry_name: entryName.trim() || "My Bracket",
+        saved_draft_id: savedDraftId,
       })
       .select("id")
       .single();
@@ -953,7 +962,7 @@ export default function PoolPage() {
       return { id: insertWithName.data.id as string };
     }
 
-    if (!isMissingEntryNameError(insertWithName.error?.message)) {
+    if (!isMissingEntryNameError(insertWithName.error?.message) && !isMissingSavedDraftIdError(insertWithName.error?.message)) {
       if (isSingleEntryPerPoolConstraintError(insertWithName.error?.message)) {
         throw new Error(
           "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
@@ -967,6 +976,8 @@ export default function PoolPage() {
       .insert({
         pool_id: poolIdValue,
         user_id: userId,
+        ...(isMissingEntryNameError(insertWithName.error?.message) ? {} : { entry_name: entryName.trim() || "My Bracket" }),
+        ...(isMissingSavedDraftIdError(insertWithName.error?.message) ? {} : { saved_draft_id: savedDraftId }),
       })
       .select("id")
       .single();
@@ -1041,7 +1052,7 @@ export default function PoolPage() {
           continue;
         }
 
-        const createdEntry = await createEntry(poolId, user.id, draft.name);
+        const createdEntry = await createEntry(poolId, user.id, draft.name, draft.id);
         const rows = draftPickIds.map((teamId) => ({
           entry_id: createdEntry.id,
           team_id: teamId,
