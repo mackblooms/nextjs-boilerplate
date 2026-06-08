@@ -507,6 +507,19 @@ export default function PoolDraftPage() {
     };
   }, [isMember, targetEntryId]);
 
+  async function tryLinkSavedDraft(entryId: string, savedDraftId: string) {
+    const linkDraftResult = await supabase
+      .from("entries")
+      .update({ saved_draft_id: savedDraftId })
+      .eq("id", entryId);
+
+    if (linkDraftResult.error && !isMissingSavedDraftIdError(linkDraftResult.error.message)) {
+      return linkDraftResult.error.message;
+    }
+
+    return null;
+  }
+
   async function createPoolEntry(poolIdValue: string, userId: string, entryName: string, savedDraftId?: string): Promise<EntryRow> {
     const trimmedName = entryName.trim();
     const insertWithName = await supabase
@@ -515,17 +528,20 @@ export default function PoolDraftPage() {
         pool_id: poolIdValue,
         user_id: userId,
         entry_name: trimmedName || "My Bracket",
-        ...(savedDraftId ? { saved_draft_id: savedDraftId } : {}),
       })
       .select("id,entry_name")
       .single();
 
     if (!insertWithName.error && insertWithName.data) {
       const row = insertWithName.data as { id: string; entry_name: string | null };
+      if (savedDraftId) {
+        const linkError = await tryLinkSavedDraft(row.id, savedDraftId);
+        if (linkError) throw new Error(linkError);
+      }
       return { id: row.id, entry_name: row.entry_name };
     }
 
-    if (!isMissingEntryNameError(insertWithName.error?.message) && !isMissingSavedDraftIdError(insertWithName.error?.message)) {
+    if (!isMissingEntryNameError(insertWithName.error?.message)) {
       if (isSingleEntryPerPoolConstraintError(insertWithName.error?.message)) {
         throw new Error(
           "Your database still allows only one entry per pool. Run db/migrations/20260318_entries_allow_multiple_per_pool.sql, then try again."
@@ -539,10 +555,6 @@ export default function PoolDraftPage() {
       .insert({
         pool_id: poolIdValue,
         user_id: userId,
-        ...(isMissingEntryNameError(insertWithName.error?.message) ? {} : { entry_name: trimmedName || "My Bracket" }),
-        ...(isMissingSavedDraftIdError(insertWithName.error?.message) || !savedDraftId
-          ? {}
-          : { saved_draft_id: savedDraftId }),
       })
       .select("id")
       .single();
@@ -554,6 +566,11 @@ export default function PoolDraftPage() {
         );
       }
       throw new Error(insertFallback.error?.message ?? "Failed to create entry.");
+    }
+
+    if (savedDraftId) {
+      const linkError = await tryLinkSavedDraft(insertFallback.data.id as string, savedDraftId);
+      if (linkError) throw new Error(linkError);
     }
 
     return { id: insertFallback.data.id as string, entry_name: null };
@@ -731,13 +748,10 @@ export default function PoolDraftPage() {
         setMessage(entryNameErr);
         return;
       }
-      const linkDraftResult = await supabase
-        .from("entries")
-        .update({ saved_draft_id: selectedDraft.id })
-        .eq("id", resolvedEntryId);
-      if (linkDraftResult.error && !isMissingSavedDraftIdError(linkDraftResult.error.message)) {
+      const linkDraftError = await tryLinkSavedDraft(resolvedEntryId, selectedDraft.id);
+      if (linkDraftError) {
         setApplying(false);
-        setMessage(linkDraftResult.error.message);
+        setMessage(linkDraftError);
         return;
       }
     }
