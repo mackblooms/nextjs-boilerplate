@@ -31,31 +31,6 @@ type PoolMemberRow = {
   full_name: string | null;
 };
 
-type PoolLeaderboardEntryRow = {
-  pool_id: string;
-  entry_id: string;
-  user_id: string;
-  display_name: string | null;
-};
-
-type EntryNameRow = {
-  id: string;
-  entry_name: string | null;
-};
-
-type EntryDetailRow = EntryNameRow & {
-  saved_draft_id: string | null;
-};
-
-type EntryIdOnlyRow = {
-  id: string;
-};
-
-type EntryPickRow = {
-  entry_id: string;
-  team_id: string;
-};
-
 type AdminPoolEntryRow = {
   pool_id: string;
   entry_id: string;
@@ -80,22 +55,6 @@ type AdminPoolEntrySummary = {
   duplicate_entry_count: number;
 };
 
-type ProfileNameRow = {
-  user_id: string;
-  display_name: string | null;
-  full_name: string | null;
-};
-
-type ProfileName = {
-  display_name: string | null;
-  full_name: string | null;
-};
-
-type DraftNameRow = {
-  id: string;
-  name: string | null;
-};
-
 function memberPrimaryLabel(member: PoolMemberRow) {
   const realName = member.full_name?.trim();
   if (realName) return realName;
@@ -111,26 +70,6 @@ function memberSecondaryLabel(member: PoolMemberRow) {
   const nickname = member.display_name?.trim();
   if (!nickname || nickname === realName) return null;
   return `Nickname: ${nickname}`;
-}
-
-function sortMembersByLabel(a: PoolMemberRow, b: PoolMemberRow) {
-  return memberPrimaryLabel(a).localeCompare(memberPrimaryLabel(b));
-}
-
-function isMissingEntryNameError(message?: string) {
-  if (!message) return false;
-  return (
-    message.includes("column entries.entry_name does not exist") ||
-    message.includes("Could not find the 'entry_name' column of 'entries' in the schema cache")
-  );
-}
-
-function isMissingSavedDraftIdError(message?: string) {
-  if (!message) return false;
-  return (
-    message.includes("column entries.saved_draft_id does not exist") ||
-    message.includes("Could not find the 'saved_draft_id' column of 'entries' in the schema cache")
-  );
 }
 
 function summarizePoolEntries(rows: AdminPoolEntryRow[]): AdminPoolEntrySummary {
@@ -193,6 +132,12 @@ type AdminPoolRow = {
 
 type PoolPasswordResponse = {
   passwords?: Record<string, string | null>;
+  error?: string;
+};
+
+type PoolEntryDetailsResponse = {
+  membersByPool?: Record<string, PoolMemberRow[]>;
+  entriesByPool?: Record<string, AdminPoolEntryRow[]>;
   error?: string;
 };
 
@@ -478,228 +423,29 @@ export default function AdminPage() {
       setPoolPasswordDrafts(Object.fromEntries(pools.map((pool) => [pool.id, ""])));
       await loadPoolPasswords(pools.map((pool) => pool.id));
 
-      let allLeaderboardRows: PoolLeaderboardEntryRow[] = [];
       if (pools.length > 0) {
-        const ids = pools.map((p) => p.id);
-        const { data, error: allMembersErr } = await supabase
-          .from("pool_leaderboard")
-          .select("pool_id,entry_id,user_id,display_name")
-          .in("pool_id", ids)
-          .order("display_name", { ascending: true });
+        const detailsRes = await fetch("/api/admin/pool-entry-details", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ poolIds: pools.map((pool) => pool.id) }),
+        });
 
-        if (allMembersErr) {
-          setMsg(allMembersErr.message);
+        const detailsJson = (await detailsRes.json().catch(() => ({}))) as PoolEntryDetailsResponse;
+        if (!detailsRes.ok) {
+          setMsg(`Could not load pool drafts: ${detailsJson.error ?? "Unknown error"}`);
           setLoading(false);
           return;
         }
 
-        allLeaderboardRows = (data ?? []) as PoolLeaderboardEntryRow[];
-      }
-
-      const allUserIds = Array.from(
-        new Set(allLeaderboardRows.map((row) => row.user_id))
-      );
-
-      let profileByUser = new Map<string, ProfileName>();
-      if (allUserIds.length > 0) {
-        const { data: profileRows, error: profileErr } = await supabase
-          .from("profiles")
-          .select("user_id,display_name,full_name")
-          .in("user_id", allUserIds);
-
-        if (!profileErr) {
-          profileByUser = new Map(
-            ((profileRows ?? []) as ProfileNameRow[]).map((row) => [
-              row.user_id,
-              {
-                display_name: row.display_name ?? null,
-                full_name: row.full_name ?? null,
-              },
-            ])
-          );
-        }
-      }
-
-      if (pools.length > 0) {
-        const groupedMembers: Record<string, PoolMemberRow[]> = {};
-        const seenMembers = new Set<string>();
-        for (const row of allLeaderboardRows) {
-          const key = `${row.pool_id}:${row.user_id}`;
-          if (seenMembers.has(key)) continue;
-          seenMembers.add(key);
-
-          if (!groupedMembers[row.pool_id]) groupedMembers[row.pool_id] = [];
-          const profile = profileByUser.get(row.user_id);
-          groupedMembers[row.pool_id].push({
-            user_id: row.user_id,
-            display_name: profile?.display_name ?? row.display_name,
-            full_name: profile?.full_name ?? null,
-          });
-        }
-        for (const id of Object.keys(groupedMembers)) {
-          groupedMembers[id].sort(sortMembersByLabel);
-        }
-        setMembersByPool(groupedMembers);
+        setMembersByPool(detailsJson.membersByPool ?? {});
+        setEntriesByPool(detailsJson.entriesByPool ?? {});
       } else {
         setMembersByPool({});
+        setEntriesByPool({});
       }
-
-      const allEntryIds = Array.from(new Set(allLeaderboardRows.map((row) => row.entry_id)));
-
-      let entryNameById = new Map<string, string | null>();
-      let savedDraftIdByEntryId = new Map<string, string | null>();
-      if (allEntryIds.length > 0) {
-        const withName = await supabase
-          .from("entries")
-          .select("id,entry_name,saved_draft_id")
-          .in("id", allEntryIds);
-
-        if (!withName.error) {
-          entryNameById = new Map(
-            ((withName.data ?? []) as EntryDetailRow[]).map((row) => [row.id, row.entry_name ?? null]),
-          );
-          savedDraftIdByEntryId = new Map(
-            ((withName.data ?? []) as EntryDetailRow[]).map((row) => [row.id, row.saved_draft_id ?? null]),
-          );
-        } else if (isMissingSavedDraftIdError(withName.error.message)) {
-          const fallbackWithName = await supabase
-            .from("entries")
-            .select("id,entry_name")
-            .in("id", allEntryIds);
-
-          if (!fallbackWithName.error) {
-            entryNameById = new Map(
-              ((fallbackWithName.data ?? []) as EntryNameRow[]).map((row) => [row.id, row.entry_name ?? null]),
-            );
-          } else if (isMissingEntryNameError(fallbackWithName.error.message)) {
-            const fallback = await supabase
-              .from("entries")
-              .select("id")
-              .in("id", allEntryIds);
-
-            if (!fallback.error) {
-              entryNameById = new Map(
-                ((fallback.data ?? []) as EntryIdOnlyRow[]).map((row) => [row.id, null]),
-              );
-            }
-          }
-        } else if (isMissingEntryNameError(withName.error.message)) {
-          const fallback = await supabase
-            .from("entries")
-            .select("id")
-            .in("id", allEntryIds);
-
-          if (!fallback.error) {
-            entryNameById = new Map(
-              ((fallback.data ?? []) as EntryIdOnlyRow[]).map((row) => [row.id, null]),
-            );
-          }
-        }
-      }
-
-      const picksByEntry = new Map<string, Set<string>>();
-      if (allEntryIds.length > 0) {
-        const { data: pickRows, error: pickErr } = await supabase
-          .from("entry_picks")
-          .select("entry_id,team_id")
-          .in("entry_id", allEntryIds);
-
-        if (!pickErr) {
-          for (const row of (pickRows ?? []) as EntryPickRow[]) {
-            const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
-            picks.add(row.team_id);
-            picksByEntry.set(row.entry_id, picks);
-          }
-        }
-      }
-
-      // For entries missing a name, try to match them to a saved draft by pick signature.
-      const entryDraftNameById = new Map<string, string | null>();
-      const linkedDraftIds = Array.from(
-        new Set(
-          Array.from(savedDraftIdByEntryId.values()).filter((draftId): draftId is string => Boolean(draftId))
-        )
-      );
-      if (linkedDraftIds.length > 0) {
-        const { data: linkedDraftRows } = await supabase
-          .from("saved_drafts")
-          .select("id,name")
-          .in("id", linkedDraftIds);
-
-        for (const draft of (linkedDraftRows ?? []) as DraftNameRow[]) {
-          const draftName = draft.name?.trim();
-          if (!draftName) continue;
-          for (const [entryId, savedDraftId] of savedDraftIdByEntryId) {
-            if (savedDraftId === draft.id) entryDraftNameById.set(entryId, draftName);
-          }
-        }
-      }
-
-      const unnamedUserIds = new Set<string>();
-      for (const row of allLeaderboardRows) {
-        if (!entryNameById.get(row.entry_id)?.trim() && !entryDraftNameById.get(row.entry_id)?.trim()) {
-          unnamedUserIds.add(row.user_id);
-        }
-      }
-      if (unnamedUserIds.size > 0) {
-        type DraftRow = { id: string; name: string; user_id: string };
-        type DraftPickRow = { draft_id: string; team_id: string };
-        const { data: draftRows } = await supabase
-          .from("saved_drafts")
-          .select("id,name,user_id")
-          .in("user_id", Array.from(unnamedUserIds));
-        if (draftRows && draftRows.length > 0) {
-          const drafts = draftRows as DraftRow[];
-          const draftIds = drafts.map((d) => d.id);
-          const { data: draftPickRows } = await supabase
-            .from("saved_draft_picks")
-            .select("draft_id,team_id")
-            .in("draft_id", draftIds);
-          const picksByDraft = new Map<string, Set<string>>();
-          for (const r of (draftPickRows ?? []) as DraftPickRow[]) {
-            const s = picksByDraft.get(r.draft_id) ?? new Set<string>();
-            s.add(r.team_id);
-            picksByDraft.set(r.draft_id, s);
-          }
-          const draftBySignature = new Map<string, string>();
-          for (const d of drafts) {
-            const picks = picksByDraft.get(d.id) ?? new Set<string>();
-            if (picks.size === 0) continue;
-            const sig = Array.from(picks).sort().join("|");
-            draftBySignature.set(`${d.user_id}::${sig}`, d.name);
-          }
-          for (const row of allLeaderboardRows) {
-            if (entryNameById.get(row.entry_id)?.trim() || entryDraftNameById.get(row.entry_id)?.trim()) continue;
-            const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
-            if (picks.size === 0) continue;
-            const sig = Array.from(picks).sort().join("|");
-            const matched = draftBySignature.get(`${row.user_id}::${sig}`);
-            if (matched) entryDraftNameById.set(row.entry_id, matched);
-          }
-        }
-      }
-
-      const groupedEntries: Record<string, AdminPoolEntryRow[]> = {};
-      for (const row of allLeaderboardRows) {
-        const picks = picksByEntry.get(row.entry_id) ?? new Set<string>();
-        const pickSignature = picks.size > 0 ? Array.from(picks).sort().join("|") : null;
-        const profile = profileByUser.get(row.user_id);
-
-        if (!groupedEntries[row.pool_id]) groupedEntries[row.pool_id] = [];
-        groupedEntries[row.pool_id].push({
-          pool_id: row.pool_id,
-          entry_id: row.entry_id,
-          user_id: row.user_id,
-          display_name: profile?.display_name ?? row.display_name,
-          full_name: profile?.full_name ?? null,
-          entry_name: entryNameById.get(row.entry_id) ?? null,
-          draft_name: entryDraftNameById.get(row.entry_id) ?? null,
-          picks_count: picks.size,
-          pick_signature: pickSignature,
-        });
-      }
-
-      setEntriesByPool(groupedEntries);
 
       setLoading(false);
     };
