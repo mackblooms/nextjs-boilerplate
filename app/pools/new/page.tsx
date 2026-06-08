@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { UiButton, UiInput } from "../../components/ui/primitives";
-import { getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
+import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 
 function NewPoolPageContent() {
   const router = useRouter();
@@ -109,7 +109,7 @@ function NewPoolPageContent() {
       poolId: body.poolId,
     });
 
-    router.push(`/pool/${body.poolId}?enterDrafts=1&autoEnterDraft=1`);
+    router.push(competitionPath(`/pool/${body.poolId}/draft`, competitionSlug));
   }
 
   return (
