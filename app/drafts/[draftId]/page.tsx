@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
@@ -40,6 +41,14 @@ type GameRow = {
 
 type DraftPickRow = {
   team_id: string;
+};
+
+type LinkedPoolEntry = {
+  poolId: string;
+  poolName: string | null;
+  lockTime: string | null;
+  competitionSlug: CompetitionSlug;
+  entryIds: string[];
 };
 
 function sameSet(a: Set<string>, b: Set<string>) {
@@ -108,6 +117,9 @@ export default function DraftDetailPage() {
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [linkedPools, setLinkedPools] = useState<LinkedPoolEntry[]>([]);
+  const [linkedPoolsLoading, setLinkedPoolsLoading] = useState(false);
+  const [removingPoolId, setRemovingPoolId] = useState<string | null>(null);
   const draftsLocked = isDraftLibraryLocked(competitionSlug);
   const lockMessage = draftLibraryLockMessage(competitionSlug);
 
@@ -134,6 +146,42 @@ export default function DraftDetailPage() {
     () => renameValue.trim() !== draftName.trim() || !sameSet(selected, savedSelected),
     [draftName, renameValue, savedSelected, selected]
   );
+
+  async function loadLinkedPools(showLoading = false) {
+    if (showLoading) setLinkedPoolsLoading(true);
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setLinkedPools([]);
+      setLinkedPoolsLoading(false);
+      return;
+    }
+
+    const res = await fetch("/api/drafts/linked-pools", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ draftId }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as {
+      entries?: LinkedPoolEntry[];
+      error?: string;
+    };
+
+    if (!res.ok) {
+      setLinkedPools([]);
+      setLinkedPoolsLoading(false);
+      setMessage(body.error ?? "Failed to load pool entries for this draft.");
+      return;
+    }
+
+    setLinkedPools(body.entries ?? []);
+    setLinkedPoolsLoading(false);
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -261,9 +309,11 @@ export default function DraftDetailPage() {
       }
 
       setLoading(false);
+      void loadLinkedPools(true);
     };
 
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftId]);
 
   function toggleTeam(teamId: string) {
@@ -402,24 +452,76 @@ export default function DraftDetailPage() {
   }
 
   async function deleteDraft() {
-    const ok = window.confirm(`Delete "${draftName || "this draft"}"?`);
+    const ok = window.confirm(`Delete "${draftName || "this draft"}" permanently? This removes it from every pool too.`);
     if (!ok) return;
 
     setDeleting(true);
     setMessage("");
 
-    const { error } = await supabase
-      .from("saved_drafts")
-      .delete()
-      .eq("id", draftId);
-
-    if (error) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
       setDeleting(false);
-      setMessage(error.message);
+      setMessage("Please log in first.");
+      return;
+    }
+
+    const res = await fetch("/api/drafts/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ draftId }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setDeleting(false);
+      setMessage(body.error ?? "Failed to delete draft.");
       return;
     }
 
     router.push(competitionPath("/drafts", competitionSlug));
+  }
+
+  async function removeDraftFromPool(entry: LinkedPoolEntry) {
+    const poolName = entry.poolName ?? "this pool";
+    const ok = window.confirm(`Remove "${draftName || "this draft"}" from ${poolName}? The saved draft will stay in your drafts.`);
+    if (!ok) return;
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setMessage("Please log in first.");
+      return;
+    }
+
+    setRemovingPoolId(entry.poolId);
+    setMessage("");
+
+    const res = await fetch("/api/pools/leave", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        poolId: entry.poolId,
+        entryIds: entry.entryIds,
+      }),
+    });
+
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) {
+      setRemovingPoolId(null);
+      setMessage(body.error ?? "Failed to remove draft from pool.");
+      return;
+    }
+
+    setLinkedPools((prev) => prev.filter((row) => row.poolId !== entry.poolId));
+    setRemovingPoolId(null);
+    setMessage(`Removed "${draftName || "draft"}" from ${poolName}.`);
   }
 
   if (loading) {
@@ -435,7 +537,7 @@ export default function DraftDetailPage() {
 
   return (
     <main className="page-shell page-shell--stack" style={{ maxWidth: 1100 }}>
-      <DraftScoringNotice />
+      <DraftScoringNotice competitionSlug={competitionSlug} />
       <section
         className="page-surface"
         style={{
@@ -502,6 +604,88 @@ export default function DraftDetailPage() {
             {saving ? "saving..." : draftsLocked ? "draft locked" : "save draft"}
           </UiButton>
         </div>
+      </section>
+
+      <section
+        className="page-surface"
+        style={{
+          border: "1px solid var(--border-color)",
+          borderRadius: 14,
+          background: "var(--surface)",
+          padding: 14,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Pool entries</h2>
+            <p style={{ margin: "4px 0 0", opacity: 0.78, fontSize: 13 }}>
+              {linkedPoolsLoading
+                ? "Loading pool entries..."
+                : linkedPools.length > 0
+                  ? `${linkedPools.length} pool${linkedPools.length === 1 ? "" : "s"} using this draft`
+                  : "This draft is not entered in any pools."}
+            </p>
+          </div>
+          <UiButton
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => void loadLinkedPools(true)}
+            disabled={linkedPoolsLoading}
+          >
+            {linkedPoolsLoading ? "Refreshing..." : "Refresh"}
+          </UiButton>
+        </div>
+
+        {linkedPools.length > 0 ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            {linkedPools.map((entry) => (
+              <div
+                key={entry.poolId}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "10px 12px",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 10,
+                  background: "var(--surface-muted)",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ display: "grid", gap: 2, minWidth: 0 }}>
+                  <Link
+                    href={competitionPath(`/pool/${entry.poolId}`, entry.competitionSlug)}
+                    style={{
+                      color: "inherit",
+                      fontWeight: 900,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {entry.poolName ?? "Pool"}
+                  </Link>
+                  <span style={{ fontSize: 12, opacity: 0.72 }}>
+                    {entry.entryIds.length} entr{entry.entryIds.length === 1 ? "y" : "ies"}
+                  </span>
+                </div>
+                <UiButton
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => void removeDraftFromPool(entry)}
+                  disabled={removingPoolId === entry.poolId}
+                >
+                  {removingPoolId === entry.poolId ? "Removing..." : "Remove from Pool"}
+                </UiButton>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="draft-editor-layout">

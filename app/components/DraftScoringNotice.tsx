@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import type { CompetitionSlug } from "@/lib/competitions";
 
-export default function DraftScoringNotice() {
+export default function DraftScoringNotice({
+  competitionSlug,
+}: {
+  competitionSlug: CompetitionSlug;
+}) {
   const [hidden, setHidden] = useState(false);
 
   function openScoringGuide() {
-    window.dispatchEvent(new Event("bb:open-how-it-works"));
+    window.dispatchEvent(new CustomEvent("bb:open-how-it-works", { detail: { competitionSlug } }));
   }
 
   function hideNotice() {

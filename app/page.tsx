@@ -300,7 +300,7 @@ function LandingPage({
                 {invitePoolId ? "Join pool" : "Login / Sign up"}
               </Link>
               <Link
-                href="/how-it-works"
+                href={`/how-it-works?competition=${activeCompetitionSlug ?? "march-madness"}`}
                 className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
                 onClick={() =>
                   trackEvent({

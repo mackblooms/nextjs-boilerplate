@@ -1,23 +1,10 @@
-import HowItWorksRulesContent from "../components/HowItWorksRulesContent";
-import BackArrowButton from "../components/BackArrowButton";
+import { Suspense } from "react";
+import HowItWorksClient from "./HowItWorksClient";
 
 export default function HowItWorksPage() {
   return (
-    <main className="page-shell legal-doc" style={{ maxWidth: 900 }}>
-      <div className="back-arrow-row">
-        <BackArrowButton fallbackHref="/" />
-      </div>
-
-      <h1 className="page-title" style={{ fontSize: 32, fontWeight: 900, marginBottom: 12 }}>
-        bracketball: how it works
-      </h1>
-
-      <p style={{ marginTop: 0, lineHeight: 1.6 }}>
-        this page starts with draft budget rules, then scoring rules.
-      </p>
-
-      <HowItWorksRulesContent />
-
-    </main>
+    <Suspense fallback={null}>
+      <HowItWorksClient />
+    </Suspense>
   );
 }

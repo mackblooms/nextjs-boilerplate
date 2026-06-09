@@ -1,13 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
   WORLD_CUP_DRAFT_TIERS,
   WORLD_CUP_LONGSHOT_BONUS_EVENTS,
   WORLD_CUP_SCORING_EVENTS,
   WORLD_CUP_VALUE_RUN_BONUS_EVENTS,
 } from "@/lib/worldCupRules";
+import type { CompetitionSlug } from "@/lib/competitions";
 
 const SEED_COSTS: Array<[number, number]> = [
   [1, 22], [2, 19], [3, 14], [4, 12], [5, 10], [6, 8], [7, 7], [8, 6],
@@ -116,28 +115,10 @@ function SoccerRules() {
   );
 }
 
-export default function HowItWorksRulesContent() {
-  const pathname = usePathname();
-  const [sport, setSport] = useState<"basketball" | "soccer">(
-    pathname.startsWith("/world-cup") ? "soccer" : "basketball",
-  );
-
-  return (
-    <>
-      <div style={{ display: "flex", gap: 8, margin: "14px 0 4px", flexWrap: "wrap" }} aria-label="Choose rules by sport">
-        {(["basketball", "soccer"] as const).map((option) => (
-          <button
-            type="button"
-            key={option}
-            onClick={() => setSport(option)}
-            aria-pressed={sport === option}
-            className={`ui-btn ui-btn--md ${sport === option ? "ui-btn--primary" : "ui-btn--secondary"}`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-      {sport === "soccer" ? <SoccerRules /> : <BasketballRules />}
-    </>
-  );
+export default function HowItWorksRulesContent({
+  competitionSlug,
+}: {
+  competitionSlug: CompetitionSlug;
+}) {
+  return competitionSlug === "world-cup" ? <SoccerRules /> : <BasketballRules />;
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
 
 type LeavePoolRequest = {
   poolId?: string;
@@ -14,7 +15,16 @@ type EntryIdRow = {
 type PoolRow = {
   created_by: string;
   lock_time: string | null;
+  competition_slug?: string | null;
 };
+
+function isMissingPoolCompetitionError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column pools.competition_slug does not exist") ||
+    message.includes("Could not find the 'competition_slug' column of 'pools' in the schema cache")
+  );
+}
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -47,11 +57,21 @@ export async function POST(req: Request) {
 
     const userId = authData.user.id;
 
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
+    let { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
-      .select("created_by,lock_time")
+      .select("created_by,lock_time,competition_slug")
       .eq("id", poolId)
       .maybeSingle();
+
+    if (poolErr && isMissingPoolCompetitionError(poolErr.message)) {
+      const fallback = await supabaseAdmin
+        .from("pools")
+        .select("created_by,lock_time")
+        .eq("id", poolId)
+        .maybeSingle();
+      poolRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+      poolErr = fallback.error;
+    }
 
     if (poolErr) {
       return NextResponse.json({ error: poolErr.message }, { status: 400 });
@@ -63,9 +83,10 @@ export async function POST(req: Request) {
 
     const pool = poolRow as PoolRow;
     const lockTime = pool.lock_time;
-    if (isDraftLocked(lockTime)) {
+    const competitionSlug = normalizeCompetitionSlug(pool.competition_slug);
+    if (isDraftLocked(lockTime, new Date(), competitionSlug)) {
       return NextResponse.json(
-        { error: `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime)}).` },
+        { error: `Draft entries are locked for this pool (${formatDraftLockTimeET(lockTime, competitionSlug)}).` },
         { status: 423 },
       );
     }

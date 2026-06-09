@@ -5,6 +5,7 @@ import {
 } from "@/lib/competitions";
 
 const ACTIVE_COMPETITION_STORAGE_KEY = "bb:active-competition";
+type CompetitionSearchParams = { get(name: string): string | null };
 
 export function getStoredActiveCompetition(): CompetitionSlug {
   if (typeof window === "undefined") return "world-cup";
@@ -27,4 +28,20 @@ export function setStoredActiveCompetition(competitionSlug: CompetitionSlug) {
   } catch {
     // Ignore storage failures.
   }
+}
+
+export function resolveActiveCompetitionFromLocation(
+  pathname: string,
+  searchParams?: CompetitionSearchParams | null,
+): CompetitionSlug {
+  if (pathname === "/world-cup" || pathname.startsWith("/world-cup/")) {
+    return "world-cup";
+  }
+
+  const explicitCompetition = searchParams?.get("competition");
+  if (explicitCompetition) return normalizeCompetitionSlug(explicitCompetition);
+
+  if (pathname === "/") return DEFAULT_COMPETITION_SLUG;
+
+  return getStoredActiveCompetition();
 }

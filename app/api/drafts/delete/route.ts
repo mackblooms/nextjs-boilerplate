@@ -1,28 +1,23 @@
 import { NextResponse } from "next/server";
+import { getBearerToken } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { isDraftLocked, formatDraftLockTimeET } from "@/lib/draftLock";
-import type { CompetitionSlug } from "@/lib/competitions";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { deleteEntriesAndCleanupMembership, loadDraftLinkedEntries } from "@/lib/draftLinkedEntries";
 
 type DraftRow = {
   id: string;
   user_id: string;
-  competition_slug: string;
+  competition_slug: string | null;
+  name: string | null;
 };
 
-type EntryWithPool = {
-  id: string;
-  pool_id: string;
-  pool: { lock_time: string | null; competition_slug: string } | null;
-};
-
-type EntryIdRow = { id: string };
-
-function getBearerToken(req: Request): string | null {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader) return null;
-  const [scheme, token] = authHeader.split(" ");
-  if (scheme?.toLowerCase() !== "bearer" || !token) return null;
-  return token;
+function isMissingSavedDraftCompetitionError(message?: string) {
+  if (!message) return false;
+  return (
+    message.includes("column saved_drafts.competition_slug does not exist") ||
+    message.includes("Could not find the 'competition_slug' column of 'saved_drafts' in the schema cache")
+  );
 }
 
 export async function POST(req: Request) {
@@ -46,12 +41,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "draftId is required." }, { status: 400 });
     }
 
-    const { data: draftRow, error: draftErr } = await supabaseAdmin
+    let { data: draftRow, error: draftErr } = await supabaseAdmin
       .from("saved_drafts")
-      .select("id,user_id,competition_slug")
+      .select("id,user_id,name,competition_slug")
       .eq("id", draftId)
       .eq("user_id", userId)
       .maybeSingle();
+
+    if (draftErr && isMissingSavedDraftCompetitionError(draftErr.message)) {
+      const fallback = await supabaseAdmin
+        .from("saved_drafts")
+        .select("id,user_id,name")
+        .eq("id", draftId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      draftRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+      draftErr = fallback.error;
+    }
 
     if (draftErr) return NextResponse.json({ error: draftErr.message }, { status: 400 });
     if (!draftRow) return NextResponse.json({ error: "Draft not found." }, { status: 404 });
@@ -59,72 +65,32 @@ export async function POST(req: Request) {
     const draft = draftRow as DraftRow;
 
     // Find all pool entries linked to this draft.
-    const { data: linkedEntries, error: entriesErr } = await supabaseAdmin
-      .from("entries")
-      .select("id, pool_id, pool:pools(lock_time, competition_slug)")
-      .eq("saved_draft_id", draftId)
-      .eq("user_id", userId);
+    const competitionSlug = normalizeCompetitionSlug(draft.competition_slug);
+    const { entries, error: entriesErr } = await loadDraftLinkedEntries(supabaseAdmin, {
+      userId,
+      draftId,
+      draftName: draft.name,
+      competitionSlug,
+    });
 
     if (entriesErr) return NextResponse.json({ error: entriesErr.message }, { status: 400 });
-
-    const entries = (linkedEntries ?? []) as unknown as EntryWithPool[];
 
     // Reject if any linked pool is already locked.
     for (const entry of entries) {
       const pool = entry.pool;
-      const competitionSlug = (pool?.competition_slug ?? draft.competition_slug) as CompetitionSlug;
-      if (isDraftLocked(pool?.lock_time, new Date(), competitionSlug)) {
+      const entryCompetitionSlug = (pool?.competition_slug ?? competitionSlug) as CompetitionSlug;
+      if (isDraftLocked(pool?.lock_time, new Date(), entryCompetitionSlug)) {
         return NextResponse.json(
           {
-            error: `This draft is entered in a locked pool. Entries are locked as of ${formatDraftLockTimeET(pool?.lock_time, competitionSlug)}.`,
+            error: `This draft is entered in a locked pool. Entries are locked as of ${formatDraftLockTimeET(pool?.lock_time, entryCompetitionSlug)}.`,
           },
           { status: 423 },
         );
       }
     }
 
-    const entryIds = entries.map((e) => e.id);
-
-    if (entryIds.length > 0) {
-      const { error: picksErr } = await supabaseAdmin
-        .from("entry_picks")
-        .delete()
-        .in("entry_id", entryIds);
-      if (picksErr) return NextResponse.json({ error: picksErr.message }, { status: 400 });
-
-      const { error: entriesDeleteErr } = await supabaseAdmin
-        .from("entries")
-        .delete()
-        .in("id", entryIds);
-      if (entriesDeleteErr) return NextResponse.json({ error: entriesDeleteErr.message }, { status: 400 });
-
-      // Remove pool membership where the user has no remaining entries.
-      const affectedPoolIds = [...new Set(entries.map((e) => e.pool_id))];
-      for (const poolId of affectedPoolIds) {
-        const { data: remaining } = await supabaseAdmin
-          .from("entries")
-          .select("id")
-          .eq("pool_id", poolId)
-          .eq("user_id", userId)
-          .limit(1);
-
-        if (((remaining ?? []) as EntryIdRow[]).length === 0) {
-          const { data: poolOwner } = await supabaseAdmin
-            .from("pools")
-            .select("created_by")
-            .eq("id", poolId)
-            .maybeSingle();
-
-          if ((poolOwner as { created_by: string } | null)?.created_by !== userId) {
-            await supabaseAdmin
-              .from("pool_members")
-              .delete()
-              .eq("pool_id", poolId)
-              .eq("user_id", userId);
-          }
-        }
-      }
-    }
+    const deleteResult = await deleteEntriesAndCleanupMembership(supabaseAdmin, userId, entries);
+    if (deleteResult.error) return NextResponse.json({ error: deleteResult.error.message }, { status: 400 });
 
     const { error: draftDeleteErr } = await supabaseAdmin
       .from("saved_drafts")
@@ -134,7 +100,7 @@ export async function POST(req: Request) {
 
     if (draftDeleteErr) return NextResponse.json({ error: draftDeleteErr.message }, { status: 400 });
 
-    return NextResponse.json({ ok: true, removedEntryIds: entryIds });
+    return NextResponse.json({ ok: true, removedEntryIds: deleteResult.removedEntryIds });
   } catch (e: unknown) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Unknown error." },

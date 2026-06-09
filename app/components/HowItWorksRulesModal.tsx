@@ -1,16 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import {
+  getStoredActiveCompetition,
+  resolveActiveCompetitionFromLocation,
+} from "@/lib/activeCompetition";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import HowItWorksRulesContent from "./HowItWorksRulesContent";
 
 export default function HowItWorksRulesModal() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>(() =>
+    getStoredActiveCompetition(),
+  );
 
   useEffect(() => {
-    const onOpen = () => setOpen(true);
+    const onOpen = (event: Event) => {
+      const requestedCompetition = (event as CustomEvent<{ competitionSlug?: CompetitionSlug }>).detail?.competitionSlug;
+      setCompetitionSlug(
+        requestedCompetition
+          ? normalizeCompetitionSlug(requestedCompetition)
+          : resolveActiveCompetitionFromLocation(pathname, searchParams),
+      );
+      setOpen(true);
+    };
     window.addEventListener("bb:open-how-it-works", onOpen);
     return () => window.removeEventListener("bb:open-how-it-works", onOpen);
-  }, []);
+  }, [pathname, searchParams]);
 
   useEffect(() => {
     if (!open) return;
@@ -99,7 +118,7 @@ export default function HowItWorksRulesModal() {
           This covers draft budget rules, scoring, and bonuses.
         </p>
 
-        <HowItWorksRulesContent />
+        <HowItWorksRulesContent competitionSlug={competitionSlug} />
       </section>
     </div>
   );

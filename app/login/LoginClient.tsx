@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
+import { getStoredActiveCompetition } from "../../lib/activeCompetition";
 import BackArrowButton from "../components/BackArrowButton";
 import { UiButton, UiInput } from "../components/ui/primitives";
 
@@ -36,6 +37,10 @@ export default function LoginClient() {
     typeof window !== "undefined"
       ? resolveInvitePoolId(new URLSearchParams(window.location.search))
       : null;
+  const howItWorksHref =
+    typeof window !== "undefined"
+      ? `/how-it-works?competition=${getStoredActiveCompetition()}`
+      : "/how-it-works";
 
   const profileSetupNext = useMemo(() => {
     const params = new URLSearchParams({
@@ -270,7 +275,7 @@ export default function LoginClient() {
         </ul>
 
         <div className="login-brand-links">
-          <Link href="/how-it-works">How it works</Link>
+          <Link href={howItWorksHref}>How it works</Link>
           <span aria-hidden="true">|</span>
           <Link href="/support">Support</Link>
           <span aria-hidden="true">|</span>
