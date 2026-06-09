@@ -244,15 +244,10 @@ export async function loadLatestPoolEntries(
       latestUserDraft ??
       null;
 
-    let selectedPicks = entryPicks;
     let entryName = entryNameById.get(row.entry_id) ?? null;
     let latestDraftName: string | null = null;
 
     if (matchedDraft) {
-      const latestDraftPicks = draftPicksByDraft.get(matchedDraft.id) ?? new Set<string>();
-      selectedPicks = linkedDraft || latestDraftPicks.size > 0
-        ? latestDraftPicks
-        : entryPicks;
       latestDraftName = matchedDraft.name.trim() || null;
       entryName = latestDraftName ?? entryNameById.get(row.entry_id) ?? null;
     }
@@ -265,7 +260,7 @@ export async function loadLatestPoolEntries(
       latest_draft_id: matchedDraft?.id ?? null,
       latest_draft_name: latestDraftName,
     });
-    picksByEntry.set(row.entry_id, Array.from(selectedPicks));
+    picksByEntry.set(row.entry_id, Array.from(entryPicks));
   }
 
   return { entries, picksByEntry };

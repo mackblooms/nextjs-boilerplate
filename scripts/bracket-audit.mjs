@@ -8,6 +8,7 @@
  *  2. Stale winners     — winner_team_id not matching either team in the game
  *  3. Orphan picks      — entry picks referencing team IDs absent from all games
  *  4. Leaderboard       — recomputed scores for each pool (top 5 shown)
+ *  5. Entry stability   — entry picks are present and not silently replaced by saved drafts
  */
 
 import { readFileSync } from "node:fs";
@@ -58,16 +59,9 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Inlined scoring logic (mirrors lib/scoring.ts)
 // --------------------------------------------------------------------------
 
-const BASE_PTS = { R64: 12, R32: 36, S16: 84, E8: 180, F4: 300, CHIP: 360 };
 const WC_WIN_PTS = { R32: 18, S16: 30, E8: 48, F4: 72, CHIP: 100 };
 const WC_LONGSHOT_BONUS = { GROUP_ADVANCE: 25, R32: 50, S16: 75, E8: 100, F4: 150, CHIP: 200 };
 const WC_VALUE_BONUS = { GROUP_ADVANCE: 5, R32: 10, S16: 20, E8: 40, F4: 80, CHIP: 160 };
-const HISTORIC = { 14: 24, 15: 40, 16: 56 };
-
-function seedMult(seed) {
-  if (!seed || seed < 1 || seed > 16) return 1;
-  return 1 + (seed - 1) * 0.035;
-}
 
 function isFinal(status) {
   return String(status ?? "").trim().toLowerCase().startsWith("final");
@@ -78,29 +72,6 @@ function wcValuePickBonus(cost, round) {
   if (cost <= 5) return WC_LONGSHOT_BONUS[round] ?? 0;
   if (cost <= 10) return WC_VALUE_BONUS[round] ?? 0;
   return 0;
-}
-
-function scoreTeamWinsMM(games, seedById) {
-  const totals = new Map();
-  const historicAwarded = new Set();
-  for (const g of games) {
-    const winnerId = g.winner_team_id;
-    if (!winnerId) continue;
-    const base = BASE_PTS[String(g.round ?? "").toUpperCase()] ?? 0;
-    if (!base) continue;
-    const ws = seedById.get(winnerId) ?? null;
-    const oppId = g.team1_id === winnerId ? g.team2_id : g.team1_id;
-    const os = oppId ? (seedById.get(oppId) ?? null) : null;
-    const mult = seedMult(ws);
-    const upset = ws && os ? Math.max(0, 4 * (ws - os)) : 0;
-    let historic = 0;
-    if (String(g.round).toUpperCase() === "R64" && ws && HISTORIC[ws] && !historicAwarded.has(winnerId)) {
-      historic = HISTORIC[ws];
-      historicAwarded.add(winnerId);
-    }
-    totals.set(winnerId, (totals.get(winnerId) ?? 0) + Math.round(base * mult + upset + historic));
-  }
-  return totals;
 }
 
 function scoreTeamWinsWC(games, costById) {
@@ -141,23 +112,17 @@ function scoreTeamWinsWC(games, costById) {
   return totals;
 }
 
-function computeEntryScores(games, teamScores, seedById, picksByEntry, isWC) {
-  const r64Winners = new Set();
-  if (!isWC) {
-    for (const g of games) {
-      if (String(g.round).toUpperCase() === "R64" && g.winner_team_id) r64Winners.add(g.winner_team_id);
-    }
-  }
+function computeEntryScores(teamScores, picksByEntry) {
   const result = new Map();
   for (const [entryId, rawPicks] of picksByEntry) {
     const picks = [...new Set(rawPicks.filter(Boolean))];
-    let total = picks.reduce((s, id) => s + (teamScores.get(id) ?? 0), 0);
-    if (!isWC && picks.length > 0 && picks.every((id) => r64Winners.has(id))) {
-      total += picks.reduce((s, id) => s + (seedById.get(id) ?? 0), 0);
-    }
-    result.set(entryId, total);
+    result.set(entryId, picks.reduce((s, id) => s + (teamScores.get(id) ?? 0), 0));
   }
   return result;
+}
+
+function setKey(values) {
+  return [...new Set((values ?? []).filter(Boolean).map(String))].sort().join("|");
 }
 
 // --------------------------------------------------------------------------
@@ -250,8 +215,20 @@ async function main() {
   console.log(`    ${new Date().toISOString()}\n`);
 
   // ---- Fetch World Cup data only ----
-  const [gamesRes, teamsRes, poolsRes] = await Promise.all([
-    db.from("games").select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug").eq("competition_slug", "world-cup"),
+  let scoreColumnsAvailable = true;
+  let gamesRes = await db
+    .from("games")
+    .select("id,round,region,slot,status,team1_id,team2_id,winner_team_id,team1_score,team2_score,competition_slug")
+    .eq("competition_slug", "world-cup");
+  if (gamesRes.error && /team[12]_score|does not exist/i.test(gamesRes.error.message ?? "")) {
+    scoreColumnsAvailable = false;
+    gamesRes = await db
+      .from("games")
+      .select("id,round,region,slot,status,team1_id,team2_id,winner_team_id,competition_slug")
+      .eq("competition_slug", "world-cup");
+  }
+
+  const [teamsRes, poolsRes] = await Promise.all([
     db.from("teams").select("id,name,seed,seed_in_region,region,cost,competition_slug").eq("competition_slug", "world-cup"),
     db.from("pools").select("id,name,competition_slug").eq("competition_slug", "world-cup").order("name"),
   ]);
@@ -266,6 +243,9 @@ async function main() {
   const teamName = (id) => teamById.get(id)?.name ?? id ?? "(null)";
 
   console.log(`  Loaded ${games.length} WC games, ${teams.length} WC teams, ${poolsRes.data?.length ?? 0} WC pool(s)`);
+  if (!scoreColumnsAvailable) {
+    warn("games.team1_score/team2_score are missing; World Cup draw scoring cannot be fully audited until db/migrations/20260606_world_cup_game_scores.sql is applied.");
+  }
 
   // ---- 1. Build lookup map for next-round check ----
   section("Bracket Advancement Check");
@@ -325,11 +305,12 @@ async function main() {
   }
 
   // All fetched pools are already filtered to world-cup by the initial query
-  const seedById = new Map(teams.map((t) => [t.id, t.seed_in_region ?? t.seed ?? null]));
   const costById = new Map(teams.map((t) => [t.id, t.cost ?? null]));
   const teamScores = scoreTeamWinsWC(games, costById);
 
   let totalOrphans = 0;
+  let totalMissingPicks = 0;
+  let totalLinkedDraftDrift = 0;
   for (const pool of pools) {
     const lbRes = await db.from("pool_leaderboard").select("entry_id,display_name").eq("pool_id", pool.id);
     if (lbRes.error) { warn(`Leaderboard error for "${pool.name}": ${lbRes.error.message}`); continue; }
@@ -339,7 +320,10 @@ async function main() {
 
     const labelById = new Map((lbRes.data ?? []).map((r) => [r.entry_id, r.display_name?.trim() || r.entry_id.slice(0, 8)]));
 
-    const epRes = await db.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds);
+    const [epRes, entriesRes] = await Promise.all([
+      db.from("entry_picks").select("entry_id,team_id").in("entry_id", entryIds),
+      db.from("entries").select("id,entry_name,saved_draft_id").in("id", entryIds),
+    ]);
     if (epRes.error) { warn(`Picks error for "${pool.name}": ${epRes.error.message}`); continue; }
 
     const competitionGames = games; // already world-cup only
@@ -351,7 +335,46 @@ async function main() {
       picksByEntry.set(row.entry_id, arr);
     }
 
-    const entryScores = computeEntryScores(competitionGames, teamScores, seedById, picksByEntry, true);
+    const missingPicks = [...entryIds].filter((id) => (picksByEntry.get(id) ?? []).length === 0);
+    if (missingPicks.length > 0) {
+      totalMissingPicks += missingPicks.length;
+      warn(`${missingPicks.length} entr${missingPicks.length === 1 ? "y has" : "ies have"} no persisted entry picks:`);
+      missingPicks.forEach((id) => console.log(`    - ${labelById.get(id) ?? id.slice(0, 8)} (${id})`));
+    }
+
+    if (entriesRes.error) {
+      warn(`Entry-link check skipped for "${pool.name}": ${entriesRes.error.message}`);
+    } else {
+      const linkedDraftIds = [
+        ...new Set((entriesRes.data ?? []).map((row) => row.saved_draft_id).filter(Boolean).map(String)),
+      ];
+      if (linkedDraftIds.length > 0) {
+        const draftPickRes = await db.from("saved_draft_picks").select("draft_id,team_id").in("draft_id", linkedDraftIds);
+        if (draftPickRes.error) {
+          warn(`Saved-draft drift check skipped for "${pool.name}": ${draftPickRes.error.message}`);
+        } else {
+          const draftPicksByDraft = new Map(linkedDraftIds.map((id) => [id, []]));
+          for (const row of draftPickRes.data ?? []) {
+            const arr = draftPicksByDraft.get(row.draft_id) ?? [];
+            arr.push(row.team_id);
+            draftPicksByDraft.set(row.draft_id, arr);
+          }
+          for (const entry of entriesRes.data ?? []) {
+            if (!entry.saved_draft_id) continue;
+            const entryKey = setKey(picksByEntry.get(entry.id) ?? []);
+            const draftKey = setKey(draftPicksByDraft.get(entry.saved_draft_id) ?? []);
+            if (entryKey !== draftKey) {
+              totalLinkedDraftDrift++;
+              warn(
+                `Linked draft has changed since pool entry for ${labelById.get(entry.id) ?? entry.id.slice(0, 8)}; persisted entry picks remain the scoring source.`,
+              );
+            }
+          }
+        }
+      }
+    }
+
+    const entryScores = computeEntryScores(teamScores, picksByEntry);
 
     const ranked = [...entryIds]
       .map((id) => ({ id, score: entryScores.get(id) ?? 0, label: labelById.get(id) ?? id.slice(0, 8) }))
@@ -379,11 +402,15 @@ async function main() {
   }
 
   section("Summary");
-  const issues = bracketIssues + stale + totalOrphans;
+  const scoreSchemaIssues = scoreColumnsAvailable ? 0 : 1;
+  const issues = bracketIssues + stale + totalOrphans + totalMissingPicks + scoreSchemaIssues;
   if (issues === 0) {
     ok("No issues found");
   } else {
-    console.log(`  ${bracketIssues} bracket mismatch(es), ${stale} stale winner(s), ${totalOrphans} orphan pick(s)`);
+    console.log(`  ${bracketIssues} bracket mismatch(es), ${stale} stale winner(s), ${totalOrphans} orphan pick(s), ${totalMissingPicks} missing-pick entr${totalMissingPicks === 1 ? "y" : "ies"}, ${scoreSchemaIssues} score-schema issue(s)`);
+  }
+  if (totalLinkedDraftDrift > 0) {
+    console.log(`  Note: ${totalLinkedDraftDrift} linked saved draft(s) differ from their persisted pool entry picks.`);
   }
   console.log("\n=== Audit complete ===");
 }
