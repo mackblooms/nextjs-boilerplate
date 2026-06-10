@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
@@ -678,16 +678,7 @@ function PoolsPageContent() {
     setSelectedDraftIds(new Set());
   }
 
-  const tabButton = (isActive: boolean): CSSProperties => ({
-    padding: "10px 14px",
-    border: "1px solid var(--border-color)",
-    borderRadius: 10,
-    background: isActive ? "var(--surface-elevated)" : "var(--surface)",
-    fontWeight: 800,
-    cursor: "pointer",
-  });
-
-  const statusStyle: CSSProperties =
+  const statusStyle =
     joinStatus?.tone === "success"
       ? { background: "var(--success-bg)", borderColor: "var(--border-color)" }
       : joinStatus?.tone === "error"
@@ -695,90 +686,62 @@ function PoolsPageContent() {
         : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
 
   return (
-    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
-      <section
-        className="page-surface"
-        style={{
-          padding: 16,
-          display: "grid",
-          gap: 16,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ display: "grid", gap: 6 }}>
-            <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
-              {competition.shortName} Pools
-            </h1>
-            <p className="page-subtitle" style={{ maxWidth: 540 }}>
-              Move between your live competitions, discover new pools, and enter saved drafts without extra setup.
+    <main className="match-shell pools-match-shell">
+      <section className="match-app-top" aria-label={`${competition.shortName} pools overview`}>
+        <div className="match-topline">
+          <div className="match-title-stack">
+            <span className="match-kicker">{competition.sport}</span>
+            <h1 className="match-title">{competition.shortName} Pools</h1>
+            <p className="match-subtitle">
+              Track your groups, enter saved drafts, and jump into standings with one scan.
             </p>
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
-              My Drafts
+          <div className="match-actions">
+            <Link href={competitionPath("/drafts", competitionSlug)} className="match-icon-action">
+              Drafts
             </Link>
-            <Link href={competitionPath("/pools/new", competitionSlug)} className="ui-btn ui-btn--md ui-btn--primary">
-              New Pool
+            <Link href={competitionPath("/pools/new", competitionSlug)} className="match-icon-action match-icon-action--primary">
+              New
             </Link>
           </div>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: "12px 14px",
-              background: "var(--surface)",
-              display: "grid",
-              gap: 4,
-            }}
-          >
-            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Joined pools</span>
-            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{myPools.length}</span>
-            <span style={{ fontSize: 13, opacity: 0.78 }}>Open one tap straight to the leaderboard.</span>
+        <div className="match-date-strip" aria-label="Pool counts">
+          <div className="match-stat-pill">
+            <span>Joined</span>
+            <strong>{myPools.length}</strong>
           </div>
-          <div
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: "12px 14px",
-              background: "var(--surface)",
-              display: "grid",
-              gap: 4,
-            }}
-          >
-            <span style={{ fontSize: 12, fontWeight: 800, opacity: 0.72 }}>Available to join</span>
-            <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{discoverPools.length}</span>
-            <span style={{ fontSize: 13, opacity: 0.78 }}>Public and private pools ready for entry.</span>
+          <div className="match-stat-pill">
+            <span>Available</span>
+            <strong>{discoverPools.length}</strong>
+          </div>
+          <div className="match-stat-pill">
+            <span>Status</span>
+            <strong>{loading ? "Loading" : userId ? "Signed In" : "Guest"}</strong>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button type="button" onClick={() => setActiveTab("my")} style={tabButton(activeTab === "my")}>
-            My Pools ({myPools.length})
+        <div className="match-tabs" role="tablist" aria-label="Pool views">
+          <button
+            type="button"
+            onClick={() => setActiveTab("my")}
+            className="match-tab"
+            data-active={activeTab === "my"}
+            role="tab"
+            aria-selected={activeTab === "my"}
+          >
+            My Pools
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("discover")}
-            style={tabButton(activeTab === "discover")}
+            className="match-tab"
+            data-active={activeTab === "discover"}
+            role="tab"
+            aria-selected={activeTab === "discover"}
           >
-            Discover & Join ({discoverPools.length})
+            Discover
           </button>
         </div>
 
@@ -786,12 +749,9 @@ function PoolsPageContent() {
           <p
             role="status"
             aria-live="polite"
+            className="match-status"
+            data-tone={joinStatus.tone}
             style={{
-              margin: 0,
-              border: "1px solid",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontWeight: 700,
               ...statusStyle,
             }}
           >
@@ -801,28 +761,27 @@ function PoolsPageContent() {
       </section>
 
       {activeTab === "my" ? (
-        <section style={{ display: "grid", gap: 10 }}>
-          {loading ? <p>Loading pools...</p> : null}
-          {myPoolsMsg ? <p>{myPoolsMsg}</p> : null}
+        <section className="match-section">
+          <div className="match-section-header">
+            <div>
+              <span className="match-section-kicker">Following</span>
+              <h2>My Pools</h2>
+            </div>
+            <span>{myPools.length}</span>
+          </div>
+
+          {loading ? <p className="match-empty">Loading pools...</p> : null}
+          {myPoolsMsg ? <p className="match-empty">{myPoolsMsg}</p> : null}
 
           {!loading && !myPoolsMsg && myPools.length === 0 ? (
-            <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                padding: 16,
-                background: "var(--surface)",
-                display: "grid",
-                gap: 10,
-              }}
-            >
-              <div style={{ display: "grid", gap: 4 }}>
-                <div style={{ fontSize: 18, fontWeight: 900 }}>Your pool list is still empty.</div>
-                <p style={{ margin: 0, opacity: 0.8 }}>
+            <div className="match-empty-card">
+              <div className="match-empty-copy">
+                <div>Your pool list is still empty.</div>
+                <p>
                   Join a pool to start tracking standings, brackets, and draft entries from the app shell.
                 </p>
               </div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div className="match-row-actions">
                 <button type="button" onClick={() => setActiveTab("discover")} className="ui-btn ui-btn--md ui-btn--primary">
                   Discover pools
                 </button>
@@ -837,69 +796,40 @@ function PoolsPageContent() {
           ) : null}
 
           {!loading && myPools.length > 0 ? (
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
+            <ul className="match-list">
               {myPools.map((pool) => {
                 const entriesLocked = isPoolEntryLocked(pool, competitionSlug);
                 return (
                   <li key={pool.id}>
-                    <article
-                      style={{
-                        border: "1px solid var(--border-color)",
-                        borderRadius: 14,
-                        padding: 14,
-                        background: "var(--surface)",
-                        display: "grid",
-                        gap: 10,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          alignItems: "flex-start",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {pool.name}
+                    <article className="match-row">
+                      <div className="match-row-main">
+                        <span className="match-live-dot" data-locked={entriesLocked} aria-hidden="true" />
+                        <div className="match-row-copy">
+                          <div className="match-row-title">{pool.name}</div>
+                          <div className="match-row-subtitle">
+                            {entriesLocked
+                              ? `Locked at ${formatDraftLockTimeET(pool.lock_time, competitionSlug)}`
+                              : "Entries are open"}
+                          </div>
                         </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 800,
-                            padding: "4px 8px",
-                            borderRadius: 999,
-                            border: "1px solid var(--border-color)",
-                            background: "var(--surface-muted)",
-                          }}
-                        >
+                      </div>
+                      <div className="match-row-meta">
+                        <span className="match-badge">
                           {privacyLabel(pool)}
                         </span>
+                        <span className="match-mini-score">{entriesLocked ? "FT" : "Live"}</span>
                       </div>
-                      <div style={{ fontSize: 13, opacity: 0.8 }}>
-                        Open standings or enter one of your saved drafts into this pool.
-                      </div>
-                      {entriesLocked ? (
-                        <div style={{ fontSize: 12, opacity: 0.7 }}>
-                          Entry changes locked at {formatDraftLockTimeET(pool.lock_time, competitionSlug)}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 12, fontWeight: 800, opacity: 0.82 }}>Entries are open</div>
-                      )}
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div className="match-row-actions">
                         <Link
                           href={`/pool/${pool.id}/leaderboard`}
-                          className="ui-btn ui-btn--md ui-btn--secondary"
-                          style={{ flex: "1 1 160px" }}
+                          className="match-row-action"
                         >
                           Leaderboard
                         </Link>
                         <Link
                           href={`/pool/${pool.id}/draft`}
-                          className="ui-btn ui-btn--md ui-btn--secondary"
+                          className="match-row-action match-row-action--accent"
                           style={{
-                            flex: "1 1 160px",
                             opacity: entriesLocked ? 0.7 : 1,
                             pointerEvents: entriesLocked ? "none" : undefined,
                           }}
@@ -918,22 +848,21 @@ function PoolsPageContent() {
       ) : null}
 
       {activeTab === "discover" ? (
-        <section style={{ display: "grid", gap: 10 }}>
-          <div
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              background: "var(--surface)",
-              padding: 12,
-              display: "grid",
-              gap: 10,
-            }}
-          >
-            <div style={{ display: "grid", gap: 4 }}>
-              <label htmlFor="pool-search" style={{ fontWeight: 800, fontSize: 13 }}>
+        <section className="match-section">
+          <div className="match-section-header">
+            <div>
+              <span className="match-section-kicker">All Competitions</span>
+              <h2>Discover</h2>
+            </div>
+            <span>{filteredDiscoverPools.length}</span>
+          </div>
+
+          <div className="match-search-panel">
+            <div className="match-search-label">
+              <label htmlFor="pool-search">
                 Search pools
               </label>
-              <p style={{ margin: 0, fontSize: 13, opacity: 0.76 }}>
+              <p>
                 Find a pool by name, then join it and choose which saved drafts you want to enter.
               </p>
             </div>
@@ -942,89 +871,58 @@ function PoolsPageContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Find by pool name"
-              className="ui-control ui-control--full"
+              className="match-search-input"
             />
             {!userId ? (
-              <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
+              <p className="match-search-hint">
                 Log in to join pools and enter drafts.
               </p>
             ) : null}
           </div>
 
-          {allPoolsMsg ? <p>{allPoolsMsg}</p> : null}
+          {allPoolsMsg ? <p className="match-empty">{allPoolsMsg}</p> : null}
           {!loading && !allPoolsMsg && filteredDiscoverPools.length === 0 ? (
-            <div
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                padding: 14,
-                background: "var(--surface)",
-              }}
-            >
+            <div className="match-empty-card">
               {query.trim() ? "No pools match your search." : "No pools are available to join right now."}
             </div>
           ) : null}
 
           {!loading && filteredDiscoverPools.length > 0 ? (
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
+            <ul className="match-list">
               {filteredDiscoverPools.map((pool) => {
                 const isPrivate = (pool.is_private ?? true) !== false;
 
                 return (
                   <li key={pool.id}>
-                    <div
-                      style={{
-                        border: "1px solid var(--border-color)",
-                        borderRadius: 14,
-                        padding: 14,
-                        background: "var(--surface)",
-                        display: "grid",
-                        gap: 10,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 12,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <div style={{ minWidth: 0, display: "grid", gap: 4 }}>
-                          <div style={{ fontWeight: 900, overflow: "hidden", textOverflow: "ellipsis" }}>{pool.name}</div>
-                          <div style={{ fontSize: 13, opacity: 0.8 }}>
+                    <div className="match-row">
+                      <div className="match-row-main">
+                        <span className="match-live-dot" data-locked={isPrivate} aria-hidden="true" />
+                        <div className="match-row-copy">
+                          <div className="match-row-title">{pool.name}</div>
+                          <div className="match-row-subtitle">
                             {isPrivate ? "Private pool with password protection" : "Public pool ready to join"}
                           </div>
                         </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 800,
-                            padding: "4px 8px",
-                            borderRadius: 999,
-                            border: "1px solid var(--border-color)",
-                            background: isPrivate ? "var(--surface-muted)" : "var(--highlight)",
-                          }}
-                        >
+                      </div>
+                      <div className="match-row-meta">
+                        <span className="match-badge" data-open={!isPrivate}>
                           {isPrivate ? "Private" : "Public"}
                         </span>
+                        <span className="match-mini-score">Join</span>
                       </div>
 
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div className="match-row-actions">
                         <button
                           type="button"
                           onClick={() => openJoinModal(pool)}
                           disabled={!userId}
-                          className="ui-btn ui-btn--md ui-btn--success"
-                          style={{ flex: "1 1 180px" }}
+                          className="match-row-action match-row-action--accent"
                         >
                           Join + Enter Drafts
                         </button>
                         <Link
                           href={`/pool/${pool.id}/leaderboard`}
-                          className="ui-btn ui-btn--md ui-btn--secondary"
-                          style={{ flex: "1 1 180px" }}
+                          className="match-row-action"
                         >
                           Preview Leaderboard
                         </Link>
