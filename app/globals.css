@@ -2086,6 +2086,85 @@ textarea::placeholder {
   justify-self: end;
 }
 
+.app-sport-rail {
+  display: flex;
+  gap: 6px;
+  margin: 1px -2px -1px;
+  padding: 2px 2px 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 12px,
+    black calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+.app-sport-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.app-sport-rail-link {
+  position: relative;
+  scroll-snap-align: center;
+  min-width: max-content;
+  min-height: 32px;
+  display: inline-grid;
+  align-content: center;
+  gap: 0;
+  padding: 3px 12px 7px;
+  border: 0;
+  border-radius: 0;
+  color: color-mix(in srgb, var(--foreground) 46%, transparent);
+  text-align: center;
+  text-decoration: none;
+  transition:
+    color 140ms ease,
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.app-sport-rail-link::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+
+.app-sport-rail-link span {
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.app-sport-rail-link strong {
+  font-size: 0.82rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.app-sport-rail-link[data-active="true"] {
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.app-sport-rail-link[data-active="true"]::after {
+  background: #00985f;
+}
+
+.app-sport-rail-link:hover,
+.app-sport-rail-link:focus-visible {
+  color: var(--foreground);
+}
+
 .app-menu-popover {
   border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   background: color-mix(in srgb, var(--surface) 84%, transparent);

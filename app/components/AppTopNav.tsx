@@ -19,6 +19,7 @@ import {
 import { getStoredActiveCompetition, setStoredActiveCompetition } from "../../lib/activeCompetition";
 import { withAvatarFallback } from "../../lib/avatar";
 import {
+  competitions,
   competitionPath,
   getCompetition,
   normalizeCompetitionSlug,
@@ -214,6 +215,7 @@ export default function AppTopNav() {
   const activePointerTypeRef = useRef<string | null>(null);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement | null>(null);
+  const sportRailRef = useRef<HTMLDivElement | null>(null);
   const suppressClickRef = useRef(false);
 
   const poolIdFromPath = useMemo(() => {
@@ -233,6 +235,19 @@ export default function AppTopNav() {
     setStoredCompetitionSlug(competitionSlug);
     setStoredActiveCompetition(competitionSlug);
   }, [competitionSlug]);
+
+  useEffect(() => {
+    if (pathname !== "/" && pathname !== "/world-cup") return;
+
+    const activeSport = sportRailRef.current?.querySelector<HTMLElement>(
+      `[data-sport-slug="${competitionSlug}"]`
+    );
+    activeSport?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [competitionSlug, pathname]);
 
   useEffect(() => {
     let canceled = false;
@@ -803,6 +818,34 @@ export default function AppTopNav() {
               />
             </svg>
           </button>
+
+          {isHomeActive ? (
+            <nav
+              ref={sportRailRef}
+              className="app-sport-rail"
+              aria-label="Sports"
+              style={{
+                gridColumn: "1 / -1",
+              }}
+            >
+              {competitions.map((sportCompetition) => {
+                const isSelected = sportCompetition.slug === competitionSlug;
+                return (
+                  <Link
+                    key={sportCompetition.slug}
+                    href={sportCompetition.href}
+                    data-sport-slug={sportCompetition.slug}
+                    data-active={isSelected}
+                    aria-current={isSelected ? "page" : undefined}
+                    className="app-sport-rail-link"
+                  >
+                    <span>{sportCompetition.sport}</span>
+                    <strong>{sportCompetition.shortName}</strong>
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : null}
         </div>
       </header>
 
