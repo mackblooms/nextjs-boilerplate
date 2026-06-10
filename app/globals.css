@@ -748,10 +748,6 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .native-only-icon-action {
-  display: none;
-}
-
-body.is-native-app-shell .native-only-icon-action {
   width: 38px;
   height: 38px;
   border: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
@@ -768,23 +764,23 @@ body.is-native-app-shell .native-only-icon-action {
   text-decoration: none;
 }
 
-body.is-native-app-shell .native-only-icon-action--primary {
+.native-only-icon-action--primary {
   border-color: #00985f;
   background: #00985f;
   color: #ffffff;
 }
 
-body.is-native-app-shell .native-only-icon-action:disabled,
-body.is-native-app-shell .native-only-icon-action[aria-disabled="true"] {
+.native-only-icon-action:disabled,
+.native-only-icon-action[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.56;
 }
 
-body.is-native-app-shell .native-hidden {
+.native-hidden {
   display: none !important;
 }
 
-body.is-native-app-shell .native-only-draft-actions {
+.native-only-draft-actions {
   display: flex !important;
 }
 
