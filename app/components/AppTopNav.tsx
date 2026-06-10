@@ -667,6 +667,8 @@ export default function AppTopNav() {
   const emphasizedIndex = scrubActive && scrubIndex !== null ? scrubIndex : settledActiveIndex;
   const isChromeHidden = isAutoHidden && !drawerOpen && !helpOpen && !dockExpanded && !scrubActive;
   const isTopBarHidden = isNativeApp ? !isHomeActive && isChromeHidden : isChromeHidden;
+  const isDockCollapsed = isNativeApp && isChromeHidden;
+  const isDockHidden = !isNativeApp && isChromeHidden;
 
   function handleDockPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 && event.pointerType === "mouse") return;
@@ -912,6 +914,8 @@ export default function AppTopNav() {
 
       <div
         ref={dockRef}
+        className="app-dock-bar"
+        data-collapsed={isDockCollapsed}
         role="tablist"
         aria-label="Main navigation"
         onPointerDown={handleDockPointerDown}
@@ -926,22 +930,24 @@ export default function AppTopNav() {
           zIndex: 1250,
           display: "grid",
           gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gap: isCompact ? 4 : 6,
-          maxWidth: 720,
+          gap: isDockCollapsed ? 2 : isCompact ? 4 : 6,
+          maxWidth: isDockCollapsed ? 360 : 720,
           marginInline: "auto",
           border: "1px solid var(--border-color)",
           borderRadius: 999,
-          padding: isCompact ? "7px 8px" : "8px 9px",
+          padding: isDockCollapsed ? "5px 7px" : isCompact ? "7px 8px" : "8px 9px",
           background: "var(--surface-glass)",
           boxShadow: dockExpanded ? "var(--shadow-lg)" : "var(--shadow-md)",
           backdropFilter: "blur(14px) saturate(145%)",
-          transform: `translateY(${isChromeHidden ? 108 : 0}%) scale(${dockExpanded ? 1.04 : 1})`,
-          opacity: isChromeHidden ? 0.08 : 1,
+          transform: isDockHidden
+            ? "translateY(108%) scale(1)"
+            : `translateY(0) scale(${dockExpanded ? 1.04 : isDockCollapsed ? 0.94 : 1})`,
+          opacity: isDockHidden ? 0.08 : isDockCollapsed ? 0.86 : 1,
           transition:
-            "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, box-shadow 180ms ease",
+            "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, box-shadow 180ms ease, max-width 220ms ease, padding 180ms ease",
           touchAction: "none",
           userSelect: "none",
-          pointerEvents: isChromeHidden ? "none" : "auto",
+          pointerEvents: isDockHidden ? "none" : "auto",
         }}
       >
         {dockItems.map((item, index) => {
@@ -958,6 +964,7 @@ export default function AppTopNav() {
                 : 0.98;
 
           const isCurrent = scrubActive ? index === emphasizedIndex : item.isActive;
+          const buttonScale = isDockCollapsed ? (isCurrent ? 1.08 : 1) : scale;
 
           return (
             <button
@@ -965,11 +972,12 @@ export default function AppTopNav() {
               key={item.key}
               type="button"
               role="tab"
+              aria-label={item.label}
               aria-selected={isCurrent}
               aria-current={item.isActive ? "page" : undefined}
               onClick={(event) => {
                 if (suppressClickRef.current || scrubActive) {
-                  event.preventDefault();
+                event.preventDefault();
                   return;
                 }
 
@@ -978,23 +986,24 @@ export default function AppTopNav() {
               style={{
                 border: "none",
                 borderRadius: 999,
-                padding: isCompact ? "8px 4px 7px" : "9px 6px 8px",
-                minHeight: isCompact ? 58 : 62,
+                padding: isDockCollapsed ? "8px 4px" : isCompact ? "8px 4px 7px" : "9px 6px 8px",
+                minHeight: isDockCollapsed ? 38 : isCompact ? 58 : 62,
                 background: isCurrent ? "var(--surface)" : "transparent",
                 boxShadow: `var(--dock-pill-hover-shadow, ${isCurrent ? "var(--shadow-sm)" : "none"})`,
                 color: isCurrent ? "var(--focus-ring)" : "var(--foreground)",
                 cursor: "pointer",
                 display: "grid",
                 placeItems: "center",
-                gap: 3,
-                transform: `translateY(${isCurrent ? -4 : 0}px) scale(calc(${scale} * var(--dock-pill-hover-scale, 1)))`,
+                gap: isDockCollapsed ? 0 : 3,
+                transform: `translateY(${isCurrent && !isDockCollapsed ? -4 : 0}px) scale(calc(${buttonScale} * var(--dock-pill-hover-scale, 1)))`,
                 transition:
-                  "transform 130ms ease, color 120ms ease, background-color 120ms ease, box-shadow 130ms ease",
+                  "transform 130ms ease, color 120ms ease, background-color 120ms ease, box-shadow 130ms ease, min-height 180ms ease, padding 180ms ease",
               }}
             >
               <item.Icon className="app-shell-dock-icon" />
               <span
                 style={{
+                  display: isDockCollapsed ? "none" : undefined,
                   fontSize: isCompact ? 10 : 11,
                   fontWeight: 800,
                   letterSpacing: "0.02em",
