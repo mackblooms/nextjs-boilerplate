@@ -1938,11 +1938,9 @@ export function HomeContent({
         padding: 16,
       }}
     >
-      <CompetitionSwitcher activeCompetition={activeCompetitionSlug} compact />
-
       <div
         style={{
-          marginTop: 16,
+          marginTop: 0,
           marginBottom: 16,
           display: "grid",
           gap: 10,

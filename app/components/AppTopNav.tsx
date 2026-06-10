@@ -232,6 +232,7 @@ export default function AppTopNav() {
       : explicitCompetition
         ? normalizeCompetitionSlug(explicitCompetition)
         : storedCompetitionSlug;
+  const isHomeRoute = pathname === "/" || pathname === "/world-cup";
 
   useEffect(() => {
     setIsNativeApp(Capacitor.isNativePlatform());
@@ -546,6 +547,15 @@ export default function AppTopNav() {
       document.body.classList.remove("has-app-shell");
     };
   }, [userId]);
+
+  useEffect(() => {
+    const shouldShowWebSportRail = Boolean(userId) && !isNativeApp && isHomeRoute;
+    document.body.classList.toggle("has-web-home-sport-rail", shouldShowWebSportRail);
+
+    return () => {
+      document.body.classList.remove("has-web-home-sport-rail");
+    };
+  }, [isHomeRoute, isNativeApp, userId]);
 
   useEffect(() => {
     return () => {
@@ -911,6 +921,54 @@ export default function AppTopNav() {
           ) : null}
         </div>
       </header>
+
+      {!isNativeApp && isHomeActive ? (
+        <div
+          className="web-sport-rail-wrap"
+          style={{
+            position: "fixed",
+            top: `calc(max(10px, env(safe-area-inset-top)) + ${isCompact ? 66 : 72}px)`,
+            left: 0,
+            right: 0,
+            zIndex: 1190,
+            paddingInline: isCompact ? 10 : 18,
+            pointerEvents: "none",
+            transform: isTopBarHidden ? "translateY(calc(-100% - 18px))" : "translateY(0)",
+            opacity: isTopBarHidden ? 0 : 1,
+            transition:
+              "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease",
+          }}
+        >
+          <nav className="web-sport-rail-field" aria-label="Sports">
+            <div className="web-sport-rail">
+              {competitions.map((sportCompetition) => {
+                const isSelected = sportCompetition.slug === competitionSlug;
+                const sportHref =
+                  sportCompetition.slug === "march-madness"
+                    ? "/?competition=march-madness"
+                    : sportCompetition.href;
+
+                return (
+                  <Link
+                    key={sportCompetition.slug}
+                    href={sportHref}
+                    data-active={isSelected}
+                    aria-current={isSelected ? "page" : undefined}
+                    className="web-sport-rail-link"
+                    onClick={() => {
+                      setStoredCompetitionSlug(sportCompetition.slug);
+                      setStoredActiveCompetition(sportCompetition.slug);
+                    }}
+                  >
+                    <span>{sportCompetition.sport}</span>
+                    <strong>{sportCompetition.shortName}</strong>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
+      ) : null}
 
       <div
         ref={dockRef}

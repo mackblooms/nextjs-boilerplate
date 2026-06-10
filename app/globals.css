@@ -143,6 +143,10 @@ body.has-app-shell {
   padding-bottom: calc(102px + env(safe-area-inset-bottom));
 }
 
+body:not(.is-native-app-shell).has-app-shell.has-web-home-sport-rail {
+  padding-top: calc(142px + env(safe-area-inset-top));
+}
+
 body.is-native-app-shell.has-app-shell {
   padding-top: calc(128px + env(safe-area-inset-top));
 }
@@ -1293,6 +1297,10 @@ body.is-native-app-shell .competition-switcher {
     padding-bottom: calc(94px + env(safe-area-inset-bottom));
   }
 
+  body:not(.is-native-app-shell).has-app-shell.has-web-home-sport-rail {
+    padding-top: calc(132px + env(safe-area-inset-top));
+  }
+
   body.is-native-app-shell.has-app-shell {
     padding-top: calc(122px + env(safe-area-inset-top));
   }
@@ -2294,6 +2302,92 @@ body:not(.is-native-app-shell) .match-search-input {
 
 .app-glass-menu-button {
   justify-self: end;
+}
+
+.web-sport-rail-field {
+  width: min(560px, 100%);
+  min-height: 42px;
+  margin: 0 auto;
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  border-radius: 999px;
+  background: var(--surface-glass);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 4px 10px 0;
+  pointer-events: auto;
+}
+
+.web-sport-rail {
+  min-width: min(420px, 100%);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+}
+
+.web-sport-rail-link {
+  position: relative;
+  min-width: 0;
+  min-height: 36px;
+  display: inline-grid;
+  align-content: center;
+  gap: 0;
+  padding: 2px 14px 8px;
+  color: color-mix(in srgb, var(--foreground) 48%, transparent);
+  text-align: center;
+  text-decoration: none;
+  transition:
+    color 140ms ease,
+    transform 140ms ease,
+    opacity 140ms ease;
+}
+
+.web-sport-rail-link::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+
+.web-sport-rail-link span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.web-sport-rail-link strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.web-sport-rail-link[data-active="true"] {
+  color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.web-sport-rail-link[data-active="true"]::after {
+  background: #00985f;
+}
+
+.web-sport-rail-link:hover,
+.web-sport-rail-link:focus-visible {
+  color: var(--foreground);
 }
 
 .app-sport-rail {
