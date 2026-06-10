@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -197,6 +198,7 @@ export default function AppTopNav() {
   const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const [isCompact, setIsCompact] = useState(false);
+  const [isNativeApp, setIsNativeApp] = useState(false);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -232,11 +234,16 @@ export default function AppTopNav() {
         : storedCompetitionSlug;
 
   useEffect(() => {
+    setIsNativeApp(Capacitor.isNativePlatform());
+  }, []);
+
+  useEffect(() => {
     setStoredCompetitionSlug(competitionSlug);
     setStoredActiveCompetition(competitionSlug);
   }, [competitionSlug]);
 
   useEffect(() => {
+    if (!isNativeApp) return;
     if (pathname !== "/" && pathname !== "/world-cup") return;
 
     const activeSport = sportRailRef.current?.querySelector<HTMLElement>(
@@ -247,7 +254,7 @@ export default function AppTopNav() {
       inline: "center",
       block: "nearest",
     });
-  }, [competitionSlug, pathname]);
+  }, [competitionSlug, isNativeApp, pathname]);
 
   useEffect(() => {
     let canceled = false;
@@ -659,7 +666,7 @@ export default function AppTopNav() {
   const settledActiveIndex = Math.max(0, dockItems.findIndex((item) => item.isActive));
   const emphasizedIndex = scrubActive && scrubIndex !== null ? scrubIndex : settledActiveIndex;
   const isChromeHidden = isAutoHidden && !drawerOpen && !helpOpen && !dockExpanded && !scrubActive;
-  const isTopBarHidden = !isHomeActive && isChromeHidden;
+  const isTopBarHidden = isNativeApp ? !isHomeActive && isChromeHidden : isChromeHidden;
 
   function handleDockPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 && event.pointerType === "mouse") return;
@@ -710,12 +717,12 @@ export default function AppTopNav() {
   }
 
   const topBarButtonStyle: CSSProperties = {
-    width: isCompact ? 38 : 40,
-    height: isCompact ? 38 : 40,
+    width: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
+    height: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
     borderRadius: 9999,
     border: "1px solid var(--border-color)",
-    background: "color-mix(in srgb, var(--surface) 76%, transparent)",
-    boxShadow: "var(--top-nav-pill-shadow, none)",
+    background: isNativeApp ? "color-mix(in srgb, var(--surface) 76%, transparent)" : "var(--surface)",
+    boxShadow: isNativeApp ? "var(--top-nav-pill-shadow, none)" : "var(--top-nav-pill-shadow, var(--shadow-sm))",
     display: "grid",
     placeItems: "center",
     padding: 0,
@@ -730,10 +737,10 @@ export default function AppTopNav() {
   const drawerActionStyle: CSSProperties = {
     width: "100%",
     border: "1px solid var(--border-color)",
-    borderRadius: 8,
-    background: "color-mix(in srgb, var(--surface) 88%, transparent)",
+    borderRadius: isNativeApp ? 8 : 12,
+    background: isNativeApp ? "color-mix(in srgb, var(--surface) 88%, transparent)" : "var(--surface)",
     color: "var(--foreground)",
-    padding: "10px 11px",
+    padding: isNativeApp ? "10px 11px" : "11px 12px",
     textAlign: "left",
     textDecoration: "none",
     fontWeight: 800,
@@ -745,15 +752,18 @@ export default function AppTopNav() {
     <>
       <header
         aria-label="App top navigation"
-        className="app-glass-header"
-        data-home-active={isHomeActive}
+        className={isNativeApp ? "app-glass-header" : undefined}
+        data-home-active={isNativeApp && isHomeActive}
         style={{
           position: "fixed",
-          top: 0,
+          top: isNativeApp ? 0 : "max(10px, env(safe-area-inset-top))",
           left: 0,
           right: 0,
           zIndex: 1200,
-          padding: `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 8 : 10}px) ${isCompact ? 10 : 18}px ${isCompact ? 7 : 9}px`,
+          padding: isNativeApp
+            ? `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 8 : 10}px) ${isCompact ? 10 : 18}px ${isCompact ? 7 : 9}px`
+            : undefined,
+          paddingInline: isNativeApp ? undefined : isCompact ? 10 : 18,
           pointerEvents: "none",
           transform: isTopBarHidden ? "translateY(calc(-100% - 14px))" : "translateY(0)",
           opacity: isTopBarHidden ? 0.12 : 1,
@@ -762,37 +772,63 @@ export default function AppTopNav() {
         }}
       >
         <div
-          className="app-glass-header-field"
+          className={isNativeApp ? "app-glass-header-field" : "page-surface"}
           style={{
-            maxWidth: 760,
+            maxWidth: isNativeApp ? 760 : 980,
             margin: "0 auto",
-            minHeight: isCompact ? 48 : 52,
-            borderRadius: 8,
-            padding: isCompact ? "5px 7px 5px 9px" : "6px 8px 6px 10px",
+            minHeight: isNativeApp ? (isCompact ? 48 : 52) : (isCompact ? 58 : 64),
+            borderRadius: isNativeApp ? 8 : 18,
+            padding: isNativeApp
+              ? isCompact ? "5px 7px 5px 9px" : "6px 8px 6px 10px"
+              : isCompact ? "8px 10px" : "9px 12px",
             display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) auto",
+            gridTemplateColumns: isNativeApp ? "minmax(0, 1fr) auto" : "auto 1fr auto",
             alignItems: "center",
             gap: 8,
             pointerEvents: "auto",
+            backdropFilter: isNativeApp ? undefined : "blur(12px) saturate(130%)",
           }}
         >
+          {!isNativeApp ? (
+            <button
+              className="app-top-nav-pill"
+              type="button"
+              aria-label="Open app menu"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen((open) => !open)}
+              style={topBarButtonStyle}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+                <path
+                  d="M5 7.2h14M5 12h14M5 16.8h14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          ) : null}
+
           <Link
             href={competition.href}
             aria-label="Go to bracketball home"
-            className="app-glass-header-logo"
+            className={isNativeApp ? "app-glass-header-logo" : undefined}
             style={{
+              justifySelf: isNativeApp ? undefined : "center",
               display: "inline-flex",
               alignItems: "center",
-              justifyContent: "flex-start",
-              minWidth: 0,
-              minHeight: isCompact ? 38 : 40,
+              justifyContent: isNativeApp ? "flex-start" : "center",
+              minWidth: isNativeApp ? 0 : 120,
+              minHeight: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
+              paddingInline: isNativeApp ? undefined : 10,
             }}
           >
             <img
               src="/bracketball-logo-mark.png"
               alt="bracketball logo"
               style={{
-                width: isCompact ? 118 : 132,
+                width: isNativeApp ? (isCompact ? 118 : 132) : (isCompact ? 102 : 114),
                 height: "auto",
                 objectFit: "contain",
                 filter: "var(--logo-filter)",
@@ -800,26 +836,43 @@ export default function AppTopNav() {
             />
           </Link>
 
-          <button
-            className="app-top-nav-pill app-glass-menu-button"
-            type="button"
-            aria-label="Open app menu"
-            aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen((open) => !open)}
-            style={topBarButtonStyle}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
-              <path
-                d="M5 7.2h14M5 12h14M5 16.8h14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
+          {isNativeApp ? (
+            <button
+              className="app-top-nav-pill app-glass-menu-button"
+              type="button"
+              aria-label="Open app menu"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen((open) => !open)}
+              style={topBarButtonStyle}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+                <path
+                  d="M5 7.2h14M5 12h14M5 16.8h14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          ) : (
+            <Link
+              className="app-top-nav-pill"
+              href="/profile"
+              aria-label="Open profile"
+              style={topBarButtonStyle}
+            >
+              <img
+                src={resolvedAvatarUrl}
+                alt="Profile"
+                width={isCompact ? 40 : 44}
+                height={isCompact ? 40 : 44}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
               />
-            </svg>
-          </button>
+            </Link>
+          )}
 
-          {isHomeActive ? (
+          {isNativeApp && isHomeActive ? (
             <nav
               ref={sportRailRef}
               className="app-sport-rail"
@@ -956,11 +1009,14 @@ export default function AppTopNav() {
             position: "fixed",
             inset: 0,
             zIndex: 1300,
-            background: "rgba(4, 10, 22, 0.08)",
+            background: isNativeApp ? "rgba(4, 10, 22, 0.08)" : "rgba(4, 10, 22, 0.44)",
+            backdropFilter: isNativeApp ? undefined : "blur(2px)",
             display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "flex-start",
-            padding: `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 62 : 70}px) ${isCompact ? 10 : 18}px max(16px, env(safe-area-inset-bottom))`,
+            justifyContent: isNativeApp ? "flex-end" : "flex-start",
+            alignItems: isNativeApp ? "flex-start" : undefined,
+            padding: isNativeApp
+              ? `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 62 : 70}px) ${isCompact ? 10 : 18}px max(16px, env(safe-area-inset-bottom))`
+              : undefined,
           }}
         >
           <aside
@@ -969,14 +1025,18 @@ export default function AppTopNav() {
             aria-modal="true"
             aria-label="App menu"
             onClick={(event) => event.stopPropagation()}
-            className="app-menu-popover"
+            className={isNativeApp ? "app-menu-popover" : "page-surface"}
             style={{
               width: "min(360px, calc(100vw - 20px))",
-              maxHeight: `calc(100dvh - env(safe-area-inset-top, 0px) - ${isCompact ? 86 : 96}px)`,
-              borderRadius: 12,
-              padding: "12px",
+              minHeight: isNativeApp ? undefined : "100%",
+              maxHeight: isNativeApp ? `calc(100dvh - env(safe-area-inset-top, 0px) - ${isCompact ? 86 : 96}px)` : undefined,
+              borderRadius: isNativeApp ? 12 : 0,
+              borderTop: isNativeApp ? undefined : "none",
+              borderBottom: isNativeApp ? undefined : "none",
+              borderLeft: isNativeApp ? undefined : "none",
+              padding: isNativeApp ? "12px" : "16px 14px max(24px, env(safe-area-inset-bottom))",
               display: "grid",
-              gap: 12,
+              gap: isNativeApp ? 12 : 14,
               overflowY: "auto",
             }}
           >
@@ -1067,20 +1127,22 @@ export default function AppTopNav() {
               <Link
                 href="/profile"
                 onClick={() => setDrawerOpen(false)}
-                style={{
+                style={isNativeApp ? {
                   ...drawerActionStyle,
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                }}
+                } : drawerActionStyle}
               >
-                <img
-                  src={resolvedAvatarUrl}
-                  alt=""
-                  width={26}
-                  height={26}
-                  style={{ width: 26, height: 26, objectFit: "cover", borderRadius: "50%" }}
-                />
+                {isNativeApp ? (
+                  <img
+                    src={resolvedAvatarUrl}
+                    alt=""
+                    width={26}
+                    height={26}
+                    style={{ width: 26, height: 26, objectFit: "cover", borderRadius: "50%" }}
+                  />
+                ) : null}
                 profile
               </Link>
               <button type="button" onClick={signOut} style={drawerActionStyle}>

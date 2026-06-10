@@ -16,6 +16,13 @@ export default function AppDeepLinkHandler() {
   const router = useRouter();
 
   useEffect(() => {
+    document.body.classList.toggle("is-native-app-shell", Capacitor.isNativePlatform());
+    return () => {
+      document.body.classList.remove("is-native-app-shell");
+    };
+  }, []);
+
+  useEffect(() => {
     let removeListener: (() => void) | null = null;
     let lastHandledPath: string | null = null;
 
