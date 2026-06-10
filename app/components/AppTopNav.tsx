@@ -217,7 +217,7 @@ export default function AppTopNav() {
   const activePointerTypeRef = useRef<string | null>(null);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement | null>(null);
-  const sportRailRef = useRef<HTMLDivElement | null>(null);
+  const sportRailRef = useRef<HTMLElement | null>(null);
   const suppressClickRef = useRef(false);
 
   const poolIdFromPath = useMemo(() => {
@@ -549,10 +549,15 @@ export default function AppTopNav() {
   }, [userId]);
 
   useEffect(() => {
-    const shouldShowWebSportRail = Boolean(userId) && !isNativeApp && isHomeRoute;
-    document.body.classList.toggle("has-web-home-sport-rail", shouldShowWebSportRail);
+    const shouldShowHomeSportRail = Boolean(userId) && isHomeRoute;
+    document.body.classList.toggle("has-home-sport-rail", shouldShowHomeSportRail);
+    document.body.classList.toggle(
+      "has-web-home-sport-rail",
+      shouldShowHomeSportRail && !isNativeApp
+    );
 
     return () => {
+      document.body.classList.remove("has-home-sport-rail");
       document.body.classList.remove("has-web-home-sport-rail");
     };
   }, [isHomeRoute, isNativeApp, userId]);
@@ -729,8 +734,8 @@ export default function AppTopNav() {
   }
 
   const topBarButtonStyle: CSSProperties = {
-    width: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
-    height: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
+    width: isCompact ? 40 : 44,
+    height: isCompact ? 40 : 44,
     borderRadius: 9999,
     border: "1px solid var(--border-color)",
     background: isNativeApp ? "color-mix(in srgb, var(--surface) 76%, transparent)" : "var(--surface)",
@@ -788,50 +793,48 @@ export default function AppTopNav() {
           style={{
             maxWidth: isNativeApp ? 760 : 980,
             margin: "0 auto",
-            minHeight: isNativeApp ? (isCompact ? 48 : 52) : (isCompact ? 58 : 64),
-            borderRadius: isNativeApp ? 8 : 18,
+            minHeight: isCompact ? 58 : 64,
+            borderRadius: 18,
             padding: isNativeApp
-              ? isCompact ? "5px 7px 5px 9px" : "6px 8px 6px 10px"
+              ? isCompact ? "8px 10px" : "9px 12px"
               : isCompact ? "8px 10px" : "9px 12px",
             display: "grid",
-            gridTemplateColumns: isNativeApp ? "minmax(0, 1fr) auto" : "auto 1fr auto",
+            gridTemplateColumns: "auto 1fr auto",
             alignItems: "center",
             gap: 8,
             pointerEvents: "auto",
             backdropFilter: isNativeApp ? undefined : "blur(12px) saturate(130%)",
           }}
         >
-          {!isNativeApp ? (
-            <button
-              className="app-top-nav-pill"
-              type="button"
-              aria-label="Open app menu"
-              aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen((open) => !open)}
-              style={topBarButtonStyle}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
-                <path
-                  d="M5 7.2h14M5 12h14M5 16.8h14"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          ) : null}
+          <button
+            className={isNativeApp ? "app-top-nav-pill app-glass-menu-button" : "app-top-nav-pill"}
+            type="button"
+            aria-label="Open app menu"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen((open) => !open)}
+            style={topBarButtonStyle}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+              <path
+                d="M5 7.2h14M5 12h14M5 16.8h14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
 
           <Link
             href={competition.href}
             aria-label="Go to bracketball home"
             className={isNativeApp ? "app-glass-header-logo" : undefined}
             style={{
-              justifySelf: isNativeApp ? undefined : "center",
+              justifySelf: "center",
               display: "inline-flex",
               alignItems: "center",
-              justifyContent: isNativeApp ? "flex-start" : "center",
-              minWidth: isNativeApp ? 0 : 120,
+              justifyContent: "center",
+              minWidth: isNativeApp ? 96 : 120,
               minHeight: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
               paddingInline: isNativeApp ? undefined : 10,
             }}
@@ -840,7 +843,7 @@ export default function AppTopNav() {
               src="/bracketball-logo-mark.png"
               alt="bracketball logo"
               style={{
-                width: isNativeApp ? (isCompact ? 118 : 132) : (isCompact ? 102 : 114),
+                width: isCompact ? 102 : 114,
                 height: "auto",
                 objectFit: "contain",
                 filter: "var(--logo-filter)",
@@ -848,86 +851,31 @@ export default function AppTopNav() {
             />
           </Link>
 
-          {isNativeApp ? (
-            <button
-              className="app-top-nav-pill app-glass-menu-button"
-              type="button"
-              aria-label="Open app menu"
-              aria-expanded={drawerOpen}
-              onClick={() => setDrawerOpen((open) => !open)}
-              style={topBarButtonStyle}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
-                <path
-                  d="M5 7.2h14M5 12h14M5 16.8h14"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          ) : (
-            <Link
-              className="app-top-nav-pill"
-              href="/profile"
-              aria-label="Open profile"
-              style={topBarButtonStyle}
-            >
-              <img
-                src={resolvedAvatarUrl}
-                alt="Profile"
-                width={isCompact ? 40 : 44}
-                height={isCompact ? 40 : 44}
-                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-              />
-            </Link>
-          )}
-
-          {isNativeApp && isHomeActive ? (
-            <nav
-              ref={sportRailRef}
-              className="app-sport-rail"
-              aria-label="Sports"
-              style={{
-                gridColumn: "1 / -1",
-              }}
-            >
-              {competitions.map((sportCompetition) => {
-                const isSelected = sportCompetition.slug === competitionSlug;
-                const sportHref =
-                  sportCompetition.slug === "march-madness"
-                    ? "/?competition=march-madness"
-                    : sportCompetition.href;
-                return (
-                  <Link
-                    key={sportCompetition.slug}
-                    href={sportHref}
-                    data-sport-slug={sportCompetition.slug}
-                    data-active={isSelected}
-                    aria-current={isSelected ? "page" : undefined}
-                    className="app-sport-rail-link"
-                    onClick={() => {
-                      setStoredCompetitionSlug(sportCompetition.slug);
-                      setStoredActiveCompetition(sportCompetition.slug);
-                    }}
-                  >
-                    <span>{sportCompetition.sport}</span>
-                    <strong>{sportCompetition.shortName}</strong>
-                  </Link>
-                );
-              })}
-            </nav>
-          ) : null}
+          <Link
+            className="app-top-nav-pill"
+            href="/profile"
+            aria-label="Open profile"
+            style={topBarButtonStyle}
+          >
+            <img
+              src={resolvedAvatarUrl}
+              alt="Profile"
+              width={isCompact ? 40 : 44}
+              height={isCompact ? 40 : 44}
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+            />
+          </Link>
         </div>
       </header>
 
-      {!isNativeApp && isHomeActive ? (
+      {isHomeActive ? (
         <div
-          className="web-sport-rail-wrap"
+          className={isNativeApp ? "app-sport-rail-wrap" : "web-sport-rail-wrap"}
           style={{
             position: "fixed",
-            top: `calc(max(10px, env(safe-area-inset-top)) + ${isCompact ? 88 : 96}px)`,
+            top: isNativeApp
+              ? `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 88 : 96}px)`
+              : `calc(max(10px, env(safe-area-inset-top)) + ${isCompact ? 88 : 96}px)`,
             left: 0,
             right: 0,
             zIndex: 1190,
@@ -939,8 +887,12 @@ export default function AppTopNav() {
               "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease",
           }}
         >
-          <nav className="web-sport-rail-field" aria-label="Sports">
-            <div className="web-sport-rail">
+          <nav
+            ref={isNativeApp ? sportRailRef : undefined}
+            className={isNativeApp ? "app-sport-rail-field" : "web-sport-rail-field"}
+            aria-label="Sports"
+          >
+            <div className={isNativeApp ? "app-sport-rail" : "web-sport-rail"}>
               {competitions.map((sportCompetition) => {
                 const isSelected = sportCompetition.slug === competitionSlug;
                 const sportHref =
@@ -952,9 +904,10 @@ export default function AppTopNav() {
                   <Link
                     key={sportCompetition.slug}
                     href={sportHref}
+                    data-sport-slug={sportCompetition.slug}
                     data-active={isSelected}
                     aria-current={isSelected ? "page" : undefined}
-                    className="web-sport-rail-link"
+                    className={isNativeApp ? "app-sport-rail-link" : "web-sport-rail-link"}
                     onClick={() => {
                       setStoredCompetitionSlug(sportCompetition.slug);
                       setStoredActiveCompetition(sportCompetition.slug);
