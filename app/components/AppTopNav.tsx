@@ -644,6 +644,7 @@ export default function AppTopNav() {
   const settledActiveIndex = Math.max(0, dockItems.findIndex((item) => item.isActive));
   const emphasizedIndex = scrubActive && scrubIndex !== null ? scrubIndex : settledActiveIndex;
   const isChromeHidden = isAutoHidden && !drawerOpen && !helpOpen && !dockExpanded && !scrubActive;
+  const isTopBarHidden = !isHomeActive && isChromeHidden;
 
   function handleDockPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 && event.pointerType === "mouse") return;
@@ -694,12 +695,12 @@ export default function AppTopNav() {
   }
 
   const topBarButtonStyle: CSSProperties = {
-    width: isCompact ? 40 : 44,
-    height: isCompact ? 40 : 44,
+    width: isCompact ? 38 : 40,
+    height: isCompact ? 38 : 40,
     borderRadius: 9999,
     border: "1px solid var(--border-color)",
-    background: "var(--surface)",
-    boxShadow: "var(--top-nav-pill-shadow, var(--shadow-sm))",
+    background: "color-mix(in srgb, var(--surface) 76%, transparent)",
+    boxShadow: "var(--top-nav-pill-shadow, none)",
     display: "grid",
     placeItems: "center",
     padding: 0,
@@ -714,10 +715,10 @@ export default function AppTopNav() {
   const drawerActionStyle: CSSProperties = {
     width: "100%",
     border: "1px solid var(--border-color)",
-    borderRadius: 12,
-    background: "var(--surface)",
+    borderRadius: 8,
+    background: "color-mix(in srgb, var(--surface) 88%, transparent)",
     color: "var(--foreground)",
-    padding: "11px 12px",
+    padding: "10px 11px",
     textAlign: "left",
     textDecoration: "none",
     fontWeight: 800,
@@ -729,38 +730,63 @@ export default function AppTopNav() {
     <>
       <header
         aria-label="App top navigation"
+        className="app-glass-header"
+        data-home-active={isHomeActive}
         style={{
           position: "fixed",
-          top: "max(10px, env(safe-area-inset-top))",
+          top: 0,
           left: 0,
           right: 0,
           zIndex: 1200,
-          paddingInline: isCompact ? 10 : 18,
+          padding: `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 8 : 10}px) ${isCompact ? 10 : 18}px ${isCompact ? 7 : 9}px`,
           pointerEvents: "none",
-          transform: isChromeHidden ? "translateY(calc(-100% - 14px))" : "translateY(0)",
-          opacity: isChromeHidden ? 0.12 : 1,
+          transform: isTopBarHidden ? "translateY(calc(-100% - 14px))" : "translateY(0)",
+          opacity: isTopBarHidden ? 0.12 : 1,
           transition:
             "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease",
         }}
       >
         <div
-          className="page-surface"
+          className="app-glass-header-field"
           style={{
-            maxWidth: 980,
+            maxWidth: 760,
             margin: "0 auto",
-            minHeight: isCompact ? 58 : 64,
-            borderRadius: 18,
-            padding: isCompact ? "8px 10px" : "9px 12px",
+            minHeight: isCompact ? 48 : 52,
+            borderRadius: 8,
+            padding: isCompact ? "5px 7px 5px 9px" : "6px 8px 6px 10px",
             display: "grid",
-            gridTemplateColumns: "auto 1fr auto",
+            gridTemplateColumns: "minmax(0, 1fr) auto",
             alignItems: "center",
             gap: 8,
             pointerEvents: "auto",
-            backdropFilter: "blur(12px) saturate(130%)",
           }}
         >
+          <Link
+            href={competition.href}
+            aria-label="Go to bracketball home"
+            className="app-glass-header-logo"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              minWidth: 0,
+              minHeight: isCompact ? 38 : 40,
+            }}
+          >
+            <img
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              style={{
+                width: isCompact ? 118 : 132,
+                height: "auto",
+                objectFit: "contain",
+                filter: "var(--logo-filter)",
+              }}
+            />
+          </Link>
+
           <button
-            className="app-top-nav-pill"
+            className="app-top-nav-pill app-glass-menu-button"
             type="button"
             aria-label="Open app menu"
             aria-expanded={drawerOpen}
@@ -777,46 +803,6 @@ export default function AppTopNav() {
               />
             </svg>
           </button>
-
-          <Link
-            href={competition.href}
-            aria-label="Go to bracketball home"
-            style={{
-              justifySelf: "center",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: 120,
-              minHeight: isCompact ? 40 : 44,
-              paddingInline: 10,
-            }}
-          >
-            <img
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              style={{
-                width: isCompact ? 102 : 114,
-                height: "auto",
-                objectFit: "contain",
-                filter: "var(--logo-filter)",
-              }}
-            />
-          </Link>
-
-          <Link
-            className="app-top-nav-pill"
-            href="/profile"
-            aria-label="Open profile"
-            style={topBarButtonStyle}
-          >
-            <img
-              src={resolvedAvatarUrl}
-              alt="Profile"
-              width={isCompact ? 40 : 44}
-              height={isCompact ? 40 : 44}
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-            />
-          </Link>
         </div>
       </header>
 
@@ -927,10 +913,11 @@ export default function AppTopNav() {
             position: "fixed",
             inset: 0,
             zIndex: 1300,
-            background: "rgba(4, 10, 22, 0.44)",
-            backdropFilter: "blur(2px)",
+            background: "rgba(4, 10, 22, 0.08)",
             display: "flex",
-            justifyContent: "flex-start",
+            justifyContent: "flex-end",
+            alignItems: "flex-start",
+            padding: `calc(env(safe-area-inset-top, 0px) + ${isCompact ? 62 : 70}px) ${isCompact ? 10 : 18}px max(16px, env(safe-area-inset-bottom))`,
           }}
         >
           <aside
@@ -939,17 +926,14 @@ export default function AppTopNav() {
             aria-modal="true"
             aria-label="App menu"
             onClick={(event) => event.stopPropagation()}
-            className="page-surface"
+            className="app-menu-popover"
             style={{
-              width: "min(360px, calc(100vw - 26px))",
-              minHeight: "100%",
-              borderRadius: 0,
-              borderTop: "none",
-              borderBottom: "none",
-              borderLeft: "none",
-              padding: "16px 14px max(24px, env(safe-area-inset-bottom))",
+              width: "min(360px, calc(100vw - 20px))",
+              maxHeight: `calc(100dvh - env(safe-area-inset-top, 0px) - ${isCompact ? 86 : 96}px)`,
+              borderRadius: 12,
+              padding: "12px",
               display: "grid",
-              gap: 14,
+              gap: 12,
               overflowY: "auto",
             }}
           >
@@ -1037,7 +1021,23 @@ export default function AppTopNav() {
               <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
                 account
               </h2>
-              <Link href="/profile" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
+              <Link
+                href="/profile"
+                onClick={() => setDrawerOpen(false)}
+                style={{
+                  ...drawerActionStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <img
+                  src={resolvedAvatarUrl}
+                  alt=""
+                  width={26}
+                  height={26}
+                  style={{ width: 26, height: 26, objectFit: "cover", borderRadius: "50%" }}
+                />
                 profile
               </Link>
               <button type="button" onClick={signOut} style={drawerActionStyle}>
