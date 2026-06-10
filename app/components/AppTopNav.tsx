@@ -883,14 +883,22 @@ export default function AppTopNav() {
             >
               {competitions.map((sportCompetition) => {
                 const isSelected = sportCompetition.slug === competitionSlug;
+                const sportHref =
+                  sportCompetition.slug === "march-madness"
+                    ? "/?competition=march-madness"
+                    : sportCompetition.href;
                 return (
                   <Link
                     key={sportCompetition.slug}
-                    href={sportCompetition.href}
+                    href={sportHref}
                     data-sport-slug={sportCompetition.slug}
                     data-active={isSelected}
                     aria-current={isSelected ? "page" : undefined}
                     className="app-sport-rail-link"
+                    onClick={() => {
+                      setStoredCompetitionSlug(sportCompetition.slug);
+                      setStoredActiveCompetition(sportCompetition.slug);
+                    }}
                   >
                     <span>{sportCompetition.sport}</span>
                     <strong>{sportCompetition.shortName}</strong>

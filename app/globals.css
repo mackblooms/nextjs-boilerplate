@@ -739,6 +739,10 @@ textarea::placeholder {
   padding: 9px 10px;
 }
 
+body.is-native-app-shell .competition-switcher {
+  display: none;
+}
+
 .world-cup-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(190px, 0.42fr);
