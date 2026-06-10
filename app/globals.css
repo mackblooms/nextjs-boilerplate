@@ -143,6 +143,10 @@ body.has-app-shell {
   padding-bottom: calc(102px + env(safe-area-inset-bottom));
 }
 
+body.is-native-app-shell.has-app-shell {
+  padding-top: calc(128px + env(safe-area-inset-top));
+}
+
 body.app-launch-active {
   overflow: hidden;
 }
@@ -1250,6 +1254,10 @@ body.is-native-app-shell .competition-switcher {
   body.has-app-shell {
     padding-top: calc(84px + env(safe-area-inset-top));
     padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
+  body.is-native-app-shell.has-app-shell {
+    padding-top: calc(122px + env(safe-area-inset-top));
   }
 
   .site-main {
