@@ -927,7 +927,7 @@ export default function AppTopNav() {
           className="web-sport-rail-wrap"
           style={{
             position: "fixed",
-            top: `calc(max(10px, env(safe-area-inset-top)) + ${isCompact ? 66 : 72}px)`,
+            top: `calc(max(10px, env(safe-area-inset-top)) + ${isCompact ? 88 : 96}px)`,
             left: 0,
             right: 0,
             zIndex: 1190,

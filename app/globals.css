@@ -144,7 +144,7 @@ body.has-app-shell {
 }
 
 body:not(.is-native-app-shell).has-app-shell.has-web-home-sport-rail {
-  padding-top: calc(142px + env(safe-area-inset-top));
+  padding-top: calc(166px + env(safe-area-inset-top));
 }
 
 body.is-native-app-shell.has-app-shell {
@@ -1298,7 +1298,7 @@ body.is-native-app-shell .competition-switcher {
   }
 
   body:not(.is-native-app-shell).has-app-shell.has-web-home-sport-rail {
-    padding-top: calc(132px + env(safe-area-inset-top));
+    padding-top: calc(154px + env(safe-area-inset-top));
   }
 
   body.is-native-app-shell.has-app-shell {
