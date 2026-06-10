@@ -930,18 +930,18 @@ export default function AppTopNav() {
           zIndex: 1250,
           display: "grid",
           gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gap: isDockCollapsed ? 2 : isCompact ? 4 : 6,
-          maxWidth: isDockCollapsed ? 360 : 720,
+          gap: isDockCollapsed ? 1 : isCompact ? 4 : 6,
+          maxWidth: isDockCollapsed ? 270 : 720,
           marginInline: "auto",
           border: "1px solid var(--border-color)",
           borderRadius: 999,
-          padding: isDockCollapsed ? "5px 7px" : isCompact ? "7px 8px" : "8px 9px",
+          padding: isDockCollapsed ? "3px 5px" : isCompact ? "7px 8px" : "8px 9px",
           background: "var(--surface-glass)",
           boxShadow: dockExpanded ? "var(--shadow-lg)" : "var(--shadow-md)",
           backdropFilter: "blur(14px) saturate(145%)",
           transform: isDockHidden
             ? "translateY(108%) scale(1)"
-            : `translateY(0) scale(${dockExpanded ? 1.04 : isDockCollapsed ? 0.94 : 1})`,
+            : `translateY(0) scale(${dockExpanded ? 1.04 : isDockCollapsed ? 0.9 : 1})`,
           opacity: isDockHidden ? 0.08 : isDockCollapsed ? 0.86 : 1,
           transition:
             "transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, box-shadow 180ms ease, max-width 220ms ease, padding 180ms ease",
@@ -986,8 +986,8 @@ export default function AppTopNav() {
               style={{
                 border: "none",
                 borderRadius: 999,
-                padding: isDockCollapsed ? "8px 4px" : isCompact ? "8px 4px 7px" : "9px 6px 8px",
-                minHeight: isDockCollapsed ? 38 : isCompact ? 58 : 62,
+                padding: isDockCollapsed ? "5px 3px" : isCompact ? "8px 4px 7px" : "9px 6px 8px",
+                minHeight: isDockCollapsed ? 29 : isCompact ? 58 : 62,
                 background: isCurrent ? "var(--surface)" : "transparent",
                 boxShadow: `var(--dock-pill-hover-shadow, ${isCurrent ? "var(--shadow-sm)" : "none"})`,
                 color: isCurrent ? "var(--focus-ring)" : "var(--foreground)",

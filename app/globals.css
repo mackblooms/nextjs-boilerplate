@@ -2429,8 +2429,8 @@ body:not(.is-native-app-shell) .match-search-input {
 }
 
 .app-dock-bar[data-collapsed="true"] .app-shell-dock-icon {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
 @media (hover: hover) and (pointer: fine) {
