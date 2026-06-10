@@ -747,6 +747,47 @@ body.is-native-app-shell .competition-switcher {
   display: none;
 }
 
+.native-only-icon-action {
+  display: none;
+}
+
+body.is-native-app-shell .native-only-icon-action {
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+body.is-native-app-shell .native-only-icon-action--primary {
+  border-color: #00985f;
+  background: #00985f;
+  color: #ffffff;
+}
+
+body.is-native-app-shell .native-only-icon-action:disabled,
+body.is-native-app-shell .native-only-icon-action[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+body.is-native-app-shell .native-hidden {
+  display: none !important;
+}
+
+body.is-native-app-shell .native-only-draft-actions {
+  display: flex !important;
+}
+
 .world-cup-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(190px, 0.42fr);

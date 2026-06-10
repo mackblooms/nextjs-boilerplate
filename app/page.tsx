@@ -2033,11 +2033,34 @@ export function HomeContent({
           }}
           aria-label="My drafts"
         >
-          <div style={{ display: "grid", gap: 4 }}>
-            <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
-            <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-              {activeCompetition.shortName} - {homeDraftCountLabel}
-            </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "start",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
+              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
+              <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+                {activeCompetition.shortName} - {homeDraftCountLabel}
+              </p>
+            </div>
+            {isAuthenticated === true ? (
+              <button
+                type="button"
+                onClick={() => void createHomeDraft()}
+                disabled={creatingHomeDraft}
+                className="native-only-icon-action native-only-icon-action--primary"
+                aria-label={creatingHomeDraft ? "Creating draft" : "Create new draft"}
+                title={creatingHomeDraft ? "Creating draft" : "Create new draft"}
+              >
+                <span aria-hidden="true" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>
+                  +
+                </span>
+              </button>
+            ) : null}
           </div>
 
           {isAuthenticated !== true ? (
@@ -2251,7 +2274,7 @@ export function HomeContent({
               type="button"
               onClick={() => void createHomeDraft()}
               disabled={creatingHomeDraft}
-              className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full"
+              className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full native-hidden"
               style={{
                 fontWeight: 900,
               }}

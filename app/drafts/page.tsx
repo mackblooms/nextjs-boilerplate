@@ -316,10 +316,59 @@ function DraftsPageContent() {
           <UiLinkButton
             href={competitionPath("/pools", competitionSlug)}
             variant="secondary"
+            className="native-hidden"
             style={{ height: "fit-content" }}
           >
             Open Pools
           </UiLinkButton>
+        </div>
+
+        <div
+          className="native-only-draft-actions"
+          style={{
+            display: "none",
+            gap: 8,
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <Link
+            href={competitionPath("/pools", competitionSlug)}
+            className="native-only-icon-action"
+            aria-label="Open pools"
+            title="Open pools"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 19, height: 19 }}>
+              <circle cx="9" cy="9" r="2.7" fill="none" stroke="currentColor" strokeWidth="1.8" />
+              <circle cx="16.2" cy="10" r="2.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+              <path
+                d="M4.8 18.4c.5-2.7 2.7-4.4 5.4-4.4s4.9 1.7 5.4 4.4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              <path
+                d="M14.4 15.2c2.1.2 3.8 1.4 4.5 3.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </Link>
+          <button
+            type="button"
+            onClick={() => void createDraft()}
+            disabled={creating || draftsLocked}
+            className="native-only-icon-action native-only-icon-action--primary"
+            aria-label={creating ? "Creating draft" : draftsLocked ? "Drafts locked" : "Create draft"}
+            title={creating ? "Creating draft" : draftsLocked ? "Drafts locked" : "Create draft"}
+          >
+            <span aria-hidden="true" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>
+              +
+            </span>
+          </button>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -338,6 +387,7 @@ function DraftsPageContent() {
             onClick={() => void createDraft()}
             disabled={creating || draftsLocked}
             variant={draftsLocked ? "ghost" : "primary"}
+            className="native-hidden"
           >
             {creating ? "Creating..." : draftsLocked ? "Drafts Locked" : "Create Draft"}
           </UiButton>
