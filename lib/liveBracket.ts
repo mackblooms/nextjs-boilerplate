@@ -11,9 +11,12 @@ export type LiveOverlayGame = {
   round: string;
   region: string | null;
   slot: number;
+  status?: string | null;
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
 };
 
 export type LiveOverlayScoreGame = {
@@ -192,6 +195,9 @@ export function applyLiveScoreOverlay<TGame extends LiveOverlayGame, TTeam exten
     const live = liveByGameId.get(game.id);
     if (!live || live.state !== "FINAL") continue;
     if (typeof live.team1Score !== "number" || typeof live.team2Score !== "number") continue;
+    game.status = game.status ?? live.detail ?? "Final";
+    game.team1_score = live.team1Score;
+    game.team2_score = live.team2Score;
     if (live.team1Score === live.team2Score) continue;
     if (!game.team1_id || !game.team2_id) continue;
     game.winner_team_id = live.team1Score > live.team2Score ? game.team1_id : game.team2_id;

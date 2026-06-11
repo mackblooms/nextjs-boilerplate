@@ -43,6 +43,8 @@ type Game = {
   team2_id: string | null;
   winner_team_id: string | null;
   sportsdata_game_id: number | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
 };
 
 type PlayerOption = {
@@ -149,6 +151,8 @@ function gameSignature(game: Game): string {
     game.team1_id ?? "",
     game.team2_id ?? "",
     game.winner_team_id ?? "",
+    String(game.team1_score ?? ""),
+    String(game.team2_score ?? ""),
   ].join("|");
 }
 
