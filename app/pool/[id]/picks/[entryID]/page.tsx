@@ -157,7 +157,7 @@ export default function PicksPage() {
 
       const picksGamesBaseQuery = supabase
         .from("games")
-        .select("round,team1_id,team2_id,winner_team_id");
+        .select("round,team1_id,team2_id,winner_team_id,status,team1_score,team2_score");
       const { data: gameRows, error: gameErr } = await (
         competitionSlug === "world-cup"
           ? picksGamesBaseQuery.eq("competition_slug", "world-cup")

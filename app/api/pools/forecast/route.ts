@@ -3,9 +3,18 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
 import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
+import {
+  WORLD_CUP_FIXED_R32_SLOT_TARGETS,
+  WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
+  WORLD_CUP_THIRD_PLACE_R32_TARGETS,
+  groupCodeFromRegion,
+  resolveWorldCupThirdPlaceAssignments,
+} from "@/lib/worldCupBracket";
 
 type TeamRow = {
   id: string;
+  name: string | null;
+  region: string | null;
   seed_in_region: number | null;
   cost: number | null;
   espn_team_id: string | number | null;
@@ -19,6 +28,9 @@ type GameRow = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  status?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
 };
 
 type MutableGame = {
@@ -29,6 +41,9 @@ type MutableGame = {
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
+  status?: string | null;
+  team1_score?: number | null;
+  team2_score?: number | null;
 };
 
 type EspnTeam = {
@@ -37,8 +52,24 @@ type EspnTeam = {
 
 type EspnCompetitor = {
   homeAway?: "home" | "away";
+  score?: string;
   winner?: boolean | string | number;
   team?: EspnTeam;
+};
+
+type EspnOddsTeam = {
+  moneyLine?: string | number;
+  american?: string | number;
+  americanOdds?: string | number;
+  decimal?: string | number;
+  decimalOdds?: string | number;
+  odds?: string | number;
+};
+
+type EspnOdds = {
+  homeTeamOdds?: EspnOddsTeam;
+  awayTeamOdds?: EspnOddsTeam;
+  drawOdds?: EspnOddsTeam;
 };
 
 type EspnCompetition = {
@@ -46,6 +77,7 @@ type EspnCompetition = {
   tournamentId?: number | string;
   notes?: Array<{ headline?: string }>;
   headlines?: Array<{ shortLinkText?: string; description?: string }>;
+  odds?: EspnOdds[];
 };
 
 type EspnStatus = {
@@ -76,7 +108,11 @@ type EspnSummary = {
   winprobability?: Array<{ homeWinPercentage?: string | number }>;
   header?: {
     competitions?: Array<{
-      competitors?: Array<{ team?: { id?: string | number }; winner?: boolean | string | number }>;
+      competitors?: Array<{
+        team?: { id?: string | number };
+        winner?: boolean | string | number;
+        score?: string;
+      }>;
     }>;
   };
 };
@@ -85,6 +121,15 @@ type PairProbability = {
   team_a: string;
   team_b: string;
   probability_team_a: number;
+  source: string;
+};
+
+type SoccerMatchProbability = {
+  team_a: string;
+  team_b: string;
+  win_a: number;
+  draw: number;
+  win_b: number;
   source: string;
 };
 
@@ -114,20 +159,31 @@ type PropagationTarget = {
   side: "team1_id" | "team2_id";
 };
 
+type WorldCupStanding = {
+  teamId: string;
+  group: string;
+  rank: number;
+  points: number;
+  goalDifference: number;
+  goalsFor: number;
+  wins: number;
+};
+
 const ROUND_ORDER: Record<string, number> = {
-  R64: 1,
-  R32: 2,
-  S16: 3,
-  E8: 4,
-  F4: 5,
-  CHIP: 6,
+  GROUP: 1,
+  R64: 2,
+  R32: 3,
+  S16: 4,
+  E8: 5,
+  F4: 6,
+  CHIP: 7,
 };
 
 const SCOREBOARD_WINDOW_DAYS = 3;
-const LOOKAHEAD_DAYS = 30;
+const LOOKAHEAD_DAYS = 45;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
-const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["R64", "R32", "S16", "E8", "F4", "CHIP"];
+const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["GROUP", "R64", "R32", "S16", "E8", "F4", "CHIP"];
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -222,6 +278,136 @@ function normalizePair(homeRaw: number | null, awayRaw: number | null) {
   };
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function normalizeTriple(team1Raw: number, drawRaw: number, team2Raw: number) {
+  const sum = team1Raw + drawRaw + team2Raw;
+  if (!Number.isFinite(sum) || sum <= 0) {
+    return { team1: 0.37, draw: 0.26, team2: 0.37 };
+  }
+  return {
+    team1: team1Raw / sum,
+    draw: drawRaw / sum,
+    team2: team2Raw / sum,
+  };
+}
+
+function impliedProbabilityFromAmericanOdds(value: number) {
+  if (!Number.isFinite(value) || value === 0) return null;
+  if (value > 0) return 100 / (value + 100);
+  return Math.abs(value) / (Math.abs(value) + 100);
+}
+
+function impliedProbabilityFromOdds(value: unknown) {
+  if (value == null) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  const numeric = Number(text.replace(/[+]/g, ""));
+  if (!Number.isFinite(numeric)) return null;
+  if (numeric > 1 && numeric < 20 && !text.startsWith("+") && !text.startsWith("-")) {
+    return 1 / numeric;
+  }
+  return impliedProbabilityFromAmericanOdds(numeric);
+}
+
+function impliedProbabilityFromOddsTeam(odds: EspnOddsTeam | undefined) {
+  if (!odds) return null;
+  return (
+    impliedProbabilityFromOdds(odds.moneyLine) ??
+    impliedProbabilityFromOdds(odds.american) ??
+    impliedProbabilityFromOdds(odds.americanOdds) ??
+    impliedProbabilityFromOdds(odds.decimal) ??
+    impliedProbabilityFromOdds(odds.decimalOdds) ??
+    impliedProbabilityFromOdds(odds.odds)
+  );
+}
+
+function teamStrengthFromCost(cost: number | null | undefined) {
+  if (typeof cost !== "number" || !Number.isFinite(cost)) return 12;
+  return clamp(cost, 1, 30);
+}
+
+function drawProbabilityFromStrengths(team1Strength: number, team2Strength: number) {
+  const diff = Math.abs(team1Strength - team2Strength);
+  return clamp(0.16 + 0.16 * Math.exp(-diff / 7), 0.11, 0.32);
+}
+
+function soccerOutcomeFromStrengths(team1Strength: number, team2Strength: number) {
+  const draw = drawProbabilityFromStrengths(team1Strength, team2Strength);
+  const team1NonDrawShare = 1 / (1 + Math.exp(-(team1Strength - team2Strength) / 5.5));
+  return {
+    team1: (1 - draw) * team1NonDrawShare,
+    draw,
+    team2: (1 - draw) * (1 - team1NonDrawShare),
+    source: "pricing_market_prior",
+  };
+}
+
+function scoreForTeam(game: MutableGame, teamId: string) {
+  if (typeof game.team1_score !== "number" || typeof game.team2_score !== "number") return null;
+  if (game.team1_id === teamId) return { goalsFor: game.team1_score, goalsAgainst: game.team2_score };
+  if (game.team2_id === teamId) return { goalsFor: game.team2_score, goalsAgainst: game.team1_score };
+  return null;
+}
+
+function compareWorldCupStandings(
+  a: Omit<WorldCupStanding, "rank">,
+  b: Omit<WorldCupStanding, "rank">,
+) {
+  return (
+    b.points - a.points ||
+    b.goalDifference - a.goalDifference ||
+    b.goalsFor - a.goalsFor ||
+    b.wins - a.wins ||
+    a.teamId.localeCompare(b.teamId)
+  );
+}
+
+function rankProjectedWorldCupGroup(group: string, teams: TeamRow[], games: MutableGame[]) {
+  const rows = new Map<string, Omit<WorldCupStanding, "rank">>();
+  for (const team of teams) {
+    rows.set(String(team.id), {
+      teamId: String(team.id),
+      group,
+      points: 0,
+      goalDifference: 0,
+      goalsFor: 0,
+      wins: 0,
+    });
+  }
+
+  for (const game of games) {
+    if (!game.team1_id || !game.team2_id) continue;
+    const team1 = rows.get(game.team1_id);
+    const team2 = rows.get(game.team2_id);
+    const team1Score = scoreForTeam(game, game.team1_id);
+    const team2Score = scoreForTeam(game, game.team2_id);
+    if (!team1 || !team2 || !team1Score || !team2Score) continue;
+
+    team1.goalsFor += team1Score.goalsFor;
+    team1.goalDifference += team1Score.goalsFor - team1Score.goalsAgainst;
+    team2.goalsFor += team2Score.goalsFor;
+    team2.goalDifference += team2Score.goalsFor - team2Score.goalsAgainst;
+
+    if (team1Score.goalsFor > team2Score.goalsFor) {
+      team1.points += 3;
+      team1.wins++;
+    } else if (team2Score.goalsFor > team1Score.goalsFor) {
+      team2.points += 3;
+      team2.wins++;
+    } else {
+      team1.points += 1;
+      team2.points += 1;
+    }
+  }
+
+  return [...rows.values()]
+    .sort(compareWorldCupStandings)
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
 function isWinnerFlag(value: unknown) {
   return value === true || value === 1 || value === "1" || value === "true";
 }
@@ -285,6 +471,72 @@ function extractProbabilities(
   return { home: 0.5, away: 0.5, source: "fallback_even" };
 }
 
+function extractSoccerProbabilities(
+  event: EspnEvent,
+  summary: EspnSummary | null,
+  state: string,
+  homeEspnTeamId: string,
+  awayEspnTeamId: string,
+  homeStrength: number,
+  awayStrength: number,
+) {
+  const competitors =
+    summary?.header?.competitions?.[0]?.competitors ?? event.competitions?.[0]?.competitors ?? [];
+  const home = competitors.find((competitor) => String(competitor?.team?.id ?? "") === homeEspnTeamId);
+  const away = competitors.find((competitor) => String(competitor?.team?.id ?? "") === awayEspnTeamId);
+
+  if (state === "post") {
+    if (isWinnerFlag(home?.winner)) return { home: 1, draw: 0, away: 0, source: "final_result" };
+    if (isWinnerFlag(away?.winner)) return { home: 0, draw: 0, away: 1, source: "final_result" };
+    const homeScore = Number(home?.score);
+    const awayScore = Number(away?.score);
+    if (Number.isFinite(homeScore) && Number.isFinite(awayScore) && homeScore === awayScore) {
+      return { home: 0, draw: 1, away: 0, source: "final_draw" };
+    }
+  }
+
+  const odds = event.competitions?.[0]?.odds?.[0];
+  const homeOdds = impliedProbabilityFromOddsTeam(odds?.homeTeamOdds);
+  const drawOdds = impliedProbabilityFromOddsTeam(odds?.drawOdds);
+  const awayOdds = impliedProbabilityFromOddsTeam(odds?.awayTeamOdds);
+  if (homeOdds != null && awayOdds != null) {
+    const fallbackDraw = drawOdds ?? drawProbabilityFromStrengths(homeStrength, awayStrength);
+    const normalized = normalizeTriple(homeOdds, fallbackDraw, awayOdds);
+    return { home: normalized.team1, draw: normalized.draw, away: normalized.team2, source: "market_odds" };
+  }
+
+  const homePredictor = normalizeProbability(summary?.predictor?.homeTeam?.gameProjection);
+  const awayPredictor = normalizeProbability(summary?.predictor?.awayTeam?.gameProjection);
+  if (homePredictor != null && awayPredictor != null) {
+    const draw = drawProbabilityFromStrengths(homeStrength, awayStrength);
+    const normalized = normalizePair(homePredictor, awayPredictor);
+    return {
+      home: normalized.home * (1 - draw),
+      draw,
+      away: normalized.away * (1 - draw),
+      source: "espn_predictor",
+    };
+  }
+
+  const winRows = Array.isArray(summary?.winprobability) ? summary.winprobability : [];
+  if (winRows.length > 0) {
+    const last = winRows[winRows.length - 1];
+    const homeLive = normalizeProbability(last?.homeWinPercentage);
+    if (homeLive != null) {
+      const draw = state === "in" ? drawProbabilityFromStrengths(homeStrength, awayStrength) * 0.65 : 0;
+      return {
+        home: homeLive * (1 - draw),
+        draw,
+        away: (1 - homeLive) * (1 - draw),
+        source: "live_win_probability",
+      };
+    }
+  }
+
+  const prior = soccerOutcomeFromStrengths(homeStrength, awayStrength);
+  return { home: prior.team1, draw: prior.draw, away: prior.team2, source: prior.source };
+}
+
 function rankByScore(rows: Array<{ entry_id: string; score: number; label: string }>): RankedScore[] {
   const sorted = [...rows].sort((a, b) => b.score - a.score || a.label.localeCompare(b.label));
   let previousScore: number | null = null;
@@ -299,6 +551,16 @@ function rankByScore(rows: Array<{ entry_id: string; score: number; label: strin
 
 function roundOrder(round: string | null | undefined) {
   return ROUND_ORDER[String(round ?? "").toUpperCase()] ?? 0;
+}
+
+function isFinalDraw(game: MutableGame) {
+  return (
+    String(game.round ?? "").toUpperCase() === "GROUP" &&
+    String(game.status ?? "").trim().toLowerCase().startsWith("final") &&
+    typeof game.team1_score === "number" &&
+    typeof game.team2_score === "number" &&
+    game.team1_score === game.team2_score
+  );
 }
 
 function resolveForecastHorizonRound(games: GameRow[]) {
@@ -318,6 +580,9 @@ function cloneGames(games: GameRow[]): MutableGame[] {
     team1_id: game.team1_id,
     team2_id: game.team2_id,
     winner_team_id: game.winner_team_id,
+    status: game.status,
+    team1_score: game.team1_score,
+    team2_score: game.team2_score,
   }));
 }
 
@@ -360,10 +625,117 @@ function probabilityForTeamA(
   return seedFallbackWinProbability(teamAId, teamBId, teamSeedById);
 }
 
+function soccerProbabilitiesForMatch(
+  team1Id: string,
+  team2Id: string,
+  probabilities: Map<string, SoccerMatchProbability>,
+  teamStrengthById: Map<string, number>,
+) {
+  const key = pairKey(team1Id, team2Id);
+  const found = probabilities.get(key);
+  if (found) {
+    if (found.team_a === team1Id) {
+      return { team1: found.win_a, draw: found.draw, team2: found.win_b, source: found.source };
+    }
+    return { team1: found.win_b, draw: found.draw, team2: found.win_a, source: found.source };
+  }
+  return soccerOutcomeFromStrengths(
+    teamStrengthById.get(team1Id) ?? 12,
+    teamStrengthById.get(team2Id) ?? 12,
+  );
+}
+
+function chooseSoccerOutcome(
+  team1Id: string,
+  team2Id: string,
+  probabilities: Map<string, SoccerMatchProbability>,
+  teamStrengthById: Map<string, number>,
+  chooseMostLikely: boolean,
+) {
+  const outcome = soccerProbabilitiesForMatch(team1Id, team2Id, probabilities, teamStrengthById);
+  if (chooseMostLikely) {
+    if (outcome.draw >= outcome.team1 && outcome.draw >= outcome.team2) return "draw" as const;
+    return outcome.team1 >= outcome.team2 ? "team1" as const : "team2" as const;
+  }
+
+  const roll = Math.random();
+  if (roll < outcome.team1) return "team1" as const;
+  if (roll < outcome.team1 + outcome.draw) return "draw" as const;
+  return "team2" as const;
+}
+
+function knockoutProbabilityTeam1(
+  team1Id: string,
+  team2Id: string,
+  probabilities: Map<string, SoccerMatchProbability>,
+  teamStrengthById: Map<string, number>,
+) {
+  const outcome = soccerProbabilitiesForMatch(team1Id, team2Id, probabilities, teamStrengthById);
+  const decisiveTotal = outcome.team1 + outcome.team2;
+  if (!Number.isFinite(decisiveTotal) || decisiveTotal <= 0) return 0.5;
+  return outcome.team1 / decisiveTotal;
+}
+
+function setProjectedGroupResult(
+  game: MutableGame,
+  outcome: "team1" | "draw" | "team2",
+) {
+  game.status = "Final";
+  if (outcome === "draw") {
+    game.winner_team_id = null;
+    game.team1_score = 1;
+    game.team2_score = 1;
+    return;
+  }
+  if (outcome === "team1") {
+    game.winner_team_id = game.team1_id;
+    game.team1_score = 1;
+    game.team2_score = 0;
+    return;
+  }
+  game.winner_team_id = game.team2_id;
+  game.team1_score = 0;
+  game.team2_score = 1;
+}
+
+function setProjectedKnockoutResult(
+  game: MutableGame,
+  team1Wins: boolean,
+) {
+  game.status = "Final";
+  game.winner_team_id = team1Wins ? game.team1_id : game.team2_id;
+  game.team1_score = team1Wins ? 1 : 0;
+  game.team2_score = team1Wins ? 0 : 1;
+}
+
 function propagateWinner(source: MutableGame, byKey: Map<string, MutableGame>) {
   const winner = source.winner_team_id ? String(source.winner_team_id) : null;
   if (!winner) return;
   const targetRef = nextTargetForWinner(source);
+  if (!targetRef) return;
+
+  const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
+  if (!target) return;
+
+  if (targetRef.side === "team1_id" && target.team1_id !== winner) target.team1_id = winner;
+  if (targetRef.side === "team2_id" && target.team2_id !== winner) target.team2_id = winner;
+
+  if (
+    target.winner_team_id &&
+    target.winner_team_id !== target.team1_id &&
+    target.winner_team_id !== target.team2_id
+  ) {
+    target.winner_team_id = null;
+  }
+}
+
+function propagateWorldCupWinner(source: MutableGame, byKey: Map<string, MutableGame>) {
+  const winner = source.winner_team_id ? String(source.winner_team_id) : null;
+  if (!winner) return;
+  const round = String(source.round ?? "").toUpperCase();
+  const slot = Number(source.slot);
+  if (!Number.isFinite(slot)) return;
+  const targetRef = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[`${round}|${Math.trunc(slot)}`];
   if (!targetRef) return;
 
   const target = byKey.get(gameKey(targetRef.round, targetRef.region, targetRef.slot));
@@ -408,6 +780,7 @@ function runBracketProjection(
     }
 
     if (!game.team1_id || !game.team2_id) continue;
+    if (isFinalDraw(game)) continue;
     const team1 = String(game.team1_id);
     const team2 = String(game.team2_id);
     const probabilityTeam1 = probabilityForTeamA(team1, team2, pairProbabilities, teamSeedById);
@@ -421,6 +794,133 @@ function runBracketProjection(
     team1_id: game.team1_id,
     team2_id: game.team2_id,
     winner_team_id: game.winner_team_id,
+    status: game.status,
+    team1_score: game.team1_score,
+    team2_score: game.team2_score,
+  })) as ScoringGame[];
+}
+
+function runWorldCupProjection(
+  baseGames: GameRow[],
+  teams: TeamRow[],
+  soccerProbabilities: Map<string, SoccerMatchProbability>,
+  teamStrengthById: Map<string, number>,
+  chooseMostLikely: boolean,
+  maxRoundOrder: number,
+) {
+  const games = cloneGames(baseGames);
+  const sorted = sortedGamesForSimulation(games);
+  const byKey = new Map<string, MutableGame>();
+  for (const game of sorted) {
+    const round = String(game.round ?? "").toUpperCase();
+    const slot = Number(game.slot);
+    if (!round || !Number.isFinite(slot) || slot < 1) continue;
+    byKey.set(gameKey(round, game.region ?? null, Math.trunc(slot)), game);
+  }
+
+  for (const game of sorted) {
+    if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
+    if (!game.team1_id || !game.team2_id) continue;
+    if (game.winner_team_id || isFinalDraw(game)) continue;
+
+    const outcome = chooseSoccerOutcome(
+      String(game.team1_id),
+      String(game.team2_id),
+      soccerProbabilities,
+      teamStrengthById,
+      chooseMostLikely,
+    );
+    setProjectedGroupResult(game, outcome);
+  }
+
+  const teamsByGroup = new Map<string, TeamRow[]>();
+  for (const team of teams) {
+    const group = groupCodeFromRegion(team.region);
+    if (!group) continue;
+    const groupTeams = teamsByGroup.get(group) ?? [];
+    groupTeams.push(team);
+    teamsByGroup.set(group, groupTeams);
+  }
+
+  const groupGamesByGroup = new Map<string, MutableGame[]>();
+  for (const game of sorted) {
+    if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
+    const group = groupCodeFromRegion(game.region);
+    if (!group) continue;
+    const groupGames = groupGamesByGroup.get(group) ?? [];
+    groupGames.push(game);
+    groupGamesByGroup.set(group, groupGames);
+  }
+
+  const rankingsByGroup = new Map<string, WorldCupStanding[]>();
+  for (const [group, groupTeams] of teamsByGroup) {
+    const ranked = rankProjectedWorldCupGroup(group, groupTeams, groupGamesByGroup.get(group) ?? []);
+    if (ranked.length > 0) rankingsByGroup.set(group, ranked);
+  }
+
+  for (const [label, target] of Object.entries(WORLD_CUP_FIXED_R32_SLOT_TARGETS)) {
+    const rank = Number(label.slice(0, 1));
+    const group = label.slice(1);
+    const teamId = rankingsByGroup.get(group)?.find((row) => row.rank === rank)?.teamId ?? null;
+    if (!teamId) continue;
+    const game = byKey.get(gameKey("R32", null, target.slot));
+    if (!game) continue;
+    game[target.side] = teamId;
+    if (game.winner_team_id && game.winner_team_id !== game.team1_id && game.winner_team_id !== game.team2_id) {
+      game.winner_team_id = null;
+    }
+  }
+
+  const thirdRows = [...rankingsByGroup.values()]
+    .map((rows) => rows.find((row) => row.rank === 3))
+    .filter((row): row is WorldCupStanding => row != null)
+    .sort(compareWorldCupStandings);
+  const qualifiedThirdGroups = thirdRows.slice(0, 8).map((row) => row.group);
+  const thirdPlaceAssignments = resolveWorldCupThirdPlaceAssignments(qualifiedThirdGroups);
+  if (thirdPlaceAssignments) {
+    for (const [winnerSlot, group] of thirdPlaceAssignments) {
+      const teamId = thirdRows.find((row) => row.group === group)?.teamId ?? null;
+      const slotTarget = WORLD_CUP_THIRD_PLACE_R32_TARGETS[winnerSlot] ?? null;
+      if (!teamId || !slotTarget) continue;
+      const game = byKey.get(gameKey("R32", null, slotTarget.slot));
+      if (!game) continue;
+      game[slotTarget.side] = teamId;
+      if (game.winner_team_id && game.winner_team_id !== game.team1_id && game.winner_team_id !== game.team2_id) {
+        game.winner_team_id = null;
+      }
+    }
+  }
+
+  for (const game of sorted) {
+    const round = String(game.round ?? "").toUpperCase();
+    const gameRoundOrder = roundOrder(round);
+    if (round === "GROUP" || gameRoundOrder === 0 || gameRoundOrder > maxRoundOrder) continue;
+
+    if (game.winner_team_id) {
+      propagateWorldCupWinner(game, byKey);
+      continue;
+    }
+
+    if (!game.team1_id || !game.team2_id) continue;
+    const probabilityTeam1 = knockoutProbabilityTeam1(
+      String(game.team1_id),
+      String(game.team2_id),
+      soccerProbabilities,
+      teamStrengthById,
+    );
+    const team1Wins = chooseMostLikely ? probabilityTeam1 >= 0.5 : Math.random() < probabilityTeam1;
+    setProjectedKnockoutResult(game, team1Wins);
+    propagateWorldCupWinner(game, byKey);
+  }
+
+  return games.map((game) => ({
+    round: String(game.round ?? ""),
+    team1_id: game.team1_id,
+    team2_id: game.team2_id,
+    winner_team_id: game.winner_team_id,
+    status: game.status,
+    team1_score: game.team1_score,
+    team2_score: game.team2_score,
   })) as ScoringGame[];
 }
 
@@ -548,6 +1048,99 @@ async function fetchPairProbabilities(
   return pairProbabilities;
 }
 
+async function fetchWorldCupSoccerProbabilities(
+  localTeamIdByEspnTeamId: Map<string, string>,
+  teamStrengthById: Map<string, number>,
+) {
+  const dateRanges: string[] = [];
+  for (let day = 0; day <= LOOKAHEAD_DAYS; day += SCOREBOARD_WINDOW_DAYS) {
+    const endDay = Math.min(day + SCOREBOARD_WINDOW_DAYS - 1, LOOKAHEAD_DAYS);
+    const start = toEtYyyymmdd(shiftDate(day));
+    const end = toEtYyyymmdd(shiftDate(endDay));
+    dateRanges.push(start === end ? start : `${start}-${end}`);
+  }
+
+  const scoreboardPayloads = await Promise.all(
+    dateRanges.map(async (dateRange) => {
+      const endpoint =
+        `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateRange}&limit=500`;
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (!response.ok) return null;
+      return (await response.json()) as EspnScoreboard;
+    }),
+  );
+
+  const eventById = new Map<string, EspnEvent>();
+  for (const payload of scoreboardPayloads) {
+    if (!payload) continue;
+    for (const event of payload.events ?? []) {
+      const id = String(event.id ?? "").trim();
+      if (!id) continue;
+      if (!eventById.has(id)) eventById.set(id, event);
+    }
+  }
+
+  const soccerProbabilities = new Map<string, SoccerMatchProbability>();
+  await Promise.all(
+    Array.from(eventById.values()).map(async (event) => {
+      const competition = event.competitions?.[0];
+      const away = competition?.competitors?.find((competitor) => competitor.homeAway === "away");
+      const home = competition?.competitors?.find((competitor) => competitor.homeAway === "home");
+      if (!away?.team?.id || !home?.team?.id) return;
+
+      const awayLocal = localTeamIdByEspnTeamId.get(String(away.team.id)) ?? null;
+      const homeLocal = localTeamIdByEspnTeamId.get(String(home.team.id)) ?? null;
+      if (!awayLocal || !homeLocal) return;
+
+      const eventId = String(event.id ?? "").trim();
+      if (!eventId) return;
+      const summaryResponse = await fetch(
+        `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=${encodeURIComponent(eventId)}`,
+        { cache: "no-store" },
+      ).catch(() => null);
+
+      const summary =
+        summaryResponse && summaryResponse.ok
+          ? ((await summaryResponse.json()) as EspnSummary)
+          : null;
+
+      const state = String(event.status?.type?.state ?? "pre").toLowerCase();
+      const probabilities = extractSoccerProbabilities(
+        event,
+        summary,
+        state,
+        String(home.team.id),
+        String(away.team.id),
+        teamStrengthById.get(homeLocal) ?? 12,
+        teamStrengthById.get(awayLocal) ?? 12,
+      );
+
+      const key = pairKey(awayLocal, homeLocal);
+      if (awayLocal < homeLocal) {
+        soccerProbabilities.set(key, {
+          team_a: awayLocal,
+          team_b: homeLocal,
+          win_a: probabilities.away,
+          draw: probabilities.draw,
+          win_b: probabilities.home,
+          source: probabilities.source,
+        });
+      } else {
+        soccerProbabilities.set(key, {
+          team_a: homeLocal,
+          team_b: awayLocal,
+          win_a: probabilities.home,
+          draw: probabilities.draw,
+          win_b: probabilities.away,
+          source: probabilities.source,
+        });
+      }
+    }),
+  );
+
+  return soccerProbabilities;
+}
+
 export async function GET(req: Request) {
   try {
     const poolId = new URL(req.url).searchParams.get("poolId")?.trim() ?? "";
@@ -582,8 +1175,10 @@ export async function GET(req: Request) {
     }
 
     const entryIds = baseRows.map((row) => row.entry_id);
-    const forecastTeamsBase = supabaseAdmin.from("teams").select("id,seed_in_region,cost,espn_team_id");
-    const forecastGamesBase = supabaseAdmin.from("games").select("id,round,region,slot,team1_id,team2_id,winner_team_id");
+    const forecastTeamsBase = supabaseAdmin.from("teams").select("id,name,region,seed_in_region,cost,espn_team_id");
+    const forecastGamesBase = supabaseAdmin
+      .from("games")
+      .select("id,round,region,slot,team1_id,team2_id,winner_team_id,status,team1_score,team2_score");
     const [teamsResult, gamesResult] = await Promise.all([
       competitionSlug === "world-cup"
         ? forecastTeamsBase.eq("competition_slug", "world-cup")
@@ -611,17 +1206,26 @@ export async function GET(req: Request) {
 
     const teamSeedById = new Map<string, number | null>();
     const teamCostById = new Map<string, number | null>();
+    const teamStrengthById = new Map<string, number>();
     const localTeamIdByEspnTeamId = new Map<string, string>();
     for (const team of teams) {
       const teamId = String(team.id);
       teamSeedById.set(teamId, team.seed_in_region ?? null);
       teamCostById.set(teamId, team.cost ?? null);
+      teamStrengthById.set(teamId, teamStrengthFromCost(team.cost ?? null));
       if (team.espn_team_id != null) {
         localTeamIdByEspnTeamId.set(String(team.espn_team_id), teamId);
       }
     }
 
-    const pairProbabilities = await fetchPairProbabilities(localTeamIdByEspnTeamId);
+    const pairProbabilities =
+      competitionSlug === "world-cup"
+        ? new Map<string, PairProbability>()
+        : await fetchPairProbabilities(localTeamIdByEspnTeamId);
+    const soccerProbabilities =
+      competitionSlug === "world-cup"
+        ? await fetchWorldCupSoccerProbabilities(localTeamIdByEspnTeamId, teamStrengthById)
+        : new Map<string, SoccerMatchProbability>();
     const horizonRound = resolveForecastHorizonRound(games);
     const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
     const scopedGames = games.filter(
@@ -633,6 +1237,9 @@ export async function GET(req: Request) {
       team1_id: game.team1_id,
       team2_id: game.team2_id,
       winner_team_id: game.winner_team_id,
+      status: game.status,
+      team1_score: game.team1_score,
+      team2_score: game.team2_score,
     })) as ScoringGame[];
 
     const scoringOptions = { competitionSlug, teamCostById };
@@ -666,13 +1273,23 @@ export async function GET(req: Request) {
 
     const runs = Math.max(1, unresolvedGameCount > 0 ? monteCarloRuns : 1);
     for (let run = 0; run < runs; run += 1) {
-      const projectedGames = runBracketProjection(
-        scopedGames,
-        pairProbabilities,
-        teamSeedById,
-        false,
-        horizonRoundOrder,
-      );
+      const projectedGames =
+        competitionSlug === "world-cup"
+          ? runWorldCupProjection(
+              scopedGames,
+              teams,
+              soccerProbabilities,
+              teamStrengthById,
+              false,
+              horizonRoundOrder,
+            )
+          : runBracketProjection(
+              scopedGames,
+              pairProbabilities,
+              teamSeedById,
+              false,
+              horizonRoundOrder,
+            );
       const projectedScores = scoreEntries(projectedGames, teamSeedById, picksByEntry, scoringOptions);
 
       const scoreRows = entryIds.map((entryId) => ({
@@ -699,13 +1316,23 @@ export async function GET(req: Request) {
       }
     }
 
-    const mostLikelyGames = runBracketProjection(
-      scopedGames,
-      pairProbabilities,
-      teamSeedById,
-      true,
-      horizonRoundOrder,
-    );
+    const mostLikelyGames =
+      competitionSlug === "world-cup"
+        ? runWorldCupProjection(
+            scopedGames,
+            teams,
+            soccerProbabilities,
+            teamStrengthById,
+            true,
+            horizonRoundOrder,
+          )
+        : runBracketProjection(
+            scopedGames,
+            pairProbabilities,
+            teamSeedById,
+            true,
+            horizonRoundOrder,
+          );
     const mostLikelyScores = scoreEntries(mostLikelyGames, teamSeedById, picksByEntry, scoringOptions);
     const mostLikelyRows = entryIds.map((entryId) => ({
       entry_id: entryId,
@@ -750,7 +1377,7 @@ export async function GET(req: Request) {
       horizon_round: horizonRound,
       monte_carlo_runs: runs,
       unresolved_game_count: unresolvedGameCount,
-      pair_probability_count: pairProbabilities.size,
+      pair_probability_count: competitionSlug === "world-cup" ? soccerProbabilities.size : pairProbabilities.size,
       entries,
     });
   } catch (error: unknown) {

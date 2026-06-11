@@ -176,6 +176,16 @@ export async function loadLatestPoolEntries(
           entryNameById.set(row.id, row.entry_name ?? null);
         }
       }
+    } else if (isMissingEntryNameError(entryNameResult.error.message)) {
+      const fallback = await supabase.from("entries").select("id,saved_draft_id").in("id", entryIds);
+      if (fallback.error && !isMissingEntrySavedDraftIdError(fallback.error.message)) {
+        throw fallback.error;
+      }
+      if (!fallback.error) {
+        for (const row of (fallback.data ?? []) as Array<{ id: string; saved_draft_id: string | null }>) {
+          savedDraftIdByEntry.set(row.id, row.saved_draft_id ?? null);
+        }
+      }
     } else if (!isMissingEntryNameError(entryNameResult.error.message)) {
       throw entryNameResult.error;
     }
