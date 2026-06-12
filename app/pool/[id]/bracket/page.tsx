@@ -774,7 +774,7 @@ export default function BracketPage() {
           setLiveScores(nextScores);
 
           const hasAnyFinal = nextScores.some((game) => game.state === "FINAL");
-          if (hasAnyFinal && competitionSlug === "march-madness") {
+          if (hasAnyFinal && (competitionSlug === "march-madness" || competitionSlug === "world-cup")) {
             const now = Date.now();
             const canForceSync = now - lastForcedSyncAtRef.current >= 15_000;
 
@@ -783,7 +783,7 @@ export default function BracketPage() {
               forcedSyncInFlightRef.current = fetch("/api/admin/sync-scores", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ lookbackDays: 3 }),
+                body: JSON.stringify({ lookbackDays: 3, competition: competitionSlug }),
               })
                 .then(() => undefined)
                 .catch(() => undefined)

@@ -18,6 +18,7 @@ import { applyLiveScoreOverlay, type LiveOverlayScoreGame } from "@/lib/liveBrac
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
+import { getEliminatedTeamIds } from "@/lib/teamElimination";
 
 type Row = {
   entry_id: string;
@@ -1097,17 +1098,7 @@ export default function LeaderboardPage() {
         }
       }
 
-      const eliminatedTeamIds = new Set<string>();
-      for (const game of gameRows) {
-        if (!game.winner_team_id) continue;
-        if (game.team1_id && game.team2_id) {
-          if (game.winner_team_id === game.team1_id) {
-            eliminatedTeamIds.add(game.team2_id);
-          } else if (game.winner_team_id === game.team2_id) {
-            eliminatedTeamIds.add(game.team1_id);
-          }
-        }
-      }
+      const eliminatedTeamIds = getEliminatedTeamIds(gameRows, competitionSlug);
 
       const scoredEntries = scoreEntries(gameRows, teamSeedById, picksByEntry, {
         competitionSlug,

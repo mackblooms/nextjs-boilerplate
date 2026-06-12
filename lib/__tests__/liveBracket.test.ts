@@ -64,6 +64,18 @@ describe("applyLiveScoreOverlay: live score sets winner", () => {
     const result = applyLiveScoreOverlay(games, [teamA, teamB], [liveScore("Argentina", "Brazil", 1, 1)]);
     expect(result[0].winner_team_id).toBeNull();
   });
+
+  it("tied FINAL score overwrites scheduled status and stores scores", () => {
+    const games = [g("g1", "GROUP", 1, "tA", "tB", null, "Group A")];
+    games[0].status = "Scheduled";
+
+    const result = applyLiveScoreOverlay(games, [teamA, teamB], [liveScore("Argentina", "Brazil", 1, 1)]);
+
+    expect(result[0].status).toBe("FINAL");
+    expect(result[0].team1_score).toBe(1);
+    expect(result[0].team2_score).toBe(1);
+    expect(result[0].winner_team_id).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
