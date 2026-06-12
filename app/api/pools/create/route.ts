@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { hashPoolPassword } from "@/lib/poolPassword";
 import { encryptPoolPassword } from "@/lib/poolPasswordVault";
-import { OFFICIAL_DRAFT_LOCK_ISO } from "@/lib/draftLock";
+import { draftLibraryLockMessage, isDraftLibraryLocked, OFFICIAL_DRAFT_LOCK_ISO } from "@/lib/draftLock";
 import { getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 
@@ -47,6 +47,10 @@ export async function POST(req: Request) {
     const poolName = body.name?.trim() ?? "";
     const password = body.password ?? "";
     const competitionSlug = normalizeCompetitionSlug(body.competitionSlug);
+
+    if (isDraftLibraryLocked(competitionSlug)) {
+      return NextResponse.json({ error: draftLibraryLockMessage(competitionSlug) }, { status: 423 });
+    }
 
     if (!poolName) {
       return NextResponse.json({ error: "Pool name is required." }, { status: 400 });

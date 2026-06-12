@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
+import { draftLibraryLockMessage, formatDraftLockTimeET, isDraftLibraryLocked, isDraftLocked } from "@/lib/draftLock";
 import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { supabase } from "../../lib/supabaseClient";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
@@ -212,6 +212,8 @@ function PoolsPageContent() {
 
   const selectedDraftCount = selectedDraftIds.size;
   const draftModalPoolLocked = draftModalPool ? isPoolEntryLocked(draftModalPool, competitionSlug) : false;
+  const poolsLocked = isDraftLibraryLocked(competitionSlug);
+  const poolsLockedMessage = draftLibraryLockMessage(competitionSlug);
 
   function rememberJoinedPool(pool: PoolRow) {
     setMyPools((prev) => {
@@ -701,8 +703,14 @@ function PoolsPageContent() {
             <Link
               href={competitionPath("/pools/new", competitionSlug)}
               className="native-only-icon-action native-only-icon-action--primary"
-              aria-label="Create a new pool"
-              title="Create a new pool"
+              aria-disabled={poolsLocked}
+              onClick={(event) => {
+                if (!poolsLocked) return;
+                event.preventDefault();
+                setJoinStatus({ tone: "error", text: poolsLockedMessage });
+              }}
+              aria-label={poolsLocked ? "Pool creation locked" : "Create a new pool"}
+              title={poolsLocked ? "Pool creation locked" : "Create a new pool"}
             >
               <span aria-hidden="true" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>
                 +
@@ -788,9 +796,11 @@ function PoolsPageContent() {
                 <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
                   Open drafts
                 </Link>
-                <Link href={competitionPath("/pools/new", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
-                  Create a pool
-                </Link>
+                {poolsLocked ? null : (
+                  <Link href={competitionPath("/pools/new", competitionSlug)} className="ui-btn ui-btn--md ui-btn--secondary">
+                    Create a pool
+                  </Link>
+                )}
               </div>
             </div>
           ) : null}

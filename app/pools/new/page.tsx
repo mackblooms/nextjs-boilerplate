@@ -6,12 +6,15 @@ import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { UiButton, UiInput } from "../../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
+import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 
 function NewPoolPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const competitionSlug = normalizeCompetitionSlug(searchParams.get("competition"));
   const competition = getCompetition(competitionSlug);
+  const poolsLocked = isDraftLibraryLocked(competitionSlug);
+  const poolsLockedMessage = draftLibraryLockMessage(competitionSlug);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,6 +24,16 @@ function NewPoolPageContent() {
   async function createPool(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
+
+    if (poolsLocked) {
+      setMsg(poolsLockedMessage);
+      trackEvent({
+        eventName: "pool_create_failure",
+        metadata: { reason: "draft_locked" },
+      });
+      return;
+    }
+
     setSaving(true);
 
     const { data: sessionData } = await supabase.auth.getSession();
@@ -122,6 +135,7 @@ function NewPoolPageContent() {
         <UiInput
           value={name}
           onChange={(e) => setName(e.target.value)}
+          disabled={poolsLocked || saving}
           placeholder="e.g., bracketball - Friends 2026"
           style={{ marginBottom: 12 }}
         />
@@ -129,6 +143,7 @@ function NewPoolPageContent() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          disabled={poolsLocked || saving}
           placeholder="Pool password (required)"
           minLength={4}
           style={{ marginBottom: 12 }}
@@ -137,22 +152,23 @@ function NewPoolPageContent() {
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          disabled={poolsLocked || saving}
           placeholder="Confirm pool password"
           minLength={4}
           style={{ marginBottom: 12 }}
         />
         <UiButton
           type="submit"
-          disabled={saving}
-          variant="primary"
+          disabled={saving || poolsLocked}
+          variant={poolsLocked ? "ghost" : "primary"}
           size="lg"
         >
-          {saving ? "Creating..." : "Create pool"}
+          {saving ? "Creating..." : poolsLocked ? "Pool Creation Locked" : "Create pool"}
         </UiButton>
       </form>
 
       <p style={{ marginTop: 12, opacity: 0.75, fontSize: 13 }}>
-        New pools are private by default and require this password to join.
+        {poolsLocked ? poolsLockedMessage : "New pools are private by default and require this password to join."}
       </p>
 
       {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
