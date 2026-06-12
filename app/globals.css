@@ -2121,8 +2121,7 @@ body.is-native-app-shell .competition-switcher {
 
   .match-actions {
     width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    justify-content: flex-end;
   }
 
   .match-date-strip {

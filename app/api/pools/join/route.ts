@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { formatDraftLockTimeET, isDraftLocked } from "@/lib/draftLock";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { verifyPoolPassword } from "@/lib/poolPassword";
 
@@ -11,6 +14,8 @@ type PoolJoinRow = {
   id: string;
   is_private: boolean | null;
   join_password_hash: string | null;
+  lock_time: string | null;
+  competition_slug?: string | null;
 };
 
 function getBearerToken(req: Request): string | null {
@@ -51,11 +56,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "poolId is required." }, { status: 400 });
     }
 
-    const { data: poolRow, error: poolErr } = await supabaseAdmin
+    let { data: poolRow, error: poolErr } = await supabaseAdmin
       .from("pools")
-      .select("id,is_private,join_password_hash")
+      .select("id,is_private,join_password_hash,lock_time,competition_slug")
       .eq("id", poolId)
       .maybeSingle();
+
+    if (canUseLegacyMarchMadnessFallback("march-madness", poolErr?.message)) {
+      const fallback = await supabaseAdmin
+        .from("pools")
+        .select("id,is_private,join_password_hash,lock_time")
+        .eq("id", poolId)
+        .maybeSingle();
+      poolRow = fallback.data ? { ...fallback.data, competition_slug: null } : null;
+      poolErr = fallback.error;
+    }
 
     if (poolErr) {
       return NextResponse.json({ error: poolErr.message }, { status: 400 });
@@ -66,6 +81,14 @@ export async function POST(req: Request) {
     }
 
     const pool = poolRow as PoolJoinRow;
+    const competitionSlug = normalizeCompetitionSlug(pool.competition_slug);
+    if (isDraftLocked(pool.lock_time, new Date(), competitionSlug)) {
+      return NextResponse.json(
+        { error: `Pool membership is locked after draft lock (${formatDraftLockTimeET(pool.lock_time, competitionSlug)}).` },
+        { status: 423 },
+      );
+    }
+
     const poolIsPrivate = pool.is_private ?? true;
 
     if (poolIsPrivate) {

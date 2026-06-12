@@ -698,8 +698,15 @@ function PoolsPageContent() {
           </div>
 
           <div className="match-actions">
-            <Link href={competitionPath("/pools/new", competitionSlug)} className="match-icon-action">
-              New
+            <Link
+              href={competitionPath("/pools/new", competitionSlug)}
+              className="native-only-icon-action native-only-icon-action--primary"
+              aria-label="Create a new pool"
+              title="Create a new pool"
+            >
+              <span aria-hidden="true" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>
+                +
+              </span>
             </Link>
           </div>
         </div>

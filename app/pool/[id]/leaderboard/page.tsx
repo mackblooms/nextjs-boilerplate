@@ -1506,6 +1506,11 @@ export default function LeaderboardPage() {
     typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   async function sharePoolInvite() {
+    if (draftLocked) {
+      setMsg("Invites are closed after draft lock.");
+      return;
+    }
+
     const shareData = buildPoolInviteShareData(poolId, activePoolName, true);
 
     if (canNativeShare) {
@@ -1532,6 +1537,7 @@ export default function LeaderboardPage() {
   }
 
   async function deletePool() {
+    if (draftLocked) return;
     if (deletingPool) return;
 
     const ok = window.confirm(
@@ -1679,14 +1685,16 @@ export default function LeaderboardPage() {
               </select>
             </label>
           ) : null}
-          <button
-            className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
-            type="button"
-            onClick={() => void sharePoolInvite()}
-          >
-            Share Invite
-          </button>
-          {isPoolOwner ? (
+          {!draftLocked ? (
+            <button
+              className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
+              type="button"
+              onClick={() => void sharePoolInvite()}
+            >
+              Share Invite
+            </button>
+          ) : null}
+          {isPoolOwner && !draftLocked ? (
             <button
               className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--danger"
               type="button"
