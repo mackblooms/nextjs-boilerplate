@@ -103,12 +103,20 @@ function addScoreEvent(
 }
 
 function isFinalStatus(status: unknown): boolean {
-  return String(status ?? "").trim().toLowerCase().startsWith("final");
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return (
+    normalized.startsWith("final") ||
+    normalized === "ft" ||
+    normalized === "full time" ||
+    normalized === "full-time" ||
+    normalized === "post" ||
+    normalized.startsWith("complete")
+  );
 }
 
 function isBlankOrFinalStatus(status: unknown): boolean {
   const normalized = String(status ?? "").trim().toLowerCase();
-  return normalized === "" || normalized.startsWith("final");
+  return normalized === "" || isFinalStatus(normalized);
 }
 
 function worldCupTeamCost(teamId: string, options: ScoringOptions): number | null {

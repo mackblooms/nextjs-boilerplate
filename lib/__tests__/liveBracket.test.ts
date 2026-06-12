@@ -71,10 +71,23 @@ describe("applyLiveScoreOverlay: live score sets winner", () => {
 
     const result = applyLiveScoreOverlay(games, [teamA, teamB], [liveScore("Argentina", "Brazil", 1, 1)]);
 
-    expect(result[0].status).toBe("FINAL");
+    expect(result[0].status).toBe("Final");
     expect(result[0].team1_score).toBe(1);
     expect(result[0].team2_score).toBe(1);
     expect(result[0].winner_team_id).toBeNull();
+  });
+
+  it("FINAL feed detail FT is canonicalized to Final for scoring", () => {
+    const games = [g("g1", "GROUP", 1, "tA", "tB", null, "Group A")];
+    const result = applyLiveScoreOverlay(games, [teamA, teamB], [{
+      ...liveScore("Argentina", "Brazil", 2, 0),
+      detail: "FT",
+    }]);
+
+    expect(result[0].status).toBe("Final");
+    expect(result[0].winner_team_id).toBe("tA");
+    expect(result[0].team1_score).toBe(2);
+    expect(result[0].team2_score).toBe(0);
   });
 });
 

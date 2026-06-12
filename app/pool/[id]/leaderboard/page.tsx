@@ -250,6 +250,18 @@ function gameHasStarted(
   todayEt: string,
 ) {
   if (game.winner_team_id) return true;
+  if (typeof game.team1_score === "number" || typeof game.team2_score === "number") return true;
+  const status = String(game.status ?? "").trim().toLowerCase();
+  if (
+    status.startsWith("final") ||
+    status === "ft" ||
+    status === "full time" ||
+    status === "full-time" ||
+    status === "post" ||
+    status.startsWith("complete")
+  ) {
+    return true;
+  }
 
   if (game.start_time) {
     const startMs = Date.parse(game.start_time);
@@ -832,7 +844,7 @@ export default function LeaderboardPage() {
         }
         const scoreCompetitionSlug = normalizeCompetitionSlug(scorePoolRow?.competition_slug);
         const liveRes = await fetch(
-          `/api/scores/live?lookbackDays=1&lookaheadDays=0&competition=${scoreCompetitionSlug}`,
+          `/api/scores/live?lookbackDays=30&lookaheadDays=0&competition=${scoreCompetitionSlug}`,
           { cache: "no-store" },
         );
         const livePayload = (await liveRes.json().catch(() => ({}))) as LiveScoresResponse;

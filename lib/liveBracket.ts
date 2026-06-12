@@ -196,7 +196,7 @@ export function applyLiveScoreOverlay<TGame extends LiveOverlayGame, TTeam exten
     const live = liveByGameId.get(game.id);
     if (!live || live.state !== "FINAL") continue;
     if (typeof live.team1Score !== "number" || typeof live.team2Score !== "number") continue;
-    game.status = live.detail || "Final";
+    game.status = "Final";
     game.team1_score = live.team1Score;
     game.team2_score = live.team2Score;
     if (live.team1Score === live.team2Score) continue;

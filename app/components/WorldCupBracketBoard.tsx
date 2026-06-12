@@ -47,6 +47,9 @@ function isFinalGroupGame(game: Game) {
   return (
     Boolean(game.winner_team_id) ||
     status.includes("final") ||
+    status === "ft" ||
+    status.includes("full time") ||
+    status.includes("full-time") ||
     status.includes("complete") ||
     status.includes("post")
   );

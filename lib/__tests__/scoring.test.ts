@@ -41,6 +41,12 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     expect(r.teamScoresByTeamId.has("t2")).toBe(false);
   });
 
+  it("GROUP win with FT status awards final soccer points", () => {
+    const r = wc([{ round: "GROUP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1", status: "FT" }]);
+    expect(r.teamScoresByTeamId.get("t1")).toBe(6);
+    expect(r.teamScoresByTeamId.has("t2")).toBe(false);
+  });
+
   it("GROUP win with non-final status awards no points", () => {
     const r = wc([{ round: "GROUP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1", status: "In Progress" }]);
     expect(r.teamScoresByTeamId.size).toBe(0);
