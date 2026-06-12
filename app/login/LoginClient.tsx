@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
@@ -18,6 +19,7 @@ function sanitizeNextPath(nextPath: string | null) {
 }
 
 export default function LoginClient() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +29,7 @@ export default function LoginClient() {
   const [continueSignUpAfterLegal, setContinueSignUpAfterLegal] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "error" | "success">("idle");
   const [msg, setMsg] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
 
   const nextPath =
     typeof window !== "undefined"
@@ -52,6 +55,36 @@ export default function LoginClient() {
   }, [invitePoolId, nextPath]);
 
   const signInNext = invitePoolId ? `/pool/${invitePoolId}` : nextPath;
+
+  useEffect(() => {
+    let canceled = false;
+
+    const redirectIfSignedIn = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (canceled) return;
+
+      if (data.session) {
+        router.replace(signInNext);
+        return;
+      }
+
+      setAuthChecked(true);
+    };
+
+    void redirectIfSignedIn();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (canceled) return;
+      if (session) {
+        router.replace(signInNext);
+      }
+    });
+
+    return () => {
+      canceled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [router, signInNext]);
 
   useEffect(() => {
     if (!legalModalOpen) return;
@@ -156,7 +189,7 @@ export default function LoginClient() {
     setStatus("success");
     if (hasSession) {
       setMsg("Account created and signed in. Redirecting...");
-      window.location.href = profileSetupNext;
+      window.location.replace(profileSetupNext);
       return;
     }
 
@@ -186,7 +219,7 @@ export default function LoginClient() {
 
     setStatus("success");
     setMsg("Signed in successfully. Redirecting...");
-    window.location.href = signInNext;
+    window.location.replace(signInNext);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -231,6 +264,14 @@ export default function LoginClient() {
     if (shouldContinue) {
       void submitSignUp();
     }
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="page-shell page-card" style={{ maxWidth: 520 }}>
+        Loading...
+      </main>
+    );
   }
 
   return (

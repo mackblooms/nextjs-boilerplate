@@ -20,6 +20,7 @@ import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { defaultDraftName, isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
+import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -389,7 +390,7 @@ function etDayKeyFromIso(startTime: string | null) {
 }
 
 function normalizeTeamKey(name: string) {
-  return name
+  return normalizeWorldCupTeamKey(name)
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[']/g, "")
@@ -455,6 +456,14 @@ function isNcaaTournamentEvent(event: EspnEvent) {
 
 function sortPoolsByName(a: { name: string }, b: { name: string }) {
   return a.name.localeCompare(b.name);
+}
+
+function HomeLoading() {
+  return (
+    <main className="page-shell page-card" style={{ maxWidth: 520 }}>
+      Loading...
+    </main>
+  );
 }
 
 function isTrackedTeam(
@@ -943,7 +952,7 @@ export function HomeContent({
       canceled = true;
       sub.subscription.unsubscribe();
     };
-  }, [activeCompetitionSlug]);
+  }, [activeCompetitionSlug, competitionParam, forcedCompetitionSlug]);
 
   useEffect(() => {
     if (isAuthenticated !== true || !selectedPoolId) return;
@@ -1918,6 +1927,10 @@ export function HomeContent({
     setHomeDraftsMessage(`Deleted "${draft.name}".`);
   };
 
+  if (isAuthenticated === null) {
+    return <HomeLoading />;
+  }
+
   if (isAuthenticated !== true) {
     return (
       <LandingPage
@@ -2318,7 +2331,7 @@ export function HomeContent({
 }
 
 function HomeFallback() {
-  return <LandingPage loginHref="/login" />;
+  return <HomeLoading />;
 }
 
 export default function Home() {

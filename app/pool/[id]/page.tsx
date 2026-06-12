@@ -12,6 +12,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 
 function competitionPathWithParams(
   path: string,
@@ -192,7 +193,7 @@ function toScore(raw: string | undefined): number | null {
 }
 
 function normalizeTeamKey(name: string) {
-  return name
+  return normalizeWorldCupTeamKey(name)
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[']/g, "")
