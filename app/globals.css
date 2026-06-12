@@ -1782,7 +1782,7 @@ body.is-native-app-shell .competition-switcher {
 
 .match-date-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
   margin-top: 10px;
 }
@@ -2122,11 +2122,11 @@ body.is-native-app-shell .competition-switcher {
   .match-actions {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .match-date-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .match-stat-pill {
@@ -2231,7 +2231,7 @@ body:not(.is-native-app-shell) .match-tab {
 }
 
 body:not(.is-native-app-shell) .match-tab[data-active="true"] {
-  background: var(--surface-elevated);
+  background: var(--surface);
   color: var(--foreground);
 }
 

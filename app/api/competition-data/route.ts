@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { withWorldCupDraftCost } from "@/lib/worldCupRules";
 
 function isMissingColumnError(error: { message?: string } | null | undefined) {
   const message = (error?.message ?? "").toLowerCase();
@@ -68,10 +69,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: gameErr.message }, { status: 400 });
     }
 
+    const teams =
+      competitionSlug === "world-cup"
+        ? (teamRows ?? []).map((team) => withWorldCupDraftCost(team))
+        : teamRows ?? [];
+
     return NextResponse.json({
       ok: true,
       competition: competitionSlug,
-      teams: teamRows ?? [],
+      teams,
       games: ((gameRows ?? []) as Array<{ slot: number | string | null }>).map((game) => ({
         ...game,
         slot: Number(game.slot ?? 0),

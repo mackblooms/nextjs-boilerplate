@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
 import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
+import { withWorldCupDraftCost } from "@/lib/worldCupRules";
 import {
   WORLD_CUP_FIXED_R32_SLOT_TARGETS,
   WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
@@ -1195,7 +1196,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: gamesResult.error.message }, { status: 400 });
     }
 
-    const teams = (teamsResult.data ?? []) as TeamRow[];
+    const teams =
+      competitionSlug === "world-cup"
+        ? ((teamsResult.data ?? []) as TeamRow[]).map((team) => withWorldCupDraftCost(team))
+        : ((teamsResult.data ?? []) as TeamRow[]);
     const games = ((gamesResult.data ?? []) as GameRow[]).map((game) => ({
       ...game,
       id: String(game.id),

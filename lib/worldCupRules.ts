@@ -32,10 +32,12 @@ export function getWorldCupCostForTeamName(name: string) {
   return WORLD_CUP_TEAM_COST_BY_NORMALIZED_NAME.get(normalizeWorldCupTeamName(name)) ?? null;
 }
 
-export function withWorldCupDraftCost<T extends { name: string; cost: number | null }>(team: T): T & { cost: number } {
+export function withWorldCupDraftCost<T extends { name: string | null; cost: number | null }>(
+  team: T,
+): T & { cost: number } {
   return {
     ...team,
-    cost: getWorldCupCostForTeamName(team.name) ?? team.cost ?? 0,
+    cost: team.name ? getWorldCupCostForTeamName(team.name) ?? team.cost ?? 0 : team.cost ?? 0,
   };
 }
 

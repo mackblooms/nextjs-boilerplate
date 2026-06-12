@@ -698,10 +698,7 @@ function PoolsPageContent() {
           </div>
 
           <div className="match-actions">
-            <Link href={competitionPath("/drafts", competitionSlug)} className="match-icon-action">
-              Drafts
-            </Link>
-            <Link href={competitionPath("/pools/new", competitionSlug)} className="match-icon-action match-icon-action--primary">
+            <Link href={competitionPath("/pools/new", competitionSlug)} className="match-icon-action">
               New
             </Link>
           </div>
@@ -715,10 +712,6 @@ function PoolsPageContent() {
           <div className="match-stat-pill">
             <span>Available</span>
             <strong>{discoverPools.length}</strong>
-          </div>
-          <div className="match-stat-pill">
-            <span>Status</span>
-            <strong>{loading ? "Loading" : userId ? "Signed In" : "Guest"}</strong>
           </div>
         </div>
 

@@ -765,6 +765,7 @@ export function HomeContent({
   const [deletingDraftId, setDeletingDraftId] = useState<string | null>(null);
   const homeDraftsLoadedRef = useRef(false);
   const activeCompetition = useMemo(() => getCompetition(activeCompetitionSlug), [activeCompetitionSlug]);
+  const homeDraftsLocked = isDraftLibraryLocked(activeCompetitionSlug);
   const competitionPoolPath = useMemo(() => competitionPath("/pools", activeCompetitionSlug), [activeCompetitionSlug]);
   const competitionNewPoolPath = useMemo(
     () => competitionPath("/pools/new", activeCompetitionSlug),
@@ -2062,10 +2063,10 @@ export function HomeContent({
               <button
                 type="button"
                 onClick={() => void createHomeDraft()}
-                disabled={creatingHomeDraft}
+                disabled={creatingHomeDraft || homeDraftsLocked}
                 className="native-only-icon-action native-only-icon-action--primary"
-                aria-label={creatingHomeDraft ? "Creating draft" : "Create new draft"}
-                title={creatingHomeDraft ? "Creating draft" : "Create new draft"}
+                aria-label={creatingHomeDraft ? "Creating draft" : homeDraftsLocked ? "Drafts locked" : "Create new draft"}
+                title={creatingHomeDraft ? "Creating draft" : homeDraftsLocked ? "Drafts locked" : "Create new draft"}
               >
                 <span aria-hidden="true" style={{ fontSize: 26, fontWeight: 800, lineHeight: 1 }}>
                   +
@@ -2284,13 +2285,13 @@ export function HomeContent({
             <button
               type="button"
               onClick={() => void createHomeDraft()}
-              disabled={creatingHomeDraft}
-              className="ui-btn ui-btn--lg ui-btn--primary ui-btn--full native-hidden"
+              disabled={creatingHomeDraft || homeDraftsLocked}
+              className={`ui-btn ui-btn--lg ui-btn--full native-hidden ${homeDraftsLocked ? "ui-btn--ghost" : "ui-btn--primary"}`}
               style={{
                 fontWeight: 900,
               }}
             >
-              {creatingHomeDraft ? "Creating Draft..." : "Create New Draft"}
+              {creatingHomeDraft ? "Creating Draft..." : homeDraftsLocked ? "Drafts Locked" : "Create New Draft"}
             </button>
           ) : null}
 
