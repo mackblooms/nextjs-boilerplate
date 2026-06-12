@@ -106,6 +106,11 @@ function isFinalStatus(status: unknown): boolean {
   return String(status ?? "").trim().toLowerCase().startsWith("final");
 }
 
+function isBlankOrFinalStatus(status: unknown): boolean {
+  const normalized = String(status ?? "").trim().toLowerCase();
+  return normalized === "" || normalized.startsWith("final");
+}
+
 function worldCupTeamCost(teamId: string, options: ScoringOptions): number | null {
   const raw = options.teamCostById?.get(teamId);
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
@@ -131,7 +136,7 @@ function scoreWorldCupTeamResultsDetailed(
     const round = String(g.round ?? "").toUpperCase();
 
     if (round === "GROUP") {
-      if (g.winner_team_id && isFinalStatus(g.status)) {
+      if (g.winner_team_id && isBlankOrFinalStatus(g.status)) {
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round,

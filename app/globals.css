@@ -1344,6 +1344,12 @@ body.is-native-app-shell .competition-switcher {
   box-shadow: var(--shadow-sm);
 }
 
+.home-live-status-dot {
+  border-color: var(--surface-glass);
+  height: 9px;
+  width: 9px;
+}
+
 .home-draft-card {
   transition:
     transform 150ms ease,

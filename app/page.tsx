@@ -702,7 +702,18 @@ function ScorePanel({
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
-              <div style={{ fontSize: 12, opacity: 0.8 }}>{statusLabel(game)}</div>
+              <div
+                style={{
+                  alignItems: "center",
+                  display: "inline-flex",
+                  fontSize: 12,
+                  gap: 7,
+                  opacity: 0.8,
+                }}
+              >
+                {game.state === "LIVE" ? <span className="live-status-dot home-live-status-dot" aria-label="Live game" /> : null}
+                <span>{statusLabel(game)}</span>
+              </div>
               {game.boxScoreUrl ? (
                 <div style={{ fontSize: 12, fontWeight: 700, marginTop: 2 }}>View box score</div>
               ) : null}
