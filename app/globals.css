@@ -903,6 +903,45 @@ body.is-native-app-shell .competition-switcher {
   display: grid;
   gap: 6px;
   padding: 10px;
+  position: relative;
+}
+
+.world-cup-group-card[data-live="true"] {
+  border-color: rgba(22, 163, 74, 0.55);
+}
+
+.world-cup-group-card-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  min-width: 0;
+  padding-right: 14px;
+}
+
+.live-status-dot {
+  background: #16a34a;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.22);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 10px;
+  width: 10px;
+}
+
+.world-cup-group-card > .live-status-dot,
+.world-cup-group-card-heading .live-status-dot {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.bracket-live-status-dot {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  z-index: 1;
 }
 
 .world-cup-group-team,

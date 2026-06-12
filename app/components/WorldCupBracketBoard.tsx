@@ -4,6 +4,7 @@ import {
   WORLD_CUP_SLOT_LABELS,
   type WorldCupRound,
 } from "@/lib/worldCupBracket";
+import type { MatchedLiveGame } from "@/lib/liveBracket";
 
 type Team = {
   id: string;
@@ -55,7 +56,7 @@ function scoreIsKnown(value: number | null | undefined): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-function buildGroupStandings(group: string, teams: Team[], games: Game[]) {
+function buildGroupStandings(group: string, teams: Team[], games: Game[], liveByGameId?: Map<string, MatchedLiveGame>) {
   const rows = new Map<string, GroupStanding>();
   for (const team of teams.filter((candidate) => candidate.region === group)) {
     rows.set(team.id, {
@@ -69,14 +70,24 @@ function buildGroupStandings(group: string, teams: Team[], games: Game[]) {
 
   for (const game of games) {
     if (game.round !== "GROUP" || game.region !== group || !game.team1_id || !game.team2_id) continue;
-    if (!isFinalGroupGame(game)) continue;
+    const live = liveByGameId?.get(game.id);
+    const useLiveScore = live?.state === "LIVE" && scoreIsKnown(live.team1Score) && scoreIsKnown(live.team2Score);
+    if (!isFinalGroupGame(game) && !useLiveScore) continue;
 
     const team1 = rows.get(game.team1_id);
     const team2 = rows.get(game.team2_id);
     if (!team1 || !team2) continue;
 
-    const team1Score = scoreIsKnown(game.team1_score) ? game.team1_score : null;
-    const team2Score = scoreIsKnown(game.team2_score) ? game.team2_score : null;
+    const team1Score = useLiveScore
+      ? live.team1Score
+      : scoreIsKnown(game.team1_score)
+        ? game.team1_score
+        : null;
+    const team2Score = useLiveScore
+      ? live.team2Score
+      : scoreIsKnown(game.team2_score)
+        ? game.team2_score
+        : null;
     const hasScores = team1Score != null && team2Score != null;
     team1.played += 1;
     team2.played += 1;
@@ -120,11 +131,13 @@ export default function WorldCupBracketBoard({
   teams,
   games,
   highlightTeamIds,
+  liveByGameId,
   layout = "stacked",
 }: {
   teams: Team[];
   games: Game[];
   highlightTeamIds: Set<string>;
+  liveByGameId?: Map<string, MatchedLiveGame>;
   layout?: "stacked" | "side-groups";
 }) {
   const teamById = new Map(teams.map((team) => [team.id, team]));
@@ -199,10 +212,15 @@ export default function WorldCupBracketBoard({
         </div>
         <div className="world-cup-group-grid">
           {GROUPS.map((group) => {
-            const standings = buildGroupStandings(group, teams, groupGamesByRegion.get(group) ?? []);
+            const groupGames = groupGamesByRegion.get(group) ?? [];
+            const standings = buildGroupStandings(group, teams, groupGames, liveByGameId);
+            const hasLiveGroupGame = groupGames.some((game) => liveByGameId?.get(game.id)?.state === "LIVE");
             return (
-              <article className="world-cup-group-card" key={group}>
-                <strong>{group}</strong>
+              <article className="world-cup-group-card" data-live={hasLiveGroupGame ? "true" : undefined} key={group}>
+                <div className="world-cup-group-card-heading">
+                  <strong>{group}</strong>
+                  {hasLiveGroupGame ? <span className="live-status-dot" aria-label="Live standings" /> : null}
+                </div>
                 <table className="world-cup-group-table">
                   <thead>
                     <tr>
@@ -222,9 +240,9 @@ export default function WorldCupBracketBoard({
                     ))}
                   </tbody>
                 </table>
-                {showGroupGames && (groupGamesByRegion.get(group) ?? []).length > 0 ? (
+                {showGroupGames && groupGames.length > 0 ? (
                   <div className="world-cup-group-games">
-                    {(groupGamesByRegion.get(group) ?? []).map(groupGameRow)}
+                    {groupGames.map(groupGameRow)}
                   </div>
                 ) : null}
               </article>

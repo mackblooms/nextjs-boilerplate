@@ -131,7 +131,7 @@ function scoreWorldCupTeamResultsDetailed(
     const round = String(g.round ?? "").toUpperCase();
 
     if (round === "GROUP") {
-      if (g.winner_team_id) {
+      if (g.winner_team_id && isFinalStatus(g.status)) {
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round,

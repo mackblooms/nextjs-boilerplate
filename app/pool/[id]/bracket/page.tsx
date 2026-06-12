@@ -1103,6 +1103,7 @@ export default function BracketPage() {
     children: ReactNode,
     meta?: string | null,
     gameNumber?: number | null,
+    liveState?: LiveScoreState,
   ) => (
     <div
       style={{
@@ -1116,8 +1117,10 @@ export default function BracketPage() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        position: "relative",
       }}
     >
+      {liveState === "LIVE" ? <span className="live-status-dot bracket-live-status-dot" aria-label="Live game" /> : null}
       {gameNumber != null ? (
         <div
           style={{
@@ -1215,6 +1218,7 @@ export default function BracketPage() {
                     </>,
                     meta,
                     g.sportsdata_game_id,
+                    live?.state,
                   )}
                 </div>
               );
@@ -1578,6 +1582,7 @@ export default function BracketPage() {
           teams={teams}
           games={displayGames}
           highlightTeamIds={highlightTeamIds}
+          liveByGameId={liveByGameId}
           layout="side-groups"
         />
       ) : null}
@@ -1733,6 +1738,7 @@ export default function BracketPage() {
                           </>,
                           formatGameMeta(championship),
                           championship?.sportsdata_game_id,
+                          championshipLive?.state,
                         );
                       })()}
                     </div>

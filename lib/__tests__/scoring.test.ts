@@ -30,9 +30,14 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
 
   // GROUP stage
   it("GROUP win awards 6 pts to winner only", () => {
-    const r = wc([{ round: "GROUP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }]);
+    const r = wc([{ round: "GROUP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1", status: "Final" }]);
     expect(r.teamScoresByTeamId.get("t1")).toBe(6);
     expect(r.teamScoresByTeamId.has("t2")).toBe(false);
+  });
+
+  it("GROUP win with non-final status awards no points", () => {
+    const r = wc([{ round: "GROUP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1", status: "In Progress" }]);
+    expect(r.teamScoresByTeamId.size).toBe(0);
   });
 
   it("GROUP draw (Final, equal scores) awards 2 pts to each team", () => {
@@ -180,9 +185,9 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     // 3 group wins (6 each) + R32 GROUP_ADVANCE + R32 win
     const r = wc(
       [
-        { round: "GROUP", team1_id: "t1", team2_id: "tA", winner_team_id: "t1" },
-        { round: "GROUP", team1_id: "t1", team2_id: "tB", winner_team_id: "t1" },
-        { round: "GROUP", team1_id: "t1", team2_id: "tC", winner_team_id: "t1" },
+        { round: "GROUP", team1_id: "t1", team2_id: "tA", winner_team_id: "t1", status: "Final" },
+        { round: "GROUP", team1_id: "t1", team2_id: "tB", winner_team_id: "t1", status: "Final" },
+        { round: "GROUP", team1_id: "t1", team2_id: "tC", winner_team_id: "t1", status: "Final" },
         { round: "R32",   team1_id: "t1", team2_id: "t2", winner_team_id: "t1" },
       ],
       costs(["t1", 22], ["t2", 22], ["tA", 22], ["tB", 22], ["tC", 22]),
