@@ -149,4 +149,12 @@ describe("matchLiveScoresToGames", () => {
     const matched = matchLiveScoresToGames(games, teams, [live("France", "Spain", 2, 0)]);
     expect(matched.has("g1")).toBe(false);
   });
+
+  it("matches World Cup aliases such as South Korea to Korea Republic", () => {
+    const games = [g("g1", "GROUP", 6, "tC", "tK", null, "Group A")];
+    const teams: LiveOverlayTeam[] = [{ id: "tC", name: "Czechia" }, { id: "tK", name: "Korea Republic" }];
+    const matched = matchLiveScoresToGames(games, teams, [live("Czechia", "South Korea", 1, 2)]);
+    expect(matched.get("g1")?.team1Score).toBe(1);
+    expect(matched.get("g1")?.team2Score).toBe(2);
+  });
 });

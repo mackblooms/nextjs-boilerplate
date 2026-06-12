@@ -1,4 +1,5 @@
 import { toSchoolDisplayName } from "@/lib/teamNames";
+import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 
 export type LiveOverlayTeam = {
   id: string;
@@ -40,7 +41,7 @@ export type MatchedLiveGame = {
 };
 
 function normalizeName(value: string | null | undefined): string {
-  return toSchoolDisplayName(value)
+  return normalizeWorldCupTeamKey(toSchoolDisplayName(value))
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[()'.]/g, "")

@@ -10,6 +10,7 @@ import {
   resolveWorldCupThirdPlaceAssignments,
   type WorldCupPropagationTarget,
 } from "@/lib/worldCupBracket";
+import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -26,6 +27,10 @@ type SportsGame = {
 
 type EspnTeam = {
   id?: string | number;
+  location?: string;
+  shortDisplayName?: string;
+  displayName?: string;
+  name?: string;
 };
 
 type EspnCompetitor = {
@@ -65,6 +70,8 @@ type FinalGame = {
   awayTeamId: number;
   homeScore: number;
   awayScore: number;
+  homeTeamName?: string | null;
+  awayTeamName?: string | null;
 };
 
 type LocalBracketGame = {
@@ -191,6 +198,26 @@ function preferredLocalIdsForExternalTeam(rows: TeamIdentityRow[]): string[] {
     .map((row) => String(row.id));
 }
 
+function addTeamIdentity(map: Map<string, TeamIdentityRow[]>, key: string, row: TeamIdentityRow) {
+  if (!key) return;
+  const list = map.get(key) ?? [];
+  list.push(row);
+  map.set(key, list);
+}
+
+function preferredWorldCupLocalIds(
+  localTeamsByEspn: Map<number, TeamIdentityRow[]>,
+  localTeamsByName: Map<string, TeamIdentityRow[]>,
+  espnTeamId: number,
+  teamName: string | null | undefined,
+) {
+  const byEspn = localTeamsByEspn.get(espnTeamId) ?? [];
+  if (byEspn.length > 0) return preferredLocalIdsForExternalTeam(byEspn);
+
+  const nameKey = normalizeWorldCupTeamKey(teamName);
+  return preferredLocalIdsForExternalTeam(localTeamsByName.get(nameKey) ?? []);
+}
+
 function roundOrder(round: string | null | undefined): number {
   const key = String(round ?? "").toUpperCase();
   if (key === "R64") return 1;
@@ -256,6 +283,32 @@ function toSeason(value: unknown): number | null {
   const year = Math.trunc(n);
   if (year < 2000 || year > 2100) return null;
   return year;
+}
+
+function espnTeamName(team: EspnTeam | undefined): string | null {
+  return (
+    team?.location?.trim() ||
+    team?.shortDisplayName?.trim() ||
+    team?.displayName?.trim() ||
+    team?.name?.trim() ||
+    null
+  );
+}
+
+function addWorldCupTeamLookups(
+  row: TeamIdentityRow,
+  localTeamsByEspn: Map<number, TeamIdentityRow[]>,
+  localTeamsByName: Map<string, TeamIdentityRow[]>,
+) {
+  const espnId = Number(row.espn_team_id);
+  if (Number.isFinite(espnId)) {
+    const key = Math.trunc(espnId);
+    const list = localTeamsByEspn.get(key) ?? [];
+    list.push(row);
+    localTeamsByEspn.set(key, list);
+  }
+
+  addTeamIdentity(localTeamsByName, normalizeWorldCupTeamKey(row.name), row);
 }
 
 function isNcaaTournamentEvent(event: EspnEvent) {
@@ -982,6 +1035,8 @@ async function fetchEspnWorldCupFinalGames(lookbackDays: number): Promise<FinalG
         awayTeamId: Math.trunc(awayTeamId),
         homeScore,
         awayScore,
+        homeTeamName: espnTeamName(home.team),
+        awayTeamName: espnTeamName(away.team),
       });
     }
   }
@@ -1171,18 +1226,13 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
     .select("id,name,region,seed,seed_in_region,espn_team_id")
-    .eq("competition_slug", "world-cup")
-    .not("espn_team_id", "is", null);
+    .eq("competition_slug", "world-cup");
   if (teamErr) throw teamErr;
 
   const localTeamsByEspn = new Map<number, TeamIdentityRow[]>();
+  const localTeamsByName = new Map<string, TeamIdentityRow[]>();
   for (const t of (teamRows ?? []) as TeamIdentityRow[]) {
-    const espnId = Number(t.espn_team_id);
-    if (!Number.isFinite(espnId)) continue;
-    const key = Math.trunc(espnId);
-    const list = localTeamsByEspn.get(key) ?? [];
-    list.push(t);
-    localTeamsByEspn.set(key, list);
+    addWorldCupTeamLookups(t, localTeamsByEspn, localTeamsByName);
   }
 
   const gameRows = (await fetchGamesForPairMatching(supabaseAdmin, false)).filter(
@@ -1218,8 +1268,18 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
   const changedGames: ChangedWinnerGame[] = [];
 
   for (const f of finals) {
-    const homeLocalIds = preferredLocalIdsForExternalTeam(localTeamsByEspn.get(f.homeTeamId) ?? []);
-    const awayLocalIds = preferredLocalIdsForExternalTeam(localTeamsByEspn.get(f.awayTeamId) ?? []);
+    const homeLocalIds = preferredWorldCupLocalIds(
+      localTeamsByEspn,
+      localTeamsByName,
+      f.homeTeamId,
+      f.homeTeamName,
+    );
+    const awayLocalIds = preferredWorldCupLocalIds(
+      localTeamsByEspn,
+      localTeamsByName,
+      f.awayTeamId,
+      f.awayTeamName,
+    );
     if (homeLocalIds.length === 0 || awayLocalIds.length === 0) {
       worldCupSkippedNoTeamMap++;
       continue;
