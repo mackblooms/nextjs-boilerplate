@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
 import AppDeepLinkHandler from "./components/AppDeepLinkHandler";
+import AppHaptics from "./components/AppHaptics";
 import AppLaunchIntro from "./components/AppLaunchIntro";
 import AppPushNotifications from "./components/AppPushNotifications";
 import AppTopNav from "./components/AppTopNav";
@@ -59,6 +60,7 @@ export default function RootLayout({
       >
         <AppLaunchIntro />
         <AppDeepLinkHandler />
+        <AppHaptics />
         <AppPushNotifications />
         <div className="app-launch-content">
           <Suspense fallback={null}>
