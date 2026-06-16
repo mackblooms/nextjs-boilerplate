@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -446,6 +447,161 @@ function formatExpectedScore(value: number) {
   if (!Number.isFinite(value)) return "-";
   if (Math.abs(value - Math.round(value)) < 0.05) return String(Math.round(value));
   return value.toFixed(1);
+}
+
+function HelpHint({
+  label,
+  children,
+  side = "right",
+}: {
+  label: string;
+  children: ReactNode;
+  side?: "left" | "right";
+}) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <span
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+      }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        aria-label={label}
+        aria-describedby={open ? id : undefined}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: 9999,
+          border: "1px solid var(--border-color)",
+          background: "var(--surface)",
+          color: "var(--foreground)",
+          display: "inline-grid",
+          placeItems: "center",
+          fontSize: 11,
+          fontWeight: 900,
+          lineHeight: 1,
+          cursor: "help",
+          padding: 0,
+        }}
+      >
+        ?
+      </button>
+      {open ? (
+        <span
+          id={id}
+          role="tooltip"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            ...(side === "left" ? { right: 0 } : { left: 0 }),
+            width: 260,
+            maxWidth: "min(260px, 78vw)",
+            padding: "8px 10px",
+            borderRadius: 8,
+            border: "1px solid var(--border-color)",
+            background: "var(--surface-elevated)",
+            color: "var(--foreground)",
+            fontSize: 12,
+            lineHeight: 1.35,
+            fontWeight: 700,
+            whiteSpace: "normal",
+            textAlign: "left",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
+            zIndex: 30,
+            pointerEvents: "none",
+          }}
+        >
+          {children}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function ExplainedValue({
+  children,
+  description,
+  side = "right",
+}: {
+  children: ReactNode;
+  description: ReactNode;
+  side?: "left" | "right";
+}) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <span
+      tabIndex={0}
+      aria-describedby={open ? id : undefined}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      onClick={(event) => {
+        event.stopPropagation();
+        setOpen((prev) => !prev);
+      }}
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        width: "fit-content",
+        cursor: "help",
+        outline: "none",
+      }}
+    >
+      <span
+        style={{
+          borderBottom: "1px dotted currentColor",
+          textUnderlineOffset: 3,
+        }}
+      >
+        {children}
+      </span>
+      {open ? (
+        <span
+          id={id}
+          role="tooltip"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            ...(side === "left" ? { right: 0 } : { left: 0 }),
+            width: 250,
+            maxWidth: "min(250px, 78vw)",
+            padding: "8px 10px",
+            borderRadius: 8,
+            border: "1px solid var(--border-color)",
+            background: "var(--surface-elevated)",
+            color: "var(--foreground)",
+            fontSize: 12,
+            lineHeight: 1.35,
+            fontWeight: 700,
+            whiteSpace: "normal",
+            textAlign: "left",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
+            zIndex: 30,
+            pointerEvents: "none",
+          }}
+        >
+          {description}
+        </span>
+      ) : null}
+    </span>
+  );
 }
 
 function TeamValueTable({
@@ -1859,10 +2015,27 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div>{forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}</div>
-                <div>Player</div>
-                <div style={{ textAlign: "right" }}>
-                  {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span>{forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}</span>
+                  <HelpHint label={forecastModeOn ? "Explain expected rank" : "Explain rank"}>
+                    {forecastModeOn
+                      ? "Expected rank is the entry's average finishing place across the forecast simulations. Lower is better, and decimals are normal because many simulated finishes are averaged together."
+                      : "Rank is the current leaderboard position using the scores available right now. Tied entries share the same rank."}
+                  </HelpHint>
+                </div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <span>Player</span>
+                  <HelpHint label="Explain player column">
+                    The top line is the draft entry name. The smaller line is the player profile tied to that entry.
+                  </HelpHint>
+                </div>
+                <div style={{ display: "inline-flex", justifyContent: "flex-end", alignItems: "center", gap: 6, textAlign: "right" }}>
+                  <span>{forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}</span>
+                  <HelpHint label={forecastModeOn ? "Explain expected points and first place percentage" : "Explain score"} side="left">
+                    {forecastModeOn
+                      ? "Expected is average projected points across the simulations. 1st is the share of simulations where this entry finishes tied for first."
+                      : "Score is the current pool score from completed games and any live results already reflected in the leaderboard."}
+                  </HelpHint>
                 </div>
               </div>
 
@@ -1895,9 +2068,18 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
-                        <span>{forecastModeOn ? displayRank : r.rank}</span>
+                        <ExplainedValue
+                          description={
+                            forecastModeOn
+                              ? "This is the entry's average finishing rank across the forecast simulations. Lower is better; for example, 6.3 means the entry lands around sixth place on average."
+                              : "This is the entry's current rank using the latest available scores. Tied entries share the same rank."
+                          }
+                        >
+                          {forecastModeOn ? displayRank : r.rank}
+                        </ExplainedValue>
                         {forecastModeOn ? (
                           <span
+                            title="Live rank is this entry's current leaderboard position before forecast simulations are applied."
                             style={{
                               color: "var(--foreground)",
                               opacity: 0.7,
@@ -2070,7 +2252,21 @@ export default function LeaderboardPage() {
                         }}
                       >
                         <div style={{ fontWeight: 900, fontSize: 18 }}>
-                          {forecastModeOn ? formatExpectedScore(displayScore) : r.total_score}
+                          {forecastModeOn && forecast ? (
+                            <ExplainedValue
+                              side="left"
+                              description={`Average projected final score across the forecast simulations. Projected change from current score ${forecast.current_score}: ${forecast.expected_add >= 0 ? "+" : ""}${formatExpectedScore(forecast.expected_add)} points.`}
+                            >
+                              {formatExpectedScore(displayScore)}
+                            </ExplainedValue>
+                          ) : (
+                            <ExplainedValue
+                              side="left"
+                              description="Current pool score from the games already scored in the leaderboard."
+                            >
+                              {r.total_score}
+                            </ExplainedValue>
+                          )}
                         </div>
                         {forecastModeOn && forecast ? (
                           <div
@@ -2080,10 +2276,20 @@ export default function LeaderboardPage() {
                               opacity: 0.86,
                             }}
                           >
-                            1st: {forecast.first_place_probability.toFixed(1)}%
+                            <ExplainedValue
+                              side="left"
+                              description="The percentage of forecast simulations where this entry finishes tied for first place."
+                            >
+                              1st: {forecast.first_place_probability.toFixed(1)}%
+                            </ExplainedValue>
                           </div>
                         ) : null}
                         <div
+                          title={
+                            canViewTeams
+                              ? "Alive teams are drafted teams that still have a path to score more points."
+                              : undefined
+                          }
                           style={{
                             fontSize: 12,
                             fontWeight: 700,
