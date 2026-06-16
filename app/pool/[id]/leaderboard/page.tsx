@@ -449,88 +449,6 @@ function formatExpectedScore(value: number) {
   return value.toFixed(1);
 }
 
-function HelpHint({
-  label,
-  children,
-  side = "right",
-}: {
-  label: string;
-  children: ReactNode;
-  side?: "left" | "right";
-}) {
-  const id = useId();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <span
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-      }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <button
-        type="button"
-        aria-label={label}
-        aria-describedby={open ? id : undefined}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
-        onClick={(event) => {
-          event.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
-        style={{
-          width: 18,
-          height: 18,
-          borderRadius: 9999,
-          border: "1px solid var(--border-color)",
-          background: "var(--surface)",
-          color: "var(--foreground)",
-          display: "inline-grid",
-          placeItems: "center",
-          fontSize: 11,
-          fontWeight: 900,
-          lineHeight: 1,
-          cursor: "help",
-          padding: 0,
-        }}
-      >
-        ?
-      </button>
-      {open ? (
-        <span
-          id={id}
-          role="tooltip"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 8px)",
-            ...(side === "left" ? { right: 0 } : { left: 0 }),
-            width: 260,
-            maxWidth: "min(260px, 78vw)",
-            padding: "8px 10px",
-            borderRadius: 8,
-            border: "1px solid var(--border-color)",
-            background: "var(--surface-elevated)",
-            color: "var(--foreground)",
-            fontSize: 12,
-            lineHeight: 1.35,
-            fontWeight: 700,
-            whiteSpace: "normal",
-            textAlign: "left",
-            boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
-            zIndex: 30,
-            pointerEvents: "none",
-          }}
-        >
-          {children}
-        </span>
-      ) : null}
-    </span>
-  );
-}
-
 function ExplainedValue({
   children,
   description,
@@ -2015,27 +1933,33 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <span>{forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}</span>
-                  <HelpHint label={forecastModeOn ? "Explain expected rank" : "Explain rank"}>
-                    {forecastModeOn
-                      ? "Expected rank is the entry's average finishing place across the forecast simulations. Lower is better, and decimals are normal because many simulated finishes are averaged together."
-                      : "Rank is the current leaderboard position using the scores available right now. Tied entries share the same rank."}
-                  </HelpHint>
+                <div style={{ display: "inline-flex", alignItems: "center" }}>
+                  <ExplainedValue
+                    description={
+                      forecastModeOn
+                        ? "Expected rank is the entry's average finishing place across the forecast simulations. Lower is better, and decimals are normal because many simulated finishes are averaged together."
+                        : "Rank is the current leaderboard position using the scores available right now. Tied entries share the same rank."
+                    }
+                  >
+                    {forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}
+                  </ExplainedValue>
                 </div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-                  <span>Player</span>
-                  <HelpHint label="Explain player column">
-                    The top line is the draft entry name. The smaller line is the player profile tied to that entry.
-                  </HelpHint>
+                <div style={{ display: "inline-flex", alignItems: "center", minWidth: 0 }}>
+                  <ExplainedValue description="The top line is the draft entry name. The smaller line is the player profile tied to that entry.">
+                    Player
+                  </ExplainedValue>
                 </div>
-                <div style={{ display: "inline-flex", justifyContent: "flex-end", alignItems: "center", gap: 6, textAlign: "right" }}>
-                  <span>{forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}</span>
-                  <HelpHint label={forecastModeOn ? "Explain expected points and first place percentage" : "Explain score"} side="left">
-                    {forecastModeOn
-                      ? "Expected is average projected points across the simulations. 1st is the share of simulations where this entry finishes tied for first."
-                      : "Score is the current pool score from completed games and any live results already reflected in the leaderboard."}
-                  </HelpHint>
+                <div style={{ display: "inline-flex", justifyContent: "flex-end", alignItems: "center", textAlign: "right" }}>
+                  <ExplainedValue
+                    side="left"
+                    description={
+                      forecastModeOn
+                        ? "Expected is average projected points across the simulations. 1st is the share of simulations where this entry finishes tied for first."
+                        : "Score is the current pool score from completed games and any live results already reflected in the leaderboard."
+                    }
+                  >
+                    {forecastModeOn ? (isCompact ? "Exp/1st" : "Expected / 1st") : "Score"}
+                  </ExplainedValue>
                 </div>
               </div>
 
@@ -2079,15 +2003,15 @@ export default function LeaderboardPage() {
                         </ExplainedValue>
                         {forecastModeOn ? (
                           <span
-                            title="Live rank is this entry's current leaderboard position before forecast simulations are applied."
                             style={{
                               color: "var(--foreground)",
-                              opacity: 0.7,
                               fontSize: 12,
                               fontWeight: 700,
                             }}
                           >
-                            Live {r.rank}
+                            <ExplainedValue description="Live rank is this entry's current leaderboard position before forecast simulations are applied.">
+                              <span style={{ opacity: 0.7 }}>Live {r.rank}</span>
+                            </ExplainedValue>
                           </span>
                         ) : r.rank_delta != null ? (
                           <span
