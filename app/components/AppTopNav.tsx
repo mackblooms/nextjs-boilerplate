@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
+import { Haptics } from "@capacitor/haptics";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -34,6 +35,7 @@ type Theme = "light" | "dark";
 
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
 const DOCK_HOLD_DELAY_MS = 130;
+const SELECTION_HAPTIC_FALLBACK_MS = 7;
 
 function getPreferredTheme(): Theme {
   if (typeof window === "undefined") return "light";
@@ -59,6 +61,35 @@ function getSupabaseClient() {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function vibrateSelectionFallback() {
+  if (typeof navigator === "undefined" || !("vibrate" in navigator)) return;
+  navigator.vibrate(SELECTION_HAPTIC_FALLBACK_MS);
+}
+
+function triggerSelectionStartHaptic() {
+  if (!Capacitor.isNativePlatform()) {
+    vibrateSelectionFallback();
+    return;
+  }
+
+  void Haptics.selectionStart().catch(vibrateSelectionFallback);
+}
+
+function triggerSelectionChangedHaptic() {
+  if (!Capacitor.isNativePlatform()) {
+    vibrateSelectionFallback();
+    return;
+  }
+
+  void Haptics.selectionChanged().catch(vibrateSelectionFallback);
+}
+
+function triggerSelectionEndHaptic() {
+  if (!Capacitor.isNativePlatform()) return;
+
+  void Haptics.selectionEnd().catch(() => {});
 }
 
 function HomeIcon({ className }: { className?: string }) {
@@ -215,6 +246,8 @@ export default function AppTopNav() {
   const holdTimerRef = useRef<number | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
   const activePointerTypeRef = useRef<string | null>(null);
+  const scrubIndexRef = useRef<number | null>(null);
+  const scrubHapticsActiveRef = useRef(false);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement | null>(null);
   const sportRailRef = useRef<HTMLElement | null>(null);
@@ -521,6 +554,11 @@ export default function AppTopNav() {
       setDockExpanded(false);
       setScrubActive(false);
       setScrubIndex(null);
+      scrubIndexRef.current = null;
+      if (scrubHapticsActiveRef.current) {
+        triggerSelectionEndHaptic();
+        scrubHapticsActiveRef.current = false;
+      }
     };
 
     const onPointerDown = (event: MouseEvent) => {
@@ -596,6 +634,17 @@ export default function AppTopNav() {
     if (selectedItem.href === pathname) return;
 
     router.push(selectedItem.href);
+  }
+
+  function updateScrubIndex(index: number | null, shouldTick: boolean) {
+    if (index === scrubIndexRef.current) return;
+
+    scrubIndexRef.current = index;
+    setScrubIndex(index);
+
+    if (shouldTick && index !== null && scrubHapticsActiveRef.current) {
+      triggerSelectionChangedHaptic();
+    }
   }
 
   async function signOut() {
@@ -693,12 +742,14 @@ export default function AppTopNav() {
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const pointerIndex = pickDockIndex(event.clientX);
-    setScrubIndex(pointerIndex);
+    updateScrubIndex(pointerIndex, false);
 
     clearHoldTimer();
     holdTimerRef.current = window.setTimeout(() => {
       setDockExpanded(true);
       setScrubActive(true);
+      scrubHapticsActiveRef.current = true;
+      triggerSelectionStartHaptic();
     }, DOCK_HOLD_DELAY_MS);
   }
 
@@ -707,7 +758,7 @@ export default function AppTopNav() {
     if (!scrubActive) return;
 
     const pointerIndex = pickDockIndex(event.clientX);
-    setScrubIndex(pointerIndex);
+    updateScrubIndex(pointerIndex, true);
   }
 
   function stopScrub(pointerId: number, shouldNavigate: boolean) {
@@ -720,15 +771,21 @@ export default function AppTopNav() {
 
     if ((scrubActive && shouldNavigate) || shouldNavigateFromClick) {
       suppressClickRef.current = true;
-      navigateDockItem(scrubIndex, dockItems);
+      navigateDockItem(scrubIndexRef.current, dockItems);
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 220);
     }
 
+    if (scrubHapticsActiveRef.current) {
+      triggerSelectionEndHaptic();
+      scrubHapticsActiveRef.current = false;
+    }
+
     setDockExpanded(false);
     setScrubActive(false);
     setScrubIndex(null);
+    scrubIndexRef.current = null;
     activePointerIdRef.current = null;
     activePointerTypeRef.current = null;
   }
