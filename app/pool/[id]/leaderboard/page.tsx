@@ -685,7 +685,6 @@ export default function LeaderboardPage() {
   const [showTeamInsights, setShowTeamInsights] = useState(false);
   const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
-  const [expandedTeamsByEntry, setExpandedTeamsByEntry] = useState<Record<string, boolean>>({});
   const [breakdownByEntry, setBreakdownByEntry] = useState<Record<string, EntryScoreBreakdown>>({});
   const [openBreakdownEntryId, setOpenBreakdownEntryId] = useState<string | null>(null);
   const [hoveredMovementEntryId, setHoveredMovementEntryId] = useState<string | null>(null);
@@ -1495,7 +1494,6 @@ export default function LeaderboardPage() {
         };
       }
 
-      setExpandedTeamsByEntry({});
       setBreakdownByEntry(nextBreakdownByEntry);
       setOpenBreakdownEntryId((prev) => (prev && nextBreakdownByEntry[prev] ? prev : null));
       setRows(ranked);
@@ -1561,6 +1559,8 @@ export default function LeaderboardPage() {
 
   const activeBreakdown =
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
+  const activeEntryRow =
+    openBreakdownEntryId ? rows.find((row) => row.entry_id === openBreakdownEntryId) ?? null : null;
   const forecastModeOn = leaderboardMode === "forecast";
   const leaderboardGridTemplate = isCompact
     ? "64px minmax(0, 1fr) 88px"
@@ -1660,12 +1660,6 @@ export default function LeaderboardPage() {
 
     router.push(competitionPath("/pools", poolCompetitionSlug));
   }
-
-  useEffect(() => {
-    if (forecastModeOn && openBreakdownEntryId) {
-      setOpenBreakdownEntryId(null);
-    }
-  }, [forecastModeOn, openBreakdownEntryId]);
 
   const displayRows = useMemo(() => {
     if (!forecastModeOn || Object.keys(forecastByEntry).length === 0) {
@@ -1966,8 +1960,6 @@ export default function LeaderboardPage() {
               {displayRows.map(({ row: r, forecast, displayRank, displayScore }) => {
                 const canOpenBracket = draftLocked || r.user_id === myUserId;
                 const canViewTeams = draftLocked || r.user_id === myUserId;
-                const canViewBreakdown = canViewTeams && Boolean(breakdownByEntry[r.entry_id]);
-                const teamsExpanded = Boolean(expandedTeamsByEntry[r.entry_id]);
                 const draftLabel = r.entry_name?.trim() || "Unnamed draft";
                 const profileLabel =
                   r.full_name?.trim() || r.display_name?.trim() || "Unnamed player";
@@ -2225,116 +2217,19 @@ export default function LeaderboardPage() {
                             ? `${r.active_team_count} alive`
                             : "Hidden"}
                         </div>
-                        <button
-                          type="button"
-                          aria-expanded={teamsExpanded}
-                          aria-controls={`entry-teams-${r.entry_id}`}
-                          onClick={() => {
-                            setExpandedTeamsByEntry((prev) => ({
-                              ...prev,
-                              [r.entry_id]: !prev[r.entry_id],
-                            }));
-                          }}
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            color: "inherit",
-                            fontWeight: 400,
-                            fontSize: 13,
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
-                        >
-                          {teamsExpanded ? "Teams \u25B4" : "Teams \u25BE"}
-                        </button>
                         {canViewTeams ? (
-                          <Link
-                            href={`/pool/${poolId}/picks/${r.entry_id}`}
-                            className="leaderboard-mini-link"
-                          >
-                            Picks
-                          </Link>
-                        ) : null}
-                        {!forecastModeOn && canViewBreakdown ? (
                           <button
                             type="button"
                             onClick={() => {
                               setOpenBreakdownEntryId(r.entry_id);
                             }}
-                            style={{
-                              border: "none",
-                              background: "transparent",
-                              color: "inherit",
-                              fontWeight: 400,
-                              fontSize: 13,
-                              cursor: "pointer",
-                              padding: 0,
-                            }}
+                            className="leaderboard-mini-link"
                           >
-                            Breakdown
+                            Entry Details
                           </button>
-                        ) : !forecastModeOn ? (
-                          <div style={{ fontSize: 12, opacity: 0.7 }}>
-                            Breakdown hidden
-                          </div>
                         ) : null}
                       </div>
                     </div>
-
-                    {teamsExpanded ? (
-                      <div
-                        id={`entry-teams-${r.entry_id}`}
-                        style={{
-                          borderTop: "1px solid var(--border-color)",
-                          padding: "10px 12px",
-                        }}
-                      >
-                        {!canViewTeams ? (
-                          <div style={{ fontSize: 13, opacity: 0.78 }}>
-                            Teams are hidden until draft lock.
-                          </div>
-                        ) : r.drafted_teams.length === 0 ? (
-                          <div style={{ fontSize: 13, opacity: 0.78 }}>
-                            No drafted teams found for this entry.
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                            {r.drafted_teams.map((team) => (
-                              <Link
-                                key={team.team_id}
-                                href={`/pool/${poolId}/picks/${r.entry_id}`}
-                                className="leaderboard-team-chip"
-                                style={{
-                                  border: "1px solid var(--border-color)",
-                                  borderRadius: 9999,
-                                  background: "var(--surface-muted)",
-                                  padding: "6px 10px",
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 6,
-                                  maxWidth: "100%",
-                                  opacity: team.is_active ? 1 : 0.45,
-                                  color: "inherit",
-                                  textDecoration: "none",
-                                }}
-                              >
-                                <span
-                                  style={{
-                                    fontSize: 13,
-                                    fontWeight: 700,
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                  }}
-                                >
-                                  {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : null}
                   </div>
                 );
               })}
@@ -2504,7 +2399,7 @@ export default function LeaderboardPage() {
         </div>
       ) : null}
 
-      {activeBreakdown ? (
+      {activeEntryRow ? (
         <div
           role="presentation"
           onClick={() => setOpenBreakdownEntryId(null)}
@@ -2522,7 +2417,7 @@ export default function LeaderboardPage() {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={`${activeBreakdown.draft_label} scoring breakdown`}
+            aria-label={`${activeEntryRow.entry_name ?? activeEntryRow.display_name ?? "Entry"} details`}
             onClick={(event) => event.stopPropagation()}
             style={{
               width: "min(980px, 100%)",
@@ -2547,10 +2442,13 @@ export default function LeaderboardPage() {
             >
               <div>
                 <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>
-                  {activeBreakdown.draft_label} Breakdown
+                  {activeBreakdown?.draft_label ?? activeEntryRow.entry_name ?? "Entry Details"}
                 </h2>
                 <div style={{ marginTop: 4, opacity: 0.8, fontWeight: 700 }}>
-                  {activeBreakdown.player_label}
+                  {activeBreakdown?.player_label ??
+                    activeEntryRow.full_name?.trim() ??
+                    activeEntryRow.display_name?.trim() ??
+                    "Unnamed player"}
                 </div>
               </div>
               <button
@@ -2578,8 +2476,36 @@ export default function LeaderboardPage() {
                   fontWeight: 800,
                 }}
               >
-                Total: {activeBreakdown.total_score}
+                Total: {activeBreakdown?.total_score ?? activeEntryRow.total_score}
               </div>
+              {activeBreakdown ? (
+                <>
+                  <div
+                    style={{
+                      border: "1px solid var(--border-color)",
+                      borderRadius: 9999,
+                      padding: "6px 10px",
+                      fontWeight: 700,
+                      opacity: 0.9,
+                    }}
+                  >
+                    Team points: {activeBreakdown.team_points}
+                  </div>
+                  {activeBreakdown.perfect_r64_bonus > 0 ? (
+                    <div
+                      style={{
+                        border: "1px solid var(--border-color)",
+                        borderRadius: 9999,
+                        padding: "6px 10px",
+                        fontWeight: 700,
+                        opacity: 0.9,
+                      }}
+                    >
+                      Perfect R64 bonus: {activeBreakdown.perfect_r64_bonus}
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
               <div
                 style={{
                   border: "1px solid var(--border-color)",
@@ -2589,18 +2515,7 @@ export default function LeaderboardPage() {
                   opacity: 0.9,
                 }}
               >
-                Team points: {activeBreakdown.team_points}
-              </div>
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 9999,
-                  padding: "6px 10px",
-                  fontWeight: 700,
-                  opacity: 0.9,
-                }}
-              >
-                Perfect R64 bonus: {activeBreakdown.perfect_r64_bonus}
+                Alive: {activeEntryRow.active_team_count}
               </div>
             </div>
 
@@ -2619,9 +2534,9 @@ export default function LeaderboardPage() {
                   fontWeight: 900,
                 }}
               >
-                Team Totals
+                Drafted Teams
               </div>
-              {activeBreakdown.team_totals.length === 0 ? (
+              {activeEntryRow.drafted_teams.length === 0 ? (
                 <div style={{ padding: "12px", opacity: 0.8 }}>No drafted teams found.</div>
               ) : (
                 <>
@@ -2638,7 +2553,9 @@ export default function LeaderboardPage() {
                     <div>Team</div>
                     <div style={{ textAlign: "right" }}>Points</div>
                   </div>
-                  {activeBreakdown.team_totals.map((team) => (
+                  {activeEntryRow.drafted_teams.map((team) => {
+                    const teamTotal = activeBreakdown?.team_totals.find((row) => row.team_id === team.team_id);
+                    return (
                     <div
                       key={team.team_id}
                       style={{
@@ -2648,6 +2565,7 @@ export default function LeaderboardPage() {
                         padding: "10px 12px",
                         borderBottom: "1px solid var(--border-color)",
                         alignItems: "center",
+                        opacity: team.is_active ? 1 : 0.48,
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
@@ -2662,103 +2580,108 @@ export default function LeaderboardPage() {
                           {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
                         </span>
                       </div>
-                      <div style={{ textAlign: "right", fontWeight: 900 }}>{team.points}</div>
+                      <div style={{ textAlign: "right", fontWeight: 900 }}>
+                        {teamTotal?.points ?? "-"}
+                      </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </>
               )}
             </section>
 
-            <section
-              style={{
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                overflow: "hidden",
-              }}
-            >
-              <div
+            {activeBreakdown ? (
+              <section
                 style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
-                  fontWeight: 900,
+                  border: "1px solid var(--border-color)",
+                  borderRadius: 12,
+                  overflow: "hidden",
                 }}
               >
-                Scoring Events
-              </div>
-              {activeBreakdown.events.length === 0 && activeBreakdown.perfect_r64_bonus <= 0 ? (
-                <div style={{ padding: "12px", opacity: 0.8 }}>
-                  No points scored yet for this draft.
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid var(--border-color)",
+                    background: "var(--surface-muted)",
+                    fontWeight: 900,
+                  }}
+                >
+                  Scoring Events
                 </div>
-              ) : (
-                <>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 110px 80px",
-                      gap: 8,
-                      padding: "9px 12px",
-                      borderBottom: "1px solid var(--border-color)",
-                      fontWeight: 800,
-                      fontSize: 12,
-                    }}
-                  >
-                    <div>Team</div>
-                    <div>Round</div>
-                    <div style={{ textAlign: "right" }}>Points</div>
+                {activeBreakdown.events.length === 0 && activeBreakdown.perfect_r64_bonus <= 0 ? (
+                  <div style={{ padding: "12px", opacity: 0.8 }}>
+                    No points scored yet for this draft.
                   </div>
-                  {activeBreakdown.events.map((event) => (
-                    <div
-                      key={event.id}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 110px 80px",
-                        gap: 8,
-                        padding: "10px 12px",
-                        borderBottom: "1px solid var(--border-color)",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <span
-                          style={{
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {formatTeamLabel(event.team_name, event.seed, poolCompetitionSlug)}
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
-                      <div style={{ textAlign: "right", fontWeight: 900 }}>
-                        {formatPointsDelta(event.points_awarded)}
-                      </div>
-                    </div>
-                  ))}
-                  {activeBreakdown.perfect_r64_bonus > 0 ? (
+                ) : (
+                  <>
                     <div
                       style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 110px 80px",
                         gap: 8,
-                        padding: "10px 12px",
+                        padding: "9px 12px",
                         borderBottom: "1px solid var(--border-color)",
-                        alignItems: "center",
-                        background: "var(--surface-muted)",
+                        fontWeight: 800,
+                        fontSize: 12,
                       }}
                     >
-                      <div style={{ fontWeight: 800 }}>Perfect R64 Bonus</div>
-                      <div style={{ fontWeight: 700 }}>Bonus</div>
-                      <div style={{ textAlign: "right", fontWeight: 900 }}>
-                        {formatPointsDelta(activeBreakdown.perfect_r64_bonus)}
-                      </div>
+                      <div>Team</div>
+                      <div>Round</div>
+                      <div style={{ textAlign: "right" }}>Points</div>
                     </div>
-                  ) : null}
-                </>
-              )}
-            </section>
+                    {activeBreakdown.events.map((event) => (
+                      <div
+                        key={event.id}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 110px 80px",
+                          gap: 8,
+                          padding: "10px 12px",
+                          borderBottom: "1px solid var(--border-color)",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {formatTeamLabel(event.team_name, event.seed, poolCompetitionSlug)}
+                          </span>
+                        </div>
+                        <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
+                        <div style={{ textAlign: "right", fontWeight: 900 }}>
+                          {formatPointsDelta(event.points_awarded)}
+                        </div>
+                      </div>
+                    ))}
+                    {activeBreakdown.perfect_r64_bonus > 0 ? (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 110px 80px",
+                          gap: 8,
+                          padding: "10px 12px",
+                          borderBottom: "1px solid var(--border-color)",
+                          alignItems: "center",
+                          background: "var(--surface-muted)",
+                        }}
+                      >
+                        <div style={{ fontWeight: 800 }}>Perfect R64 Bonus</div>
+                        <div style={{ fontWeight: 700 }}>Bonus</div>
+                        <div style={{ textAlign: "right", fontWeight: 900 }}>
+                          {formatPointsDelta(activeBreakdown.perfect_r64_bonus)}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </section>
+            ) : null}
           </div>
         </div>
       ) : null}

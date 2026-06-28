@@ -6,7 +6,8 @@ import { supabase } from "../../../../../lib/supabaseClient";
 import { formatDraftLockTimeET, isDraftLocked, resolveDraftLockTime } from "../../../../../lib/draftLock";
 import { scoreEntries, type ScoringGame } from "../../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../../lib/teamNames";
-import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
+import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 
 type PickRow = {
   team_id: string;
@@ -16,6 +17,32 @@ type PickRow = {
   round_reached: string | null;
   total_team_score: number | null;
 };
+
+type TeamMetaRow = {
+  id: string;
+  name: string | null;
+  seed_in_region: number | null;
+  cost: number | null;
+};
+
+function formatRoundReached(value: string | null) {
+  if (!value) return "-";
+  if (value === "GROUP_ADVANCE") return "Group advance";
+  if (value === "R64") return "Round of 64";
+  if (value === "R32") return "Round of 32";
+  if (value === "S16") return "Round of 16";
+  if (value === "E8") return "Round of 8";
+  if (value === "F4") return "Round of 4";
+  if (value === "CHIP") return "Champion";
+  return value;
+}
+
+function pickSort(a: PickRow, b: PickRow, competitionSlug: CompetitionSlug) {
+  if (competitionSlug === "world-cup") {
+    return (b.cost ?? -1) - (a.cost ?? -1) || a.team_name.localeCompare(b.team_name);
+  }
+  return (a.seed ?? 999) - (b.seed ?? 999) || a.team_name.localeCompare(b.team_name);
+}
 
 export default function PicksPage() {
   const params = useParams() as Record<string, string | undefined>;
@@ -30,6 +57,7 @@ export default function PicksPage() {
   const [msg, setMsg] = useState("");
   const [displayName, setDisplayName] = useState("Player");
   const [picks, setPicks] = useState<PickRow[]>([]);
+  const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [perfectR64Bonus, setPerfectR64Bonus] = useState(0);
@@ -49,6 +77,10 @@ export default function PicksPage() {
     () => picks.reduce((s, p) => s + (p.cost ?? 0), 0),
     [picks],
   );
+  const isWorldCup = competitionSlug === "world-cup";
+  const tableGridTemplate = isWorldCup
+    ? "1fr 118px 80px 120px 120px"
+    : "1fr 80px 80px 120px 120px";
 
   useEffect(() => {
     const load = async () => {
@@ -103,6 +135,7 @@ export default function PicksPage() {
       }
 
       const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
+      setCompetitionSlug(competitionSlug);
       const resolvedLockTime = resolveDraftLockTime(poolRow?.lock_time ?? null, competitionSlug);
       const isLocked = isDraftLocked(poolRow?.lock_time ?? null, new Date(), competitionSlug);
       setLockTime(resolvedLockTime);
@@ -129,6 +162,7 @@ export default function PicksPage() {
       if (!isLocked && entryRow.user_id !== user.id) {
         setMsg("Drafts are private until lock. You can only view your picks right now.");
         setPicks([]);
+        setSelectedPick(null);
         setLoading(false);
         return;
       }
@@ -174,7 +208,7 @@ export default function PicksPage() {
       if (teamIds.length > 0) {
         const { data: teamRows, error: teamErr } = await supabase
           .from("teams")
-          .select("id,seed_in_region,cost")
+          .select("id,name,seed_in_region,cost")
           .in("id", teamIds);
 
         if (teamErr) {
@@ -183,10 +217,14 @@ export default function PicksPage() {
           return;
         }
 
-        const seedById = new Map(
-          (teamRows ?? []).map((t) => [t.id, t.seed_in_region ?? null]),
+        const normalizedTeamRows = ((teamRows ?? []) as TeamMetaRow[]).map((team) =>
+          competitionSlug === "world-cup" ? withWorldCupDraftCost(team) : team,
         );
-        const teamCostById = new Map((teamRows ?? []).map((t) => [t.id, t.cost ?? null]));
+        const teamMetaById = new Map(normalizedTeamRows.map((team) => [team.id, team]));
+        const seedById = new Map(
+          normalizedTeamRows.map((t) => [t.id, t.seed_in_region ?? null]),
+        );
+        const teamCostById = new Map(normalizedTeamRows.map((t) => [t.id, t.cost ?? null]));
         const picksByEntry = new Map<string, string[]>([
           [
             entryId,
@@ -200,13 +238,17 @@ export default function PicksPage() {
         const computedTeamScores = scoredEntries.teamScoresByTeamId;
         setPerfectR64Bonus(scoredEntries.perfectR64BonusByEntryId.get(entryId) ?? 0);
 
-        const merged = (pickRows ?? []).map((p) => ({
+        const merged = ((pickRows ?? []) as PickRow[]).map((p) => ({
           ...p,
+          team_name: teamMetaById.get(p.team_id)?.name ?? p.team_name,
+          seed: teamMetaById.get(p.team_id)?.seed_in_region ?? null,
+          cost: teamMetaById.get(p.team_id)?.cost ?? null,
           total_team_score: computedTeamScores.get(p.team_id) ?? 0,
         }));
 
-        const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+        const sorted = merged.sort((a, b) => pickSort(a, b, competitionSlug));
         setPicks(sorted);
+        setSelectedPick(null);
         setLoading(false);
         return;
       }
@@ -228,8 +270,9 @@ export default function PicksPage() {
         total_team_score: computedTeamScores.get(p.team_id) ?? 0,
       }));
 
-      const sorted = merged.sort((a, b) => (a.seed ?? 999) - (b.seed ?? 999));
+      const sorted = merged.sort((a, b) => pickSort(a as PickRow, b as PickRow, competitionSlug));
       setPicks(sorted as PickRow[]);
+      setSelectedPick(null);
       setLoading(false);
     };
 
@@ -275,9 +318,11 @@ export default function PicksPage() {
         <>
           <div style={{ marginTop: 14, display: "flex", gap: 18 }}>
             <div style={{ fontWeight: 900 }}>Total score: {totalScore}</div>
-            <div style={{ fontWeight: 900, opacity: 0.85 }}>
-              Perfect R64 bonus: {perfectR64Bonus}
-            </div>
+            {!isWorldCup ? (
+              <div style={{ fontWeight: 900, opacity: 0.85 }}>
+                Perfect R64 bonus: {perfectR64Bonus}
+              </div>
+            ) : null}
             <div style={{ fontWeight: 900, opacity: 0.85 }}>
               Total cost: {totalCost}
             </div>
@@ -295,7 +340,7 @@ export default function PicksPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 80px 80px 120px 120px",
+                gridTemplateColumns: tableGridTemplate,
                 padding: "10px 12px",
                 fontWeight: 900,
                 background: "var(--surface-muted)",
@@ -303,9 +348,9 @@ export default function PicksPage() {
               }}
             >
               <div>Team</div>
-              <div>Seed</div>
+              <div>{isWorldCup ? "Tier" : "Seed"}</div>
               <div>Cost</div>
-              <div>Round</div>
+              <div>{isWorldCup ? "Stage" : "Round"}</div>
               <div style={{ textAlign: "right" }}>Points</div>
             </div>
 
@@ -317,7 +362,7 @@ export default function PicksPage() {
                 className="picks-team-row"
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 80px 80px 120px 120px",
+                  gridTemplateColumns: tableGridTemplate,
                   padding: "10px 12px",
                   borderBottom: "1px solid var(--border-color)",
                   alignItems: "center",
@@ -350,9 +395,15 @@ export default function PicksPage() {
                   </span>
                 </div>
 
-                <div>{p.seed}</div>
+                <div>
+                  {isWorldCup
+                    ? p.cost != null
+                      ? getWorldCupTierForCost(p.cost)?.name ?? "-"
+                      : "-"
+                    : p.seed ?? "-"}
+                </div>
                 <div>{p.cost}</div>
-                <div>{p.round_reached}</div>
+                <div>{formatRoundReached(p.round_reached)}</div>
                 <div style={{ textAlign: "right", fontWeight: 900 }}>
                   {p.total_team_score}
                 </div>
@@ -399,12 +450,18 @@ export default function PicksPage() {
                 <strong>{selectedPick.cost ?? "-"}</strong>
               </div>
               <div>
-                <span>Seed</span>
-                <strong>{selectedPick.seed ?? "-"}</strong>
+                <span>{isWorldCup ? "Tier" : "Seed"}</span>
+                <strong>
+                  {isWorldCup
+                    ? selectedPick.cost != null
+                      ? getWorldCupTierForCost(selectedPick.cost)?.name ?? "-"
+                      : "-"
+                    : selectedPick.seed ?? "-"}
+                </strong>
               </div>
               <div>
-                <span>Round</span>
-                <strong>{selectedPick.round_reached ?? "-"}</strong>
+                <span>{isWorldCup ? "Stage" : "Round"}</span>
+                <strong>{formatRoundReached(selectedPick.round_reached)}</strong>
               </div>
             </div>
           </section>

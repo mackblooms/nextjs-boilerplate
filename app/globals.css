@@ -1792,9 +1792,7 @@ body.is-native-app-shell .competition-switcher {
 .pool-impact-strip button:focus-visible:not(:disabled),
 .picks-team-row:hover,
 .picks-team-row:focus-visible,
-.draft-team-row:hover,
-.leaderboard-team-chip:hover,
-.leaderboard-team-chip:focus-visible {
+.draft-team-row:hover {
   border-color: var(--focus-ring) !important;
   box-shadow: var(--shadow-sm);
 }
@@ -1899,13 +1897,6 @@ body.is-native-app-shell .competition-switcher {
 
 .draft-team-row,
 .picks-team-row,
-.leaderboard-team-chip {
-  transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
-}
-
 .draft-team-actions {
   display: inline-flex;
   align-items: center;
