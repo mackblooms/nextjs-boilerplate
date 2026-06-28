@@ -1486,138 +1486,114 @@ export default function PoolPage() {
           className="pool-main-card page-surface"
           style={{
             display: "grid",
-            gap: 16,
+            gap: 12,
             border: "1px solid var(--border-color)",
-            borderRadius: 16,
-            padding: "16px 12px",
             background: "var(--surface)",
           }}
         >
-        <div className="pool-card-hero" style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
+        <header className="pool-dashboard-header">
           <button
             onClick={sharePoolLink}
+            className="pool-dashboard-logo"
             aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
             title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-            style={{
-              border: "none",
-              background: "transparent",
-              padding: 0,
-              cursor: "pointer",
-              lineHeight: 0,
-            }}
           >
             <Image
               src="/pool-logo.svg?v=2"
               alt=""
               aria-hidden="true"
-              width={420}
-              height={170}
+              width={150}
+              height={61}
               priority
               style={{
-                maxWidth: "100%",
+                width: "100%",
                 height: "auto",
                 filter: "var(--logo-filter)",
               }}
             />
           </button>
 
-          <div style={{ fontSize: 14, opacity: 0.85, fontWeight: 700 }}>
-            {canNativeShare
-              ? "Tap the logo to share this pool invite"
-              : "Tap the logo to copy this pool invite link"}
+          <div className="pool-dashboard-title">
+            <span className="match-kicker">{poolIsPrivate ? "Private pool" : "Public pool"}</span>
+            <h1 className="page-title">
+              {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
+            </h1>
+            <span>{isMember === true ? "Member dashboard" : "Pool preview"}</span>
           </div>
 
-          <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
-            {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
-          </h1>
+          <button
+            type="button"
+            onClick={sharePoolLink}
+            className="native-only-icon-action"
+            aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
+            title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
+              <path d="M7.5 12.5 16.5 7.4M7.5 11.5l9 5.1" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              <circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+              <circle cx="18" cy="6.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+              <circle cx="18" cy="17.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            </svg>
+          </button>
+        </header>
 
-          <p style={{ margin: 0, opacity: 0.8, maxWidth: 520 }}>
-            Open the bracket, check standings, and keep invites moving from one place.
-          </p>
-
-          <div className="pool-chip-row" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            <span
-              style={{
-                fontSize: 12,
-                borderRadius: 999,
-                padding: "6px 10px",
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 800,
-              }}
-            >
-              {poolIsPrivate ? "Private pool" : "Public pool"}
-            </span>
-            {isMember === true ? (
-              <span
-                style={{
-                  fontSize: 12,
-                  borderRadius: 999,
-                  padding: "6px 10px",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--success-bg)",
-                  fontWeight: 800,
-                }}
-              >
-                You are a member
-              </span>
-            ) : null}
+        <div className="pool-dashboard-stats" aria-label="Pool status">
+          <div>
+            <span>Status</span>
+            <strong>{isMember === true ? "Joined" : "Preview"}</strong>
+          </div>
+          <div>
+            <span>Entries</span>
+            <strong>{entriesLocked ? "Locked" : "Open"}</strong>
+          </div>
+          <div>
+            <span>Teams</span>
+            <strong>{draftedLoaded ? draftedTeamCount : "-"}</strong>
           </div>
         </div>
 
-        <div className="pool-card-section" style={{ display: "grid", gap: 8 }}>
-          <label htmlFor="share-link" style={{ fontWeight: 800, fontSize: 13 }}>
-            Share link
-          </label>
-          <div className="pool-share-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              id="share-link"
-              type="text"
-              value={shareLink}
-              readOnly
-              className="ui-control"
-              style={{ flex: "1 1 260px", minWidth: 0 }}
-            />
-            <button
-              type="button"
-              onClick={sharePoolLink}
-              className="ui-btn ui-btn--md ui-btn--primary"
-              style={{ flex: "1 1 140px" }}
-            >
-              {canNativeShare ? "Share invite" : "Share"}
-            </button>
-            <button
-              type="button"
-              onClick={copyShareLink}
-              className="ui-btn ui-btn--md ui-btn--secondary"
-              style={{ flex: "1 1 140px" }}
-            >
-              Copy link
-            </button>
-          </div>
-          {copyMsg ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{copyMsg}</p> : null}
+        <div className="pool-share-compact">
+          <input
+            id="share-link"
+            type="text"
+            value={shareLink}
+            readOnly
+            aria-label="Share link"
+            className="ui-control"
+          />
+          <button
+            type="button"
+            onClick={sharePoolLink}
+            className="ui-btn ui-btn--md ui-btn--primary"
+          >
+            {canNativeShare ? "Share" : "Copy"}
+          </button>
+          <button
+            type="button"
+            onClick={copyShareLink}
+            className="ui-btn ui-btn--md ui-btn--secondary native-hidden"
+          >
+            Copy
+          </button>
+          {copyMsg ? <p>{copyMsg}</p> : null}
         </div>
 
         {isPoolCreator ? (
           <section
-            className="pool-card-section"
+            className="pool-card-section pool-dashboard-panel"
             style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-              display: "grid",
-              gap: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
             }}
           >
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Creator controls</h2>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 900 }}>Creator controls</h2>
             <button
               type="button"
               onClick={() => void deletePool()}
               disabled={deletingPool}
               className="ui-btn ui-btn--md ui-btn--danger"
-              style={{ width: "fit-content", maxWidth: "100%" }}
             >
               {deletingPool ? "Deleting..." : "Delete Pool"}
             </button>
@@ -1626,24 +1602,17 @@ export default function PoolPage() {
 
         {isMember === false && !loading ? (
           <section
-            className="pool-card-section pool-card-section--accent"
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-            }}
+            className="pool-card-section pool-card-section--accent pool-dashboard-panel"
           >
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
-            <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Join this pool</h2>
+            <p style={{ margin: "4px 0 0", opacity: 0.85, fontSize: 13 }}>
               {entriesLocked
                 ? `Draft entry and leave are locked (${formatDraftLockTimeET(pool?.lock_time ?? null, competitionSlug)}).`
                 : poolIsPrivate
                 ? "This is a private pool. Enter the pool password to join, then pick draft(s) to enter."
                 : "This is a public pool. Join now, then pick draft(s) to enter."}
             </p>
-            <div style={{ marginTop: 12, width: "100%", maxWidth: 420 }}>
+            <div className="pool-join-inline">
               {poolIsPrivate ? (
                 <input
                   type="password"
@@ -1656,7 +1625,6 @@ export default function PoolPage() {
                   }}
                   placeholder="Pool password"
                   className="ui-control ui-control--full"
-                  style={{ marginBottom: 10, background: "var(--surface)" }}
                 />
               ) : null}
 
@@ -1674,61 +1642,51 @@ export default function PoolPage() {
 
         {isMember === true ? (
           <section
-            className="pool-card-section pool-card-section--accent"
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-              display: "grid",
-              gap: 10,
-            }}
+            className="pool-card-section pool-card-section--accent pool-dashboard-panel"
           >
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
-            <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Next actions</h2>
+            <div className="pool-quick-actions">
               <Link
                 href={competitionPath("/drafts", competitionSlug)}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                className="pool-action-cell"
               >
-                My Drafts
+                <strong>My Drafts</strong>
+                <span>Edit saved teams</span>
               </Link>
               <Link
                 href={competitionPath(`/pool/${poolId}/draft`, competitionSlug)}
                 aria-disabled={entriesLocked}
-                className="ui-btn ui-btn--md ui-btn--primary"
+                className="pool-action-cell pool-action-cell--primary"
                 style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
                   pointerEvents: entriesLocked ? "none" : undefined,
                   opacity: entriesLocked ? 0.7 : undefined,
                 }}
               >
-                Enter Drafts
+                <strong>{entriesLocked ? "Entries Locked" : "Enter Drafts"}</strong>
+                <span>Add drafts here</span>
               </Link>
               <button
                 type="button"
                 onClick={() => void openLeaveModal()}
                 disabled={entriesLocked}
-                className="ui-btn ui-btn--md ui-btn--danger"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                className="pool-action-cell pool-action-cell--danger"
               >
-                Leave Entries
+                <strong>Leave Entries</strong>
+                <span>Remove a bracket</span>
               </button>
               <Link
-                href={`/pool/${poolId}/bracket`}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                href={competitionPath(`/pool/${poolId}/bracket`, competitionSlug)}
+                className="pool-action-cell"
               >
-                Bracket
+                <strong>Bracket</strong>
+                <span>View matchups</span>
               </Link>
               <Link
-                href={`/pool/${poolId}/leaderboard`}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                href={competitionPath(`/pool/${poolId}/leaderboard`, competitionSlug)}
+                className="pool-action-cell"
               >
-                Leaderboard
+                <strong>Leaderboard</strong>
+                <span>Check standings</span>
               </Link>
             </div>
             {entriesLocked ? (

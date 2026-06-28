@@ -294,30 +294,24 @@ function DraftsPageContent() {
   }
 
   return (
-    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
+    <main className="page-shell page-shell--stack drafts-shell" style={{ maxWidth: 960 }}>
       <section
-        className="page-surface"
+        className="page-surface drafts-command-bar"
         style={{
           border: "1px solid var(--border-color)",
-          borderRadius: 14,
           background: "var(--surface)",
-          padding: 14,
-          display: "grid",
-          gap: 12,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>{competition.shortName} Drafts</h1>
-            <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-              {draftsLocked ? lockMessage : "Create multiple drafts here, then open one to edit teams and save."}
-            </p>
+        <div className="drafts-command-head">
+          <div className="drafts-title-stack">
+            <span className="match-kicker">{competition.sport}</span>
+            <h1>{competition.shortName} Drafts</h1>
+            <span>{drafts.length} saved</span>
           </div>
           <UiLinkButton
             href={competitionPath("/pools", competitionSlug)}
             variant="secondary"
             className="native-hidden"
-            style={{ height: "fit-content" }}
           >
             Open Pools
           </UiLinkButton>
@@ -371,16 +365,14 @@ function DraftsPageContent() {
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {draftsLocked ? <p className="drafts-lock-message">{lockMessage}</p> : null}
+
+        <div className="drafts-create-row">
           <UiInput
             value={newDraftName}
             onChange={(event) => setNewDraftName(event.target.value)}
             disabled={draftsLocked || creating}
-            placeholder={`New draft name (default: ${defaultDraftName(drafts.length + 1)})`}
-            style={{
-              flex: "1 1 300px",
-              minWidth: 220,
-            }}
+            placeholder={`New draft name (${defaultDraftName(drafts.length + 1)})`}
           />
           <UiButton
             type="button"
@@ -395,7 +387,7 @@ function DraftsPageContent() {
       </section>
 
       {hasDrafts ? (
-        <section style={{ display: "grid", gap: 10 }}>
+        <section className="drafts-list">
           {drafts.map((draft) => {
             const draftHref = returnPoolId
               ? competitionPathWithParams(`/drafts/${draft.id}`, competitionSlug, { returnPoolId })
@@ -407,38 +399,26 @@ function DraftsPageContent() {
             return (
             <UiCard
               as="article"
-              className="drafts-draft-card"
+              className="drafts-draft-card drafts-draft-row"
               key={draft.id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
+                position: "relative",
               }}
             >
-              <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
-                <Link
-                  href={draftHref}
-                  className="drafts-draft-link"
-                  title={`Open ${draft.name}`}
-                  style={{
-                    fontWeight: 900,
-                    fontSize: 18,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    color: "inherit",
-                  }}
-                >
+              <Link
+                href={draftHref}
+                className="drafts-draft-primary"
+                title={`Open ${draft.name}`}
+              >
+                <span className="drafts-draft-name">
                   {draft.name}
-                </Link>
-                <div style={{ fontSize: 13, opacity: 0.75 }}>
+                </span>
+                <span className="drafts-draft-meta">
                   {pickCountByDraft[draft.id] ?? 0} teams selected - updated {formatUpdatedAt(draft.updated_at)}
-                </div>
-              </div>
+                </span>
+              </Link>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div className="drafts-draft-actions">
                 <UiLinkButton
                   href={draftHref}
                   aria-label={`Edit ${draft.name}`}
@@ -457,6 +437,7 @@ function DraftsPageContent() {
                 </UiLinkButton>
                 <UiLinkButton
                   href={enterPoolHref}
+                  className="drafts-enter-action"
                 >
                   {returnPoolId ? "Enter in Pool" : "Join Pool(s)"}
                 </UiLinkButton>

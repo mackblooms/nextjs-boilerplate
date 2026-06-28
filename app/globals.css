@@ -1565,18 +1565,184 @@ body.is-native-app-shell .competition-switcher {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.pool-chip-row span {
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+.pool-main-card {
+  border-radius: 12px;
+  padding: 12px;
 }
 
-.pool-share-actions {
-  align-items: stretch;
+.pool-dashboard-header {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-dashboard-logo {
+  width: 70px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  line-height: 0;
+  padding: 0;
+}
+
+.pool-dashboard-title {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.pool-dashboard-title h1 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.45rem;
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.pool-dashboard-title > span:last-child {
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.pool-dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pool-dashboard-stats > div,
+.pool-dashboard-panel,
+.pool-share-compact {
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--surface-muted);
+}
+
+.pool-dashboard-stats > div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 8px;
+}
+
+.pool-dashboard-stats span {
+  color: color-mix(in srgb, var(--foreground) 66%, transparent);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.pool-dashboard-stats strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.pool-share-compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+}
+
+.pool-share-compact .ui-control {
+  min-width: 0;
+}
+
+.pool-share-compact p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.pool-dashboard-panel {
+  width: 100%;
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+}
+
+.pool-join-inline {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
 }
 
 .pool-quick-actions {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px !important;
+}
+
+.pool-action-cell {
+  min-width: 0;
+  min-height: 58px;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  justify-content: stretch;
+  padding: 9px 10px;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.pool-action-cell strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.pool-action-cell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--foreground) 66%, transparent);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.pool-action-cell--primary {
+  border-color: #00985f;
+  background: rgba(0, 152, 95, 0.11);
+}
+
+.pool-action-cell--danger {
+  border-color: color-mix(in srgb, #b91c1c 35%, var(--border-color));
+  background: var(--danger-bg);
+}
+
+.pool-action-cell:hover,
+.pool-action-cell:focus-visible {
+  border-color: var(--focus-ring);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.pool-chip-row span {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.pool-share-actions {
+  align-items: stretch;
 }
 
 .pool-quick-actions > * {
@@ -1735,6 +1901,110 @@ body.is-native-app-shell .competition-switcher {
 .drafts-draft-card:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+}
+
+.drafts-shell {
+  gap: 10px;
+}
+
+.drafts-command-bar {
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  gap: 9px;
+}
+
+.drafts-command-head,
+.drafts-create-row,
+.drafts-draft-row,
+.drafts-draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drafts-command-head {
+  justify-content: space-between;
+}
+
+.drafts-title-stack {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.drafts-title-stack h1 {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.35rem;
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.drafts-title-stack > span:last-child,
+.drafts-lock-message,
+.drafts-draft-meta {
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.drafts-lock-message {
+  margin: 0;
+}
+
+.drafts-create-row {
+  align-items: stretch;
+}
+
+.drafts-create-row .ui-control {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.drafts-list {
+  display: grid;
+  gap: 7px;
+}
+
+.drafts-draft-row {
+  justify-content: space-between;
+  padding: 10px !important;
+  border-radius: 9px !important;
+}
+
+.drafts-draft-primary {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: grid;
+  gap: 2px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.drafts-draft-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.98rem;
+  font-weight: 950;
+}
+
+.drafts-draft-actions {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.drafts-draft-card:hover .drafts-draft-name,
+.drafts-draft-primary:hover .drafts-draft-name,
+.drafts-draft-primary:focus-visible .drafts-draft-name {
+  color: var(--focus-ring);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 .match-shell {
@@ -1959,12 +2229,46 @@ body.is-native-app-shell .competition-switcher {
   gap: 10px;
 }
 
+.match-row--tappable {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.match-row--tappable:hover,
+.match-row--tappable:focus-within {
+  border-color: var(--match-accent);
+  box-shadow: 0 8px 18px rgba(13, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
 .match-row-main {
   min-width: 0;
   display: grid;
   grid-template-columns: 14px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
+}
+
+.match-row-main--link,
+.match-row-main--button {
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.match-row-main--button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.match-row-main--button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .match-live-dot {

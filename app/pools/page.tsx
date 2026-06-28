@@ -811,8 +811,12 @@ function PoolsPageContent() {
                 const entriesLocked = isPoolEntryLocked(pool, competitionSlug);
                 return (
                   <li key={pool.id}>
-                    <article className="match-row">
-                      <div className="match-row-main">
+                    <article className="match-row match-row--tappable">
+                      <Link
+                        href={competitionPath(`/pool/${pool.id}`, competitionSlug)}
+                        className="match-row-main match-row-main--link"
+                        aria-label={`Open ${pool.name}`}
+                      >
                         <span className="match-live-dot" data-locked={entriesLocked} aria-hidden="true" />
                         <div className="match-row-copy">
                           <div className="match-row-title">{pool.name}</div>
@@ -822,7 +826,7 @@ function PoolsPageContent() {
                               : "Entries are open"}
                           </div>
                         </div>
-                      </div>
+                      </Link>
                       <div className="match-row-meta">
                         <span className="match-badge">
                           {privacyLabel(pool)}
@@ -831,13 +835,13 @@ function PoolsPageContent() {
                       </div>
                       <div className="match-row-actions">
                         <Link
-                          href={`/pool/${pool.id}/leaderboard`}
+                          href={competitionPath(`/pool/${pool.id}/leaderboard`, competitionSlug)}
                           className="match-row-action"
                         >
                           Leaderboard
                         </Link>
                         <Link
-                          href={`/pool/${pool.id}/draft`}
+                          href={competitionPath(`/pool/${pool.id}/draft`, competitionSlug)}
                           className="match-row-action match-row-action--accent"
                           style={{
                             opacity: entriesLocked ? 0.7 : 1,
@@ -904,8 +908,14 @@ function PoolsPageContent() {
 
                 return (
                   <li key={pool.id}>
-                    <div className="match-row">
-                      <div className="match-row-main">
+                    <div className="match-row match-row--tappable">
+                      <button
+                        type="button"
+                        onClick={() => openJoinModal(pool)}
+                        disabled={!userId}
+                        className="match-row-main match-row-main--button"
+                        aria-label={`Join ${pool.name}`}
+                      >
                         <span className="match-live-dot" data-locked={isPrivate} aria-hidden="true" />
                         <div className="match-row-copy">
                           <div className="match-row-title">{pool.name}</div>
@@ -913,7 +923,7 @@ function PoolsPageContent() {
                             {isPrivate ? "Private pool with password protection" : "Public pool ready to join"}
                           </div>
                         </div>
-                      </div>
+                      </button>
                       <div className="match-row-meta">
                         <span className="match-badge" data-open={!isPrivate}>
                           {isPrivate ? "Private" : "Public"}
@@ -931,7 +941,7 @@ function PoolsPageContent() {
                           Join + Enter Drafts
                         </button>
                         <Link
-                          href={`/pool/${pool.id}/leaderboard`}
+                          href={competitionPath(`/pool/${pool.id}/leaderboard`, competitionSlug)}
                           className="match-row-action"
                         >
                           Preview Leaderboard
