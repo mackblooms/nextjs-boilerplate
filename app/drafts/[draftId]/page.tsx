@@ -120,6 +120,7 @@ export default function DraftDetailPage() {
   const [linkedPools, setLinkedPools] = useState<LinkedPoolEntry[]>([]);
   const [linkedPoolsLoading, setLinkedPoolsLoading] = useState(false);
   const [removingPoolId, setRemovingPoolId] = useState<string | null>(null);
+  const [inspectedTeam, setInspectedTeam] = useState<TeamRow | null>(null);
   const draftsLocked = isDraftLibraryLocked(competitionSlug);
   const lockMessage = draftLibraryLockMessage(competitionSlug);
 
@@ -699,8 +700,9 @@ export default function DraftDetailPage() {
           {teams.map((team) => {
             const checked = selected.has(team.id);
             return (
-              <label
+              <article
                 key={team.id}
+                className="draft-team-row"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -709,10 +711,9 @@ export default function DraftDetailPage() {
                   padding: "10px 12px",
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
-                  cursor: "pointer",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, cursor: "pointer" }}>
                   <input
                     type="checkbox"
                     checked={checked}
@@ -729,10 +730,19 @@ export default function DraftDetailPage() {
                         : `seed ${team.seed}`}
                     </div>
                   </div>
-                </div>
+                </label>
 
-                <div style={{ fontWeight: 900 }}>{team.cost}</div>
-              </label>
+                <div className="draft-team-actions">
+                  <button
+                    type="button"
+                    onClick={() => setInspectedTeam(team)}
+                    className="draft-team-detail-button"
+                  >
+                    Details
+                  </button>
+                  <div style={{ fontWeight: 900 }}>{team.cost}</div>
+                </div>
+              </article>
             );
           })}
         </UiCard>
@@ -856,6 +866,59 @@ export default function DraftDetailPage() {
         >
           {message}
         </p>
+      ) : null}
+
+      {inspectedTeam ? (
+        <div
+          role="presentation"
+          onClick={() => setInspectedTeam(null)}
+          className="app-sheet-backdrop"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${toSchoolDisplayName(inspectedTeam.name)} details`}
+            onClick={(event) => event.stopPropagation()}
+            className="app-bottom-sheet"
+          >
+            <div className="app-sheet-grabber" aria-hidden="true" />
+            <div className="app-sheet-header">
+              <div>
+                <span className="match-kicker">Team detail</span>
+                <h2>{toSchoolDisplayName(inspectedTeam.name)}</h2>
+              </div>
+              <button type="button" onClick={() => setInspectedTeam(null)} className="native-only-icon-action">
+                x
+              </button>
+            </div>
+            <div className="team-detail-grid">
+              <div>
+                <span>Cost</span>
+                <strong>{inspectedTeam.cost}</strong>
+              </div>
+              <div>
+                <span>{competitionSlug === "world-cup" ? "Tier" : "Seed"}</span>
+                <strong>
+                  {competitionSlug === "world-cup"
+                    ? getWorldCupTierForCost(inspectedTeam.cost)?.name ?? "World Cup"
+                    : inspectedTeam.seed}
+                </strong>
+              </div>
+              <div>
+                <span>Selected</span>
+                <strong>{selected.has(inspectedTeam.id) ? "Yes" : "No"}</strong>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleTeam(inspectedTeam.id)}
+              disabled={draftsLocked || saving}
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {selected.has(inspectedTeam.id) ? "Remove from draft" : "Add to draft"}
+            </button>
+          </section>
+        </div>
       ) : null}
     </main>
   );

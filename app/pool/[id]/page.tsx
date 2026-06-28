@@ -388,12 +388,14 @@ function ScoreSidebar({
   loading,
   error,
   emptyMessage,
+  onGameSelect,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
   emptyMessage: string;
+  onGameSelect?: (game: LiveScoreGame) => void;
 }) {
   return (
     <aside
@@ -455,6 +457,20 @@ function ScoreSidebar({
               ) : null}
             </article>
           );
+
+          if (onGameSelect) {
+            return (
+              <button
+                key={game.id}
+                type="button"
+                onClick={() => onGameSelect(game)}
+                className="pool-score-button"
+                aria-label={`View pool impact for ${game.awayTeamName} at ${game.homeTeamName}`}
+              >
+                {row}
+              </button>
+            );
+          }
 
           if (!game.boxScoreUrl) return <div key={game.id}>{row}</div>;
 
@@ -523,6 +539,7 @@ export default function PoolPage() {
   const [draftedTeamCount, setDraftedTeamCount] = useState(0);
   const [draftedLoaded, setDraftedLoaded] = useState(false);
   const [autoDraftPromptHandled, setAutoDraftPromptHandled] = useState(false);
+  const [selectedImpactGame, setSelectedImpactGame] = useState<LiveScoreGame | null>(null);
   const sharePayload = useMemo(
     () => buildPoolInviteShareData(poolId, pool?.name ?? null, pool?.is_private ?? true),
     [pool?.is_private, pool?.name, poolId]
@@ -1461,6 +1478,26 @@ export default function PoolPage() {
     if (draftedTeamCount === 0) return "Enter a saved draft in this pool, then your games will show here.";
     return "No live games today or upcoming games tomorrow for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
+  const selectedImpactTeams = useMemo(() => {
+    if (!selectedImpactGame) return [];
+    const out: Array<{ name: string; side: "away" | "home" }> = [];
+    const awayKey = normalizeTeamKey(selectedImpactGame.awayTeamName || selectedImpactGame.awayTeam);
+    const homeKey = normalizeTeamKey(selectedImpactGame.homeTeamName || selectedImpactGame.homeTeam);
+
+    if (
+      (selectedImpactGame.awayTeamId && draftedEspnIdSet.has(selectedImpactGame.awayTeamId)) ||
+      draftedKeySet.has(awayKey)
+    ) {
+      out.push({ name: selectedImpactGame.awayTeamName, side: "away" });
+    }
+    if (
+      (selectedImpactGame.homeTeamId && draftedEspnIdSet.has(selectedImpactGame.homeTeamId)) ||
+      draftedKeySet.has(homeKey)
+    ) {
+      out.push({ name: selectedImpactGame.homeTeamName, side: "home" });
+    }
+    return out;
+  }, [draftedEspnIdSet, draftedKeySet, selectedImpactGame]);
 
   const statusStyle =
     status?.tone === "success"
@@ -1479,6 +1516,7 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={recentFinalsEmptyMessage}
+            onGameSelect={setSelectedImpactGame}
           />
         </div>
 
@@ -1551,6 +1589,27 @@ export default function PoolPage() {
             <strong>{draftedLoaded ? draftedTeamCount : "-"}</strong>
           </div>
         </div>
+
+        {isMember === true ? (
+          <section className="pool-impact-strip" aria-label="My pool situation">
+            <button
+              type="button"
+              onClick={() => liveAndUpcoming[0] && setSelectedImpactGame(liveAndUpcoming[0])}
+              disabled={liveAndUpcoming.length === 0}
+            >
+              <span>Next impact</span>
+              <strong>{liveAndUpcoming[0] ? `${liveAndUpcoming[0].awayTeamName} / ${liveAndUpcoming[0].homeTeamName}` : "None"}</strong>
+            </button>
+            <button
+              type="button"
+              onClick={() => recentFinals[0] && setSelectedImpactGame(recentFinals[0])}
+              disabled={recentFinals.length === 0}
+            >
+              <span>Latest result</span>
+              <strong>{recentFinals[0] ? `${recentFinals[0].awayTeamName} / ${recentFinals[0].homeTeamName}` : "None"}</strong>
+            </button>
+          </section>
+        ) : null}
 
         <div className="pool-share-compact">
           <input
@@ -1724,9 +1783,68 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={liveAndUpcomingEmptyMessage}
+            onGameSelect={setSelectedImpactGame}
           />
         </div>
       </div>
+
+      {selectedImpactGame ? (
+        <div
+          role="presentation"
+          onClick={() => setSelectedImpactGame(null)}
+          className="app-sheet-backdrop"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Game impact"
+            onClick={(event) => event.stopPropagation()}
+            className="app-bottom-sheet"
+          >
+            <div className="app-sheet-grabber" aria-hidden="true" />
+            <div className="app-sheet-header">
+              <div>
+                <span className="match-kicker">Game impact</span>
+                <h2>{selectedImpactGame.awayTeamName} at {selectedImpactGame.homeTeamName}</h2>
+              </div>
+              <button type="button" onClick={() => setSelectedImpactGame(null)} className="native-only-icon-action">
+                x
+              </button>
+            </div>
+            <div className="pool-impact-score">
+              <div>
+                <span>{selectedImpactGame.awayTeamName}</span>
+                <strong>{selectedImpactGame.awayScore ?? "-"}</strong>
+              </div>
+              <div>
+                <span>{selectedImpactGame.homeTeamName}</span>
+                <strong>{selectedImpactGame.homeScore ?? "-"}</strong>
+              </div>
+              <p>{statusLabel(selectedImpactGame)}</p>
+            </div>
+            <div className="pool-impact-teams">
+              <strong>On your drafts</strong>
+              {selectedImpactTeams.length > 0 ? (
+                selectedImpactTeams.map((team) => (
+                  <span key={`${selectedImpactGame.id}-${team.side}`}>{team.name}</span>
+                ))
+              ) : (
+                <p>No drafted teams matched this game.</p>
+              )}
+            </div>
+            {selectedImpactGame.boxScoreUrl ? (
+              <a
+                href={selectedImpactGame.boxScoreUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="ui-btn ui-btn--md ui-btn--secondary"
+              >
+                Open box score
+              </a>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
 
       {draftModalOpen ? (
         <div

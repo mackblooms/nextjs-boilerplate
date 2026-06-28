@@ -2106,6 +2106,7 @@ export default function LeaderboardPage() {
                             {canOpenBracket ? (
                               <a
                                 href={`/pool/${poolId}/bracket?entry=${r.entry_id}`}
+                                className="leaderboard-entry-link"
                                 style={{ textDecoration: "none", display: "block", minWidth: 0 }}
                               >
                                 <div
@@ -2246,6 +2247,14 @@ export default function LeaderboardPage() {
                         >
                           {teamsExpanded ? "Teams \u25B4" : "Teams \u25BE"}
                         </button>
+                        {canViewTeams ? (
+                          <Link
+                            href={`/pool/${poolId}/picks/${r.entry_id}`}
+                            className="leaderboard-mini-link"
+                          >
+                            Picks
+                          </Link>
+                        ) : null}
                         {!forecastModeOn && canViewBreakdown ? (
                           <button
                             type="button"
@@ -2291,8 +2300,10 @@ export default function LeaderboardPage() {
                         ) : (
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                             {r.drafted_teams.map((team) => (
-                              <div
+                              <Link
                                 key={team.team_id}
+                                href={`/pool/${poolId}/picks/${r.entry_id}`}
+                                className="leaderboard-team-chip"
                                 style={{
                                   border: "1px solid var(--border-color)",
                                   borderRadius: 9999,
@@ -2303,6 +2314,8 @@ export default function LeaderboardPage() {
                                   gap: 6,
                                   maxWidth: "100%",
                                   opacity: team.is_active ? 1 : 0.45,
+                                  color: "inherit",
+                                  textDecoration: "none",
                                 }}
                               >
                                 <span
@@ -2316,7 +2329,7 @@ export default function LeaderboardPage() {
                                 >
                                   {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
                                 </span>
-                              </div>
+                              </Link>
                             ))}
                           </div>
                         )}

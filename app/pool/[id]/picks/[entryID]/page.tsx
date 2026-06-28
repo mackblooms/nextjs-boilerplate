@@ -33,6 +33,7 @@ export default function PicksPage() {
   const [draftLocked, setDraftLocked] = useState(false);
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [perfectR64Bonus, setPerfectR64Bonus] = useState(0);
+  const [selectedPick, setSelectedPick] = useState<PickRow | null>(null);
 
   const totalTeamScore = useMemo(
     () => picks.reduce((s, p) => s + (p.total_team_score ?? 0), 0),
@@ -309,14 +310,24 @@ export default function PicksPage() {
             </div>
 
             {picks.map((p) => (
-              <div
+              <button
+                type="button"
                 key={p.team_id}
+                onClick={() => setSelectedPick(p)}
+                className="picks-team-row"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 80px 80px 120px 120px",
                   padding: "10px 12px",
                   borderBottom: "1px solid var(--border-color)",
                   alignItems: "center",
+                  width: "100%",
+                  borderInline: 0,
+                  borderTop: 0,
+                  background: "transparent",
+                  color: "inherit",
+                  cursor: "pointer",
+                  textAlign: "left",
                 }}
               >
                 <div
@@ -345,7 +356,7 @@ export default function PicksPage() {
                 <div style={{ textAlign: "right", fontWeight: 900 }}>
                   {p.total_team_score}
                 </div>
-              </div>
+              </button>
             ))}
 
             {picks.length === 0 ? (
@@ -353,6 +364,51 @@ export default function PicksPage() {
             ) : null}
           </div>
         </>
+      ) : null}
+
+      {selectedPick ? (
+        <div
+          role="presentation"
+          onClick={() => setSelectedPick(null)}
+          className="app-sheet-backdrop"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${toSchoolDisplayName(selectedPick.team_name)} pick detail`}
+            onClick={(event) => event.stopPropagation()}
+            className="app-bottom-sheet"
+          >
+            <div className="app-sheet-grabber" aria-hidden="true" />
+            <div className="app-sheet-header">
+              <div>
+                <span className="match-kicker">Pick detail</span>
+                <h2>{toSchoolDisplayName(selectedPick.team_name)}</h2>
+              </div>
+              <button type="button" onClick={() => setSelectedPick(null)} className="native-only-icon-action">
+                x
+              </button>
+            </div>
+            <div className="team-detail-grid">
+              <div>
+                <span>Points</span>
+                <strong>{selectedPick.total_team_score ?? 0}</strong>
+              </div>
+              <div>
+                <span>Cost</span>
+                <strong>{selectedPick.cost ?? "-"}</strong>
+              </div>
+              <div>
+                <span>Seed</span>
+                <strong>{selectedPick.seed ?? "-"}</strong>
+              </div>
+              <div>
+                <span>Round</span>
+                <strong>{selectedPick.round_reached ?? "-"}</strong>
+              </div>
+            </div>
+          </section>
+        </div>
       ) : null}
     </main>
   );

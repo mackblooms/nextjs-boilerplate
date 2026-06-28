@@ -1737,6 +1737,206 @@ body.is-native-app-shell .competition-switcher {
   transform: translateY(-1px);
 }
 
+.pool-impact-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pool-impact-strip button,
+.pool-score-button {
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--surface-muted);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.pool-impact-strip button {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+}
+
+.pool-impact-strip button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.pool-impact-strip span {
+  color: color-mix(in srgb, var(--foreground) 66%, transparent);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.pool-impact-strip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+.pool-score-button {
+  width: 100%;
+  display: block;
+  padding: 0;
+  text-decoration: none;
+}
+
+.pool-score-button:hover,
+.pool-score-button:focus-visible,
+.pool-impact-strip button:hover:not(:disabled),
+.pool-impact-strip button:focus-visible:not(:disabled),
+.picks-team-row:hover,
+.picks-team-row:focus-visible,
+.draft-team-row:hover,
+.leaderboard-team-chip:hover,
+.leaderboard-team-chip:focus-visible {
+  border-color: var(--focus-ring) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.pool-impact-score,
+.pool-impact-teams,
+.team-detail-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.pool-impact-score > div,
+.team-detail-grid > div {
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--surface-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+}
+
+.pool-impact-score span,
+.team-detail-grid span {
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.pool-impact-score strong,
+.team-detail-grid strong {
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.pool-impact-score p,
+.pool-impact-teams p {
+  margin: 0;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.pool-impact-teams > span {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--highlight);
+  color: var(--foreground);
+  display: inline-flex;
+  padding: 7px 10px;
+  width: fit-content;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.app-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.48);
+  padding: 16px;
+}
+
+.app-bottom-sheet {
+  width: min(560px, 100%);
+  max-height: min(82vh, 720px);
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.app-sheet-grabber {
+  width: 42px;
+  height: 4px;
+  justify-self: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 24%, transparent);
+}
+
+.app-sheet-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-sheet-header h2 {
+  margin: 2px 0 0;
+  font-size: 1.2rem;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.draft-team-row,
+.picks-team-row,
+.leaderboard-team-chip {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.draft-team-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.draft-team-detail-button,
+.leaderboard-mini-link {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 9px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.leaderboard-entry-link:hover,
+.leaderboard-entry-link:focus-visible,
+.leaderboard-mini-link:hover,
+.leaderboard-mini-link:focus-visible {
+  color: var(--focus-ring);
+}
+
 .pool-chip-row span {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
 }
