@@ -39,13 +39,14 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
   const hasCheckedRef = useRef(false);
 
   const isProfileRoute = pathname === "/profile";
+  const isHomeRoute = pathname === "/";
   const queryString = searchParams.toString();
   const redirectTarget = useMemo(
     () => getProfileRedirect(pathname, queryString),
     [pathname, queryString],
   );
   const effectiveStatus: GateStatus =
-    !isProfileRoute && profileComplete === false ? "blocked" : status;
+    !isProfileRoute && !isHomeRoute && profileComplete === false ? "blocked" : status;
 
   useEffect(() => {
     let canceled = false;
@@ -76,7 +77,7 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
 
       if (error) {
         setProfileComplete(false);
-        setStatus(isProfileRoute ? "allowed" : "blocked");
+        setStatus(isProfileRoute || isHomeRoute ? "allowed" : "blocked");
         return;
       }
 
@@ -88,7 +89,7 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
         return;
       }
 
-      setStatus(isProfileRoute ? "allowed" : "blocked");
+      setStatus(isProfileRoute || isHomeRoute ? "allowed" : "blocked");
     }
 
     void checkProfile(true);
@@ -108,7 +109,7 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
       authSubscription.subscription.unsubscribe();
       window.removeEventListener(PROFILE_COMPLETED_EVENT, onProfileCompleted);
     };
-  }, [isProfileRoute, pathname, queryString]);
+  }, [isHomeRoute, isProfileRoute, pathname, queryString]);
 
   useEffect(() => {
     if (effectiveStatus !== "blocked" || isProfileRoute) return;
