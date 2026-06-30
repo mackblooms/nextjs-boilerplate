@@ -276,28 +276,75 @@ export default function WorldCupBracketBoard({
     );
   };
 
-  const connectorLines = ROUND_ORDER.flatMap((round) =>
-    knockoutSlots(round).map((slot) => {
-      const target = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[`${round}|${slot}`];
-      if (!target) return null;
-      const from = nodePosition(round, slot);
-      const to = target.round === "CHIP"
+  const connectorLines = (["S16", "E8", "F4", "CHIP"] as const).flatMap((targetRound) => {
+    const targetSlots = knockoutSlots(targetRound);
+    return targetSlots.map((targetSlot) => {
+      const feeders = Object.entries(WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT)
+        .filter(([, target]) => target.round === targetRound && target.slot === targetSlot)
+        .map(([sourceKey]) => {
+          const [sourceRound, sourceSlot] = sourceKey.split("|");
+          return {
+            round: sourceRound as Exclude<WorldCupRound, "CHIP">,
+            slot: Number(sourceSlot),
+          };
+        })
+        .filter((source) => Number.isFinite(source.slot))
+        .sort((a, b) => a.slot - b.slot);
+
+      if (feeders.length !== 2) return null;
+
+      const fromA = nodePosition(feeders[0].round, feeders[0].slot);
+      const fromB = nodePosition(feeders[1].round, feeders[1].slot);
+      const to = targetRound === "CHIP"
         ? { x: 50, y: 50 }
-        : nodePosition(target.round as Exclude<WorldCupRound, "CHIP">, target.slot);
-      const mid = {
-        x: from.x + ((to.x - from.x) * (round === "R32" ? 0.54 : 0.5)),
-        y: from.y + ((to.y - from.y) * (round === "R32" ? 0.54 : 0.5)),
+        : nodePosition(targetRound as Exclude<WorldCupRound, "CHIP">, targetSlot);
+
+      const sourceRadius = ROUND_RING[feeders[0].round];
+      const targetRadius = ROUND_RING[targetRound];
+      const fallbackVector = {
+        x: (fromA.x + fromB.x) / 2 - 50,
+        y: (fromA.y + fromB.y) / 2 - 50,
       };
+      const targetVector = targetRound === "CHIP" ? fallbackVector : {
+        x: to.x - 50,
+        y: to.y - 50,
+      };
+      const vectorLength = Math.hypot(targetVector.x, targetVector.y) || 1;
+      const radial = { x: targetVector.x / vectorLength, y: targetVector.y / vectorLength };
+      const tangent = { x: -radial.y, y: radial.x };
+      const jointRadius = targetRadius + (sourceRadius - targetRadius) * 0.58;
+      const joint = {
+        x: 50 + radial.x * jointRadius,
+        y: 50 + radial.y * jointRadius,
+      };
+
+      const offsetA = (fromA.x - joint.x) * tangent.x + (fromA.y - joint.y) * tangent.y;
+      const offsetB = (fromB.x - joint.x) * tangent.x + (fromB.y - joint.y) * tangent.y;
+      const cornerA = {
+        x: joint.x + tangent.x * offsetA,
+        y: joint.y + tangent.y * offsetA,
+      };
+      const cornerB = {
+        x: joint.x + tangent.x * offsetB,
+        y: joint.y + tangent.y * offsetB,
+      };
+
       return (
-        <path
-          d={`M ${from.x} ${from.y} L ${mid.x} ${mid.y} L ${to.x} ${to.y}`}
-          data-round={round}
-          key={`${round}-${slot}-connector`}
-          vectorEffect="non-scaling-stroke"
-        />
+        <g
+          data-round={feeders[0].round}
+          data-target-round={targetRound}
+          key={`${targetRound}-${targetSlot}-connector`}
+        >
+          <path
+            d={`M ${fromA.x} ${fromA.y} L ${cornerA.x} ${cornerA.y} L ${cornerB.x} ${cornerB.y} L ${fromB.x} ${fromB.y} M ${joint.x} ${joint.y} L ${to.x} ${to.y}`}
+            vectorEffect="non-scaling-stroke"
+          />
+          <circle cx={joint.x} cy={joint.y} r="0.54" />
+          <circle cx={to.x} cy={to.y} r={targetRound === "CHIP" ? "0.66" : "0.46"} />
+        </g>
       );
-    }).filter(Boolean)
-  );
+    }).filter(Boolean);
+  });
 
   const roundLabel = (round: WorldCupRound) => ROUNDS.find((candidate) => candidate.key === round)?.label ?? round;
   const sideRound = (round: Exclude<WorldCupRound, "CHIP">, side: "left" | "right") => {
