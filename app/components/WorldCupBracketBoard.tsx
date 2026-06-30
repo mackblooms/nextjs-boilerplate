@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import {
   WORLD_CUP_LEFT_LAYOUT,
+  WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
   WORLD_CUP_RIGHT_LAYOUT,
   WORLD_CUP_SLOT_LABELS,
   type WorldCupRound,
@@ -38,10 +39,10 @@ const ROUNDS = [
 ] as const;
 
 const ROUND_RING: Record<WorldCupRound, number> = {
-  R32: 45,
-  S16: 33,
-  E8: 22,
-  F4: 12,
+  R32: 44,
+  S16: 31,
+  E8: 20,
+  F4: 10,
   CHIP: 0,
 };
 
@@ -185,6 +186,17 @@ export default function WorldCupBracketBoard({
     return Array.from({ length: count }, (_, index) => index + 1);
   };
 
+  const nodePosition = (round: Exclude<WorldCupRound, "CHIP">, slot: number) => {
+    const slots = knockoutSlots(round).length;
+    const angle = -90 + ((slot - 0.5) * 360) / slots;
+    const radians = (angle * Math.PI) / 180;
+    const radius = ROUND_RING[round];
+    return {
+      x: 50 + Math.cos(radians) * radius,
+      y: 50 + Math.sin(radians) * radius,
+    };
+  };
+
   const knockoutTeamIds = new Set<string>();
   const eliminatedTeamIds = new Set<string>();
   for (const game of games) {
@@ -248,24 +260,44 @@ export default function WorldCupBracketBoard({
   };
 
   const circularKnockoutGame = (round: Exclude<WorldCupRound, "CHIP">, slot: number) => {
-    const slots = knockoutSlots(round).length;
-    const angle = -90 + ((slot - 0.5) * 360) / slots;
-    const radians = (angle * Math.PI) / 180;
-    const radius = ROUND_RING[round];
+    const position = nodePosition(round, slot);
     return (
       <div
         className="world-cup-knockout-node"
         data-round={round}
         key={`${round}-${slot}`}
         style={{
-          left: `${50 + Math.cos(radians) * radius}%`,
-          top: `${50 + Math.sin(radians) * radius}%`,
+          left: `${position.x}%`,
+          top: `${position.y}%`,
         } as CSSProperties}
       >
         {knockoutGame(round, slot)}
       </div>
     );
   };
+
+  const connectorLines = ROUND_ORDER.flatMap((round) =>
+    knockoutSlots(round).map((slot) => {
+      const target = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[`${round}|${slot}`];
+      if (!target) return null;
+      const from = nodePosition(round, slot);
+      const to = target.round === "CHIP"
+        ? { x: 50, y: 50 }
+        : nodePosition(target.round as Exclude<WorldCupRound, "CHIP">, target.slot);
+      const mid = {
+        x: from.x + ((to.x - from.x) * (round === "R32" ? 0.54 : 0.5)),
+        y: from.y + ((to.y - from.y) * (round === "R32" ? 0.54 : 0.5)),
+      };
+      return (
+        <path
+          d={`M ${from.x} ${from.y} L ${mid.x} ${mid.y} L ${to.x} ${to.y}`}
+          data-round={round}
+          key={`${round}-${slot}-connector`}
+          vectorEffect="non-scaling-stroke"
+        />
+      );
+    }).filter(Boolean)
+  );
 
   const roundLabel = (round: WorldCupRound) => ROUNDS.find((candidate) => candidate.key === round)?.label ?? round;
   const sideRound = (round: Exclude<WorldCupRound, "CHIP">, side: "left" | "right") => {
@@ -336,6 +368,9 @@ export default function WorldCupBracketBoard({
         </div>
         {layout === "side-groups" ? (
           <div className="world-cup-knockout-circle">
+            <svg className="world-cup-knockout-connectors" aria-hidden="true" viewBox="0 0 100 100">
+              {connectorLines}
+            </svg>
             <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="1" />
             <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="2" />
             <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="3" />
