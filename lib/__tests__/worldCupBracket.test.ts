@@ -3,6 +3,7 @@ import {
   resolveWorldCupThirdPlaceAssignments,
   WORLD_CUP_THIRD_PLACE_R32_TARGETS,
   WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
+  WORLD_CUP_REFERENCE_R32_MATCHUPS,
   WORLD_CUP_SLOT_LABELS,
   WORLD_CUP_FIXED_R32_SLOT_TARGETS,
   groupCodeFromRegion,
@@ -19,6 +20,39 @@ describe("groupCodeFromRegion", () => {
   it("returns null for non-group region strings", () => expect(groupCodeFromRegion("East")).toBeNull());
   it("returns null for null", () => expect(groupCodeFromRegion(null)).toBeNull());
   it("returns null for empty string", () => expect(groupCodeFromRegion("")).toBeNull());
+});
+
+// ---------------------------------------------------------------------------
+// WORLD_CUP_REFERENCE_R32_MATCHUPS
+// ---------------------------------------------------------------------------
+
+describe("WORLD_CUP_REFERENCE_R32_MATCHUPS", () => {
+  it("matches the fixed World Cup reference draw", () => {
+    expect(WORLD_CUP_REFERENCE_R32_MATCHUPS).toEqual([
+      ["Brazil", "Japan"],
+      ["Côte d'Ivoire", "Norway"],
+      ["Mexico", "Ecuador"],
+      ["England", "Congo DR"],
+      ["Argentina", "Cabo Verde"],
+      ["Australia", "Egypt"],
+      ["Switzerland", "Algeria"],
+      ["Colombia", "Ghana"],
+      ["Senegal", "Belgium"],
+      ["USA", "Bosnia and Herzegovina"],
+      ["Spain", "Austria"],
+      ["Portugal", "Croatia"],
+      ["Netherlands", "Morocco"],
+      ["Canada", "South Africa"],
+      ["France", "Sweden"],
+      ["Germany", "Paraguay"],
+    ]);
+  });
+
+  it("feeds the R32 display labels in slot order", () => {
+    for (const [index, matchup] of WORLD_CUP_REFERENCE_R32_MATCHUPS.entries()) {
+      expect(WORLD_CUP_SLOT_LABELS[`R32|${index + 1}`]).toEqual(matchup);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -57,22 +91,22 @@ describe("WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT — completeness", () => {
 
 describe("WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT — R32 → S16 routing", () => {
   const expectedR32ToS16: Record<number, { slot: number; side: "team1_id" | "team2_id" }> = {
-    1:  { slot: 2, side: "team1_id" },
-    2:  { slot: 1, side: "team1_id" },
-    3:  { slot: 2, side: "team2_id" },
-    4:  { slot: 3, side: "team1_id" },
-    5:  { slot: 1, side: "team2_id" },
+    1:  { slot: 1, side: "team1_id" },
+    2:  { slot: 1, side: "team2_id" },
+    3:  { slot: 2, side: "team1_id" },
+    4:  { slot: 2, side: "team2_id" },
+    5:  { slot: 3, side: "team1_id" },
     6:  { slot: 3, side: "team2_id" },
     7:  { slot: 4, side: "team1_id" },
     8:  { slot: 4, side: "team2_id" },
-    9:  { slot: 6, side: "team1_id" },
-    10: { slot: 6, side: "team2_id" },
-    11: { slot: 5, side: "team1_id" },
-    12: { slot: 5, side: "team2_id" },
-    13: { slot: 8, side: "team1_id" },
-    14: { slot: 7, side: "team1_id" },
-    15: { slot: 8, side: "team2_id" },
-    16: { slot: 7, side: "team2_id" },
+    9:  { slot: 5, side: "team1_id" },
+    10: { slot: 5, side: "team2_id" },
+    11: { slot: 6, side: "team1_id" },
+    12: { slot: 6, side: "team2_id" },
+    13: { slot: 7, side: "team1_id" },
+    14: { slot: 7, side: "team2_id" },
+    15: { slot: 8, side: "team1_id" },
+    16: { slot: 8, side: "team2_id" },
   };
 
   for (const [r32Slot, expected] of Object.entries(expectedR32ToS16)) {
@@ -120,10 +154,10 @@ describe("WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT — S16 → E8 routing", () => {
   const expectedS16ToE8: Record<number, { slot: number; side: "team1_id" | "team2_id" }> = {
     1: { slot: 1, side: "team1_id" },
     2: { slot: 1, side: "team2_id" },
-    3: { slot: 3, side: "team1_id" },
-    4: { slot: 3, side: "team2_id" },
-    5: { slot: 2, side: "team1_id" },
-    6: { slot: 2, side: "team2_id" },
+    3: { slot: 2, side: "team1_id" },
+    4: { slot: 2, side: "team2_id" },
+    5: { slot: 3, side: "team1_id" },
+    6: { slot: 3, side: "team2_id" },
     7: { slot: 4, side: "team1_id" },
     8: { slot: 4, side: "team2_id" },
   };

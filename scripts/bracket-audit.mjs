@@ -130,28 +130,28 @@ function setKey(values) {
 // --------------------------------------------------------------------------
 
 const WC_NEXT = {
-  "R32|1": { round: "S16", slot: 2, side: "team1_id" },
-  "R32|2": { round: "S16", slot: 1, side: "team1_id" },
-  "R32|3": { round: "S16", slot: 2, side: "team2_id" },
-  "R32|4": { round: "S16", slot: 3, side: "team1_id" },
-  "R32|5": { round: "S16", slot: 1, side: "team2_id" },
+  "R32|1": { round: "S16", slot: 1, side: "team1_id" },
+  "R32|2": { round: "S16", slot: 1, side: "team2_id" },
+  "R32|3": { round: "S16", slot: 2, side: "team1_id" },
+  "R32|4": { round: "S16", slot: 2, side: "team2_id" },
+  "R32|5": { round: "S16", slot: 3, side: "team1_id" },
   "R32|6": { round: "S16", slot: 3, side: "team2_id" },
   "R32|7": { round: "S16", slot: 4, side: "team1_id" },
   "R32|8": { round: "S16", slot: 4, side: "team2_id" },
-  "R32|9": { round: "S16", slot: 6, side: "team1_id" },
-  "R32|10": { round: "S16", slot: 6, side: "team2_id" },
-  "R32|11": { round: "S16", slot: 5, side: "team1_id" },
-  "R32|12": { round: "S16", slot: 5, side: "team2_id" },
-  "R32|13": { round: "S16", slot: 8, side: "team1_id" },
-  "R32|14": { round: "S16", slot: 7, side: "team1_id" },
-  "R32|15": { round: "S16", slot: 8, side: "team2_id" },
-  "R32|16": { round: "S16", slot: 7, side: "team2_id" },
+  "R32|9": { round: "S16", slot: 5, side: "team1_id" },
+  "R32|10": { round: "S16", slot: 5, side: "team2_id" },
+  "R32|11": { round: "S16", slot: 6, side: "team1_id" },
+  "R32|12": { round: "S16", slot: 6, side: "team2_id" },
+  "R32|13": { round: "S16", slot: 7, side: "team1_id" },
+  "R32|14": { round: "S16", slot: 7, side: "team2_id" },
+  "R32|15": { round: "S16", slot: 8, side: "team1_id" },
+  "R32|16": { round: "S16", slot: 8, side: "team2_id" },
   "S16|1": { round: "E8", slot: 1, side: "team1_id" },
   "S16|2": { round: "E8", slot: 1, side: "team2_id" },
-  "S16|3": { round: "E8", slot: 3, side: "team1_id" },
-  "S16|4": { round: "E8", slot: 3, side: "team2_id" },
-  "S16|5": { round: "E8", slot: 2, side: "team1_id" },
-  "S16|6": { round: "E8", slot: 2, side: "team2_id" },
+  "S16|3": { round: "E8", slot: 2, side: "team1_id" },
+  "S16|4": { round: "E8", slot: 2, side: "team2_id" },
+  "S16|5": { round: "E8", slot: 3, side: "team1_id" },
+  "S16|6": { round: "E8", slot: 3, side: "team2_id" },
   "S16|7": { round: "E8", slot: 4, side: "team1_id" },
   "S16|8": { round: "E8", slot: 4, side: "team2_id" },
   "E8|1": { round: "F4", slot: 1, side: "team1_id" },
@@ -159,6 +159,25 @@ const WC_NEXT = {
   "E8|3": { round: "F4", slot: 2, side: "team1_id" },
   "E8|4": { round: "F4", slot: 2, side: "team2_id" },
 };
+
+const WC_REFERENCE_R32_MATCHUPS = [
+  ["Brazil", "Japan"],
+  ["Côte d'Ivoire", "Norway"],
+  ["Mexico", "Ecuador"],
+  ["England", "Congo DR"],
+  ["Argentina", "Cabo Verde"],
+  ["Australia", "Egypt"],
+  ["Switzerland", "Algeria"],
+  ["Colombia", "Ghana"],
+  ["Senegal", "Belgium"],
+  ["USA", "Bosnia and Herzegovina"],
+  ["Spain", "Austria"],
+  ["Portugal", "Croatia"],
+  ["Netherlands", "Morocco"],
+  ["Canada", "South Africa"],
+  ["France", "Sweden"],
+  ["Germany", "Paraguay"],
+];
 
 function norm(v) { return String(v ?? "").trim().toLowerCase(); }
 
@@ -248,6 +267,28 @@ async function main() {
   }
 
   // ---- 1. Build lookup map for next-round check ----
+  section("R32 Reference Draw Check");
+  let drawIssues = 0;
+  for (const [index, [expectedTeam1, expectedTeam2]] of WC_REFERENCE_R32_MATCHUPS.entries()) {
+    const slot = index + 1;
+    const game = games.find((candidate) => candidate.round === "R32" && Number(candidate.slot) === slot);
+    if (!game) {
+      drawIssues++;
+      fail(`R32 slot ${slot}: missing game`);
+      continue;
+    }
+    const actualTeam1 = teamName(game.team1_id);
+    const actualTeam2 = teamName(game.team2_id);
+    if (actualTeam1 !== expectedTeam1 || actualTeam2 !== expectedTeam2) {
+      drawIssues++;
+      fail(
+        `R32 slot ${slot}: expected ${expectedTeam1} vs ${expectedTeam2}, found ${actualTeam1} vs ${actualTeam2}`,
+      );
+    }
+  }
+  if (drawIssues === 0) ok("All R32 matchups match the World Cup reference draw");
+  else console.log(`\n  Total: ${drawIssues} R32 draw issue(s)`);
+
   section("Bracket Advancement Check");
   const byKey = new Map();
   for (const g of games) {
@@ -403,11 +444,11 @@ async function main() {
 
   section("Summary");
   const scoreSchemaIssues = scoreColumnsAvailable ? 0 : 1;
-  const issues = bracketIssues + stale + totalOrphans + totalMissingPicks + scoreSchemaIssues;
+  const issues = drawIssues + bracketIssues + stale + totalOrphans + totalMissingPicks + scoreSchemaIssues;
   if (issues === 0) {
     ok("No issues found");
   } else {
-    console.log(`  ${bracketIssues} bracket mismatch(es), ${stale} stale winner(s), ${totalOrphans} orphan pick(s), ${totalMissingPicks} missing-pick entr${totalMissingPicks === 1 ? "y" : "ies"}, ${scoreSchemaIssues} score-schema issue(s)`);
+    console.log(`  ${drawIssues} R32 draw issue(s), ${bracketIssues} bracket mismatch(es), ${stale} stale winner(s), ${totalOrphans} orphan pick(s), ${totalMissingPicks} missing-pick entr${totalMissingPicks === 1 ? "y" : "ies"}, ${scoreSchemaIssues} score-schema issue(s)`);
   }
   if (totalLinkedDraftDrift > 0) {
     console.log(`  Note: ${totalLinkedDraftDrift} linked saved draft(s) differ from their persisted pool entry picks.`);
