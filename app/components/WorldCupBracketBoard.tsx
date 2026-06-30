@@ -418,10 +418,6 @@ export default function WorldCupBracketBoard({
             <svg className="world-cup-knockout-connectors" aria-hidden="true" viewBox="0 0 100 100">
               {connectorLines}
             </svg>
-            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="1" />
-            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="2" />
-            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="3" />
-            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="4" />
             {ROUND_ORDER.flatMap((round) => knockoutSlots(round).map((slot) => circularKnockoutGame(round, slot)))}
             <div className="world-cup-knockout-trophy" aria-label="World Cup final">
               <span>trophy</span>

@@ -1165,16 +1165,11 @@ body.is-native-app-shell .competition-switcher {
 
 .world-cup-knockout-circle {
   aspect-ratio: 1;
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--surface-elevated) 82%, transparent) 0 11%, transparent 11.4%),
-    radial-gradient(circle at 50% 50%, transparent 0 20%, color-mix(in srgb, var(--border-color) 48%, transparent) 20.1% 20.3%, transparent 20.4%),
-    radial-gradient(circle at 50% 50%, transparent 0 31%, color-mix(in srgb, var(--border-color) 42%, transparent) 31.1% 31.3%, transparent 31.4%),
-    radial-gradient(circle at 50% 50%, transparent 0 44%, color-mix(in srgb, var(--border-color) 36%, transparent) 44.1% 44.25%, transparent 44.35%);
   margin-inline: auto;
-  max-width: 980px;
+  max-width: 920px;
   min-width: 0;
   position: relative;
-  width: min(100%, 980px);
+  width: min(100%, 920px);
 }
 
 .world-cup-knockout-connectors {
@@ -1187,47 +1182,22 @@ body.is-native-app-shell .competition-switcher {
 
 .world-cup-knockout-connectors path {
   fill: none;
-  stroke: color-mix(in srgb, var(--foreground) 28%, transparent);
+  stroke: #050505;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 0.33;
-}
-
-.world-cup-knockout-connectors circle {
-  fill: color-mix(in srgb, var(--foreground) 44%, transparent);
-}
-
-.world-cup-knockout-connectors g[data-round="R32"] path {
-  stroke: color-mix(in srgb, var(--foreground) 23%, transparent);
-}
-
-.world-cup-knockout-connectors g[data-round="F4"] path {
-  stroke: color-mix(in srgb, var(--foreground) 38%, transparent);
   stroke-width: 0.42;
 }
 
-.world-cup-knockout-ring {
-  border: 1px solid color-mix(in srgb, var(--border-color) 46%, transparent);
-  border-radius: 999px;
-  inset: var(--ring-inset);
-  pointer-events: none;
-  position: absolute;
+.world-cup-knockout-connectors circle {
+  fill: #050505;
 }
 
-.world-cup-knockout-ring[data-ring="1"] {
-  --ring-inset: 5%;
+.world-cup-knockout-connectors g[data-round="R32"] path {
+  stroke-width: 0.36;
 }
 
-.world-cup-knockout-ring[data-ring="2"] {
-  --ring-inset: 17%;
-}
-
-.world-cup-knockout-ring[data-ring="3"] {
-  --ring-inset: 28%;
-}
-
-.world-cup-knockout-ring[data-ring="4"] {
-  --ring-inset: 38%;
+.world-cup-knockout-connectors g[data-round="F4"] path {
+  stroke-width: 0.5;
 }
 
 .world-cup-knockout-node {
@@ -1238,39 +1208,109 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .world-cup-knockout-node[data-round="R32"] {
-  --node-width: 132px;
+  --node-width: 118px;
 }
 
 .world-cup-knockout-node[data-round="S16"] {
-  --node-width: 122px;
+  --node-width: 110px;
 }
 
 .world-cup-knockout-node[data-round="E8"] {
-  --node-width: 112px;
+  --node-width: 100px;
 }
 
 .world-cup-knockout-node[data-round="F4"] {
-  --node-width: 102px;
+  --node-width: 92px;
 }
 
 .world-cup-knockout-circle .world-cup-knockout-game {
-  background: color-mix(in srgb, var(--surface) 91%, transparent);
-  border-radius: 8px;
-  box-shadow: 0 10px 26px color-mix(in srgb, #000 9%, transparent);
-  padding: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  box-shadow: none;
+  gap: 2px;
+  padding: 0;
 }
 
 .world-cup-knockout-circle .world-cup-bracket-team {
-  font-size: 0.64rem;
-  gap: 5px;
-  min-height: 26px;
-  padding: 2px 4px;
+  background: var(--surface);
+  border-color: #050505;
+  border-radius: 6px;
+  color: #101010;
+  font-size: 0.61rem;
+  font-weight: 950;
+  gap: 0;
+  isolation: isolate;
+  min-height: 27px;
+  overflow: hidden;
+  padding: 0 5px;
+  position: relative;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+.world-cup-knockout-circle .world-cup-bracket-team::after {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.28)),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.2), transparent 58%);
+  content: "";
+  inset: 0;
+  position: absolute;
+  z-index: -1;
 }
 
 .world-cup-knockout-circle .world-cup-team-logo {
-  flex-basis: 18px;
-  height: 18px;
-  width: 18px;
+  border: 0;
+  border-radius: inherit;
+  flex: none;
+  height: 100%;
+  inset: 0;
+  opacity: 0.92;
+  position: absolute;
+  width: 100%;
+  z-index: -2;
+}
+
+.world-cup-knockout-circle .world-cup-team-logo img {
+  object-fit: cover;
+  padding: 0;
+}
+
+.world-cup-knockout-circle .world-cup-team-logo[data-empty="true"] {
+  background:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--foreground) 10%, transparent) 0 6px, transparent 6px 12px),
+    var(--surface-muted);
+}
+
+.world-cup-knockout-circle .world-cup-team-logo[data-empty="true"]::before {
+  display: none;
+}
+
+.world-cup-knockout-circle .world-cup-team-name {
+  position: relative;
+  z-index: 1;
+}
+
+.world-cup-knockout-circle .world-cup-bracket-team[data-highlighted="true"] {
+  background: var(--surface);
+  border-color: #050505;
+  box-shadow:
+    0 0 0 2px var(--highlight-border),
+    0 0 18px color-mix(in srgb, var(--highlight-border) 48%, transparent),
+    0 0 30px color-mix(in srgb, var(--highlight) 72%, transparent);
+}
+
+.world-cup-knockout-circle .world-cup-bracket-team[data-winner="true"] {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62),
+    0 3px 10px rgba(0, 0, 0, 0.14);
+}
+
+.world-cup-knockout-circle .world-cup-bracket-team[data-highlighted="true"][data-winner="true"] {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    0 0 0 2px var(--highlight-border),
+    0 0 20px color-mix(in srgb, var(--highlight-border) 54%, transparent),
+    0 0 34px color-mix(in srgb, var(--highlight) 78%, transparent);
 }
 
 .world-cup-knockout-node[data-round="E8"] .world-cup-bracket-team,
@@ -1281,8 +1321,8 @@ body.is-native-app-shell .competition-switcher {
 
 .world-cup-knockout-trophy {
   align-items: center;
-  background: color-mix(in srgb, var(--surface-elevated) 90%, transparent);
-  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+  border: 1px solid #050505;
   border-radius: 999px;
   box-shadow: 0 16px 42px color-mix(in srgb, #000 12%, transparent);
   display: grid;
@@ -1293,7 +1333,7 @@ body.is-native-app-shell .competition-switcher {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 146px;
+  width: 138px;
   z-index: 2;
 }
 
@@ -1318,7 +1358,7 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .world-cup-knockout-trophy .world-cup-knockout-game {
-  width: 124px;
+  width: 116px;
 }
 
 .world-cup-knockout-trophy .world-cup-bracket-team {
