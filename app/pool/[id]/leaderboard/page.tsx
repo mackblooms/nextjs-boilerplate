@@ -20,6 +20,7 @@ import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from 
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 import { getEliminatedTeamIds } from "@/lib/teamElimination";
+import { worldCupLogoUrl } from "@/lib/worldCupLogos";
 
 type Row = {
   entry_id: string;
@@ -584,6 +585,7 @@ function TeamValueTable({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <WorldCupLogoChip logoUrl={row.logo_url} />
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {toSchoolDisplayName(row.team_name)}
                 </span>
@@ -596,6 +598,14 @@ function TeamValueTable({
         </>
       )}
     </section>
+  );
+}
+
+function WorldCupLogoChip({ logoUrl }: { logoUrl: string | null }) {
+  return (
+    <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
+      {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
+    </span>
   );
 }
 
@@ -653,6 +663,7 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <WorldCupLogoChip logoUrl={row.logo_url} />
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {toSchoolDisplayName(row.team_name)}
                 </span>
@@ -1241,7 +1252,7 @@ export default function LeaderboardPage() {
         for (const [teamId, selections] of selectionCountByTeam.entries()) {
           const teamMeta = teamMetaById.get(teamId);
           const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
-          const logoUrl = teamMeta?.logo_url ?? null;
+          const logoUrl = worldCupLogoUrl(teamMeta?.name ?? teamName, teamMeta?.logo_url);
           popularityRows.push({
             team_id: teamId,
             team_name: teamName,
@@ -1261,7 +1272,7 @@ export default function LeaderboardPage() {
         for (const teamId of startedTeamIds) {
           const teamMeta = teamMetaById.get(teamId);
           const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
-          const logoUrl = teamMeta?.logo_url ?? null;
+          const logoUrl = worldCupLogoUrl(teamMeta?.name ?? teamName, teamMeta?.logo_url);
           const cost = teamMeta?.cost;
           if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) continue;
 
@@ -1326,7 +1337,10 @@ export default function LeaderboardPage() {
                   (isInBracket ? (teamMeta?.seed_in_region ?? null) : null) ??
                   aliasMeta?.seed ??
                   null,
-                logo_url: teamMeta?.logo_url ?? aliasMeta?.logo_url ?? null,
+                logo_url: worldCupLogoUrl(
+                  teamMeta?.name ?? null,
+                  teamMeta?.logo_url ?? aliasMeta?.logo_url ?? null,
+                ),
                 // Treat teams missing from bracket game data as not alive.
                 is_active: isInBracket && !eliminatedTeamIds.has(teamId),
                 is_in_bracket: isInBracket,
@@ -1435,7 +1449,10 @@ export default function LeaderboardPage() {
               team_id: teamId,
               team_name: toSchoolDisplayName(drafted?.team_name ?? teamMeta?.name?.trim()) || "Unknown team",
               seed: drafted?.seed ?? teamMeta?.seed_in_region ?? null,
-              logo_url: drafted?.logo_url ?? teamMeta?.logo_url ?? null,
+              logo_url: worldCupLogoUrl(
+                drafted?.team_name ?? teamMeta?.name ?? null,
+                drafted?.logo_url ?? teamMeta?.logo_url ?? null,
+              ),
               points: teamScores.get(teamId) ?? 0,
             };
           })
@@ -2569,6 +2586,7 @@ export default function LeaderboardPage() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                        <WorldCupLogoChip logoUrl={team.logo_url} />
                         <span
                           style={{
                             fontWeight: 700,
@@ -2911,30 +2929,37 @@ export default function LeaderboardPage() {
                   <div style={{ textAlign: "right" }}>Points</div>
                 </div>
 
-                {archiveDetail.my_entry.drafted_teams.map((team) => (
-                  <div
-                    key={team.team_id}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        poolCompetitionSlug === "world-cup"
-                          ? "1fr 170px 120px"
-                          : "80px 1fr 170px 120px",
-                      padding: "10px 12px",
-                      borderBottom: "1px solid var(--border-color)",
-                      alignItems: "center",
-                    }}
-                  >
-                    {poolCompetitionSlug === "world-cup" ? null : (
-                      <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
-                    )}
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
+                {archiveDetail.my_entry.drafted_teams.map((team) => {
+                  const logoUrl =
+                    poolCompetitionSlug === "world-cup"
+                      ? worldCupLogoUrl(team.team_name, team.logo_url)
+                      : team.logo_url;
+                  return (
+                    <div
+                      key={team.team_id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          poolCompetitionSlug === "world-cup"
+                            ? "1fr 170px 120px"
+                            : "80px 1fr 170px 120px",
+                        padding: "10px 12px",
+                        borderBottom: "1px solid var(--border-color)",
+                        alignItems: "center",
+                      }}
+                    >
+                      {poolCompetitionSlug === "world-cup" ? null : (
+                        <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
+                      )}
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0 }}>
+                        {poolCompetitionSlug === "world-cup" ? <WorldCupLogoChip logoUrl={logoUrl} /> : null}
+                        <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
+                      </div>
+                      <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>
+                      <div style={{ textAlign: "right", fontWeight: 900 }}>{team.total_team_score}</div>
                     </div>
-                    <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>
-                    <div style={{ textAlign: "right", fontWeight: 900 }}>{team.total_team_score}</div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {archiveDetail.my_entry.drafted_teams.length === 0 ? (
                   <div style={{ padding: "12px" }}>No drafted teams saved for your entry this season.</div>

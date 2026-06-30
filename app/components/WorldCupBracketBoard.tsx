@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import {
   WORLD_CUP_LEFT_LAYOUT,
   WORLD_CUP_RIGHT_LAYOUT,
@@ -5,11 +6,13 @@ import {
   type WorldCupRound,
 } from "@/lib/worldCupBracket";
 import type { MatchedLiveGame } from "@/lib/liveBracket";
+import { worldCupLogoUrl } from "@/lib/worldCupLogos";
 
 type Team = {
   id: string;
   name: string;
   region: string | null;
+  logo_url?: string | null;
 };
 
 type Game = {
@@ -33,6 +36,21 @@ const ROUNDS = [
   { key: "F4", label: "semifinals", slots: 2 },
   { key: "CHIP", label: "final", slots: 1 },
 ] as const;
+
+const ROUND_RING: Record<WorldCupRound, number> = {
+  R32: 45,
+  S16: 33,
+  E8: 22,
+  F4: 12,
+  CHIP: 0,
+};
+
+const ROUND_ORDER: Exclude<WorldCupRound, "CHIP">[] = ["R32", "S16", "E8", "F4"];
+
+function logoUrlForTeam(team: Team | null | undefined) {
+  if (!team) return null;
+  return worldCupLogoUrl(team.name, team.logo_url);
+}
 
 type GroupStanding = {
   team: Team;
@@ -162,16 +180,52 @@ export default function WorldCupBracketBoard({
     gamesByRoundSlot.set(`${game.round}|${game.slot}`, game);
   }
 
+  const knockoutSlots = (round: WorldCupRound) => {
+    const count = ROUNDS.find((candidate) => candidate.key === round)?.slots ?? 1;
+    return Array.from({ length: count }, (_, index) => index + 1);
+  };
+
+  const knockoutTeamIds = new Set<string>();
+  const eliminatedTeamIds = new Set<string>();
+  for (const game of games) {
+    if (game.round === "GROUP") continue;
+    if (game.team1_id) knockoutTeamIds.add(game.team1_id);
+    if (game.team2_id) knockoutTeamIds.add(game.team2_id);
+    if (!game.winner_team_id) continue;
+    if (game.team1_id && game.team1_id !== game.winner_team_id) eliminatedTeamIds.add(game.team1_id);
+    if (game.team2_id && game.team2_id !== game.winner_team_id) eliminatedTeamIds.add(game.team2_id);
+  }
+
   const teamRow = (teamId: string | null, winnerId: string | null, fallbackLabel = "tbd") => {
     const team = teamId ? teamById.get(teamId) : null;
+    const isEliminated = Boolean(teamId && eliminatedTeamIds.has(teamId));
+    const logoUrl = logoUrlForTeam(team);
     return (
       <div
         className="world-cup-bracket-team"
         data-highlighted={teamId && highlightTeamIds.has(teamId) ? "true" : undefined}
         data-winner={teamId && winnerId === teamId ? "true" : undefined}
+        data-eliminated={isEliminated ? "true" : undefined}
+        data-placeholder={team ? undefined : "true"}
       >
-        {team?.name ?? fallbackLabel}
+        <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
+          {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
+        </span>
+        <span className="world-cup-team-name">{team?.name ?? fallbackLabel}</span>
       </div>
+    );
+  };
+
+  const teamBadge = (teamId: string | null, fallbackLabel = "tbd") => {
+    const team = teamId ? teamById.get(teamId) : null;
+    const logoUrl = logoUrlForTeam(team);
+    return (
+      <span className="world-cup-group-team">
+        <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
+          {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
+        </span>
+        <span className="world-cup-team-name">{team?.name ?? fallbackLabel}</span>
+      </span>
     );
   };
 
@@ -186,10 +240,30 @@ export default function WorldCupBracketBoard({
     const game = gamesByRoundSlot.get(`${round}|${slot}`);
     const slotLabels = WORLD_CUP_SLOT_LABELS[`${round}|${slot}`] ?? ["tbd", "tbd"];
     return (
-      <article className="world-cup-knockout-game" key={`${round}-${slot}`}>
+      <article className="world-cup-knockout-game" data-round={round} key={`${round}-${slot}`}>
         {teamRow(game?.team1_id ?? null, game?.winner_team_id ?? null, slotLabels[0])}
         {teamRow(game?.team2_id ?? null, game?.winner_team_id ?? null, slotLabels[1])}
       </article>
+    );
+  };
+
+  const circularKnockoutGame = (round: Exclude<WorldCupRound, "CHIP">, slot: number) => {
+    const slots = knockoutSlots(round).length;
+    const angle = -90 + ((slot - 0.5) * 360) / slots;
+    const radians = (angle * Math.PI) / 180;
+    const radius = ROUND_RING[round];
+    return (
+      <div
+        className="world-cup-knockout-node"
+        data-round={round}
+        key={`${round}-${slot}`}
+        style={{
+          left: `${50 + Math.cos(radians) * radius}%`,
+          top: `${50 + Math.sin(radians) * radius}%`,
+        } as CSSProperties}
+      >
+        {knockoutGame(round, slot)}
+      </div>
     );
   };
 
@@ -235,9 +309,10 @@ export default function WorldCupBracketBoard({
                     {standings.map((row) => (
                       <tr
                         data-highlighted={highlightTeamIds.has(row.team.id) ? "true" : undefined}
+                        data-eliminated={knockoutTeamIds.has(row.team.id) && eliminatedTeamIds.has(row.team.id) ? "true" : undefined}
                         key={row.team.id}
                       >
-                        <td>{row.team.name}</td>
+                        <td>{teamBadge(row.team.id)}</td>
                         <td>{row.played > 0 ? row.points : "-"}</td>
                       </tr>
                     ))}
@@ -259,14 +334,29 @@ export default function WorldCupBracketBoard({
           <span>knockout stage</span>
           <strong>32 teams to one champion</strong>
         </div>
-        <div className="world-cup-knockout-grid">
-          {(["R32", "S16", "E8", "F4"] as const).map((round) => sideRound(round, "left"))}
-          <div className="world-cup-knockout-center">
-            <strong>final</strong>
-            {knockoutGame("CHIP", 1)}
+        {layout === "side-groups" ? (
+          <div className="world-cup-knockout-circle">
+            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="1" />
+            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="2" />
+            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="3" />
+            <div className="world-cup-knockout-ring" aria-hidden="true" data-ring="4" />
+            {ROUND_ORDER.flatMap((round) => knockoutSlots(round).map((slot) => circularKnockoutGame(round, slot)))}
+            <div className="world-cup-knockout-trophy" aria-label="World Cup final">
+              <span>trophy</span>
+              <strong>WC</strong>
+              {knockoutGame("CHIP", 1)}
+            </div>
           </div>
-          {(["F4", "E8", "S16", "R32"] as const).map((round) => sideRound(round, "right"))}
-        </div>
+        ) : (
+          <div className="world-cup-knockout-grid">
+            {(["R32", "S16", "E8", "F4"] as const).map((round) => sideRound(round, "left"))}
+            <div className="world-cup-knockout-center">
+              <strong>final</strong>
+              {knockoutGame("CHIP", 1)}
+            </div>
+            {(["F4", "E8", "S16", "R32"] as const).map((round) => sideRound(round, "right"))}
+          </div>
+        )}
       </section>
     </div>
   );
