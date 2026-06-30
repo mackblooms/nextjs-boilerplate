@@ -840,7 +840,7 @@ body.is-native-app-shell .competition-switcher {
 
 .world-cup-bracket-board[data-layout="side-groups"] {
   align-items: start;
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .world-cup-groups,
@@ -861,8 +861,47 @@ body.is-native-app-shell .competition-switcher {
   font-family: var(--font-app-mono), monospace;
   font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   opacity: 0.7;
+}
+
+.world-cup-groups-summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  list-style: none;
+}
+
+.world-cup-groups-summary::-webkit-details-marker {
+  display: none;
+}
+
+.world-cup-groups-summary::after {
+  align-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  content: "+";
+  display: inline-flex;
+  flex: 0 0 28px;
+  font-size: 1rem;
+  font-weight: 900;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.world-cup-groups[open] .world-cup-groups-summary {
+  margin-bottom: 12px;
+}
+
+.world-cup-groups[open] .world-cup-groups-summary::after {
+  content: "-";
+}
+
+.world-cup-groups-summary .world-cup-board-heading {
+  margin-bottom: 0;
 }
 
 .world-cup-group-grid {
@@ -872,14 +911,11 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .world-cup-bracket-board[data-layout="side-groups"] .world-cup-groups {
-  max-height: calc(100vh - 190px);
-  overflow: auto;
-  position: sticky;
-  top: 96px;
+  overflow: visible;
 }
 
 .world-cup-bracket-board[data-layout="side-groups"] .world-cup-group-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
 .world-cup-bracket-board[data-layout="side-groups"] .world-cup-group-card {

@@ -7,6 +7,7 @@ import {
   type WorldCupRound,
 } from "@/lib/worldCupBracket";
 import type { MatchedLiveGame } from "@/lib/liveBracket";
+import { getEliminatedTeamIds } from "@/lib/teamElimination";
 import { worldCupLogoUrl } from "@/lib/worldCupLogos";
 
 type Team = {
@@ -197,16 +198,7 @@ export default function WorldCupBracketBoard({
     };
   };
 
-  const knockoutTeamIds = new Set<string>();
-  const eliminatedTeamIds = new Set<string>();
-  for (const game of games) {
-    if (game.round === "GROUP") continue;
-    if (game.team1_id) knockoutTeamIds.add(game.team1_id);
-    if (game.team2_id) knockoutTeamIds.add(game.team2_id);
-    if (!game.winner_team_id) continue;
-    if (game.team1_id && game.team1_id !== game.winner_team_id) eliminatedTeamIds.add(game.team1_id);
-    if (game.team2_id && game.team2_id !== game.winner_team_id) eliminatedTeamIds.add(game.team2_id);
-  }
+  const eliminatedTeamIds = getEliminatedTeamIds(games, "world-cup");
 
   const teamRow = (teamId: string | null, winnerId: string | null, fallbackLabel = "tbd") => {
     const team = teamId ? teamById.get(teamId) : null;
@@ -361,53 +353,6 @@ export default function WorldCupBracketBoard({
 
   return (
     <div className="world-cup-bracket-board" data-layout={layout}>
-      <section className="world-cup-groups" aria-label="World cup groups">
-        <div className="world-cup-board-heading">
-          <span>group stage</span>
-          <strong>12 groups of four</strong>
-        </div>
-        <div className="world-cup-group-grid">
-          {GROUPS.map((group) => {
-            const groupGames = groupGamesByRegion.get(group) ?? [];
-            const standings = buildGroupStandings(group, teams, groupGames, liveByGameId);
-            const hasLiveGroupGame = groupGames.some((game) => liveByGameId?.get(game.id)?.state === "LIVE");
-            return (
-              <article className="world-cup-group-card" data-live={hasLiveGroupGame ? "true" : undefined} key={group}>
-                <div className="world-cup-group-card-heading">
-                  <strong>{group}</strong>
-                  {hasLiveGroupGame ? <span className="live-status-dot" aria-label="Live standings" /> : null}
-                </div>
-                <table className="world-cup-group-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">team</th>
-                      <th scope="col">pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {standings.map((row) => (
-                      <tr
-                        data-highlighted={highlightTeamIds.has(row.team.id) ? "true" : undefined}
-                        data-eliminated={knockoutTeamIds.has(row.team.id) && eliminatedTeamIds.has(row.team.id) ? "true" : undefined}
-                        key={row.team.id}
-                      >
-                        <td>{teamBadge(row.team.id)}</td>
-                        <td>{row.played > 0 ? row.points : "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {showGroupGames && groupGames.length > 0 ? (
-                  <div className="world-cup-group-games">
-                    {groupGames.map(groupGameRow)}
-                  </div>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
       <section className="world-cup-knockout" aria-label="World cup knockout bracket">
         <div className="world-cup-board-heading">
           <span>knockout stage</span>
@@ -436,6 +381,55 @@ export default function WorldCupBracketBoard({
           </div>
         )}
       </section>
+
+      <details className="world-cup-groups" aria-label="World cup groups">
+        <summary className="world-cup-groups-summary">
+          <span className="world-cup-board-heading">
+            <span>group stage</span>
+            <strong>12 groups of four</strong>
+          </span>
+        </summary>
+        <div className="world-cup-group-grid">
+          {GROUPS.map((group) => {
+            const groupGames = groupGamesByRegion.get(group) ?? [];
+            const standings = buildGroupStandings(group, teams, groupGames, liveByGameId);
+            const hasLiveGroupGame = groupGames.some((game) => liveByGameId?.get(game.id)?.state === "LIVE");
+            return (
+              <article className="world-cup-group-card" data-live={hasLiveGroupGame ? "true" : undefined} key={group}>
+                <div className="world-cup-group-card-heading">
+                  <strong>{group}</strong>
+                  {hasLiveGroupGame ? <span className="live-status-dot" aria-label="Live standings" /> : null}
+                </div>
+                <table className="world-cup-group-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">team</th>
+                      <th scope="col">pts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {standings.map((row) => (
+                      <tr
+                        data-highlighted={highlightTeamIds.has(row.team.id) ? "true" : undefined}
+                        data-eliminated={eliminatedTeamIds.has(row.team.id) ? "true" : undefined}
+                        key={row.team.id}
+                      >
+                        <td>{teamBadge(row.team.id)}</td>
+                        <td>{row.played > 0 ? row.points : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {showGroupGames && groupGames.length > 0 ? (
+                  <div className="world-cup-group-games">
+                    {groupGames.map(groupGameRow)}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      </details>
     </div>
   );
 }
