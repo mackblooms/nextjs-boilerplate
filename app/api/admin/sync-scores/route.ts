@@ -1057,7 +1057,13 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
     (game) => game.competition_slug === "world-cup",
   );
   const gamesByPair = new Map<string, LocalPairGame[]>();
+  const gamesByRoundSlot = new Map<string, LocalPairGame>();
   for (const g of gameRows as LocalPairGame[]) {
+    const normalizedRound = String(g.round ?? "").toUpperCase();
+    const slot = Number(g.slot);
+    if (normalizedRound && Number.isFinite(slot)) {
+      gamesByRoundSlot.set(`${normalizedRound}|${Math.trunc(slot)}`, g);
+    }
     if (!g.team1_id || !g.team2_id) continue;
     const key = teamPairKey(String(g.team1_id), String(g.team2_id));
     const bucket = gamesByPair.get(key) ?? [];
@@ -1134,12 +1140,28 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
 
     const team1Score = team1IsHome ? f.homeScore : f.awayScore;
     const team2Score = team2IsHome ? f.homeScore : f.awayScore;
-    const winnerLocalId =
+    let winnerLocalId =
       team1Score > team2Score
         ? localGame.team1_id
         : team2Score > team1Score
         ? localGame.team2_id
         : null;
+
+    if (!winnerLocalId && team1Score === team2Score) {
+      const existingWinner =
+        localGame.winner_team_id === localGame.team1_id || localGame.winner_team_id === localGame.team2_id
+          ? localGame.winner_team_id
+          : null;
+      const roundSlotKey = `${String(localGame.round ?? "").toUpperCase()}|${Number(localGame.slot)}`;
+      const targetRef = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[roundSlotKey];
+      const targetGame = targetRef ? gamesByRoundSlot.get(`${targetRef.round}|${targetRef.slot}`) : null;
+      const propagatedWinner = targetRef && targetGame ? targetGame[targetRef.side] : null;
+      winnerLocalId =
+        existingWinner ??
+        (propagatedWinner === localGame.team1_id || propagatedWinner === localGame.team2_id
+          ? propagatedWinner
+          : null);
+    }
 
     const alreadySynced =
       localGame.winner_team_id === winnerLocalId &&

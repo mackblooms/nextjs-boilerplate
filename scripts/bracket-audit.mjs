@@ -15,6 +15,7 @@ import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import { applyWorldCupManualResultOverrides } from "../lib/worldCupManualResults.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -256,7 +257,9 @@ async function main() {
   if (teamsRes.error) throw teamsRes.error;
   if (poolsRes.error) throw poolsRes.error;
 
-  const games = (gamesRes.data ?? []).map((g) => ({ ...g, id: String(g.id) }));
+  const games = applyWorldCupManualResultOverrides(
+    (gamesRes.data ?? []).map((g) => ({ ...g, id: String(g.id) })),
+  );
   const teams = (teamsRes.data ?? []).map((t) => ({ ...t, id: String(t.id) }));
   const teamById = new Map(teams.map((t) => [t.id, t]));
   const teamName = (id) => teamById.get(id)?.name ?? id ?? "(null)";

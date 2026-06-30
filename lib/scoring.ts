@@ -1,5 +1,8 @@
+import { getWorldCupManualWinnerId } from "./worldCupManualResults.js";
+
 export type ScoringGame = {
   round: string;
+  slot?: number | string | null;
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
@@ -144,13 +147,14 @@ function scoreWorldCupTeamResultsDetailed(
     const round = String(g.round ?? "").toUpperCase();
 
     if (round === "GROUP") {
-      if (g.winner_team_id && isBlankOrFinalStatus(g.status)) {
+      const groupWinnerId = getWorldCupManualWinnerId(g) ?? g.winner_team_id;
+      if (groupWinnerId && isBlankOrFinalStatus(g.status)) {
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round,
-          teamId: g.winner_team_id,
-          opponentTeamId: g.team1_id === g.winner_team_id ? g.team2_id : g.team1_id,
-          winnerSeed: teamSeedById.get(g.winner_team_id) ?? null,
+          teamId: groupWinnerId,
+          opponentTeamId: g.team1_id === groupWinnerId ? g.team2_id : g.team1_id,
+          winnerSeed: teamSeedById.get(groupWinnerId) ?? null,
           opponentSeed: null,
           basePoints: 6,
           seedMultiplier: 1,
@@ -212,7 +216,7 @@ function scoreWorldCupTeamResultsDetailed(
       }
     }
 
-    const winnerId = g.winner_team_id;
+    const winnerId = getWorldCupManualWinnerId(g) ?? g.winner_team_id;
     if (!winnerId) return;
     const base = WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND[round] ?? 0;
     if (!base) return;
