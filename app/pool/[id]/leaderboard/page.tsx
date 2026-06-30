@@ -698,6 +698,7 @@ export default function LeaderboardPage() {
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
   const [breakdownByEntry, setBreakdownByEntry] = useState<Record<string, EntryScoreBreakdown>>({});
   const [openBreakdownEntryId, setOpenBreakdownEntryId] = useState<string | null>(null);
+  const [expandedBreakdownTeamIds, setExpandedBreakdownTeamIds] = useState<Set<string>>(new Set());
   const [hoveredMovementEntryId, setHoveredMovementEntryId] = useState<string | null>(null);
   const [leaderboardMode, setLeaderboardMode] = useState<LeaderboardMode>("live");
   const [forecastByEntry, setForecastByEntry] = useState<Record<string, ForecastEntry>>({});
@@ -1578,10 +1579,23 @@ export default function LeaderboardPage() {
     openBreakdownEntryId ? (breakdownByEntry[openBreakdownEntryId] ?? null) : null;
   const activeEntryRow =
     openBreakdownEntryId ? rows.find((row) => row.entry_id === openBreakdownEntryId) ?? null : null;
+  const activeEventsByTeamId = useMemo(() => {
+    const next = new Map<string, EntryBreakdownEvent[]>();
+    for (const event of activeBreakdown?.events ?? []) {
+      const current = next.get(event.team_id) ?? [];
+      current.push(event);
+      next.set(event.team_id, current);
+    }
+    return next;
+  }, [activeBreakdown]);
   const forecastModeOn = leaderboardMode === "forecast";
   const leaderboardGridTemplate = isCompact
     ? "64px minmax(0, 1fr) 88px"
     : "80px minmax(0, 1fr) 140px";
+
+  useEffect(() => {
+    setExpandedBreakdownTeamIds(new Set());
+  }, [openBreakdownEntryId]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 720px)");
@@ -2240,9 +2254,9 @@ export default function LeaderboardPage() {
                             onClick={() => {
                               setOpenBreakdownEntryId(r.entry_id);
                             }}
-                            className="leaderboard-mini-link"
+                            className="leaderboard-details-link"
                           >
-                            Entry Details
+                            Details
                           </button>
                         ) : null}
                       </div>
@@ -2495,33 +2509,18 @@ export default function LeaderboardPage() {
               >
                 Total: {activeBreakdown?.total_score ?? activeEntryRow.total_score}
               </div>
-              {activeBreakdown ? (
-                <>
-                  <div
-                    style={{
-                      border: "1px solid var(--border-color)",
-                      borderRadius: 9999,
-                      padding: "6px 10px",
-                      fontWeight: 700,
-                      opacity: 0.9,
-                    }}
-                  >
-                    Team points: {activeBreakdown.team_points}
-                  </div>
-                  {activeBreakdown.perfect_r64_bonus > 0 ? (
-                    <div
-                      style={{
-                        border: "1px solid var(--border-color)",
-                        borderRadius: 9999,
-                        padding: "6px 10px",
-                        fontWeight: 700,
-                        opacity: 0.9,
-                      }}
-                    >
-                      Perfect R64 bonus: {activeBreakdown.perfect_r64_bonus}
-                    </div>
-                  ) : null}
-                </>
+              {activeBreakdown && activeBreakdown.perfect_r64_bonus > 0 ? (
+                <div
+                  style={{
+                    border: "1px solid var(--border-color)",
+                    borderRadius: 9999,
+                    padding: "6px 10px",
+                    fontWeight: 700,
+                    opacity: 0.9,
+                  }}
+                >
+                  Includes perfect R64 bonus: {activeBreakdown.perfect_r64_bonus}
+                </div>
               ) : null}
               <div
                 style={{
@@ -2560,7 +2559,7 @@ export default function LeaderboardPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 100px",
+                      gridTemplateColumns: "1fr 100px 34px",
                       gap: 8,
                       padding: "9px 12px",
                       borderBottom: "1px solid var(--border-color)",
@@ -2569,137 +2568,147 @@ export default function LeaderboardPage() {
                   >
                     <div>Team</div>
                     <div style={{ textAlign: "right" }}>Points</div>
+                    <div aria-hidden="true" />
                   </div>
                   {activeEntryRow.drafted_teams.map((team) => {
                     const teamTotal = activeBreakdown?.team_totals.find((row) => row.team_id === team.team_id);
+                    const teamEvents = activeEventsByTeamId.get(team.team_id) ?? [];
+                    const isExpanded = expandedBreakdownTeamIds.has(team.team_id);
+                    const canExpand = teamEvents.length > 0;
                     return (
+                      <div key={team.team_id}>
+                        <button
+                          type="button"
+                          disabled={!canExpand}
+                          aria-expanded={canExpand ? isExpanded : undefined}
+                          onClick={() => {
+                            if (!canExpand) return;
+                            setExpandedBreakdownTeamIds((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(team.team_id)) {
+                                next.delete(team.team_id);
+                              } else {
+                                next.add(team.team_id);
+                              }
+                              return next;
+                            });
+                          }}
+                          style={{
+                            width: "100%",
+                            display: "grid",
+                            gridTemplateColumns: "1fr 100px 34px",
+                            gap: 8,
+                            padding: "10px 12px",
+                            border: 0,
+                            borderBottom: "1px solid var(--border-color)",
+                            alignItems: "center",
+                            background: "transparent",
+                            color: "inherit",
+                            cursor: canExpand ? "pointer" : "default",
+                            opacity: team.is_active ? 1 : 0.48,
+                            textAlign: "left",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                            <WorldCupLogoChip logoUrl={team.logo_url} />
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
+                              {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
+                            </span>
+                          </div>
+                          <div style={{ textAlign: "right", fontWeight: 900 }}>
+                            {teamTotal?.points ?? "-"}
+                          </div>
+                          <div
+                            style={{
+                              justifySelf: "end",
+                              width: 24,
+                              height: 24,
+                              borderRadius: 999,
+                              display: "inline-grid",
+                              placeItems: "center",
+                              color: canExpand ? "var(--foreground)" : "transparent",
+                              opacity: canExpand ? 0.72 : 0,
+                              transform: isExpanded ? "rotate(180deg)" : "none",
+                              transition: "transform 160ms ease",
+                            }}
+                            aria-hidden="true"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 16 16" focusable="false">
+                              <path d="M4 6L8 10L12 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        </button>
+                        {isExpanded ? (
+                          <div
+                            style={{
+                              display: "grid",
+                              gap: 0,
+                              padding: "0 12px 10px 52px",
+                              borderBottom: "1px solid var(--border-color)",
+                              background: "var(--surface-muted)",
+                            }}
+                          >
+                            {teamEvents.map((event) => (
+                              <div
+                                key={event.id}
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 84px",
+                                  gap: 8,
+                                  padding: "8px 0",
+                                  borderTop: "1px solid var(--border-color)",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 800 }}>
+                                    {formatRoundLabel(event.round)}
+                                  </div>
+                                  <div style={{ marginTop: 2, fontSize: 12, opacity: 0.74 }}>
+                                    Base {event.scaled_base_points}
+                                    {event.upset_bonus > 0 ? ` + upset ${event.upset_bonus}` : ""}
+                                    {event.historic_bonus > 0 ? ` + historic ${event.historic_bonus}` : ""}
+                                  </div>
+                                </div>
+                                <div style={{ textAlign: "right", fontWeight: 900 }}>
+                                  {formatPointsDelta(event.points_awarded)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                  {activeBreakdown && activeBreakdown.perfect_r64_bonus > 0 ? (
                     <div
-                      key={team.team_id}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 100px",
+                        gridTemplateColumns: "1fr 100px 34px",
                         gap: 8,
                         padding: "10px 12px",
                         borderBottom: "1px solid var(--border-color)",
                         alignItems: "center",
-                        opacity: team.is_active ? 1 : 0.48,
+                        background: "var(--surface-muted)",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                        <WorldCupLogoChip logoUrl={team.logo_url} />
-                        <span
-                          style={{
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {formatTeamLabel(team.team_name, team.seed, poolCompetitionSlug)}
-                        </span>
-                      </div>
+                      <div style={{ fontWeight: 800 }}>Perfect R64 Bonus</div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>
-                        {teamTotal?.points ?? "-"}
+                        {formatPointsDelta(activeBreakdown.perfect_r64_bonus)}
                       </div>
+                      <div aria-hidden="true" />
                     </div>
-                  );
-                  })}
+                  ) : null}
                 </>
               )}
             </section>
-
-            {activeBreakdown ? (
-              <section
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    borderBottom: "1px solid var(--border-color)",
-                    background: "var(--surface-muted)",
-                    fontWeight: 900,
-                  }}
-                >
-                  Scoring Events
-                </div>
-                {activeBreakdown.events.length === 0 && activeBreakdown.perfect_r64_bonus <= 0 ? (
-                  <div style={{ padding: "12px", opacity: 0.8 }}>
-                    No points scored yet for this draft.
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 110px 80px",
-                        gap: 8,
-                        padding: "9px 12px",
-                        borderBottom: "1px solid var(--border-color)",
-                        fontWeight: 800,
-                        fontSize: 12,
-                      }}
-                    >
-                      <div>Team</div>
-                      <div>Round</div>
-                      <div style={{ textAlign: "right" }}>Points</div>
-                    </div>
-                    {activeBreakdown.events.map((event) => (
-                      <div
-                        key={event.id}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 110px 80px",
-                          gap: 8,
-                          padding: "10px 12px",
-                          borderBottom: "1px solid var(--border-color)",
-                          alignItems: "center",
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                          <span
-                            style={{
-                              fontWeight: 700,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {formatTeamLabel(event.team_name, event.seed, poolCompetitionSlug)}
-                          </span>
-                        </div>
-                        <div style={{ fontWeight: 700 }}>{formatRoundLabel(event.round)}</div>
-                        <div style={{ textAlign: "right", fontWeight: 900 }}>
-                          {formatPointsDelta(event.points_awarded)}
-                        </div>
-                      </div>
-                    ))}
-                    {activeBreakdown.perfect_r64_bonus > 0 ? (
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 110px 80px",
-                          gap: 8,
-                          padding: "10px 12px",
-                          borderBottom: "1px solid var(--border-color)",
-                          alignItems: "center",
-                          background: "var(--surface-muted)",
-                        }}
-                      >
-                        <div style={{ fontWeight: 800 }}>Perfect R64 Bonus</div>
-                        <div style={{ fontWeight: 700 }}>Bonus</div>
-                        <div style={{ textAlign: "right", fontWeight: 900 }}>
-                          {formatPointsDelta(activeBreakdown.perfect_r64_bonus)}
-                        </div>
-                      </div>
-                    ) : null}
-                  </>
-                )}
-              </section>
-            ) : null}
           </div>
         </div>
       ) : null}

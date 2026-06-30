@@ -2257,11 +2257,34 @@ body.is-native-app-shell .competition-switcher {
   text-decoration: none;
 }
 
+.leaderboard-details-link {
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 850;
+  opacity: 0.72;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+}
+
 .leaderboard-entry-link:hover,
 .leaderboard-entry-link:focus-visible,
 .leaderboard-mini-link:hover,
-.leaderboard-mini-link:focus-visible {
+.leaderboard-mini-link:focus-visible,
+.leaderboard-details-link:hover,
+.leaderboard-details-link:focus-visible {
   color: var(--focus-ring);
+  opacity: 1;
+  text-decoration-color: currentColor;
 }
 
 .pool-chip-row span {
