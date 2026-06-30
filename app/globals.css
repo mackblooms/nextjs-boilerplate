@@ -19,6 +19,7 @@
   --shadow-sm: 0 8px 20px rgba(13, 23, 42, 0.08);
   --shadow-md: 0 14px 32px rgba(13, 23, 42, 0.14);
   --shadow-lg: 0 24px 46px rgba(13, 23, 42, 0.22);
+  --bracket-connector: #050505;
 }
 
 :root[data-theme="dark"] {
@@ -40,6 +41,7 @@
   --shadow-sm: 0 10px 22px rgba(0, 0, 0, 0.34);
   --shadow-md: 0 16px 34px rgba(0, 0, 0, 0.42);
   --shadow-lg: 0 26px 54px rgba(0, 0, 0, 0.5);
+  --bracket-connector: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,6 +64,7 @@
     --shadow-sm: 0 10px 22px rgba(0, 0, 0, 0.34);
     --shadow-md: 0 16px 34px rgba(0, 0, 0, 0.42);
     --shadow-lg: 0 26px 54px rgba(0, 0, 0, 0.5);
+    --bracket-connector: #ffffff;
   }
 }
 
@@ -1218,14 +1221,14 @@ body.is-native-app-shell .competition-switcher {
 
 .world-cup-knockout-connectors path {
   fill: none;
-  stroke: #050505;
+  stroke: var(--bracket-connector);
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 0.42;
 }
 
 .world-cup-knockout-connectors circle {
-  fill: #050505;
+  fill: var(--bracket-connector);
 }
 
 .world-cup-knockout-connectors g[data-round="R32"] path {
