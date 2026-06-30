@@ -1,3 +1,5 @@
+import { normalizeWorldCupTeamKey } from "./worldCupTeamAliases";
+
 const TEAM_FLAG_CODES: Record<string, string> = {
   Algeria: "dz",
   Argentina: "ar",
@@ -49,8 +51,12 @@ const TEAM_FLAG_CODES: Record<string, string> = {
   Uzbekistan: "uz",
 };
 
+const TEAM_FLAG_CODES_BY_KEY = Object.fromEntries(
+  Object.entries(TEAM_FLAG_CODES).map(([name, code]) => [normalizeWorldCupTeamKey(name), code]),
+);
+
 export function worldCupLogoUrl(name: string | null | undefined, existingLogoUrl?: string | null) {
   if (existingLogoUrl) return existingLogoUrl;
-  const flagCode = name ? TEAM_FLAG_CODES[name] : null;
+  const flagCode = name ? TEAM_FLAG_CODES[name] ?? TEAM_FLAG_CODES_BY_KEY[normalizeWorldCupTeamKey(name)] : null;
   return flagCode ? `https://flagcdn.com/w80/${flagCode}.png` : null;
 }

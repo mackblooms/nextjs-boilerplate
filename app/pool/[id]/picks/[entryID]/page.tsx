@@ -8,12 +8,14 @@ import { scoreEntries, type ScoringGame } from "../../../../../lib/scoring";
 import { toSchoolDisplayName } from "../../../../../lib/teamNames";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 
 type PickRow = {
   team_id: string;
   team_name: string;
   seed: number | null;
   cost: number | null;
+  logo_url?: string | null;
   round_reached: string | null;
   total_team_score: number | null;
 };
@@ -23,6 +25,7 @@ type TeamMetaRow = {
   name: string | null;
   seed_in_region: number | null;
   cost: number | null;
+  logo_url?: string | null;
 };
 
 function formatRoundReached(value: string | null) {
@@ -208,7 +211,7 @@ export default function PicksPage() {
       if (teamIds.length > 0) {
         const { data: teamRows, error: teamErr } = await supabase
           .from("teams")
-          .select("id,name,seed_in_region,cost")
+          .select("id,name,seed_in_region,cost,logo_url")
           .in("id", teamIds);
 
         if (teamErr) {
@@ -243,6 +246,7 @@ export default function PicksPage() {
           team_name: teamMetaById.get(p.team_id)?.name ?? p.team_name,
           seed: teamMetaById.get(p.team_id)?.seed_in_region ?? null,
           cost: teamMetaById.get(p.team_id)?.cost ?? null,
+          logo_url: teamMetaById.get(p.team_id)?.logo_url ?? null,
           total_team_score: computedTeamScores.get(p.team_id) ?? 0,
         }));
 
@@ -384,15 +388,19 @@ export default function PicksPage() {
                     minWidth: 0,
                   }}
                 >
-                  <span
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {toSchoolDisplayName(p.team_name)}
-                  </span>
+                  {isWorldCup ? (
+                    <WorldCupTeamLabel name={p.team_name} logoUrl={p.logo_url} />
+                  ) : (
+                    <span
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {toSchoolDisplayName(p.team_name)}
+                    </span>
+                  )}
                 </div>
 
                 <div>
@@ -434,7 +442,13 @@ export default function PicksPage() {
             <div className="app-sheet-header">
               <div>
                 <span className="match-kicker">Pick detail</span>
-                <h2>{toSchoolDisplayName(selectedPick.team_name)}</h2>
+                <h2>
+                  {isWorldCup ? (
+                    <WorldCupTeamLabel name={selectedPick.team_name} logoUrl={selectedPick.logo_url} />
+                  ) : (
+                    toSchoolDisplayName(selectedPick.team_name)
+                  )}
+                </h2>
               </div>
               <button type="button" onClick={() => setSelectedPick(null)} className="native-only-icon-action">
                 x

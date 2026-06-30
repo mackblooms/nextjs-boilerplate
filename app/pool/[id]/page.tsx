@@ -13,6 +13,7 @@ import { sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 
 function competitionPathWithParams(
   path: string,
@@ -388,6 +389,7 @@ function ScoreSidebar({
   loading,
   error,
   emptyMessage,
+  competitionSlug,
   onGameSelect,
 }: {
   title: string;
@@ -395,6 +397,7 @@ function ScoreSidebar({
   loading: boolean;
   error: string | null;
   emptyMessage: string;
+  competitionSlug: CompetitionSlug;
   onGameSelect?: (game: LiveScoreGame) => void;
 }) {
   return (
@@ -434,9 +437,13 @@ function ScoreSidebar({
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.awayTeamName}
                 >
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.awayTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.awayTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.awayTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
@@ -445,9 +452,13 @@ function ScoreSidebar({
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.homeTeamName}
                 >
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.homeTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.homeTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.homeTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
@@ -1516,6 +1527,7 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={recentFinalsEmptyMessage}
+            competitionSlug={competitionSlug}
             onGameSelect={setSelectedImpactGame}
           />
         </div>
@@ -1598,7 +1610,21 @@ export default function PoolPage() {
               disabled={liveAndUpcoming.length === 0}
             >
               <span>Next impact</span>
-              <strong>{liveAndUpcoming[0] ? `${liveAndUpcoming[0].awayTeamName} / ${liveAndUpcoming[0].homeTeamName}` : "None"}</strong>
+              <strong>
+                {liveAndUpcoming[0] ? (
+                  competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <WorldCupTeamLabel name={liveAndUpcoming[0].awayTeamName} />
+                      <span>/</span>
+                      <WorldCupTeamLabel name={liveAndUpcoming[0].homeTeamName} />
+                    </span>
+                  ) : (
+                    `${liveAndUpcoming[0].awayTeamName} / ${liveAndUpcoming[0].homeTeamName}`
+                  )
+                ) : (
+                  "None"
+                )}
+              </strong>
             </button>
             <button
               type="button"
@@ -1606,7 +1632,21 @@ export default function PoolPage() {
               disabled={recentFinals.length === 0}
             >
               <span>Latest result</span>
-              <strong>{recentFinals[0] ? `${recentFinals[0].awayTeamName} / ${recentFinals[0].homeTeamName}` : "None"}</strong>
+              <strong>
+                {recentFinals[0] ? (
+                  competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <WorldCupTeamLabel name={recentFinals[0].awayTeamName} />
+                      <span>/</span>
+                      <WorldCupTeamLabel name={recentFinals[0].homeTeamName} />
+                    </span>
+                  ) : (
+                    `${recentFinals[0].awayTeamName} / ${recentFinals[0].homeTeamName}`
+                  )
+                ) : (
+                  "None"
+                )}
+              </strong>
             </button>
           </section>
         ) : null}
@@ -1783,6 +1823,7 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={liveAndUpcomingEmptyMessage}
+            competitionSlug={competitionSlug}
             onGameSelect={setSelectedImpactGame}
           />
         </div>
@@ -1805,7 +1846,17 @@ export default function PoolPage() {
             <div className="app-sheet-header">
               <div>
                 <span className="match-kicker">Game impact</span>
-                <h2>{selectedImpactGame.awayTeamName} at {selectedImpactGame.homeTeamName}</h2>
+                <h2>
+                  {competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <WorldCupTeamLabel name={selectedImpactGame.awayTeamName} />
+                      <span>at</span>
+                      <WorldCupTeamLabel name={selectedImpactGame.homeTeamName} />
+                    </span>
+                  ) : (
+                    `${selectedImpactGame.awayTeamName} at ${selectedImpactGame.homeTeamName}`
+                  )}
+                </h2>
               </div>
               <button type="button" onClick={() => setSelectedImpactGame(null)} className="native-only-icon-action">
                 x
@@ -1813,11 +1864,23 @@ export default function PoolPage() {
             </div>
             <div className="pool-impact-score">
               <div>
-                <span>{selectedImpactGame.awayTeamName}</span>
+                <span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={selectedImpactGame.awayTeamName} />
+                  ) : (
+                    selectedImpactGame.awayTeamName
+                  )}
+                </span>
                 <strong>{selectedImpactGame.awayScore ?? "-"}</strong>
               </div>
               <div>
-                <span>{selectedImpactGame.homeTeamName}</span>
+                <span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={selectedImpactGame.homeTeamName} />
+                  ) : (
+                    selectedImpactGame.homeTeamName
+                  )}
+                </span>
                 <strong>{selectedImpactGame.homeScore ?? "-"}</strong>
               </div>
               <p>{statusLabel(selectedImpactGame)}</p>
@@ -1826,7 +1889,9 @@ export default function PoolPage() {
               <strong>On your drafts</strong>
               {selectedImpactTeams.length > 0 ? (
                 selectedImpactTeams.map((team) => (
-                  <span key={`${selectedImpactGame.id}-${team.side}`}>{team.name}</span>
+                  <span key={`${selectedImpactGame.id}-${team.side}`}>
+                    {competitionSlug === "world-cup" ? <WorldCupTeamLabel name={team.name} /> : team.name}
+                  </span>
                 ))
               ) : (
                 <p>No drafted teams matched this game.</p>

@@ -21,6 +21,7 @@ import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 import { getEliminatedTeamIds } from "@/lib/teamElimination";
 import { worldCupLogoUrl } from "@/lib/worldCupLogos";
+import WorldCupTeamLabel, { WorldCupLogoChip } from "@/app/components/WorldCupTeamLabel";
 
 type Row = {
   entry_id: string;
@@ -585,7 +586,7 @@ function TeamValueTable({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                <WorldCupLogoChip logoUrl={row.logo_url} />
+                <WorldCupLogoChip name={row.team_name} logoUrl={row.logo_url} />
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {toSchoolDisplayName(row.team_name)}
                 </span>
@@ -598,14 +599,6 @@ function TeamValueTable({
         </>
       )}
     </section>
-  );
-}
-
-function WorldCupLogoChip({ logoUrl }: { logoUrl: string | null }) {
-  return (
-    <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
-      {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
-    </span>
   );
 }
 
@@ -663,7 +656,7 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                <WorldCupLogoChip logoUrl={row.logo_url} />
+                <WorldCupLogoChip name={row.team_name} logoUrl={row.logo_url} />
                 <span style={{ fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {toSchoolDisplayName(row.team_name)}
                 </span>
@@ -2610,7 +2603,7 @@ export default function LeaderboardPage() {
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                            <WorldCupLogoChip logoUrl={team.logo_url} />
+                            <WorldCupLogoChip name={team.team_name} logoUrl={team.logo_url} />
                             <span
                               style={{
                                 fontWeight: 700,
@@ -2961,8 +2954,15 @@ export default function LeaderboardPage() {
                         <div style={{ fontWeight: 800 }}>{team.seed ?? "-"}</div>
                       )}
                       <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0 }}>
-                        {poolCompetitionSlug === "world-cup" ? <WorldCupLogoChip logoUrl={logoUrl} /> : null}
-                        <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
+                        {poolCompetitionSlug === "world-cup" ? (
+                          <WorldCupTeamLabel
+                            name={team.team_name}
+                            logoUrl={logoUrl}
+                            nameStyle={{ fontWeight: 800 }}
+                          />
+                        ) : (
+                          <div style={{ fontWeight: 800 }}>{toSchoolDisplayName(team.team_name)}</div>
+                        )}
                       </div>
                       <div style={{ opacity: 0.85 }}>{formatArchiveRound(team.round_reached)}</div>
                       <div style={{ textAlign: "right", fontWeight: 900 }}>{team.total_team_score}</div>

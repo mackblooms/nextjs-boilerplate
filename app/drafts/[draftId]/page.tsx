@@ -21,6 +21,7 @@ import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import DraftScoringNotice from "../../components/DraftScoringNotice";
+import WorldCupTeamLabel from "../../components/WorldCupTeamLabel";
 import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
 
 type DraftRow = {
@@ -31,7 +32,9 @@ type DraftRow = {
   competition_slug?: string;
 };
 
-type TeamRow = DraftableTeam;
+type TeamRow = DraftableTeam & {
+  logo_url?: string | null;
+};
 
 type GameRow = {
   round: string;
@@ -266,7 +269,7 @@ export default function DraftDetailPage() {
 
       let teamQuery = supabase
         .from("teams")
-        .select("id,name,seed,cost")
+        .select("id,name,seed,cost,logo_url")
         .eq("competition_slug", nextCompetitionSlug);
       if (r64TeamIds.length > 0) {
         teamQuery = teamQuery.in("id", r64TeamIds);
@@ -275,8 +278,8 @@ export default function DraftDetailPage() {
       let { data: teamRows, error: teamErr } = await teamQuery;
       if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, teamErr?.message)) {
         const fallback = r64TeamIds.length > 0
-          ? await supabase.from("teams").select("id,name,seed,cost").in("id", r64TeamIds)
-          : await supabase.from("teams").select("id,name,seed,cost");
+          ? await supabase.from("teams").select("id,name,seed,cost,logo_url").in("id", r64TeamIds)
+          : await supabase.from("teams").select("id,name,seed,cost,logo_url");
         teamRows = fallback.data;
         teamErr = fallback.error;
       }
@@ -721,9 +724,17 @@ export default function DraftDetailPage() {
                     disabled={draftsLocked || saving}
                   />
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {toSchoolDisplayName(team.name)}
-                    </div>
+                    {competitionSlug === "world-cup" ? (
+                      <WorldCupTeamLabel
+                        name={team.name}
+                        logoUrl={team.logo_url}
+                        nameStyle={{ fontWeight: 800 }}
+                      />
+                    ) : (
+                      <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {toSchoolDisplayName(team.name)}
+                      </div>
+                    )}
                     <div style={{ fontSize: 12, opacity: 0.75 }}>
                       {competitionSlug === "world-cup"
                         ? `${getWorldCupTierForCost(team.cost)?.name ?? "world cup"} tier`
@@ -835,11 +846,16 @@ export default function DraftDetailPage() {
                     background: "var(--surface-muted)",
                   }}
                 >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {competitionSlug === "world-cup"
-                      ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
-                      : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <span style={{ flexShrink: 0 }}>({getWorldCupTierForCost(team.cost)?.name ?? "World Cup"})</span>
+                      <WorldCupTeamLabel name={team.name} logoUrl={team.logo_url} />
+                    </span>
+                  ) : (
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      ({team.seed}) {toSchoolDisplayName(team.name)}
+                    </span>
+                  )}
                   <b style={{ marginLeft: 8 }}>{team.cost}</b>
                 </div>
               ))}
@@ -885,7 +901,13 @@ export default function DraftDetailPage() {
             <div className="app-sheet-header">
               <div>
                 <span className="match-kicker">Team detail</span>
-                <h2>{toSchoolDisplayName(inspectedTeam.name)}</h2>
+                <h2>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={inspectedTeam.name} logoUrl={inspectedTeam.logo_url} />
+                  ) : (
+                    toSchoolDisplayName(inspectedTeam.name)
+                  )}
+                </h2>
               </div>
               <button type="button" onClick={() => setInspectedTeam(null)} className="native-only-icon-action">
                 x

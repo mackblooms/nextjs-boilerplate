@@ -21,6 +21,7 @@ import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { defaultDraftName, isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -596,6 +597,7 @@ function ScorePanel({
   emptyMessage,
   trackedEspnSet,
   trackedKeySet,
+  competitionSlug,
   titleAccessory,
 }: {
   title: string;
@@ -605,6 +607,7 @@ function ScorePanel({
   emptyMessage: string;
   trackedEspnSet?: Set<string>;
   trackedKeySet?: Set<string>;
+  competitionSlug: CompetitionSlug;
   titleAccessory?: ReactNode;
 }) {
   const trackedEspn = trackedEspnSet ?? new Set<string>();
@@ -674,9 +677,13 @@ function ScorePanel({
                   title={game.awayTeamName}
                 >
                   {awayTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.awayTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.awayTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.awayTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
@@ -696,9 +703,13 @@ function ScorePanel({
                   title={game.homeTeamName}
                 >
                   {homeTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.homeTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.homeTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.homeTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
@@ -2038,6 +2049,7 @@ export function HomeContent({
             emptyMessage={recentFinalsEmptyMessage}
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            competitionSlug={activeCompetitionSlug}
             titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>
@@ -2333,6 +2345,7 @@ export function HomeContent({
             emptyMessage={liveAndUpcomingEmptyMessage}
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            competitionSlug={activeCompetitionSlug}
             titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>

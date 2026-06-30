@@ -21,7 +21,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
-import { worldCupLogoUrl } from "@/lib/worldCupLogos";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 
 type PoolRow = {
   id: string;
@@ -985,20 +985,17 @@ export default function PoolDraftPage() {
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                     {competitionSlug === "world-cup" ? (
-                      <span
-                        className="world-cup-team-logo"
-                        data-empty={worldCupLogoUrl(team.name, team.logo_url) ? undefined : "true"}
-                      >
-                        {worldCupLogoUrl(team.name, team.logo_url) ? (
-                          <img src={worldCupLogoUrl(team.name, team.logo_url) ?? ""} alt="" loading="lazy" />
-                        ) : null}
+                      <>
+                        <span style={{ flexShrink: 0 }}>
+                          ({getWorldCupTierForCost(team.cost)?.name ?? "World Cup"})
+                        </span>
+                        <WorldCupTeamLabel name={team.name} logoUrl={team.logo_url} />
+                      </>
+                    ) : (
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        ({team.seed}) {toSchoolDisplayName(team.name)}
                       </span>
-                    ) : null}
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {competitionSlug === "world-cup"
-                        ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
-                        : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
-                    </span>
+                    )}
                   </div>
                   <b>{team.cost}</b>
                 </div>
