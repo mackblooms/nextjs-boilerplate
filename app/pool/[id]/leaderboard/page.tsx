@@ -136,6 +136,8 @@ type TeamPopularityRow = {
   selections: number;
 };
 
+type TeamInsightsModal = "value" | "popularity" | null;
+
 type PoolOption = {
   id: string;
   name: string;
@@ -527,10 +529,16 @@ function ExplainedValue({
 function TeamValueTable({
   title,
   rows,
+  totalRows,
+  onViewAll,
 }: {
   title: string;
   rows: TeamValueRow[];
+  totalRows?: number;
+  onViewAll?: () => void;
 }) {
+  const hiddenCount = Math.max((totalRows ?? rows.length) - rows.length, 0);
+
   return (
     <section
       style={{
@@ -546,9 +554,31 @@ function TeamValueTable({
           borderBottom: "1px solid var(--border-color)",
           fontWeight: 900,
           background: "var(--surface-muted)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
         }}
       >
-        {title}
+        <span>{title}</span>
+        {onViewAll && hiddenCount > 0 ? (
+          <button
+            type="button"
+            onClick={onViewAll}
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 8,
+              background: "var(--surface)",
+              color: "var(--foreground)",
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 800,
+              padding: "4px 8px",
+            }}
+          >
+            View all
+          </button>
+        ) : null}
       </div>
 
       {rows.length === 0 ? (
@@ -602,7 +632,17 @@ function TeamValueTable({
   );
 }
 
-function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
+function TeamPopularityTable({
+  rows,
+  totalRows,
+  onViewAll,
+}: {
+  rows: TeamPopularityRow[];
+  totalRows?: number;
+  onViewAll?: () => void;
+}) {
+  const hiddenCount = Math.max((totalRows ?? rows.length) - rows.length, 0);
+
   return (
     <section
       style={{
@@ -618,9 +658,31 @@ function TeamPopularityTable({ rows }: { rows: TeamPopularityRow[] }) {
           borderBottom: "1px solid var(--border-color)",
           fontWeight: 900,
           background: "var(--surface-muted)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
         }}
       >
-        Most Popular Teams
+        <span>Most Popular Teams</span>
+        {onViewAll && hiddenCount > 0 ? (
+          <button
+            type="button"
+            onClick={onViewAll}
+            style={{
+              border: "1px solid var(--border-color)",
+              borderRadius: 8,
+              background: "var(--surface)",
+              color: "var(--foreground)",
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 800,
+              padding: "4px 8px",
+            }}
+          >
+            View all
+          </button>
+        ) : null}
       </div>
 
       {rows.length === 0 ? (
@@ -688,7 +750,10 @@ export default function LeaderboardPage() {
   const [deletingPool, setDeletingPool] = useState(false);
   const [showTeamInsights, setShowTeamInsights] = useState(false);
   const [bestValueTeams, setBestValueTeams] = useState<TeamValueRow[]>([]);
+  const [allValueTeams, setAllValueTeams] = useState<TeamValueRow[]>([]);
   const [popularTeams, setPopularTeams] = useState<TeamPopularityRow[]>([]);
+  const [allPopularTeams, setAllPopularTeams] = useState<TeamPopularityRow[]>([]);
+  const [teamInsightsModal, setTeamInsightsModal] = useState<TeamInsightsModal>(null);
   const [breakdownByEntry, setBreakdownByEntry] = useState<Record<string, EntryScoreBreakdown>>({});
   const [openBreakdownEntryId, setOpenBreakdownEntryId] = useState<string | null>(null);
   const [expandedBreakdownTeamIds, setExpandedBreakdownTeamIds] = useState<Set<string>>(new Set());
@@ -899,7 +964,10 @@ export default function LeaderboardPage() {
         setLoading(true);
         setShowTeamInsights(false);
         setBestValueTeams([]);
+        setAllValueTeams([]);
         setPopularTeams([]);
+        setAllPopularTeams([]);
+        setTeamInsightsModal(null);
         setBreakdownByEntry({});
         setOpenBreakdownEntryId(null);
         setForecastByEntry({});
@@ -1243,12 +1311,13 @@ export default function LeaderboardPage() {
         }
 
         const popularityRows: TeamPopularityRow[] = [];
-        for (const [teamId, selections] of selectionCountByTeam.entries()) {
-          const teamMeta = teamMetaById.get(teamId);
+        for (const teamMeta of teamRowsList) {
+          if (!gameTeamIds.has(teamMeta.id) && competitionSlug !== "world-cup") continue;
+          const selections = selectionCountByTeam.get(teamMeta.id) ?? 0;
           const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
           const logoUrl = worldCupLogoUrl(teamMeta?.name ?? teamName, teamMeta?.logo_url);
           popularityRows.push({
-            team_id: teamId,
+            team_id: teamMeta.id,
             team_name: teamName,
             logo_url: logoUrl,
             selections,
@@ -1262,17 +1331,17 @@ export default function LeaderboardPage() {
           if (game.team2_id) startedTeamIds.add(game.team2_id);
         }
 
-        const valueRows: TeamValueRow[] = [];
-        for (const teamId of startedTeamIds) {
-          const teamMeta = teamMetaById.get(teamId);
+        const allValueRows: TeamValueRow[] = [];
+        for (const teamMeta of teamRowsList) {
+          if (!gameTeamIds.has(teamMeta.id) && competitionSlug !== "world-cup") continue;
           const teamName = toSchoolDisplayName(teamMeta?.name?.trim()) || "Unknown team";
           const logoUrl = worldCupLogoUrl(teamMeta?.name ?? teamName, teamMeta?.logo_url);
           const cost = teamMeta?.cost;
           if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) continue;
 
-          const points = teamScores.get(teamId) ?? 0;
-          valueRows.push({
-            team_id: teamId,
+          const points = teamScores.get(teamMeta.id) ?? 0;
+          allValueRows.push({
+            team_id: teamMeta.id,
             team_name: teamName,
             logo_url: logoUrl,
             cost,
@@ -1281,30 +1350,35 @@ export default function LeaderboardPage() {
           });
         }
 
-        const bestRows = [...valueRows]
-          .sort(
-            (a, b) =>
-              b.roi - a.roi ||
-              b.points - a.points ||
-              a.team_name.localeCompare(b.team_name),
-          )
+        const sortedValueRows = [...allValueRows].sort(
+          (a, b) =>
+            b.roi - a.roi ||
+            b.points - a.points ||
+            a.team_name.localeCompare(b.team_name),
+        );
+        const bestRows = sortedValueRows
+          .filter((row) => startedTeamIds.has(row.team_id))
           .slice(0, BEST_WORST_LIMIT);
 
-        const popularRows = [...popularityRows]
-          .sort(
-            (a, b) =>
-              b.selections - a.selections ||
-              a.team_name.localeCompare(b.team_name),
-          )
-          .slice(0, POPULAR_LIMIT);
+        const sortedPopularityRows = [...popularityRows].sort(
+          (a, b) =>
+            b.selections - a.selections ||
+            a.team_name.localeCompare(b.team_name),
+        );
+        const popularRows = sortedPopularityRows.slice(0, POPULAR_LIMIT);
 
         setShowTeamInsights(true);
         setBestValueTeams(bestRows);
+        setAllValueTeams(sortedValueRows);
         setPopularTeams(popularRows);
+        setAllPopularTeams(sortedPopularityRows);
       } else {
         setShowTeamInsights(false);
         setBestValueTeams([]);
+        setAllValueTeams([]);
         setPopularTeams([]);
+        setAllPopularTeams([]);
+        setTeamInsightsModal(null);
       }
 
       const computed = activeBaseRows
@@ -2306,8 +2380,17 @@ export default function LeaderboardPage() {
           <aside style={{ display: "grid", gap: 12 }}>
             {showTeamInsights ? (
               <>
-                <TeamValueTable title="Best Value Teams" rows={bestValueTeams} />
-                <TeamPopularityTable rows={popularTeams} />
+                <TeamValueTable
+                  title="Best Value Teams"
+                  rows={bestValueTeams}
+                  totalRows={allValueTeams.length}
+                  onViewAll={() => setTeamInsightsModal("value")}
+                />
+                <TeamPopularityTable
+                  rows={popularTeams}
+                  totalRows={allPopularTeams.length}
+                  onViewAll={() => setTeamInsightsModal("popularity")}
+                />
               </>
             ) : (
               <section
@@ -2336,6 +2419,85 @@ export default function LeaderboardPage() {
               </section>
             )}
           </aside>
+        </div>
+      ) : null}
+
+      {teamInsightsModal ? (
+        <div
+          role="presentation"
+          onClick={() => setTeamInsightsModal(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 16,
+            zIndex: 118,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              teamInsightsModal === "value" ? "All team value metrics" : "All team popularity metrics"
+            }
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "min(820px, 100%)",
+              maxHeight: "90vh",
+              overflow: "auto",
+              borderRadius: 12,
+              border: "1px solid var(--border-color)",
+              background: "var(--surface)",
+              padding: 16,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 8,
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>
+                  {teamInsightsModal === "value" ? "All Team Value" : "All Team Popularity"}
+                </h2>
+                <div style={{ marginTop: 4, opacity: 0.78, fontWeight: 700 }}>
+                  {teamInsightsModal === "value"
+                    ? `${allValueTeams.length} teams ranked by points per price`
+                    : `${allPopularTeams.length} teams ranked by pool selections`}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTeamInsightsModal(null)}
+                style={{
+                  padding: "8px 11px",
+                  borderRadius: 8,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  color: "var(--foreground)",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            {teamInsightsModal === "value" ? (
+              <TeamValueTable title="Team Value Metrics" rows={allValueTeams} />
+            ) : (
+              <TeamPopularityTable rows={allPopularTeams} />
+            )}
+          </div>
         </div>
       ) : null}
 
