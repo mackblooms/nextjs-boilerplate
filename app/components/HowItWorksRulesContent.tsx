@@ -93,7 +93,7 @@ function SoccerRules() {
         <RulesTable
           columns={["Tier and National Teams", "Draft Cost"]}
           rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [
-            <span style={{ display: "grid", gap: 6 }}>
+            <span key={tier.name} style={{ display: "grid", gap: 6 }}>
               <strong>{tier.name}</strong>
               <span style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {tier.teams.map((team) => (

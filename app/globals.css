@@ -597,6 +597,19 @@ textarea::placeholder {
   box-shadow: var(--shadow-sm);
 }
 
+.landing-simple-card {
+  width: min(520px, 100%);
+  gap: 18px;
+  padding: clamp(18px, 4vw, 32px);
+}
+
+.landing-primary-mark {
+  width: min(320px, 82vw);
+  height: auto;
+  object-fit: contain;
+  filter: var(--logo-filter);
+}
+
 .landing-title {
   margin: 0;
   font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
@@ -633,6 +646,36 @@ textarea::placeholder {
 .landing-action-button {
   min-width: 168px;
   text-decoration: none;
+}
+
+.how-it-works-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: min(420px, 100%);
+  margin: 18px 0 4px;
+  padding: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.how-it-works-toggle-button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.how-it-works-toggle-button[data-active="true"] {
+  border-color: var(--highlight-border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .sports-page-shell,

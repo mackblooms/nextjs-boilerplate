@@ -8,7 +8,6 @@ import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { getStoredActiveCompetition, setStoredActiveCompetition } from "@/lib/activeCompetition";
 import { getStoredActivePoolId, setStoredActivePoolId } from "@/lib/activePool";
-import CompetitionSwitcher from "@/app/components/CompetitionSwitcher";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import {
   competitionPath,
@@ -263,26 +262,18 @@ function LandingPage({
         padding: 8,
       }}
     >
-        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={206}
-              height={58}
-              className="landing-topbar-mark"
-            />
-          </Link>
-        </header>
-
         <section className="landing-center-stage" aria-label="Landing actions">
-          <div className="page-surface landing-center-card">
-            <h1 className="landing-title">draft, track and win.</h1>
-            <p className="landing-copy">
-              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-            </p>
-            <CompetitionSwitcher activeCompetition={activeCompetitionSlug} compact />
+          <div className="page-surface landing-center-card landing-simple-card">
+            <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+              <Image
+                src="/bracketball-logo-mark.png"
+                alt="bracketball logo"
+                width={320}
+                height={90}
+                className="landing-primary-mark"
+                priority
+              />
+            </Link>
             {invitePoolId ? (
               <p className="landing-invite-text">
                 You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
