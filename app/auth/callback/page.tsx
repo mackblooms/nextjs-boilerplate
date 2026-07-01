@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
-import { getInvitePoolIdFromNextPath } from "../../../lib/poolInvite";
+
+const POST_LOGIN_PATH = "/";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -15,18 +16,12 @@ export default function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
-        const requestedNext = url.searchParams.get("next");
         const queryType = url.searchParams.get("type");
-        const safeRequestedNext =
-          requestedNext && requestedNext.startsWith("/") ? requestedNext : null;
-        const invitePoolId =
-          url.searchParams.get("invitePoolId") ||
-          getInvitePoolIdFromNextPath(safeRequestedNext);
+        const invitePoolId = url.searchParams.get("invitePoolId");
 
-        const fallbackNextPath = invitePoolId ? `/pool/${invitePoolId}` : "/";
         const recoveryNextPath = (() => {
           const params = new URLSearchParams();
-          params.set("next", fallbackNextPath);
+          params.set("next", POST_LOGIN_PATH);
           if (invitePoolId) params.set("invitePoolId", invitePoolId);
           return `/login/reset-password?${params.toString()}`;
         })();
@@ -50,11 +45,9 @@ export default function AuthCallbackPage() {
           const hashType = hashParams.get("type");
 
           const nextPath =
-            safeRequestedNext
-              ? safeRequestedNext
-              : (queryType || hashType) === "recovery"
-                ? recoveryNextPath
-                : fallbackNextPath;
+            (queryType || hashType) === "recovery"
+              ? recoveryNextPath
+              : POST_LOGIN_PATH;
 
           if (accessToken && refreshToken) {
             setStatus("Saving session from token hash...");
@@ -83,11 +76,9 @@ export default function AuthCallbackPage() {
         }
 
         const nextPath =
-          safeRequestedNext
-            ? safeRequestedNext
-            : queryType === "recovery"
-              ? recoveryNextPath
-              : fallbackNextPath;
+          queryType === "recovery"
+            ? recoveryNextPath
+            : POST_LOGIN_PATH;
 
         setStatus("Signed in! Redirecting...");
         router.replace(nextPath);
