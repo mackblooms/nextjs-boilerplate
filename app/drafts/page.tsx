@@ -288,7 +288,9 @@ function DraftsPageContent() {
         <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900 }}>
           {competition.shortName} Drafts
         </h1>
-        <p style={{ marginTop: 12 }}>Loading drafts...</p>
+        <p className="ui-loading-state">
+          <strong>Loading drafts...</strong>
+        </p>
       </main>
     );
   }
@@ -465,23 +467,17 @@ function DraftsPageContent() {
           })}
         </section>
       ) : (
-        <UiCard>
-          No drafts yet. Create one above.
-        </UiCard>
+        <section className="ui-empty-state" aria-label="No drafts">
+          <strong>No drafts yet.</strong>
+          <span>Create one above, then add teams and enter it into a pool.</span>
+        </section>
       )}
 
       {message ? (
         <p
           role="status"
           aria-live="polite"
-          style={{
-            margin: 0,
-            border: "1px solid var(--border-color)",
-            borderRadius: 10,
-            padding: "10px 12px",
-            background: "var(--surface-muted)",
-            fontWeight: 700,
-          }}
+          className="ui-status"
         >
           {message}
         </p>

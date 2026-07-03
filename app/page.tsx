@@ -21,6 +21,11 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { defaultDraftName, isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import {
+  UiEmptyState,
+  UiLoadingState,
+  UiStatus,
+} from "@/app/components/ui/primitives";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -453,7 +458,9 @@ function sortPoolsByName(a: { name: string }, b: { name: string }) {
 function HomeLoading() {
   return (
     <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-      Loading...
+      <UiLoadingState>
+        <strong>Loading home...</strong>
+      </UiLoadingState>
     </main>
   );
 }
@@ -618,10 +625,10 @@ function ScorePanel({
         <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
         {titleAccessory ? <div>{titleAccessory}</div> : null}
       </div>
-      {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
-      {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
+      {loading ? <UiLoadingState>Loading scores...</UiLoadingState> : null}
+      {!loading && error ? <UiStatus tone="error">{error}</UiStatus> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
+        <UiEmptyState as="div">{emptyMessage}</UiEmptyState>
       ) : null}
       {!loading &&
         !error &&
@@ -1759,29 +1766,12 @@ export function HomeContent({
     <div
       role="group"
       aria-label="Score view mode"
-      style={{
-        display: "inline-flex",
-        border: "1px solid var(--border-color)",
-        borderRadius: 999,
-        padding: 2,
-        background: "var(--surface-muted)",
-      }}
+      className="leaderboard-segmented-control home-score-toggle"
     >
       <button
         type="button"
         onClick={() => setScoreViewMode("my-teams")}
         aria-pressed={scoreViewMode === "my-teams"}
-        style={{
-          border: "none",
-          borderRadius: 999,
-          padding: "4px 10px",
-          fontWeight: 800,
-          cursor: "pointer",
-          background:
-            scoreViewMode === "my-teams" ? "var(--surface)" : "transparent",
-          color: "inherit",
-          fontSize: 12,
-        }}
       >
         My Teams
       </button>
@@ -1789,17 +1779,6 @@ export function HomeContent({
         type="button"
         onClick={() => setScoreViewMode("all-scores")}
         aria-pressed={scoreViewMode === "all-scores"}
-        style={{
-          border: "none",
-          borderRadius: 999,
-          padding: "4px 10px",
-          fontWeight: 800,
-          cursor: "pointer",
-          background:
-            scoreViewMode === "all-scores" ? "var(--surface)" : "transparent",
-          color: "inherit",
-          fontSize: 12,
-        }}
       >
         All Scores
       </button>
@@ -1995,17 +1974,10 @@ export function HomeContent({
             value={selectedPoolId}
             onChange={(event) => setSelectedPoolId(event.target.value)}
             disabled={memberPools.length === 0}
-            style={{
-              padding: "8px 10px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-muted)",
-              fontWeight: 700,
-              minHeight: 38,
-            }}
+            className="ui-control ui-select home-pool-select"
           >
             {memberPools.length === 0 ? (
-              <option value="">no joined pools</option>
+              <option value="">No joined pools</option>
             ) : (
               memberPools.map((pool) => (
                 <option key={pool.id} value={pool.id}>
@@ -2018,13 +1990,13 @@ export function HomeContent({
         </div>
 
         {memberPools.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+          <p className="home-context-note">
             Join a pool to highlight your drafted teams on the scoreboard.
           </p>
         ) : null}
 
         {selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
+          <p className="home-context-note">
             You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
           </p>
         ) : null}
@@ -2090,15 +2062,18 @@ export function HomeContent({
           </div>
 
           {isAuthenticated !== true ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>Log in to view your saved drafts.</p>
+            <UiEmptyState as="div">Log in to view your saved drafts.</UiEmptyState>
           ) : null}
 
           {isAuthenticated === true && homeDraftsLoading && homeDrafts.length === 0 ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
+            <UiLoadingState>Loading drafts...</UiLoadingState>
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length === 0 ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>No drafts found.</p>
+            <UiEmptyState as="div">
+              <strong>No drafts yet.</strong>
+              <span>Create a draft to start picking teams and entering pools.</span>
+            </UiEmptyState>
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length > 0 ? (
@@ -2229,7 +2204,7 @@ export function HomeContent({
                         }}
                       >
                         {pools.length === 0 ? (
-                          <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>This draft is not in any pools yet.</p>
+                          <p className="home-context-note">This draft is not in any pools yet.</p>
                         ) : (
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                             {pools.map((pool) => (
@@ -2262,27 +2237,13 @@ export function HomeContent({
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           <Link
                             href={competitionNewPoolPath}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border-color)",
-                              textDecoration: "none",
-                              fontWeight: 800,
-                              background: "var(--surface)",
-                            }}
+                            className="ui-btn ui-btn--sm ui-btn--secondary"
                           >
                             Create Pool
                           </Link>
                           <Link
                             href={competitionPoolPath}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border-color)",
-                              textDecoration: "none",
-                              fontWeight: 800,
-                              background: "var(--surface)",
-                            }}
+                            className="ui-btn ui-btn--sm ui-btn--secondary"
                           >
                             Join Pool(s)
                           </Link>
@@ -2310,20 +2271,12 @@ export function HomeContent({
           ) : null}
 
           {homeDraftsMessage ? (
-            <p
+            <UiStatus
               role="status"
               aria-live="polite"
-              style={{
-                margin: 0,
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                padding: "10px 12px",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-              }}
             >
               {homeDraftsMessage}
-            </p>
+            </UiStatus>
           ) : null}
         </section>
 

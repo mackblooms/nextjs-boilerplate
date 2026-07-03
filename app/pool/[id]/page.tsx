@@ -14,6 +14,13 @@ import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from 
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import {
+  UiButton,
+  UiEmptyState,
+  UiLinkButton,
+  UiLoadingState,
+  UiStatus,
+} from "@/app/components/ui/primitives";
 
 function competitionPathWithParams(
   path: string,
@@ -1510,13 +1517,6 @@ export default function PoolPage() {
     return out;
   }, [draftedEspnIdSet, draftedKeySet, selectedImpactGame]);
 
-  const statusStyle =
-    status?.tone === "success"
-      ? { background: "var(--success-bg)", borderColor: "var(--border-color)" }
-      : status?.tone === "error"
-        ? { background: "var(--danger-bg)", borderColor: "var(--border-color)" }
-        : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
-
   return (
     <main className="page-shell page-shell--compact" style={{ maxWidth: 1320 }}>
       <div className="pool-hero-layout">
@@ -1796,23 +1796,20 @@ export default function PoolPage() {
           </section>
         ) : null}
 
-        {loading ? <p style={{ margin: 0, fontWeight: 700, opacity: 0.85 }}>Checking your membership...</p> : null}
+        {loading ? (
+          <UiLoadingState>
+            <strong>Checking your membership...</strong>
+          </UiLoadingState>
+        ) : null}
 
         {status ? (
-          <p
+          <UiStatus
             role="status"
             aria-live="polite"
-            style={{
-              margin: 0,
-              border: "1px solid",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontWeight: 700,
-              ...statusStyle,
-            }}
+            tone={status.tone}
           >
             {status.text}
-          </p>
+          </UiStatus>
         ) : null}
         </div>
 
@@ -1915,81 +1912,47 @@ export default function PoolPage() {
         <div
           role="presentation"
           onClick={closeDraftModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 125,
-          }}
+          className="app-modal-backdrop app-modal-backdrop--raised"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Select drafts to enter"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(640px, 100%)",
-              maxHeight: "88vh",
-              overflow: "auto",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 12,
-            }}
+            className="app-modal app-modal--wide"
           >
             <div style={{ display: "grid", gap: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Enter Drafts in {pool?.name ?? "Pool"}</h2>
-              <p style={{ margin: 0, opacity: 0.8 }}>
+              <h2>Enter Drafts in {pool?.name ?? "Pool"}</h2>
+              <p className="app-modal-copy">
                 Select one or more drafts below. Each selected draft creates its own entry in this pool.
               </p>
             </div>
 
-            {draftModalLoading ? <p style={{ margin: 0 }}>Loading your drafts...</p> : null}
+            {draftModalLoading ? <UiLoadingState>Loading your drafts...</UiLoadingState> : null}
 
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={selectAllDrafts}
-                  disabled={draftModalSubmitting || entriesLocked}
-                  style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
-                    }}
+                <div className="app-modal-actions" style={{ justifyContent: "flex-start" }}>
+                  <UiButton
+                    type="button"
+                    onClick={selectAllDrafts}
+                    disabled={draftModalSubmitting || entriesLocked}
+                    size="sm"
                   >
                     Select all
-                  </button>
-                  <button
+                  </UiButton>
+                  <UiButton
                     type="button"
                     onClick={clearDraftSelection}
                     disabled={draftModalSubmitting || entriesLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
-                    }}
+                    variant="ghost"
+                    size="sm"
                   >
                     Clear
-                  </button>
+                  </UiButton>
                 </div>
 
-                <div style={{ display: "grid", gap: 8 }}>
+                <div className="app-modal-option-list">
                   {availableDrafts.map((draft) => {
                     const picks = draftPickMap.get(draft.id);
                     const pickCount = picks?.size ?? 0;
@@ -1998,17 +1961,9 @@ export default function PoolPage() {
                     return (
                       <label
                         key={draft.id}
-                        style={{
-                          display: "flex",
-                          gap: 10,
-                          alignItems: "center",
-                          border: "1px solid var(--border-color)",
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
-                          cursor: isAlreadyEntered ? "not-allowed" : "pointer",
-                          opacity: isAlreadyEntered ? 0.75 : 1,
-                        }}
+                        className="app-modal-option"
+                        data-checked={checked}
+                        data-disabled={isAlreadyEntered}
                       >
                         <input
                           type="checkbox"
@@ -2033,98 +1988,48 @@ export default function PoolPage() {
             ) : null}
 
             {!draftModalLoading && availableDrafts.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
+              <UiEmptyState as="div">
+                <strong>No drafts available.</strong>
                 <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
                   <Link href={createDraftForPoolHref} onClick={closeDraftModal}>
                     Create a draft
                   </Link>{" "}
                   and you can enter it here after saving.
                 </p>
-              </div>
+              </UiEmptyState>
             ) : null}
 
             {draftModalMessage ? (
-              <p
-                style={{
-                  margin: 0,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                }}
-              >
+              <UiStatus>
                 {draftModalMessage}
-              </p>
+              </UiStatus>
             ) : null}
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
-              <Link
+            <div className="app-modal-actions app-modal-actions--split">
+              <UiLinkButton
                 href={createDraftForPoolHref}
                 onClick={closeDraftModal}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  display: "inline-flex",
-                  alignItems: "center",
-                }}
               >
                 Create Draft
-              </Link>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
+              </UiLinkButton>
+              <div className="app-modal-actions">
+                <UiButton
                   type="button"
                   onClick={closeDraftModal}
                   disabled={draftModalSubmitting}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 800,
-                    cursor: draftModalSubmitting ? "not-allowed" : "pointer",
-                    opacity: draftModalSubmitting ? 0.7 : 1,
-                  }}
                 >
                   Close
-                </button>
-                <button
+                </UiButton>
+                <UiButton
                   type="button"
                   onClick={() => void submitSelectedDrafts()}
                   disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 900,
-                    cursor:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked
-                        ? "not-allowed"
-                        : "pointer",
-                    opacity:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked ? 0.7 : 1,
-                  }}
+                  variant="primary"
                 >
                   {draftModalSubmitting
                     ? "Entering..."
                     : `Enter ${selectedDraftCount} Draft${selectedDraftCount === 1 ? "" : "s"}`}
-                </button>
+                </UiButton>
               </div>
             </div>
           </section>

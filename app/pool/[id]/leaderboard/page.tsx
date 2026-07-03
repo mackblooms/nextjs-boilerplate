@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -23,6 +22,13 @@ import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 import { getEliminatedTeamIds } from "@/lib/teamElimination";
 import { worldCupLogoUrl } from "@/lib/worldCupLogos";
 import WorldCupTeamLabel, { WorldCupLogoChip } from "@/app/components/WorldCupTeamLabel";
+import {
+  UiButton,
+  UiEmptyState,
+  UiLinkButton,
+  UiLoadingState,
+  UiStatus,
+} from "@/app/components/ui/primitives";
 
 type Row = {
   entry_id: string;
@@ -213,10 +219,6 @@ function isMissingAvatarColumnError(error: { message?: string; code?: string } |
       error.message?.includes("profiles") &&
       error.message.includes("avatar_url"),
   );
-}
-
-function isMissingColumnError(error: { code?: string } | null) {
-  return Boolean(error?.code === "PGRST204");
 }
 
 function etDayKey(date: Date) {
@@ -1886,10 +1888,20 @@ export default function LeaderboardPage() {
         </div>
       </section>
 
-      {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {loading ? (
+        <UiLoadingState style={{ marginTop: 12 }}>
+          <strong>Loading leaderboard...</strong>
+        </UiLoadingState>
+      ) : null}
+      {msg ? (
+        <UiStatus role="status" aria-live="polite" tone="error" style={{ marginTop: 12 }}>
+          {msg}
+        </UiStatus>
+      ) : null}
       {!loading && forecastModeOn && forecastMsg ? (
-        <p style={{ marginTop: 12 }}>{forecastMsg}</p>
+        <UiStatus role="status" aria-live="polite" style={{ marginTop: 12 }}>
+          {forecastMsg}
+        </UiStatus>
       ) : null}
 
       {!loading && !msg ? (
@@ -1904,58 +1916,23 @@ export default function LeaderboardPage() {
               }}
             >
               {!draftLocked ? (
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    fontWeight: 700,
-                    background: "var(--highlight)",
-                    borderBottom: "1px solid var(--highlight-border)",
-                  }}
-                >
+                <div className="leaderboard-lock-notice">
                   Other brackets are hidden until draft lock
                   {lockTime ? ` (${formatDraftLockTimeET(lockTime)})` : ""}.
                 </div>
               ) : null}
 
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  display: "grid",
-                  justifyItems: "center",
-                  gap: 8,
-                  textAlign: "center",
-                }}
-              >
+              <div className="leaderboard-view-toolbar">
                 <div
                   role="tablist"
                   aria-label="Leaderboard view mode"
-                  style={{
-                    display: "inline-flex",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: 9999,
-                    padding: 3,
-                    background: "var(--surface-muted)",
-                    gap: 4,
-                  }}
+                  className="leaderboard-segmented-control"
                 >
                   <button
                     type="button"
                     role="tab"
                     aria-selected={leaderboardMode === "live"}
                     onClick={() => setLeaderboardMode("live")}
-                    style={{
-                      border: "none",
-                      borderRadius: 9999,
-                      padding: "6px 10px",
-                      fontSize: 12,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      background:
-                        leaderboardMode === "live" ? "var(--surface-elevated)" : "transparent",
-                      color: "var(--foreground)",
-                    }}
                   >
                     Live
                   </button>
@@ -1964,54 +1941,24 @@ export default function LeaderboardPage() {
                     role="tab"
                     aria-selected={leaderboardMode === "forecast"}
                     onClick={() => setLeaderboardMode("forecast")}
-                    style={{
-                      border: "none",
-                      borderRadius: 9999,
-                      padding: "6px 10px",
-                      fontSize: 12,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      background:
-                        leaderboardMode === "forecast"
-                          ? "var(--surface-elevated)"
-                          : "transparent",
-                      color: "var(--foreground)",
-                    }}
                   >
                     Forecast
                   </button>
                 </div>
                 {forecastModeOn ? (
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 10,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div style={{ fontSize: 12, opacity: 0.75 }}>
+                  <div className="leaderboard-forecast-meta">
+                    <span>
                       {forecastUpdatedAt
                         ? `Expected through ${forecastHorizonLabel} updated ${formatWhen(forecastUpdatedAt)}`
                         : "Expected outcomes are loading..."}
-                    </div>
-                    <button
+                    </span>
+                    <UiButton
                       type="button"
                       onClick={() => setForecastInfoOpen(true)}
-                      style={{
-                        border: "1px solid var(--border-color)",
-                        borderRadius: 9999,
-                        padding: "4px 9px",
-                        fontSize: 12,
-                        fontWeight: 800,
-                        background: "var(--surface)",
-                        color: "var(--foreground)",
-                        cursor: "pointer",
-                      }}
+                      size="sm"
                     >
                       How forecast works
-                    </button>
+                    </UiButton>
                   </div>
                 ) : null}
               </div>
@@ -2334,47 +2281,32 @@ export default function LeaderboardPage() {
               })}
 
               {displayRows.length === 0 ? (
-                <div style={{ padding: "14px 12px", display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gap: 4 }}>
-                    <div style={{ fontWeight: 900 }}>No entries yet.</div>
-                    <div style={{ fontSize: 13, opacity: 0.78 }}>
-                      Enter one of your saved drafts to put it on this leaderboard.
-                    </div>
-                  </div>
+                <UiEmptyState as="div" className="leaderboard-empty-entry">
+                  <strong>No entries yet.</strong>
+                  <span>Enter one of your saved drafts to put it on this leaderboard.</span>
                   {!draftLocked ? (
-                    <Link
+                    <UiLinkButton
                       href={`/pool/${poolId}/draft`}
-                      className="ui-btn ui-btn--md ui-btn--primary"
-                      style={{ width: "fit-content" }}
+                      variant="primary"
                     >
                       Enter Drafts
-                    </Link>
+                    </UiLinkButton>
                   ) : (
-                    <div style={{ fontSize: 13, opacity: 0.78 }}>
-                      Entries are locked for this pool.
-                    </div>
+                    <span>Entries are locked for this pool.</span>
                   )}
-                </div>
+                </UiEmptyState>
               ) : null}
             </div>
 
-            <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
-              <button
+            <div className="leaderboard-archive-actions">
+              <UiButton
                 type="button"
                 onClick={() => {
                   void openArchive();
                 }}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
               >
                 Archive
-              </button>
+              </UiButton>
             </div>
           </section>
 
@@ -2394,29 +2326,13 @@ export default function LeaderboardPage() {
                 />
               </>
             ) : (
-              <section
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  background: "var(--surface)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "10px 12px",
-                    borderBottom: "1px solid var(--border-color)",
-                    fontWeight: 900,
-                    background: "var(--surface-muted)",
-                  }}
-                >
-                  Team Insights
-                </div>
-                <div style={{ padding: "12px", opacity: 0.85 }}>
+              <section className="leaderboard-insights-locked">
+                <h2>Team Insights</h2>
+                <UiEmptyState as="div">
                   {!draftLocked
                     ? "Team value and popularity tables unlock after draft lock."
                     : "Best value and most popular teams appear once tournament games start."}
-                </div>
+                </UiEmptyState>
               </section>
             )}
           </aside>

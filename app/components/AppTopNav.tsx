@@ -808,20 +808,6 @@ export default function AppTopNav() {
       "transform 140ms ease, box-shadow 160ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease",
   };
 
-  const drawerActionStyle: CSSProperties = {
-    width: "100%",
-    border: "1px solid var(--border-color)",
-    borderRadius: isNativeApp ? 8 : 12,
-    background: isNativeApp ? "color-mix(in srgb, var(--surface) 88%, transparent)" : "var(--surface)",
-    color: "var(--foreground)",
-    padding: isNativeApp ? "10px 11px" : "11px 12px",
-    textAlign: "left",
-    textDecoration: "none",
-    fontWeight: 800,
-    letterSpacing: "0.01em",
-    cursor: "pointer",
-  };
-
   return (
     <>
       <header
@@ -1137,8 +1123,8 @@ export default function AppTopNav() {
                 <strong style={{ fontSize: 18, letterSpacing: "0.02em" }}>Menu</strong>
                 <span style={{ fontSize: 12, opacity: 0.74 }}>
                   {activePool
-                    ? `active pool: ${activePool.name}`
-                    : "select a pool to unlock bracket + leaderboard"}
+                    ? `Active pool: ${activePool.name}`
+                    : "Select a pool to unlock bracket + leaderboard"}
                 </span>
               </div>
               <button
@@ -1164,60 +1150,51 @@ export default function AppTopNav() {
               </button>
             </div>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="Primary navigation">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                Navigate
-              </h2>
-              <Link href={competition.href} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                home
+            <section className="app-menu-section" aria-label="Primary navigation">
+              <h2>Navigate</h2>
+              <Link href={competition.href} onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Home
               </Link>
-              <Link href="/sports" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                sports
+              <Link href="/sports" onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Sports
               </Link>
-              <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                drafts
+              <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Drafts
               </Link>
-              <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                pools
+              <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Pools
               </Link>
               <Link
                 href={activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
-                style={drawerActionStyle}
+                className="app-menu-action"
               >
-                bracket
+                Bracket
               </Link>
               <Link
                 href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug)}
                 onClick={() => setDrawerOpen(false)}
-                style={drawerActionStyle}
+                className="app-menu-action"
               >
-                leaderboard
+                Leaderboard
               </Link>
               {activePoolId && activePool?.created_by === userId ? (
                 <Link
                   href={`/pool/${activePoolId}/admin`}
                   onClick={() => setDrawerOpen(false)}
-                  style={drawerActionStyle}
+                  className="app-menu-action"
                 >
-                  admin
+                  Admin
                 </Link>
               ) : null}
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="account options">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                account
-              </h2>
+            <section className="app-menu-section" aria-label="Account options">
+              <h2>Account</h2>
               <Link
                 href="/profile"
                 onClick={() => setDrawerOpen(false)}
-                style={isNativeApp ? {
-                  ...drawerActionStyle,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                } : drawerActionStyle}
+                className="app-menu-action"
               >
                 {isNativeApp ? (
                   <img
@@ -1225,67 +1202,52 @@ export default function AppTopNav() {
                     alt=""
                     width={26}
                     height={26}
-                    style={{ width: 26, height: 26, objectFit: "cover", borderRadius: "50%" }}
                   />
                 ) : null}
-                profile
+                Profile
               </Link>
-              <button type="button" onClick={signOut} style={drawerActionStyle}>
-                log out
+              <button type="button" onClick={signOut} className="app-menu-action">
+                Log Out
               </button>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="help and support">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                support
-              </h2>
+            <section className="app-menu-section" aria-label="Help and support">
+              <h2>Support</h2>
               <button
                 type="button"
                 onClick={() => {
                   setDrawerOpen(false);
                   setHelpOpen(true);
                 }}
-                style={drawerActionStyle}
+                className="app-menu-action"
               >
-                help center
+                Help Center
               </button>
-              <button type="button" onClick={openHowItWorksModal} style={drawerActionStyle}>
-                how it works
+              <button type="button" onClick={openHowItWorksModal} className="app-menu-action">
+                How It Works
               </button>
-              <a href="mailto:mack@bracketball.io" style={drawerActionStyle}>
-                Contact support
+              <a href="mailto:mack@bracketball.io" className="app-menu-action">
+                Contact Support
               </a>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="legal links">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                legal
-              </h2>
-              <Link href="/terms" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Terms of service
+            <section className="app-menu-section" aria-label="Legal links">
+              <h2>Legal</h2>
+              <Link href="/terms" onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Terms of Service
               </Link>
-              <Link href="/privacy" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Privacy policy
+              <Link href="/privacy" onClick={() => setDrawerOpen(false)} className="app-menu-action">
+                Privacy Policy
               </Link>
             </section>
 
             <section
               aria-label="Theme toggle"
-              style={{
-                marginTop: "auto",
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                background: "var(--surface)",
-                padding: "11px 12px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-              }}
+              className="app-menu-theme"
             >
-              <div style={{ display: "grid", gap: 2 }}>
-                <strong style={{ fontSize: 13, letterSpacing: "0.03em" }}>Dark mode</strong>
-                <span style={{ fontSize: 12, opacity: 0.74 }}>
+              <div className="app-menu-theme-copy">
+                <strong>Dark Mode</strong>
+                <span>
                   Toggle app appearance
                 </span>
               </div>
@@ -1294,30 +1256,9 @@ export default function AppTopNav() {
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 role="switch"
                 aria-checked={theme === "dark"}
-                style={{
-                  width: 64,
-                  height: 34,
-                  borderRadius: 9999,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
-                  cursor: "pointer",
-                  position: "relative",
-                  flexShrink: 0,
-                }}
+                className="app-menu-switch"
               >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 3,
-                    left: theme === "dark" ? 33 : 3,
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface-elevated)",
-                    transition: "left 150ms ease",
-                  }}
-                />
+                <span />
               </button>
             </section>
           </aside>
@@ -1328,31 +1269,14 @@ export default function AppTopNav() {
         <div
           role="presentation"
           onClick={() => setHelpOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.56)",
-            zIndex: 2000,
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-          }}
+          className="app-modal-backdrop app-top-nav-help-backdrop"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Help"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(520px, 100%)",
-              border: "1px solid var(--border-color)",
-              borderRadius: 14,
-              background: "var(--surface)",
-              padding: 16,
-              display: "grid",
-              gap: 12,
-              boxShadow: "var(--shadow-lg)",
-            }}
+            className="app-modal"
           >
             <div
               style={{
@@ -1366,20 +1290,13 @@ export default function AppTopNav() {
               <button
                 type="button"
                 onClick={() => setHelpOpen(false)}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  padding: "6px 9px",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
+                className="ui-btn ui-btn--sm ui-btn--ghost"
               >
                 Close
               </button>
             </div>
 
-            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.9 }}>
+            <p className="app-modal-copy">
               For now, please send all questions, bug reports, and support requests to{" "}
               <a href="mailto:mack@bracketball.io" style={{ fontWeight: 800, color: "var(--foreground)" }}>
                 mack@bracketball.io
@@ -1387,7 +1304,7 @@ export default function AppTopNav() {
               . Including your pool name, device, and a screenshot helps us resolve issues faster.
             </p>
 
-            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.82 }}>
+            <p className="app-modal-copy">
               A full help center with FAQs and troubleshooting guides is on the roadmap.
             </p>
           </section>

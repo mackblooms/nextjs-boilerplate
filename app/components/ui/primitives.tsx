@@ -138,6 +138,31 @@ export function UiCard({ as = "section", className, ...props }: UiCardProps) {
   return <Component className={cx("ui-card", className)} {...props} />;
 }
 
+type UiFeedbackTone = "info" | "success" | "error" | "warning";
+
+export type UiStatusProps = HTMLAttributes<HTMLParagraphElement> & {
+  tone?: UiFeedbackTone;
+};
+
+export function UiStatus({ tone = "info", className, ...props }: UiStatusProps) {
+  return <p className={cx("ui-status", className)} data-tone={tone} {...props} />;
+}
+
+export type UiEmptyStateProps = HTMLAttributes<HTMLElement> & {
+  as?: "section" | "div" | "aside";
+};
+
+export function UiEmptyState({ as = "section", className, ...props }: UiEmptyStateProps) {
+  const Component = as;
+  return <Component className={cx("ui-empty-state", className)} {...props} />;
+}
+
+export type UiLoadingStateProps = HTMLAttributes<HTMLParagraphElement>;
+
+export function UiLoadingState({ className, ...props }: UiLoadingStateProps) {
+  return <p className={cx("ui-loading-state", className)} {...props} />;
+}
+
 export type UiFieldLabelProps = LabelHTMLAttributes<HTMLLabelElement>;
 export function UiFieldLabel({ className, ...props }: UiFieldLabelProps) {
   return <label className={cx("ui-field-label", className)} {...props} />;

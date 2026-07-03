@@ -960,36 +960,19 @@ function PoolsPageContent() {
         <div
           role="presentation"
           onClick={closeJoinModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 120,
-          }}
+          className="app-modal-backdrop"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Join pool"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(520px, 100%)",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 10,
-            }}
+            className="app-modal"
           >
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
+            <h2>
               {myPoolIds.has(joinModalPool.id) ? `Enter Drafts in ${joinModalPool.name}` : `Join ${joinModalPool.name}`}
             </h2>
-            <p style={{ margin: 0, opacity: 0.8 }}>
+            <p className="app-modal-copy">
               {myPoolIds.has(joinModalPool.id)
                 ? "You are already in this pool. Continue to choose one or more drafts to enter."
                 : isPoolEntryLocked(joinModalPool, competitionSlug)
@@ -1010,32 +993,16 @@ function PoolsPageContent() {
                   }
                 }}
                 placeholder="Pool password"
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
-                }}
+                className="ui-control ui-control--full"
               />
             ) : null}
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div className="app-modal-actions">
               <button
                 type="button"
                 onClick={closeJoinModal}
                 disabled={joiningPool}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  cursor: joiningPool ? "not-allowed" : "pointer",
-                  opacity: joiningPool ? 0.7 : 1,
-                }}
+                className="ui-btn ui-btn--md ui-btn--secondary"
               >
                 Cancel
               </button>
@@ -1043,16 +1010,7 @@ function PoolsPageContent() {
                 type="button"
                 onClick={() => void joinPoolThenPickDrafts()}
                 disabled={joiningPool}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface)",
-                  fontWeight: 900,
-                  cursor: joiningPool ? "not-allowed" : "pointer",
-                  opacity: joiningPool ? 0.7 : 1,
-                }}
+                className="ui-btn ui-btn--md ui-btn--primary"
               >
                 {joiningPool ? "Joining..." : isPoolEntryLocked(joinModalPool, competitionSlug) ? "Join Pool" : "Continue"}
               </button>
@@ -1065,59 +1023,32 @@ function PoolsPageContent() {
         <div
           role="presentation"
           onClick={closeDraftModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 125,
-          }}
+          className="app-modal-backdrop app-modal-backdrop--raised"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Select drafts to enter"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(640px, 100%)",
-              maxHeight: "88vh",
-              overflow: "auto",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 12,
-            }}
+            className="app-modal app-modal--wide"
           >
             <div style={{ display: "grid", gap: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Enter Drafts in {draftModalPool.name}</h2>
-              <p style={{ margin: 0, opacity: 0.8 }}>
+              <h2>Enter Drafts in {draftModalPool.name}</h2>
+              <p className="app-modal-copy">
                 Select one or more drafts below. Each selected draft creates its own entry in this pool.
               </p>
             </div>
 
-            {draftModalLoading ? <p style={{ margin: 0 }}>Loading your drafts...</p> : null}
+            {draftModalLoading ? <p className="ui-loading-state">Loading your drafts...</p> : null}
 
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div className="app-modal-actions" style={{ justifyContent: "flex-start" }}>
                   <button
                     type="button"
                     onClick={selectAllDrafts}
                     disabled={draftModalSubmitting || draftModalPoolLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || draftModalPoolLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || draftModalPoolLocked ? 0.7 : 1,
-                    }}
+                    className="ui-btn ui-btn--sm ui-btn--secondary"
                   >
                     Select all
                   </button>
@@ -1125,21 +1056,13 @@ function PoolsPageContent() {
                     type="button"
                     onClick={clearDraftSelection}
                     disabled={draftModalSubmitting || draftModalPoolLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || draftModalPoolLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || draftModalPoolLocked ? 0.7 : 1,
-                    }}
+                    className="ui-btn ui-btn--sm ui-btn--ghost"
                   >
                     Clear
                   </button>
                 </div>
 
-                <div style={{ display: "grid", gap: 8 }}>
+                <div className="app-modal-option-list">
                   {availableDrafts.map((draft) => {
                     const picks = draftPickMap.get(draft.id);
                     const pickCount = picks?.size ?? 0;
@@ -1149,17 +1072,9 @@ function PoolsPageContent() {
                     return (
                       <label
                         key={draft.id}
-                        style={{
-                          display: "flex",
-                          gap: 10,
-                          alignItems: "center",
-                          border: "1px solid var(--border-color)",
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
-                          cursor: isAlreadyEntered ? "not-allowed" : "pointer",
-                          opacity: isAlreadyEntered ? 0.75 : 1,
-                        }}
+                        className="app-modal-option"
+                        data-checked={checked}
+                        data-disabled={isAlreadyEntered}
                       >
                         <input
                           type="checkbox"
@@ -1184,16 +1099,9 @@ function PoolsPageContent() {
             ) : null}
 
             {!draftModalLoading && availableDrafts.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
+              <div className="ui-empty-state">
+                <strong>No drafts available.</strong>
+                <p style={{ margin: 0 }}>
                   Open <Link href={competitionPath("/drafts", competitionSlug)}>My Drafts</Link> to create one.
                 </p>
               </div>
@@ -1201,52 +1109,26 @@ function PoolsPageContent() {
 
             {draftModalMessage ? (
               <p
-                style={{
-                  margin: 0,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                }}
+                className="ui-status"
               >
                 {draftModalMessage}
               </p>
             ) : null}
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
+            <div className="app-modal-actions app-modal-actions--split">
               <Link
                 href={competitionPath("/drafts", competitionSlug)}
                 onClick={closeDraftModal}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  display: "inline-flex",
-                  alignItems: "center",
-                }}
+                className="ui-btn ui-btn--md ui-btn--secondary"
               >
                 Manage Drafts
               </Link>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div className="app-modal-actions">
                 <button
                   type="button"
                   onClick={closeDraftModal}
                   disabled={draftModalSubmitting}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 800,
-                    cursor: draftModalSubmitting ? "not-allowed" : "pointer",
-                    opacity: draftModalSubmitting ? 0.7 : 1,
-                  }}
+                  className="ui-btn ui-btn--md ui-btn--secondary"
                 >
                   Close
                 </button>
@@ -1254,22 +1136,7 @@ function PoolsPageContent() {
                   type="button"
                   onClick={() => void submitSelectedDrafts()}
                   disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || draftModalPoolLocked}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 900,
-                    cursor:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || draftModalPoolLocked
-                        ? "not-allowed"
-                        : "pointer",
-                    opacity:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || draftModalPoolLocked
-                        ? 0.7
-                        : 1,
-                  }}
+                  className="ui-btn ui-btn--md ui-btn--primary"
                 >
                   {draftModalSubmitting
                     ? "Entering..."
