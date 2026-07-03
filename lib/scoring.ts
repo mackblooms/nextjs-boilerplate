@@ -78,6 +78,22 @@ const WORLD_CUP_VALUE_BONUS_BY_ROUND: Record<string, number> = {
   CHIP: 160,
 };
 
+export function worldCupValuePickBonus(cost: number | null, round: string): number {
+  if (cost == null) return 0;
+  if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
+  if (cost <= 10) return WORLD_CUP_VALUE_BONUS_BY_ROUND[round] ?? 0;
+  return 0;
+}
+
+export function worldCupProjectedWinPoints(cost: number | null, round: string): number {
+  const normalizedRound = String(round ?? "").toUpperCase();
+  if (normalizedRound === "GROUP") return 6;
+  if (normalizedRound === "GROUP_DRAW") return 2;
+  if (normalizedRound === "GROUP_ADVANCE") return 12 + worldCupValuePickBonus(cost, "GROUP_ADVANCE");
+  const base = WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND[normalizedRound] ?? 0;
+  return base + worldCupValuePickBonus(cost, normalizedRound);
+}
+
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
   14: 24,
   15: 40,
@@ -125,13 +141,6 @@ function isBlankOrFinalStatus(status: unknown): boolean {
 function worldCupTeamCost(teamId: string, options: ScoringOptions): number | null {
   const raw = options.teamCostById?.get(teamId);
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
-}
-
-function worldCupValuePickBonus(cost: number | null, round: string): number {
-  if (cost == null) return 0;
-  if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
-  if (cost <= 10) return WORLD_CUP_VALUE_BONUS_BY_ROUND[round] ?? 0;
-  return 0;
 }
 
 function scoreWorldCupTeamResultsDetailed(

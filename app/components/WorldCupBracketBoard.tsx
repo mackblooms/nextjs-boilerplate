@@ -14,6 +14,9 @@ type Team = {
   id: string;
   name: string;
   region: string | null;
+  cost?: number | null;
+  seed?: number | null;
+  seed_in_region?: number | null;
   logo_url?: string | null;
 };
 
@@ -156,12 +159,16 @@ export default function WorldCupBracketBoard({
   highlightTeamIds,
   liveByGameId,
   layout = "stacked",
+  selectedTeamId,
+  onTeamSelect,
 }: {
   teams: Team[];
   games: Game[];
   highlightTeamIds: Set<string>;
   liveByGameId?: Map<string, MatchedLiveGame>;
   layout?: "stacked" | "side-groups";
+  selectedTeamId?: string | null;
+  onTeamSelect?: (teamId: string) => void;
 }) {
   const teamById = new Map(teams.map((team) => [team.id, team]));
   const groupGamesByRegion = new Map<string, Game[]>();
@@ -204,18 +211,40 @@ export default function WorldCupBracketBoard({
     const team = teamId ? teamById.get(teamId) : null;
     const isEliminated = Boolean(teamId && eliminatedTeamIds.has(teamId));
     const logoUrl = logoUrlForTeam(team);
+    const isSelected = Boolean(teamId && selectedTeamId === teamId);
+    const content = (
+      <>
+        <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
+          {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
+        </span>
+        <span className="world-cup-team-name">{team?.name ?? fallbackLabel}</span>
+      </>
+    );
+    if (team && onTeamSelect) {
+      return (
+        <button
+          type="button"
+          className="world-cup-bracket-team"
+          data-highlighted={teamId && highlightTeamIds.has(teamId) ? "true" : undefined}
+          data-winner={teamId && winnerId === teamId ? "true" : undefined}
+          data-eliminated={isEliminated ? "true" : undefined}
+          data-selected={isSelected ? "true" : undefined}
+          onClick={() => onTeamSelect(team.id)}
+        >
+          {content}
+        </button>
+      );
+    }
     return (
       <div
         className="world-cup-bracket-team"
         data-highlighted={teamId && highlightTeamIds.has(teamId) ? "true" : undefined}
         data-winner={teamId && winnerId === teamId ? "true" : undefined}
         data-eliminated={isEliminated ? "true" : undefined}
+        data-selected={isSelected ? "true" : undefined}
         data-placeholder={team ? undefined : "true"}
       >
-        <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
-          {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
-        </span>
-        <span className="world-cup-team-name">{team?.name ?? fallbackLabel}</span>
+        {content}
       </div>
     );
   };
@@ -223,12 +252,30 @@ export default function WorldCupBracketBoard({
   const teamBadge = (teamId: string | null, fallbackLabel = "tbd") => {
     const team = teamId ? teamById.get(teamId) : null;
     const logoUrl = logoUrlForTeam(team);
-    return (
-      <span className="world-cup-group-team">
+    const isSelected = Boolean(teamId && selectedTeamId === teamId);
+    const content = (
+      <>
         <span className="world-cup-team-logo" data-empty={logoUrl ? undefined : "true"}>
           {logoUrl ? <img src={logoUrl} alt="" loading="lazy" /> : null}
         </span>
         <span className="world-cup-team-name">{team?.name ?? fallbackLabel}</span>
+      </>
+    );
+    if (team && onTeamSelect) {
+      return (
+        <button
+          type="button"
+          className="world-cup-group-team"
+          data-selected={isSelected ? "true" : undefined}
+          onClick={() => onTeamSelect(team.id)}
+        >
+          {content}
+        </button>
+      );
+    }
+    return (
+      <span className="world-cup-group-team" data-selected={isSelected ? "true" : undefined}>
+        {content}
       </span>
     );
   };
