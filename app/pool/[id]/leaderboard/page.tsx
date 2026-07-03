@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -2585,38 +2586,39 @@ export default function LeaderboardPage() {
         </div>
       ) : null}
 
-      {activeEntryRow ? (
-        <div
-          role="presentation"
-          onClick={() => setOpenBreakdownEntryId(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 125,
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${activeEntryRow.entry_name ?? activeEntryRow.display_name ?? "Entry"} details`}
-            onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(980px, 100%)",
-              maxHeight: "90vh",
-              overflow: "auto",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 16,
-              display: "grid",
-              gap: 12,
-            }}
-          >
+      {activeEntryRow && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="presentation"
+              onClick={() => setOpenBreakdownEntryId(null)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.45)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 16,
+                zIndex: 125,
+              }}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${activeEntryRow.entry_name ?? activeEntryRow.display_name ?? "Entry"} details`}
+                onClick={(event) => event.stopPropagation()}
+                style={{
+                  width: "min(980px, 100%)",
+                  maxHeight: "90vh",
+                  overflow: "auto",
+                  borderRadius: 12,
+                  border: "1px solid var(--border-color)",
+                  background: "var(--surface)",
+                  padding: 16,
+                  display: "grid",
+                  gap: 12,
+                }}
+              >
             <div
               style={{
                 display: "flex",
@@ -2864,9 +2866,11 @@ export default function LeaderboardPage() {
                 </>
               )}
             </section>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
       {archiveOpen ? (
         <div
