@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -1614,71 +1615,6 @@ export default function BracketPage() {
 
       {competitionSlug === "world-cup" ? (
         <>
-          {selectedTeamPath ? (
-            <section className="world-cup-team-path-panel" aria-live="polite">
-              <div className="world-cup-team-path-header">
-                <span className="world-cup-team-path-logo" data-empty={selectedTeamLogoUrl ? undefined : "true"}>
-                  {selectedTeamLogoUrl ? <img src={selectedTeamLogoUrl} alt="" /> : null}
-                </span>
-                <div className="world-cup-team-path-title">
-                  <span>{selectedTeamPath.statusLabel}</span>
-                  <strong>{selectedTeamPath.team.name}</strong>
-                </div>
-                <button
-                  type="button"
-                  className="world-cup-team-path-close"
-                  onClick={() => setSelectedTeamId(null)}
-                  aria-label="Close team details"
-                >
-                  x
-                </button>
-              </div>
-
-              <div className="world-cup-team-path-stats">
-                <div>
-                  <span>price</span>
-                  <strong>{selectedTeamPath.cost == null ? "-" : `$${selectedTeamPath.cost}`}</strong>
-                </div>
-                <div>
-                  <span>earned</span>
-                  <strong>{selectedTeamPath.earnedPoints}</strong>
-                </div>
-                <div>
-                  <span>next win</span>
-                  <strong>{selectedTeamPath.nextWinPoints == null ? "-" : `+${selectedTeamPath.nextWinPoints}`}</strong>
-                </div>
-                <div>
-                  <span>max left</span>
-                  <strong>{selectedTeamPath.remainingMaxPoints > 0 ? `+${selectedTeamPath.remainingMaxPoints}` : "-"}</strong>
-                </div>
-              </div>
-
-              <div className="world-cup-team-path-next">
-                <span>next matchup</span>
-                <strong>
-                  {selectedTeamPath.nextGame
-                    ? `vs ${selectedTeamPath.nextOpponentLabel ?? "TBD"}`
-                    : selectedTeamPath.status === "eliminated"
-                      ? "No remaining matches"
-                      : "TBD"}
-                </strong>
-                {selectedTeamPath.nextGame ? <small>{formatTeamPathGameLine(selectedTeamPath.nextGame)}</small> : null}
-              </div>
-
-              {selectedTeamPath.path.length > 0 ? (
-                <div className="world-cup-team-path-route">
-                  {selectedTeamPath.path.map((step, index) => (
-                    <div key={`${step.round}-${index}`}>
-                      <span>{step.label}</span>
-                      <strong>+{step.pointsWithWin}</strong>
-                      <small>{step.opponentLabel ? `vs ${step.opponentLabel}` : "opponent TBD"}</small>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </section>
-          ) : null}
-
           <WorldCupBracketBoard
             teams={teams}
             games={displayGames}
@@ -1690,6 +1626,95 @@ export default function BracketPage() {
           />
         </>
       ) : null}
+
+      {selectedTeamPath && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="presentation"
+              className="world-cup-team-path-overlay"
+              onClick={() => setSelectedTeamId(null)}
+            >
+              <section
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${selectedTeamPath.team.name} path`}
+                className="world-cup-team-path-modal"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="world-cup-team-path-hero">
+                  <span className="world-cup-team-path-logo" data-empty={selectedTeamLogoUrl ? undefined : "true"}>
+                    {selectedTeamLogoUrl ? <img src={selectedTeamLogoUrl} alt="" /> : null}
+                  </span>
+                  <div className="world-cup-team-path-title">
+                    <span>{selectedTeamPath.statusLabel}</span>
+                    <strong>{selectedTeamPath.team.name}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="world-cup-team-path-close"
+                    onClick={() => setSelectedTeamId(null)}
+                    aria-label="Close team details"
+                  >
+                    x
+                  </button>
+                </div>
+
+                <div className="world-cup-team-path-stats" aria-label="Team path summary">
+                  <div>
+                    <span>price</span>
+                    <strong>{selectedTeamPath.cost == null ? "-" : selectedTeamPath.cost}</strong>
+                  </div>
+                  <div>
+                    <span>earned</span>
+                    <strong>{selectedTeamPath.earnedPoints}</strong>
+                  </div>
+                  <div>
+                    <span>next win</span>
+                    <strong>{selectedTeamPath.nextWinPoints == null ? "-" : `+${selectedTeamPath.nextWinPoints}`}</strong>
+                  </div>
+                  <div>
+                    <span>max left</span>
+                    <strong>{selectedTeamPath.remainingMaxPoints > 0 ? `+${selectedTeamPath.remainingMaxPoints}` : "-"}</strong>
+                  </div>
+                </div>
+
+                <div className="world-cup-team-path-next">
+                  <div>
+                    <span>next matchup</span>
+                    <strong>
+                      {selectedTeamPath.nextGame
+                        ? `vs ${selectedTeamPath.nextOpponentLabel ?? "TBD"}`
+                        : selectedTeamPath.status === "eliminated"
+                          ? "No remaining matches"
+                          : "TBD"}
+                    </strong>
+                  </div>
+                  {selectedTeamPath.nextGame ? <small>{formatTeamPathGameLine(selectedTeamPath.nextGame)}</small> : null}
+                </div>
+
+                {selectedTeamPath.path.length > 0 ? (
+                  <div className="world-cup-team-path-route" aria-label="Remaining path">
+                    {selectedTeamPath.path.map((step, index) => (
+                      <div className="world-cup-team-path-step" key={`${step.round}-${index}`}>
+                        <div className="world-cup-team-path-step-marker" aria-hidden="true" />
+                        <div className="world-cup-team-path-step-main">
+                          <span>{step.label}</span>
+                          <strong>{step.opponentLabel ? `vs ${step.opponentLabel}` : "opponent TBD"}</strong>
+                        </div>
+                        <div className="world-cup-team-path-step-points">+{step.pointsWithWin}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="world-cup-team-path-empty">
+                    This team has no remaining scoring path.
+                  </div>
+                )}
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
 
       <div
         ref={viewportRef}

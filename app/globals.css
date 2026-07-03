@@ -1452,22 +1452,39 @@ button.world-cup-bracket-team:hover {
     0 0 24px color-mix(in srgb, var(--focus-ring) 70%, transparent);
 }
 
-.world-cup-team-path-panel {
+.world-cup-team-path-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.48);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: fixed;
+  z-index: 126;
+}
+
+.world-cup-team-path-modal {
   background: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: 14px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
   display: grid;
   gap: 12px;
-  margin: 14px auto 0;
-  max-width: 1800px;
-  padding: 14px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 16px;
+  width: min(720px, 100%);
 }
 
-.world-cup-team-path-header {
+.world-cup-team-path-hero {
   align-items: center;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 12px;
 }
 
 .world-cup-team-path-logo {
@@ -1476,10 +1493,10 @@ button.world-cup-bracket-team:hover {
   border: 1px solid var(--border-color);
   border-radius: 999px;
   display: inline-flex;
-  height: 48px;
+  height: 58px;
   justify-content: center;
   overflow: hidden;
-  width: 48px;
+  width: 58px;
 }
 
 .world-cup-team-path-logo[data-empty="true"]::before {
@@ -1507,7 +1524,7 @@ button.world-cup-bracket-team:hover {
 .world-cup-team-path-title span,
 .world-cup-team-path-next span,
 .world-cup-team-path-stats span,
-.world-cup-team-path-route span {
+.world-cup-team-path-step-main span {
   font-family: var(--font-app-mono), monospace;
   font-size: 0.68rem;
   font-weight: 800;
@@ -1517,7 +1534,7 @@ button.world-cup-bracket-team:hover {
 }
 
 .world-cup-team-path-title strong {
-  font-size: 1.28rem;
+  font-size: clamp(1.45rem, 4vw, 2.05rem);
   font-weight: 950;
   line-height: 1.08;
   overflow-wrap: anywhere;
@@ -1545,9 +1562,7 @@ button.world-cup-bracket-team:hover {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.world-cup-team-path-stats > div,
-.world-cup-team-path-next,
-.world-cup-team-path-route > div {
+.world-cup-team-path-stats > div {
   background: var(--surface-muted);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -1558,28 +1573,110 @@ button.world-cup-bracket-team:hover {
 }
 
 .world-cup-team-path-stats strong {
-  font-size: 1.05rem;
+  font-size: 1.18rem;
   font-weight: 950;
 }
 
+.world-cup-team-path-next {
+  align-items: center;
+  background: var(--highlight);
+  border: 1px solid var(--highlight-border);
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 12px;
+}
+
+.world-cup-team-path-next > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
 .world-cup-team-path-next strong,
-.world-cup-team-path-route strong {
+.world-cup-team-path-step-main strong {
   font-weight: 950;
   overflow-wrap: anywhere;
 }
 
 .world-cup-team-path-next small,
-.world-cup-team-path-route small {
+.world-cup-team-path-step-points {
   font-size: 0.76rem;
-  font-weight: 750;
-  opacity: 0.72;
+  font-weight: 950;
   overflow-wrap: anywhere;
+}
+
+.world-cup-team-path-next small {
+  background: var(--surface);
+  border: 1px solid var(--highlight-border);
+  border-radius: 999px;
+  flex: 0 0 auto;
+  padding: 5px 9px;
 }
 
 .world-cup-team-path-route {
   display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  gap: 0;
+  padding: 2px 0;
+}
+
+.world-cup-team-path-step {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 10px 0;
+  position: relative;
+}
+
+.world-cup-team-path-step:not(:last-child)::after {
+  background: var(--border-color);
+  bottom: -2px;
+  content: "";
+  left: 8px;
+  position: absolute;
+  top: 28px;
+  width: 2px;
+}
+
+.world-cup-team-path-step-marker {
+  background: var(--surface);
+  border: 3px solid var(--highlight-border);
+  border-radius: 999px;
+  height: 18px;
+  position: relative;
+  width: 18px;
+  z-index: 1;
+}
+
+.world-cup-team-path-step-main {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px 10px;
+}
+
+.world-cup-team-path-step-points {
+  background: var(--foreground);
+  border-radius: 999px;
+  color: var(--background);
+  min-width: 52px;
+  padding: 6px 9px;
+  text-align: center;
+}
+
+.world-cup-team-path-empty {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-weight: 800;
+  padding: 12px;
 }
 
 .world-cup-knockout-node[data-round="E8"] .world-cup-bracket-team,
@@ -1659,6 +1756,20 @@ button.world-cup-bracket-team:hover {
 
   .world-cup-team-path-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .world-cup-team-path-overlay {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .world-cup-team-path-modal {
+    max-height: 88vh;
+  }
+
+  .world-cup-team-path-next {
+    align-items: stretch;
+    display: grid;
   }
 }
 
