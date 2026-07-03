@@ -1763,6 +1763,8 @@ button.world-cup-bracket-team:hover {
 
 .world-cup-team-path-announcement-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-end;
 }
 

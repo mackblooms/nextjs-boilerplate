@@ -11,6 +11,7 @@ import AppTopNav from "./components/AppTopNav";
 import InstructionsModal from "./components/InstructionsModal";
 import HowItWorksRulesModal from "./components/HowItWorksRulesModal";
 import ProfileCompletionGate from "./components/ProfileCompletionGate";
+import TeamPathAnnouncement from "./components/TeamPathAnnouncement";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -72,6 +73,9 @@ export default function RootLayout({
                 <InstructionsModal />
               </Suspense>
               <HowItWorksRulesModal />
+              <Suspense fallback={null}>
+                <TeamPathAnnouncement />
+              </Suspense>
 
               <main className="site-main">{children}</main>
               <Analytics />

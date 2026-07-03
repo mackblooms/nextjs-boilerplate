@@ -103,9 +103,6 @@ type LiveScoresResponse = {
   error?: string;
 };
 
-const TEAM_PATH_ANNOUNCEMENT_HIDE_KEY = "bracketball.worldCupTeamPathAnnouncement.hidden.v1";
-const TEAM_PATH_ANNOUNCEMENT_EXPIRES_AT = Date.parse("2026-07-10T05:00:00.000Z");
-
 function isMissingFavoriteSoccerTeamColumn(error: { code?: string; message?: string } | null) {
   const message = error?.message?.toLowerCase() ?? "";
   return (
@@ -198,8 +195,6 @@ export default function BracketPage() {
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
   const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [showTeamPathAnnouncement, setShowTeamPathAnnouncement] = useState(false);
-  const [hideTeamPathAnnouncement, setHideTeamPathAnnouncement] = useState(false);
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -764,20 +759,6 @@ export default function BracketPage() {
 
     void loadHighlights();
   }, [competitionSlug, draftLocked, latestTeamIdsByEntry, myEntryIds, players, selectedEntryId]);
-
-  useEffect(() => {
-    if (competitionSlug !== "world-cup" || typeof window === "undefined") return;
-    if (Date.now() > TEAM_PATH_ANNOUNCEMENT_EXPIRES_AT) return;
-    if (window.localStorage.getItem(TEAM_PATH_ANNOUNCEMENT_HIDE_KEY) === "1") return;
-    setShowTeamPathAnnouncement(true);
-  }, [competitionSlug]);
-
-  const dismissTeamPathAnnouncement = useCallback(() => {
-    if (hideTeamPathAnnouncement && typeof window !== "undefined") {
-      window.localStorage.setItem(TEAM_PATH_ANNOUNCEMENT_HIDE_KEY, "1");
-    }
-    setShowTeamPathAnnouncement(false);
-  }, [hideTeamPathAnnouncement]);
 
   useEffect(() => {
     let canceled = false;
@@ -1729,86 +1710,6 @@ export default function BracketPage() {
                     This team has no remaining scoring path.
                   </div>
                 )}
-              </section>
-            </div>,
-            document.body,
-          )
-        : null}
-
-      {showTeamPathAnnouncement && competitionSlug === "world-cup" && typeof document !== "undefined"
-        ? createPortal(
-            <div
-              role="presentation"
-              className="world-cup-team-path-overlay"
-              onClick={dismissTeamPathAnnouncement}
-            >
-              <section
-                role="dialog"
-                aria-modal="true"
-                aria-label="Team path forecast announcement"
-                className="world-cup-team-path-modal world-cup-team-path-modal--announcement"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="world-cup-team-path-hero">
-                  <span className="world-cup-team-path-announcement-icon" aria-hidden="true">
-                    path
-                  </span>
-                  <div className="world-cup-team-path-title">
-                    <span>new in bracket</span>
-                    <strong>Explore each team&apos;s path forecast</strong>
-                  </div>
-                  <button
-                    type="button"
-                    className="world-cup-team-path-close"
-                    onClick={dismissTeamPathAnnouncement}
-                    aria-label="Close team path forecast announcement"
-                  >
-                    x
-                  </button>
-                </div>
-
-                <div className="world-cup-team-path-announcement-copy">
-                  <p>
-                    Tap any team name or flag in the World Cup bracket or group tables to open its outlook.
-                  </p>
-                  <p>
-                    The path forecast shows the team&apos;s price, points earned so far, next matchup,
-                    what a win would add, and the maximum points still available if the run keeps going.
-                  </p>
-                </div>
-
-                <div className="world-cup-team-path-announcement-grid">
-                  <div>
-                    <span>1</span>
-                    <strong>Pick a team</strong>
-                    <small>Any real team in the bracket or group stage is clickable.</small>
-                  </div>
-                  <div>
-                    <span>2</span>
-                    <strong>Check the next swing</strong>
-                    <small>See the upcoming opponent and points available with a win.</small>
-                  </div>
-                  <div>
-                    <span>3</span>
-                    <strong>Follow the route</strong>
-                    <small>Scan the remaining rounds and the upside left in that team.</small>
-                  </div>
-                </div>
-
-                <label className="world-cup-team-path-announcement-check">
-                  <input
-                    type="checkbox"
-                    checked={hideTeamPathAnnouncement}
-                    onChange={(event) => setHideTeamPathAnnouncement(event.target.checked)}
-                  />
-                  <span>Don&apos;t show this again</span>
-                </label>
-
-                <div className="world-cup-team-path-announcement-actions">
-                  <button type="button" className="ui-btn ui-btn--md ui-btn--primary" onClick={dismissTeamPathAnnouncement}>
-                    Got it
-                  </button>
-                </div>
               </section>
             </div>,
             document.body,
