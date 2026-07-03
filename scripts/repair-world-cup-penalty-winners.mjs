@@ -12,6 +12,15 @@ const ROOT = resolve(__dirname, "..");
 const MANUAL_RESULTS = [
   {
     round: "R32",
+    slot: 6,
+    team1: "Australia",
+    team2: "Egypt",
+    winner: "Egypt",
+    team1Score: 1,
+    team2Score: 1,
+  },
+  {
+    round: "R32",
     slot: 13,
     team1: "Netherlands",
     team2: "Morocco",
@@ -80,7 +89,7 @@ async function main() {
     db.from("teams").select("id,name").eq("competition_slug", "world-cup"),
     db
       .from("games")
-      .select("id,round,slot,team1_id,team2_id,winner_team_id,competition_slug")
+      .select("id,round,slot,team1_id,team2_id,winner_team_id,team1_score,team2_score,status,competition_slug")
       .eq("competition_slug", "world-cup"),
   ]);
   if (teamsRes.error) throw teamsRes.error;
@@ -107,6 +116,28 @@ async function main() {
       throw new Error(
         `${result.round} slot ${result.slot} expected ${result.team1} vs ${result.team2}; found team IDs ${game.team1_id} vs ${game.team2_id}.`,
       );
+    }
+
+    const storedTeam1Score = typeof game.team1_score === "number" ? game.team1_score : null;
+    const storedTeam2Score = typeof game.team2_score === "number" ? game.team2_score : null;
+    if (storedTeam1Score != null && storedTeam2Score != null && storedTeam1Score !== storedTeam2Score) {
+      const scoreWinner = storedTeam1Score > storedTeam2Score ? team1 : team2;
+      if (game.winner_team_id !== scoreWinner.id) {
+        const { error } = await db
+          .from("games")
+          .update({
+            winner_team_id: scoreWinner.id,
+            last_synced_at: nowIso,
+          })
+          .eq("id", game.id);
+        if (error) throw error;
+        game.winner_team_id = scoreWinner.id;
+        updatedResults++;
+        console.log(`  Set ${result.round} ${result.slot}: ${scoreWinner.name} advances from final score.`);
+      } else {
+        console.log(`  Kept ${result.round} ${result.slot}: ${scoreWinner.name} already advances from final score.`);
+      }
+      continue;
     }
 
     const payload = {

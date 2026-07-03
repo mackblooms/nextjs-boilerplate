@@ -8,6 +8,7 @@ import {
   type WorldCupPropagationTarget,
 } from "@/lib/worldCupBracket";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import { getWorldCupManualWinnerId } from "@/lib/worldCupManualResults.js";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -33,6 +34,7 @@ type EspnTeam = {
 type EspnCompetitor = {
   homeAway?: "home" | "away";
   score?: string;
+  winner?: boolean;
   team?: EspnTeam;
 };
 
@@ -69,6 +71,8 @@ type FinalGame = {
   awayScore: number;
   homeTeamName?: string | null;
   awayTeamName?: string | null;
+  homeWinner?: boolean | null;
+  awayWinner?: boolean | null;
 };
 
 type LocalBracketGame = {
@@ -483,7 +487,7 @@ async function fetchGamesForPairMatching(
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, nowIso: string) {
   const { data: allGames, error: gamesErr } = await supabaseAdmin
     .from("games")
-    .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug");
+    .select("id,round,region,slot,status,team1_id,team2_id,winner_team_id,competition_slug,team1_score,team2_score");
   if (gamesErr) throw gamesErr;
 
   const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
@@ -519,7 +523,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
   for (const source of sorted) {
     const sourceTeam1 = source.team1_id ? String(source.team1_id) : null;
     const sourceTeam2 = source.team2_id ? String(source.team2_id) : null;
-    let winnerId = source.winner_team_id ? String(source.winner_team_id) : null;
+    let winnerId = getWorldCupManualWinnerId(source) ?? (source.winner_team_id ? String(source.winner_team_id) : null);
     if (winnerId && winnerId !== sourceTeam1 && winnerId !== sourceTeam2) {
       const { error: clearSourceErr } = await supabaseAdmin
         .from("games")
@@ -796,6 +800,8 @@ async function fetchEspnFinalGames(lookbackDays: number): Promise<FinalGame[]> {
         awayTeamId: Math.trunc(awayTeamId),
         homeScore: homeScore,
         awayScore: awayScore,
+        homeWinner: home.winner === true,
+        awayWinner: away.winner === true,
       });
     }
   }
@@ -855,6 +861,8 @@ async function fetchEspnWorldCupFinalGames(lookbackDays: number): Promise<FinalG
         awayScore,
         homeTeamName: espnTeamName(home.team),
         awayTeamName: espnTeamName(away.team),
+        homeWinner: home.winner === true,
+        awayWinner: away.winner === true,
       });
     }
   }
@@ -1148,6 +1156,12 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
         : null;
 
     if (!winnerLocalId && team1Score === team2Score) {
+      const espnWinner =
+        f.homeWinner === true && f.awayWinner !== true
+          ? (team1IsHome ? localGame.team1_id : localGame.team2_id)
+          : f.awayWinner === true && f.homeWinner !== true
+          ? (team1IsAway ? localGame.team1_id : localGame.team2_id)
+          : null;
       const existingWinner =
         localGame.winner_team_id === localGame.team1_id || localGame.winner_team_id === localGame.team2_id
           ? localGame.winner_team_id
@@ -1156,7 +1170,15 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
       const targetRef = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[roundSlotKey];
       const targetGame = targetRef ? gamesByRoundSlot.get(`${targetRef.round}|${targetRef.slot}`) : null;
       const propagatedWinner = targetRef && targetGame ? targetGame[targetRef.side] : null;
+      const scoreSyncedGame = {
+        ...localGame,
+        status: "Final",
+        team1_score: team1Score,
+        team2_score: team2Score,
+      };
       winnerLocalId =
+        espnWinner ??
+        getWorldCupManualWinnerId(scoreSyncedGame) ??
         existingWinner ??
         (propagatedWinner === localGame.team1_id || propagatedWinner === localGame.team2_id
           ? propagatedWinner
