@@ -1975,6 +1975,7 @@ export default function LeaderboardPage() {
               </div>
 
               <div
+                className="leaderboard-table-header"
                 style={{
                   display: "grid",
                   gridTemplateColumns: leaderboardGridTemplate,
@@ -1984,7 +1985,7 @@ export default function LeaderboardPage() {
                   borderBottom: "1px solid var(--border-color)",
                 }}
               >
-                <div style={{ display: "inline-flex", alignItems: "center" }}>
+                <div className="leaderboard-rank-cell" style={{ display: "inline-flex", alignItems: "center" }}>
                   <ExplainedValue
                     description={
                       forecastModeOn
@@ -1995,12 +1996,12 @@ export default function LeaderboardPage() {
                     {forecastModeOn ? (isCompact ? "Exp" : "Exp Rank") : "Rank"}
                   </ExplainedValue>
                 </div>
-                <div style={{ display: "inline-flex", alignItems: "center", minWidth: 0 }}>
+                <div className="leaderboard-player-cell" style={{ display: "inline-flex", alignItems: "center", minWidth: 0 }}>
                   <ExplainedValue description="The top line is the draft entry name. The smaller line is the player profile tied to that entry.">
                     Player
                   </ExplainedValue>
                 </div>
-                <div style={{ display: "inline-flex", justifyContent: "flex-end", alignItems: "center", textAlign: "right" }}>
+                <div className="leaderboard-score-cell" style={{ display: "inline-flex", justifyContent: "flex-end", alignItems: "center", textAlign: "right" }}>
                   <ExplainedValue
                     side="left"
                     description={
@@ -2035,6 +2036,7 @@ export default function LeaderboardPage() {
                     }}
                   >
                     <div
+                      className="leaderboard-entry-grid"
                       style={{
                         display: "grid",
                         gridTemplateColumns: leaderboardGridTemplate,
@@ -2042,7 +2044,7 @@ export default function LeaderboardPage() {
                         alignItems: "center",
                       }}
                     >
-                      <div style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
+                      <div className="leaderboard-rank-cell" style={{ fontWeight: 900, display: "flex", alignItems: "center", gap: 8 }}>
                         <ExplainedValue
                           description={
                             forecastModeOn
@@ -2139,7 +2141,7 @@ export default function LeaderboardPage() {
                           </span>
                         ) : null}
                       </div>
-                      <div style={{ fontWeight: 800, minWidth: 0 }}>
+                      <div className="leaderboard-player-cell" style={{ fontWeight: 800, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <img
                             src={r.avatar_url}
@@ -2220,6 +2222,7 @@ export default function LeaderboardPage() {
                         </div>
                       </div>
                       <div
+                        className="leaderboard-score-cell"
                         style={{
                           textAlign: "right",
                           display: "grid",

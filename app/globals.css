@@ -148,6 +148,19 @@
 
 html,
 body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -1271,6 +1284,7 @@ body.is-native-app-shell .competition-switcher {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 10px;
+  min-width: 0;
 }
 
 .world-cup-bracket-board[data-layout="side-groups"] .world-cup-groups {
@@ -1303,6 +1317,7 @@ body.is-native-app-shell .competition-switcher {
   gap: 6px;
   padding: 10px;
   position: relative;
+  min-width: 0;
 }
 
 .world-cup-group-card[data-live="true"] {
@@ -1414,6 +1429,7 @@ button.world-cup-bracket-team:hover {
 
 .world-cup-group-table {
   width: 100%;
+  min-width: 0;
   border-collapse: separate;
   border-spacing: 0 6px;
   font-size: 0.78rem;
@@ -2190,8 +2206,8 @@ button.world-cup-bracket-team:hover {
 }
 
 .back-arrow-button {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   border: 1px solid var(--border-color);
   background: var(--surface);
@@ -2716,6 +2732,44 @@ button.world-cup-bracket-team:hover {
     padding-top: calc(140px + env(safe-area-inset-top));
   }
 
+  main,
+  .site-main,
+  .page-shell,
+  .home-layout,
+  .pool-hero-layout,
+  .leaderboard-layout,
+  .draft-editor-layout,
+  .match-shell {
+    min-width: 0;
+  }
+
+  .app-shell-header-field {
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .app-shell-brand {
+    min-width: 0 !important;
+    padding-inline: 0;
+  }
+
+  .app-shell-brand img {
+    max-width: min(104px, 32vw);
+  }
+
+  .app-dock-bar {
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .app-dock-pill {
+    min-width: 0;
+  }
+
+  .app-dock-pill span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .site-main {
     padding-inline: 8px;
   }
@@ -2798,6 +2852,23 @@ button.world-cup-bracket-team:hover {
 }
 
 @media (max-width: 560px) {
+  .web-sport-rail-field,
+  .app-sport-rail-field {
+    width: calc(100vw - 20px);
+    padding-inline: 6px;
+  }
+
+  .web-sport-rail,
+  .app-sport-rail {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .web-sport-rail-link,
+  .app-sport-rail-link {
+    padding-inline: 8px;
+  }
+
   .landing-intro-stage {
     min-height: 96px;
   }
@@ -3316,6 +3387,22 @@ button.world-cup-bracket-team:hover {
   box-shadow: inset 3px 0 0 var(--focus-ring);
 }
 
+.leaderboard-table-header,
+.leaderboard-entry-grid {
+  min-width: 0;
+  column-gap: var(--space-2);
+}
+
+.leaderboard-rank-cell,
+.leaderboard-player-cell,
+.leaderboard-score-cell {
+  min-width: 0;
+}
+
+.leaderboard-score-cell {
+  overflow-wrap: anywhere;
+}
+
 .leaderboard-entry-link:hover,
 .leaderboard-entry-link:focus-visible,
 .leaderboard-mini-link:hover,
@@ -3426,6 +3513,61 @@ button.world-cup-bracket-team:hover {
 }
 
 @media (max-width: 680px) {
+  .pool-dashboard-header {
+    grid-template-columns: 56px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .pool-dashboard-header > :last-child {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+
+  .pool-dashboard-logo {
+    width: 56px;
+  }
+
+  .pool-dashboard-title h1 {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .pool-dashboard-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pool-share-compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pool-share-compact .ui-btn {
+    width: 100%;
+  }
+
+  .pool-impact-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .draft-team-row {
+    align-items: stretch !important;
+    flex-direction: column;
+  }
+
+  .draft-team-row label {
+    width: 100%;
+  }
+
+  .draft-team-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .draft-team-detail-button,
+  .leaderboard-mini-link,
+  .leaderboard-details-link {
+    min-height: 40px;
+  }
+
   .draft-scoring-notice {
     width: 100%;
   }
@@ -3709,6 +3851,28 @@ button.world-cup-bracket-team:hover {
 }
 
 @media (max-width: 640px) {
+  .world-cup-group-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .world-cup-group-card {
+    padding: 8px;
+  }
+
+  .world-cup-group-table {
+    font-size: 0.74rem;
+  }
+
+  .world-cup-group-table td {
+    padding: 6px;
+  }
+
+  .world-cup-team-logo {
+    flex-basis: 20px;
+    height: 20px;
+    width: 20px;
+  }
+
   .home-draft-head {
     align-items: flex-start !important;
     flex-direction: column;
@@ -4848,8 +5012,8 @@ body:not(.is-native-app-shell) .match-search-input {
 .app-menu-switch {
   position: relative;
   flex-shrink: 0;
-  width: 64px;
-  height: 34px;
+  width: 74px;
+  height: 44px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface-muted);
@@ -4858,10 +5022,10 @@ body:not(.is-native-app-shell) .match-search-input {
 
 .app-menu-switch span {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 26px;
-  height: 26px;
+  top: 4px;
+  left: 4px;
+  width: 34px;
+  height: 34px;
   border: 1px solid var(--color-border);
   border-radius: 50%;
   background: var(--color-surface-raised);
@@ -4869,7 +5033,7 @@ body:not(.is-native-app-shell) .match-search-input {
 }
 
 .app-menu-switch[aria-checked="true"] span {
-  left: 33px;
+  left: 34px;
 }
 
 .app-top-nav-help-backdrop {
@@ -5051,6 +5215,36 @@ body:not(.is-native-app-shell) .match-search-input {
 }
 
 @media (max-width: 720px) {
+  .leaderboard-table-header {
+    grid-template-columns: 52px minmax(0, 1fr) 76px !important;
+    font-size: var(--text-xs);
+  }
+
+  .leaderboard-entry-grid {
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    gap: var(--space-2);
+    padding-block: var(--space-3) !important;
+  }
+
+  .leaderboard-entry-grid .leaderboard-rank-cell {
+    align-self: start;
+    padding-top: 2px;
+  }
+
+  .leaderboard-entry-grid .leaderboard-player-cell {
+    grid-column: 2;
+  }
+
+  .leaderboard-entry-grid .leaderboard-score-cell {
+    grid-column: 2;
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  .leaderboard-entry-link {
+    padding-block: 2px;
+  }
+
   .leaderboard-hero-controls {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -5062,6 +5256,37 @@ body:not(.is-native-app-shell) .match-search-input {
   }
 
   .leaderboard-hero-share {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .leaderboard-table-header {
+    display: none !important;
+  }
+
+  .leaderboard-view-toolbar {
+    align-items: stretch;
+  }
+
+  .leaderboard-segmented-control {
+    width: 100%;
+  }
+
+  .leaderboard-segmented-control button {
+    flex: 1 1 0;
+    min-height: 40px;
+  }
+
+  .leaderboard-forecast-meta {
+    align-items: stretch;
+    display: grid;
+    gap: var(--space-2);
+    justify-items: stretch;
+    width: 100%;
+  }
+
+  .leaderboard-forecast-meta .ui-btn {
     width: 100%;
   }
 }

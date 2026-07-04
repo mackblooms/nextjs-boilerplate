@@ -2213,8 +2213,8 @@ export function HomeContent({
                             disabled={renamingDraftId === draft.id}
                             aria-label={`Rename ${draft.name}`}
                             style={{
-                              width: 28,
-                              height: 28,
+                              width: 40,
+                              height: 40,
                               borderRadius: 8,
                               border: "1px solid var(--border-color)",
                               background: "var(--surface)",
@@ -2236,8 +2236,8 @@ export function HomeContent({
                             disabled={deletingDraftId === draft.id}
                             aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
                             style={{
-                              width: 28,
-                              height: 28,
+                              width: 40,
+                              height: 40,
                               borderRadius: 8,
                               border: "1px solid #dc2626",
                               background: "rgba(220, 38, 38, 0.12)",

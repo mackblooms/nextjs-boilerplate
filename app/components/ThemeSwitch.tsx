@@ -77,8 +77,8 @@ export default function ThemeSwitch() {
         position: "fixed",
         top: 14,
         right: 16,
-        width: 68,
-        height: 36,
+        width: 76,
+        height: 44,
         border: "1px solid var(--border-color)",
         borderRadius: 999,
         background: "var(--surface)",
@@ -99,19 +99,19 @@ export default function ThemeSwitch() {
           height: "100%",
         }}
       >
-        <span style={{ position: "absolute", left: 10, top: 9, fontSize: 12 }}>
-          D
+        <span style={{ position: "absolute", left: 12, top: 13, fontSize: 12 }}>
+          d
         </span>
-        <span style={{ position: "absolute", right: 11, top: 9, fontSize: 12 }}>
-          L
+        <span style={{ position: "absolute", right: 13, top: 13, fontSize: 12 }}>
+          l
         </span>
         <span
           style={{
             position: "absolute",
-            top: 3,
-            left: isDark ? 35 : 3,
-            width: 28,
-            height: 28,
+            top: 4,
+            left: isDark ? 38 : 4,
+            width: 34,
+            height: 34,
             borderRadius: "50%",
             background: "var(--surface-elevated)",
             border: "1px solid var(--border-color)",

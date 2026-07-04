@@ -1157,8 +1157,8 @@ export default function AppTopNav() {
                 aria-label="Close menu"
                 style={{
                   ...topBarButtonStyle,
-                  width: 34,
-                  height: 34,
+                  width: 40,
+                  height: 40,
                 }}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 16, height: 16 }}>

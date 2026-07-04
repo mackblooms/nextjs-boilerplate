@@ -897,8 +897,8 @@ export default function ProfilePage() {
               onClick={() => void togglePushNotifications()}
               disabled={pushBusy || pushLoading}
               style={{
-                width: 58,
-                height: 34,
+                width: 68,
+                height: 42,
                 borderRadius: 999,
                 border: "1px solid var(--border-color)",
                 background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.36)",
@@ -912,12 +912,12 @@ export default function ProfilePage() {
                 aria-hidden="true"
                 style={{
                   display: "block",
-                  width: 26,
-                  height: 26,
+                  width: 32,
+                  height: 32,
                   borderRadius: 999,
                   background: "#fff",
                   boxShadow: "0 3px 10px rgba(15, 23, 42, 0.2)",
-                  transform: pushEnabled ? "translateX(24px)" : "translateX(0)",
+                  transform: pushEnabled ? "translateX(28px)" : "translateX(0)",
                   transition: "transform 160ms ease",
                 }}
               />
