@@ -25,6 +25,7 @@ import WorldCupTeamLabel, { WorldCupLogoChip } from "@/app/components/WorldCupTe
 import {
   UiButton,
   UiEmptyState,
+  UiErrorState,
   UiLinkButton,
   UiLoadingState,
   UiStatus,
@@ -2888,8 +2889,25 @@ export default function LeaderboardPage() {
               </div>
             ) : null}
 
-            {archiveLoading ? <p style={{ margin: 0 }}>Loading archive years...</p> : null}
-            {archiveMsg ? <p style={{ margin: 0 }}>{archiveMsg}</p> : null}
+            {archiveLoading ? (
+              <UiLoadingState
+                title="loading archive years"
+                description="checking saved leaderboard snapshots."
+              />
+            ) : null}
+            {archiveMsg && archiveMsg.toLowerCase().includes("no archived") ? (
+              <UiEmptyState
+                as="div"
+                title="no archive yet"
+                description={archiveMsg}
+              />
+            ) : archiveMsg ? (
+              <UiErrorState
+                as="div"
+                title="couldn't load archive"
+                description={archiveMsg}
+              />
+            ) : null}
 
             {archiveYears.length > 0 ? (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -2918,7 +2936,12 @@ export default function LeaderboardPage() {
               </div>
             ) : null}
 
-            {archiveDetailLoading ? <p style={{ margin: 0 }}>Loading season results...</p> : null}
+            {archiveDetailLoading ? (
+              <UiLoadingState
+                title="loading season results"
+                description="building the archived standings view."
+              />
+            ) : null}
 
             {archiveDetail ? (
               <section

@@ -423,10 +423,19 @@ function ScoreSidebar({
       }}
     >
       <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
-      {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
-      {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading scores"
+          description="checking the latest games for this pool."
+        />
+      ) : null}
+      {!loading && error ? <UiStatus tone="error">{error}</UiStatus> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
+        <UiEmptyState
+          as="div"
+          title="no games to show"
+          description={emptyMessage}
+        />
       ) : null}
       {!loading &&
         !error &&
@@ -1947,7 +1956,12 @@ export default function PoolPage() {
               </p>
             </div>
 
-            {draftModalLoading ? <UiLoadingState>Loading your drafts...</UiLoadingState> : null}
+            {draftModalLoading ? (
+              <UiLoadingState
+                title="loading your drafts"
+                description="checking saved drafts, selected teams, and existing pool entries."
+              />
+            ) : null}
 
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
@@ -2012,19 +2026,27 @@ export default function PoolPage() {
             ) : null}
 
             {!draftModalLoading && availableDrafts.length === 0 ? (
-              <UiEmptyState as="div">
-                <strong>No drafts available.</strong>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  <Link href={createDraftForPoolHref} onClick={closeDraftModal}>
-                    Create a draft
-                  </Link>{" "}
-                  and you can enter it here after saving.
-                </p>
-              </UiEmptyState>
+              <UiEmptyState
+                as="div"
+                title="no drafts available"
+                description="create a saved draft first, then come back to enter it in this pool."
+                actions={
+                  <UiLinkButton href={createDraftForPoolHref} onClick={closeDraftModal} variant="primary">
+                    create a draft
+                  </UiLinkButton>
+                }
+              />
             ) : null}
 
             {draftModalMessage ? (
-              <UiStatus>
+              <UiStatus
+                tone={
+                  draftModalMessage.toLowerCase().includes("entered") ||
+                  draftModalMessage.toLowerCase().includes("created")
+                    ? "success"
+                    : "error"
+                }
+              >
                 {draftModalMessage}
               </UiStatus>
             ) : null}
@@ -2104,7 +2126,12 @@ export default function PoolPage() {
               </p>
             </div>
 
-            {leaveModalLoading ? <p style={{ margin: 0 }}>Loading your pool entries...</p> : null}
+            {leaveModalLoading ? (
+              <UiLoadingState
+                title="loading pool entries"
+                description="checking which entries are connected to this pool."
+              />
+            ) : null}
 
             {!leaveModalLoading && leaveEntries.length > 0 ? (
               <>
@@ -2178,19 +2205,11 @@ export default function PoolPage() {
             ) : null}
 
             {!leaveModalLoading && leaveEntries.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No entries found for this pool.</p>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Use the red button below to leave this pool.
-                </p>
-              </div>
+              <UiEmptyState
+                as="div"
+                title="no entries found"
+                description="you can still use the leave action below to remove yourself from this pool."
+              />
             ) : null}
 
             {leaveModalMessage ? (

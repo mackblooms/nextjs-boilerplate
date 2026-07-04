@@ -17,6 +17,7 @@ import {
 import {
   UiFormField,
   UiInput,
+  UiLoadingState,
   UiStatus,
   UiTextarea,
 } from "../components/ui/primitives";
@@ -544,7 +545,12 @@ export default function ProfilePage() {
         </p>
       </section>
 
-      {loading ? <p>Loading...</p> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading profile"
+          description="we're checking your avatar, player card, and notification settings."
+        />
+      ) : null}
 
       {!loading && isEditing ? (
         <section

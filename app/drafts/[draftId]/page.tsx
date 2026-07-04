@@ -22,7 +22,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import DraftScoringNotice from "../../components/DraftScoringNotice";
 import WorldCupTeamLabel from "../../components/WorldCupTeamLabel";
-import { UiButton, UiCard, UiFormField, UiInput, UiStatus, UiTooltip } from "../../components/ui/primitives";
+import { UiButton, UiCard, UiFormField, UiInput, UiLoadingState, UiStatus, UiTooltip } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -534,7 +534,11 @@ export default function DraftDetailPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Draft
         </h1>
-        <p style={{ marginTop: 12 }}>Loading...</p>
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading draft"
+          description="we're pulling your picks, linked pools, and available teams."
+        />
       </main>
     );
   }

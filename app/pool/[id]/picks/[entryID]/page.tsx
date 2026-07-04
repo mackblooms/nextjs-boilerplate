@@ -9,6 +9,7 @@ import { toSchoolDisplayName } from "../../../../../lib/teamNames";
 import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import { UiEmptyState, UiLoadingState, UiStatus } from "@/app/components/ui/primitives";
 
 type PickRow = {
   team_id: string;
@@ -308,8 +309,18 @@ export default function PicksPage() {
         </h1>
       </div>
 
-      {loading ? <p style={{ marginTop: 12 }}>Loading...</p> : null}
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {loading ? (
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading picks"
+          description="we're checking this entry's saved teams and scoring details."
+        />
+      ) : null}
+      {msg ? (
+        <UiStatus tone="error" style={{ marginTop: 12 }}>
+          {msg}
+        </UiStatus>
+      ) : null}
 
       {!draftLocked ? (
         <p style={{ marginTop: 8, opacity: 0.8, fontWeight: 700 }}>
@@ -419,7 +430,11 @@ export default function PicksPage() {
             ))}
 
             {picks.length === 0 ? (
-              <div style={{ padding: "12px 12px" }}>No picks saved yet.</div>
+              <UiEmptyState
+                as="div"
+                title="no picks saved yet"
+                description="this entry does not have any teams attached."
+              />
             ) : null}
           </div>
         </>

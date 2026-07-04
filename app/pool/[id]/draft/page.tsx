@@ -22,6 +22,7 @@ import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from 
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import { UiLoadingState } from "@/app/components/ui/primitives";
 
 type PoolRow = {
   id: string;
@@ -724,7 +725,11 @@ export default function PoolDraftPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
           Pool Draft
         </h1>
-        <p style={{ marginTop: 12 }}>Loading...</p>
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading pool draft"
+          description="we're checking your saved drafts, pool status, and available teams."
+        />
       </main>
     );
   }

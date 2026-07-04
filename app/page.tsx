@@ -459,9 +459,10 @@ function sortPoolsByName(a: { name: string }, b: { name: string }) {
 function HomeLoading() {
   return (
     <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-      <UiLoadingState>
-        <strong>Loading home...</strong>
-      </UiLoadingState>
+      <UiLoadingState
+        title="loading home"
+        description="preparing your dashboard, pools, drafts, and live scores."
+      />
     </main>
   );
 }
@@ -627,7 +628,12 @@ function ScorePanel({
         <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
         {titleAccessory ? <div>{titleAccessory}</div> : null}
       </div>
-      {loading ? <UiLoadingState>Loading scores...</UiLoadingState> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading scores"
+          description="checking live and upcoming games."
+        />
+      ) : null}
       {!loading && error ? <UiStatus tone="error">{error}</UiStatus> : null}
       {!loading && !error && games.length === 0 ? (
         <UiEmptyState as="div">{emptyMessage}</UiEmptyState>
@@ -2141,11 +2147,18 @@ export function HomeContent({
           </div>
 
           {isAuthenticated !== true ? (
-            <UiEmptyState as="div">Log in to view your saved drafts.</UiEmptyState>
+            <UiEmptyState
+              as="div"
+              title="log in to view drafts"
+              description="your saved drafts and pool entries will appear here after sign in."
+            />
           ) : null}
 
           {isAuthenticated === true && homeDraftsLoading && homeDrafts.length === 0 ? (
-            <UiLoadingState>Loading drafts...</UiLoadingState>
+            <UiLoadingState
+              title="loading drafts"
+              description="pulling your saved lineups and linked pools."
+            />
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length === 0 ? (

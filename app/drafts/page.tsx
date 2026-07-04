@@ -6,7 +6,17 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
-import { UiButton, UiCard, UiFormField, UiInput, UiLinkButton, UiTooltip } from "../components/ui/primitives";
+import {
+  UiButton,
+  UiCard,
+  UiEmptyState,
+  UiFormField,
+  UiInput,
+  UiLinkButton,
+  UiLoadingState,
+  UiStatus,
+  UiTooltip,
+} from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
@@ -288,9 +298,10 @@ function DraftsPageContent() {
         <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900 }}>
           {competition.shortName} Drafts
         </h1>
-        <p className="ui-loading-state">
-          <strong>Loading drafts...</strong>
-        </p>
+        <UiLoadingState
+          title="loading drafts"
+          description="we're pulling your saved teams and pick counts."
+        />
       </main>
     );
   }
@@ -476,20 +487,27 @@ function DraftsPageContent() {
           })}
         </section>
       ) : (
-        <section className="ui-empty-state" aria-label="No drafts">
-          <strong>No drafts yet.</strong>
-          <span>Create one above, then add teams and enter it into a pool.</span>
-        </section>
+        <UiEmptyState
+          aria-label="no drafts"
+          title="no drafts yet"
+          description="create one above, then add teams and enter it into a pool."
+        />
       )}
 
       {message ? (
-        <p
+        <UiStatus
           role="status"
           aria-live="polite"
-          className="ui-status"
+          tone={
+            message.toLowerCase().includes("failed") ||
+            message.toLowerCase().includes("missing") ||
+            message.toLowerCase().includes("error")
+              ? "error"
+              : "success"
+          }
         >
           {message}
-        </p>
+        </UiStatus>
       ) : null}
     </main>
   );

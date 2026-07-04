@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import LoginClient from "./LoginClient";
+import { UiLoadingState } from "../components/ui/primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,10 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-          Loading...
+          <UiLoadingState
+            title="loading login"
+            description="preparing your sign in options."
+          />
         </main>
       }
     >

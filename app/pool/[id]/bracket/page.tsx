@@ -23,6 +23,7 @@ import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
 import { buildWorldCupTeamPath } from "@/lib/worldCupTeamPath";
 import { worldCupLogoUrl } from "@/lib/worldCupLogos";
+import { UiLoadingState, UiStatus } from "@/app/components/ui/primitives";
 
 type Team = {
   id: string;
@@ -1317,8 +1318,16 @@ export default function BracketPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Bracket
         </h1>
-        {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-        <p style={{ marginTop: 12, opacity: 0.8 }}>Loading…</p>
+        {msg ? (
+          <UiStatus tone="error" style={{ marginTop: 12 }}>
+            {msg}
+          </UiStatus>
+        ) : null}
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading bracket"
+          description="we're pulling teams, games, live scores, and pool entries."
+        />
       </main>
     );
   }

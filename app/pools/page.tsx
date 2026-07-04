@@ -8,7 +8,7 @@ import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } f
 import { supabase } from "../../lib/supabaseClient";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
-import { UiFormField, UiInput } from "../components/ui/primitives";
+import { UiEmptyState, UiErrorState, UiFormField, UiInput, UiLoadingState, UiStatus } from "../components/ui/primitives";
 
 type PoolRow = {
   id: string;
@@ -779,18 +779,30 @@ function PoolsPageContent() {
             <span>{myPools.length}</span>
           </div>
 
-          {loading ? <p className="match-empty">Loading pools...</p> : null}
-          {myPoolsMsg ? <p className="match-empty">{myPoolsMsg}</p> : null}
+          {loading ? (
+            <UiLoadingState
+              className="match-state-card"
+              title="loading pools"
+              description="checking your memberships and available entries."
+            />
+          ) : null}
+          {myPoolsMsg ? (
+            <UiErrorState
+              as="div"
+              className="match-state-card"
+              title="couldn't load your pools"
+              description={myPoolsMsg}
+            />
+          ) : null}
 
           {!loading && !myPoolsMsg && myPools.length === 0 ? (
-            <div className="match-empty-card">
-              <div className="match-empty-copy">
-                <div>Your pool list is still empty.</div>
-                <p>
-                  Join a pool to start tracking standings, brackets, and draft entries from the app shell.
-                </p>
-              </div>
-              <div className="match-row-actions">
+            <UiEmptyState
+              as="div"
+              className="match-empty-card"
+              title="your pool list is still empty"
+              description="join a pool to start tracking standings, brackets, and draft entries from the app shell."
+              actions={
+                <>
                 <button type="button" onClick={() => setActiveTab("discover")} className="ui-btn ui-btn--md ui-btn--primary">
                   Discover pools
                 </button>
@@ -802,8 +814,9 @@ function PoolsPageContent() {
                     Create a pool
                   </Link>
                 )}
-              </div>
-            </div>
+                </>
+              }
+            />
           ) : null}
 
           {!loading && myPools.length > 0 ? (
@@ -895,11 +908,25 @@ function PoolsPageContent() {
             ) : null}
           </div>
 
-          {allPoolsMsg ? <p className="match-empty">{allPoolsMsg}</p> : null}
+          {allPoolsMsg ? (
+            <UiErrorState
+              as="div"
+              className="match-state-card"
+              title="couldn't load discover"
+              description={allPoolsMsg}
+            />
+          ) : null}
           {!loading && !allPoolsMsg && filteredDiscoverPools.length === 0 ? (
-            <div className="match-empty-card">
-              {query.trim() ? "No pools match your search." : "No pools are available to join right now."}
-            </div>
+            <UiEmptyState
+              as="div"
+              className="match-empty-card"
+              title={query.trim() ? "no pools match your search" : "no pools available"}
+              description={
+                query.trim()
+                  ? "try a shorter pool name or clear the search to see everything."
+                  : "check back later or create your own pool when entries are open."
+              }
+            />
           ) : null}
 
           {!loading && filteredDiscoverPools.length > 0 ? (
@@ -1055,7 +1082,12 @@ function PoolsPageContent() {
               </p>
             </div>
 
-            {draftModalLoading ? <p className="ui-loading-state">Loading your drafts...</p> : null}
+            {draftModalLoading ? (
+              <UiLoadingState
+                title="loading your drafts"
+                description="checking saved drafts, selected teams, and existing pool entries."
+              />
+            ) : null}
 
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
@@ -1120,20 +1152,29 @@ function PoolsPageContent() {
             ) : null}
 
             {!draftModalLoading && availableDrafts.length === 0 ? (
-              <div className="ui-empty-state">
-                <strong>No drafts available.</strong>
-                <p style={{ margin: 0 }}>
-                  Open <Link href={competitionPath("/drafts", competitionSlug)}>My Drafts</Link> to create one.
-                </p>
-              </div>
+              <UiEmptyState
+                as="div"
+                title="no drafts available"
+                description="create a saved draft first, then come back to enter it in this pool."
+                actions={
+                  <Link href={competitionPath("/drafts", competitionSlug)} className="ui-btn ui-btn--md ui-btn--primary">
+                    open drafts
+                  </Link>
+                }
+              />
             ) : null}
 
             {draftModalMessage ? (
-              <p
-                className="ui-status"
+              <UiStatus
+                tone={
+                  draftModalMessage.toLowerCase().includes("created") ||
+                  draftModalMessage.toLowerCase().includes("entered")
+                    ? "success"
+                    : "error"
+                }
               >
                 {draftModalMessage}
-              </p>
+              </UiStatus>
             ) : null}
 
             <div className="app-modal-actions app-modal-actions--split">

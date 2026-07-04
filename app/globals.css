@@ -11,6 +11,7 @@
   --highlight: #e7efff;
   --highlight-border: #b5c7f2;
   --success-bg: #eefaf1;
+  --success-border: #a7dfb4;
   --danger-bg: #fff1f1;
   --warning-bg: #fff5dd;
   --warning-border: #efcf8a;
@@ -653,17 +654,53 @@ textarea::placeholder {
   padding: var(--space-3);
   background: var(--color-surface-muted);
   color: var(--color-fg);
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   line-height: var(--leading-normal);
 }
 
+.ui-status-icon,
+.ui-state-icon {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.ui-status-icon::before,
+.ui-state-icon::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  opacity: 0.72;
+}
+
+.ui-status-content {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
 .ui-status[data-tone="success"] {
+  border-color: var(--success-border);
   background: var(--success-bg);
+  color: var(--color-success);
 }
 
 .ui-status[data-tone="error"] {
+  border-color: color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
   background: var(--danger-bg);
+  color: var(--color-danger);
 }
 
 .ui-status[data-tone="warning"] {
@@ -680,19 +717,95 @@ textarea::placeholder {
   box-shadow: var(--elevation-sm);
   padding: var(--space-4);
   color: color-mix(in srgb, var(--color-fg) 74%, transparent);
+  display: grid;
+  align-items: start;
+  justify-items: start;
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
 }
 
 .ui-empty-state {
-  display: grid;
   gap: var(--space-2);
+}
+
+.ui-empty-state[data-tone="error"] {
+  border-color: color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--danger-bg) 64%, transparent), transparent 72%),
+    var(--color-surface);
+}
+
+.ui-empty-state[data-tone="warning"] {
+  border-color: var(--warning-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--warning-bg) 70%, transparent), transparent 72%),
+    var(--color-surface);
+}
+
+.ui-empty-state[data-tone="success"] {
+  border-color: var(--success-border);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success-bg) 72%, transparent), transparent 72%),
+    var(--color-surface);
+}
+
+.ui-empty-state[data-tone="error"] .ui-state-icon {
+  border-color: color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
+  color: var(--color-danger);
+}
+
+.ui-empty-state[data-tone="warning"] .ui-state-icon {
+  border-color: var(--warning-border);
+  color: #9a6700;
+}
+
+.ui-empty-state[data-tone="success"] .ui-state-icon {
+  border-color: var(--success-border);
+  color: var(--color-success);
+}
+
+.ui-loading-state {
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.ui-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-top-color: var(--color-accent);
+  border-radius: var(--radius-pill);
+  animation: ui-spin 850ms linear infinite;
+}
+
+.ui-state-copy {
+  display: grid;
+  gap: var(--space-1);
 }
 
 .ui-empty-state strong,
 .ui-loading-state strong {
   color: var(--color-fg);
   font-weight: var(--weight-black);
+}
+
+.ui-state-actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-loading-spinner {
+    animation: none;
+  }
 }
 
 .app-modal-backdrop {
@@ -4287,6 +4400,10 @@ button.world-cup-bracket-team:hover {
   font-size: 0.9rem;
 }
 
+.match-state-card {
+  box-shadow: none;
+}
+
 .match-empty-card {
   border: 1px solid var(--match-row-border);
   border-radius: 8px;
@@ -4296,6 +4413,11 @@ button.world-cup-bracket-team:hover {
   padding: 16px;
   display: grid;
   gap: 12px;
+}
+
+.match-empty-card .ui-state-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .match-empty-copy {

@@ -9,7 +9,7 @@ import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 import { getStoredActiveCompetition } from "../../lib/activeCompetition";
 import BackArrowButton from "../components/BackArrowButton";
-import { UiButton, UiFormField, UiInput } from "../components/ui/primitives";
+import { UiButton, UiFormField, UiInput, UiLoadingState, UiStatus } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
 const POST_LOGIN_PATH = "/";
@@ -260,7 +260,10 @@ export default function LoginClient() {
   if (!authChecked) {
     return (
       <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-        Loading...
+        <UiLoadingState
+          title="checking session"
+          description="we're confirming whether you're already signed in."
+        />
       </main>
     );
   }
@@ -434,7 +437,7 @@ export default function LoginClient() {
               >
                 Generate strong password
               </UiButton>
-              <div className="ui-status" data-tone={acceptedLegal ? "success" : "warning"}>
+              <UiStatus tone={acceptedLegal ? "success" : "warning"}>
                 <div style={{ fontWeight: 700 }}>
                   {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
                 </div>
@@ -449,7 +452,7 @@ export default function LoginClient() {
                 >
                   {acceptedLegal ? "Review agreement" : "Review and agree"}
                 </UiButton>
-              </div>
+              </UiStatus>
             </div>
           ) : null}
 

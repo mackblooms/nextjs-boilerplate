@@ -14,6 +14,7 @@ import {
 type UiVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 type UiSize = "sm" | "md" | "lg";
 type UiTooltipSide = "top" | "bottom" | "left" | "right";
+type UiStateTone = "empty" | "loading" | "error" | "warning" | "success" | "info";
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -142,27 +143,86 @@ export function UiCard({ as = "section", className, ...props }: UiCardProps) {
 
 type UiFeedbackTone = "info" | "success" | "error" | "warning";
 
-export type UiStatusProps = HTMLAttributes<HTMLParagraphElement> & {
+export type UiStatusProps = HTMLAttributes<HTMLDivElement> & {
   tone?: UiFeedbackTone;
 };
 
-export function UiStatus({ tone = "info", className, ...props }: UiStatusProps) {
-  return <p className={cx("ui-status", className)} data-tone={tone} {...props} />;
+export function UiStatus({ tone = "info", className, children, ...props }: UiStatusProps) {
+  return (
+    <div className={cx("ui-status", className)} data-tone={tone} {...props}>
+      <span className="ui-status-icon" aria-hidden="true" />
+      <div className="ui-status-content">{children}</div>
+    </div>
+  );
 }
 
 export type UiEmptyStateProps = HTMLAttributes<HTMLElement> & {
   as?: "section" | "div" | "aside";
+  title?: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  tone?: UiStateTone;
 };
 
-export function UiEmptyState({ as = "section", className, ...props }: UiEmptyStateProps) {
+export function UiEmptyState({
+  as = "section",
+  className,
+  title,
+  description,
+  actions,
+  tone = "empty",
+  children,
+  ...props
+}: UiEmptyStateProps) {
   const Component = as;
-  return <Component className={cx("ui-empty-state", className)} {...props} />;
+  return (
+    <Component className={cx("ui-empty-state", className)} data-tone={tone} {...props}>
+      <span className="ui-state-icon" aria-hidden="true" />
+      {title ? <strong>{title}</strong> : null}
+      {description ? <span>{description}</span> : null}
+      {children}
+      {actions ? <div className="ui-state-actions">{actions}</div> : null}
+    </Component>
+  );
 }
 
-export type UiLoadingStateProps = HTMLAttributes<HTMLParagraphElement>;
+export type UiLoadingStateProps = HTMLAttributes<HTMLDivElement> & {
+  title?: ReactNode;
+  description?: ReactNode;
+};
 
-export function UiLoadingState({ className, ...props }: UiLoadingStateProps) {
-  return <p className={cx("ui-loading-state", className)} {...props} />;
+export function UiLoadingState({
+  className,
+  title = "loading",
+  description,
+  children,
+  ...props
+}: UiLoadingStateProps) {
+  return (
+    <div className={cx("ui-loading-state", className)} role="status" aria-live="polite" {...props}>
+      <span className="ui-loading-spinner" aria-hidden="true" />
+      <div className="ui-state-copy">
+        {children ?? (
+          <>
+            <strong>{title}</strong>
+            {description ? <span>{description}</span> : null}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export type UiErrorStateProps = UiEmptyStateProps & {
+  title?: ReactNode;
+};
+
+export function UiErrorState({
+  title = "something went wrong",
+  tone = "error",
+  ...props
+}: UiErrorStateProps) {
+  return <UiEmptyState title={title} tone={tone} role="alert" {...props} />;
 }
 
 export type UiFieldLabelProps = LabelHTMLAttributes<HTMLLabelElement>;
