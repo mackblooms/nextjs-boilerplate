@@ -2024,6 +2024,8 @@ export default function LeaderboardPage() {
                 return (
                   <div
                     key={r.entry_id}
+                    className="leaderboard-entry-row"
+                    data-current-user={r.user_id === myUserId ? "true" : "false"}
                     style={{
                       borderBottom: "1px solid var(--border-color)",
                       background:

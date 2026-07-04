@@ -1415,15 +1415,15 @@ button.world-cup-bracket-team:hover {
 .world-cup-group-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 5px;
+  border-spacing: 0 6px;
   font-size: 0.78rem;
 }
 
 .world-cup-group-table th {
-  padding: 0 7px 1px;
+  padding: 0 8px 2px;
   font-size: 0.66rem;
   font-weight: 900;
-  opacity: 0.62;
+  color: color-mix(in srgb, var(--foreground) 62%, transparent);
   text-align: left;
 }
 
@@ -1434,14 +1434,18 @@ button.world-cup-bracket-team:hover {
 }
 
 .world-cup-group-table td {
-  border-block: 1px solid var(--border-color);
+  border-block: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   background: var(--surface);
   font-weight: 750;
-  padding: 4px 7px;
+  padding: 6px 8px;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
 }
 
 .world-cup-group-table td:first-child {
-  border-left: 1px solid var(--border-color);
+  border-left: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   border-radius: 7px 0 0 7px;
   min-width: 0;
   max-width: 0;
@@ -1457,9 +1461,14 @@ button.world-cup-bracket-team:hover {
 }
 
 .world-cup-group-table td:last-child {
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   border-radius: 0 7px 7px 0;
   font-weight: 900;
+}
+
+.world-cup-group-table tbody tr:hover td {
+  border-color: var(--highlight-border);
+  background: color-mix(in srgb, var(--highlight) 34%, var(--surface));
 }
 
 .world-cup-group-games {
@@ -1851,7 +1860,6 @@ button.world-cup-bracket-team:hover {
   font-weight: 800;
   letter-spacing: 0;
   opacity: 0.66;
-  text-transform: uppercase;
 }
 
 .world-cup-team-path-title strong {
@@ -2011,7 +2019,6 @@ button.world-cup-bracket-team:hover {
   font-weight: 950;
   height: 58px;
   justify-content: center;
-  text-transform: uppercase;
   width: 58px;
 }
 
@@ -2114,7 +2121,6 @@ button.world-cup-bracket-team:hover {
   font-weight: 900;
   letter-spacing: 0;
   opacity: 0.58;
-  text-transform: uppercase;
 }
 
 .world-cup-knockout-trophy > strong {
@@ -2576,10 +2582,13 @@ button.world-cup-bracket-team:hover {
   transition:
     transform var(--motion-fast),
     box-shadow var(--motion-fast),
-    border-color var(--motion-fast);
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
 }
 
 .home-score-row:hover {
+  border-color: var(--highlight-border);
+  background: color-mix(in srgb, var(--highlight) 28%, var(--color-surface));
   transform: translateY(-1px);
   box-shadow: var(--elevation-sm);
 }
@@ -2621,14 +2630,34 @@ button.world-cup-bracket-team:hover {
 }
 
 .home-draft-card {
+  border-color: color-mix(in srgb, var(--color-border) 86%, transparent) !important;
+  overflow: hidden;
   transition:
     transform var(--motion-fast),
-    box-shadow var(--motion-fast);
+    box-shadow var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
 }
 
-.home-draft-card:hover {
+.home-draft-card:hover,
+.home-draft-card:focus-within {
+  border-color: var(--highlight-border) !important;
+  background: color-mix(in srgb, var(--highlight) 30%, var(--color-surface)) !important;
   transform: translateY(-1px);
   box-shadow: var(--elevation-md);
+}
+
+.home-draft-head {
+  min-width: 0;
+}
+
+.home-draft-points {
+  border: 1px solid var(--highlight-border);
+  border-radius: var(--radius-pill);
+  background: var(--highlight);
+  color: var(--color-fg);
+  padding: 5px 9px;
+  line-height: 1;
 }
 
 @media (max-width: 1024px) {
@@ -2969,27 +2998,28 @@ button.world-cup-bracket-team:hover {
 .pool-quick-actions {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px !important;
+  gap: var(--space-2) !important;
 }
 
 .pool-action-cell {
   min-width: 0;
-  min-height: 58px;
-  border: 1px solid var(--border-color);
-  border-radius: 9px;
+  min-height: 64px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 84%, transparent);
+  border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--foreground);
   cursor: pointer;
   display: grid;
-  gap: 2px;
+  gap: 4px;
   justify-content: stretch;
-  padding: 9px 10px;
+  padding: 11px 12px;
   text-align: left;
   text-decoration: none;
   transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
 }
 
 .pool-action-cell strong {
@@ -3010,8 +3040,8 @@ button.world-cup-bracket-team:hover {
 }
 
 .pool-action-cell--primary {
-  border-color: #00985f;
-  background: rgba(0, 152, 95, 0.11);
+  border-color: var(--success-border);
+  background: var(--success-bg);
 }
 
 .pool-action-cell--danger {
@@ -3022,7 +3052,8 @@ button.world-cup-bracket-team:hover {
 .pool-action-cell:hover,
 .pool-action-cell:focus-visible {
   border-color: var(--focus-ring);
-  box-shadow: var(--shadow-sm);
+  background: color-mix(in srgb, var(--highlight) 30%, var(--surface));
+  box-shadow: var(--elevation-sm);
   transform: translateY(-1px);
 }
 
@@ -3193,6 +3224,38 @@ button.world-cup-bracket-team:hover {
   flex: 0 0 auto;
 }
 
+.draft-team-row {
+  border-color: color-mix(in srgb, var(--color-border) 84%, transparent) !important;
+  background: var(--color-surface);
+  box-shadow: var(--elevation-xs);
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
+}
+
+.draft-team-row:hover,
+.draft-team-row:focus-within {
+  border-color: var(--highlight-border) !important;
+  background: color-mix(in srgb, var(--highlight) 28%, var(--color-surface));
+  box-shadow: var(--elevation-sm);
+  transform: translateY(-1px);
+}
+
+.draft-team-row[data-selected="true"] {
+  border-color: var(--highlight-border) !important;
+  background: color-mix(in srgb, var(--highlight) 58%, var(--color-surface));
+}
+
+.draft-team-row[data-selected="true"] .draft-team-actions > div:last-child {
+  border: 1px solid var(--highlight-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  padding: 4px 8px;
+  line-height: 1;
+}
+
 .draft-team-detail-button,
 .leaderboard-mini-link {
   border: 1px solid var(--border-color);
@@ -3227,6 +3290,30 @@ button.world-cup-bracket-team:hover {
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 3px;
+}
+
+.leaderboard-entry-link {
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--motion-fast),
+    opacity var(--motion-fast),
+    background-color var(--motion-fast);
+}
+
+.leaderboard-entry-row {
+  transition:
+    background-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+.leaderboard-entry-row:hover,
+.leaderboard-entry-row:focus-within {
+  background: color-mix(in srgb, var(--highlight) 28%, var(--color-surface)) !important;
+  box-shadow: inset 3px 0 0 var(--highlight-border);
+}
+
+.leaderboard-entry-row[data-current-user="true"] {
+  box-shadow: inset 3px 0 0 var(--focus-ring);
 }
 
 .leaderboard-entry-link:hover,
@@ -3301,8 +3388,7 @@ button.world-cup-bracket-team:hover {
 .draft-scoring-notice__eyebrow {
   font-size: 12px;
   font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0;
   color: var(--focus-ring);
 }
 
@@ -3501,14 +3587,21 @@ button.world-cup-bracket-team:hover {
 }
 
 .drafts-draft-card {
+  border-color: color-mix(in srgb, var(--color-border) 84%, transparent) !important;
+  background: var(--color-surface);
   transition:
-    transform 150ms ease,
-    box-shadow 150ms ease;
+    transform var(--motion-fast),
+    box-shadow var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
 }
 
-.drafts-draft-card:hover {
+.drafts-draft-card:hover,
+.drafts-draft-card:focus-within {
+  border-color: var(--highlight-border) !important;
+  background: color-mix(in srgb, var(--highlight) 30%, var(--color-surface));
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--elevation-md);
 }
 
 .drafts-shell {
@@ -3574,12 +3667,12 @@ button.world-cup-bracket-team:hover {
 
 .drafts-list {
   display: grid;
-  gap: 7px;
+  gap: var(--space-2);
 }
 
 .drafts-draft-row {
   justify-content: space-between;
-  padding: 10px !important;
+  padding: 12px !important;
   border-radius: 9px !important;
 }
 
@@ -3616,6 +3709,19 @@ button.world-cup-bracket-team:hover {
 }
 
 @media (max-width: 640px) {
+  .home-draft-head {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+
+  .home-draft-meta {
+    width: 100%;
+  }
+
+  .home-draft-points {
+    width: fit-content;
+  }
+
   .drafts-command-head,
   .drafts-create-row,
   .drafts-draft-row {
@@ -3817,7 +3923,7 @@ button.world-cup-bracket-team:hover {
   align-items: end;
   justify-content: space-between;
   gap: 12px;
-  padding: 5px 3px 0;
+  padding: 8px 3px 2px;
 }
 
 .match-section-header h2 {
@@ -3829,14 +3935,14 @@ button.world-cup-bracket-team:hover {
 }
 
 .match-section-header > span {
-  min-width: 28px;
-  min-height: 24px;
+  min-width: 32px;
+  min-height: 26px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--match-row-border);
   border-radius: 999px;
-  background: var(--surface);
-  color: var(--match-ink-muted);
+  background: var(--match-accent-soft);
+  color: var(--match-accent-strong);
   font-size: 0.78rem;
   font-weight: 900;
 }
@@ -3846,31 +3952,33 @@ button.world-cup-bracket-team:hover {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .match-row {
   border: 1px solid var(--match-row-border);
   border-radius: 8px;
   background: var(--surface);
-  min-height: 78px;
-  padding: 10px;
+  min-height: 82px;
+  padding: 12px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .match-row--tappable {
   transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
 }
 
 .match-row--tappable:hover,
 .match-row--tappable:focus-within {
   border-color: var(--match-accent);
+  background: color-mix(in srgb, var(--match-accent-soft) 52%, var(--surface));
   box-shadow: 0 8px 18px rgba(13, 23, 42, 0.08);
   transform: translateY(-1px);
 }
@@ -3949,14 +4057,15 @@ button.world-cup-bracket-team:hover {
 
 .match-badge,
 .match-mini-score {
-  min-height: 25px;
+  min-height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  padding: 0 8px;
+  padding: 0 9px;
   font-size: 0.72rem;
   font-weight: 950;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -4017,10 +4126,12 @@ button.world-cup-bracket-team:hover {
 .match-empty-card {
   border: 1px solid var(--match-row-border);
   border-radius: 8px;
-  background: var(--surface);
-  padding: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--match-accent-soft) 42%, transparent), transparent 62%),
+    var(--surface);
+  padding: 16px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .match-empty-copy {
@@ -4122,11 +4233,16 @@ button.world-cup-bracket-team:hover {
   }
 
   .match-row-meta {
-    justify-content: flex-start;
+    justify-content: space-between;
+    width: 100%;
   }
 
   .match-row-actions {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .match-row-action {
+    min-height: 42px;
   }
 }
 

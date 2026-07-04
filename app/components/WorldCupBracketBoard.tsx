@@ -413,7 +413,7 @@ export default function WorldCupBracketBoard({
             {ROUND_ORDER.flatMap((round) => knockoutSlots(round).map((slot) => circularKnockoutGame(round, slot)))}
             <div className="world-cup-knockout-trophy" aria-label="World Cup final">
               <span>trophy</span>
-              <strong>WC</strong>
+              <strong>wc</strong>
               {knockoutGame("CHIP", 1)}
             </div>
           </div>

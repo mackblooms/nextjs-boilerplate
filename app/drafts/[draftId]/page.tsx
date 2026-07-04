@@ -722,6 +722,7 @@ export default function DraftDetailPage() {
               <article
                 key={team.id}
                 className="draft-team-row"
+                data-selected={checked ? "true" : "false"}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
