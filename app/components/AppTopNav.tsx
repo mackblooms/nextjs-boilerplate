@@ -687,6 +687,10 @@ export default function AppTopNav() {
   const isHomeActive = pathname === "/" || pathname === competition.href;
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
+  const isSportsActive = pathname === "/sports";
+  const isProfileActive = pathname === "/profile";
+  const isTermsActive = pathname === "/terms";
+  const isPrivacyActive = pathname === "/privacy";
   const isLeaderboardActive = activePoolBasePath
     ? pathname === `${activePoolBasePath}/leaderboard` ||
       pathname.startsWith(`${activePoolBasePath}/leaderboard/`)
@@ -724,6 +728,22 @@ export default function AppTopNav() {
       href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
       isActive: isLeaderboardActive,
       Icon: PodiumIcon,
+    },
+  ];
+  const primaryMenuItems = [
+    { label: "Home", href: competition.href, isActive: isHomeActive },
+    { label: "Sports", href: "/sports", isActive: isSportsActive },
+    { label: "Drafts", href: competitionPath("/drafts", competitionSlug), isActive: isDraftsActive },
+    { label: "Pools", href: competitionPath("/pools", competitionSlug), isActive: isPoolsActive },
+    {
+      label: "Bracket",
+      href: activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug),
+      isActive: isBracketActive,
+    },
+    {
+      label: "Leaderboard",
+      href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
+      isActive: isLeaderboardActive,
     },
   ];
 
@@ -832,7 +852,7 @@ export default function AppTopNav() {
         }}
       >
         <div
-          className={isNativeApp ? "app-glass-header-field" : "page-surface"}
+          className={`${isNativeApp ? "app-glass-header-field" : "page-surface"} app-shell-header-field`}
           style={{
             maxWidth: isNativeApp ? 760 : 980,
             margin: "0 auto",
@@ -871,20 +891,16 @@ export default function AppTopNav() {
           <Link
             href={competition.href}
             aria-label="Go to bracketball home"
-            className={isNativeApp ? "app-glass-header-logo" : undefined}
+            className={`${isNativeApp ? "app-glass-header-logo" : ""} app-shell-brand`}
             style={{
               justifySelf: "center",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
               minWidth: isNativeApp ? 96 : 120,
               minHeight: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
-              paddingInline: isNativeApp ? undefined : 10,
             }}
           >
             <img
               src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
+              alt="bracketball"
               style={{
                 width: isCompact ? 102 : 114,
                 height: "auto",
@@ -892,12 +908,20 @@ export default function AppTopNav() {
                 filter: "var(--logo-filter)",
               }}
             />
+            <span className="app-shell-brand-copy" aria-hidden="true">
+              <strong>bracketball</strong>
+              <span>
+                {activePool ? `${competition.shortName} / ${activePool.name}` : `${competition.shortName} / dashboard`}
+              </span>
+            </span>
           </Link>
 
           <Link
             className="app-top-nav-pill"
             href="/profile"
             aria-label="Open profile"
+            aria-current={isProfileActive ? "page" : undefined}
+            data-active={isProfileActive}
             style={topBarButtonStyle}
           >
             <img
@@ -1026,6 +1050,7 @@ export default function AppTopNav() {
               key={item.key}
               type="button"
               role="tab"
+              data-active={item.isActive}
               aria-label={item.label}
               aria-selected={isCurrent}
               aria-current={item.isActive ? "page" : undefined}
@@ -1111,17 +1136,10 @@ export default function AppTopNav() {
               overflowY: "auto",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <div style={{ display: "grid", gap: 3 }}>
-                <strong style={{ fontSize: 18, letterSpacing: "0.02em" }}>Menu</strong>
-                <span style={{ fontSize: 12, opacity: 0.74 }}>
+            <div className="app-menu-header">
+              <div className="app-menu-title-group">
+                <strong>Menu</strong>
+                <span>
                   {activePool
                     ? `Active pool: ${activePool.name}`
                     : "Select a pool to unlock bracket + leaderboard"}
@@ -1152,39 +1170,27 @@ export default function AppTopNav() {
 
             <section className="app-menu-section" aria-label="Primary navigation">
               <h2>Navigate</h2>
-              <Link href={competition.href} onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Home
-              </Link>
-              <Link href="/sports" onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Sports
-              </Link>
-              <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Drafts
-              </Link>
-              <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Pools
-              </Link>
-              <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug)}
-                onClick={() => setDrawerOpen(false)}
-                className="app-menu-action"
-              >
-                Bracket
-              </Link>
-              <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug)}
-                onClick={() => setDrawerOpen(false)}
-                className="app-menu-action"
-              >
-                Leaderboard
-              </Link>
+              {primaryMenuItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setDrawerOpen(false)}
+                  className="app-menu-action"
+                  data-active={item.isActive}
+                  aria-current={item.isActive ? "page" : undefined}
+                >
+                  <span>{item.label}</span>
+                </Link>
+              ))}
               {activePoolId && activePool?.created_by === userId ? (
                 <Link
                   href={`/pool/${activePoolId}/admin`}
                   onClick={() => setDrawerOpen(false)}
                   className="app-menu-action"
+                  data-active={isAdminActive}
+                  aria-current={isAdminActive ? "page" : undefined}
                 >
-                  Admin
+                  <span>Admin</span>
                 </Link>
               ) : null}
             </section>
@@ -1195,6 +1201,8 @@ export default function AppTopNav() {
                 href="/profile"
                 onClick={() => setDrawerOpen(false)}
                 className="app-menu-action"
+                data-active={isProfileActive}
+                aria-current={isProfileActive ? "page" : undefined}
               >
                 {isNativeApp ? (
                   <img
@@ -1204,10 +1212,10 @@ export default function AppTopNav() {
                     height={26}
                   />
                 ) : null}
-                Profile
+                <span>Profile</span>
               </Link>
               <button type="button" onClick={signOut} className="app-menu-action">
-                Log Out
+                <span>Log Out</span>
               </button>
             </section>
 
@@ -1221,23 +1229,35 @@ export default function AppTopNav() {
                 }}
                 className="app-menu-action"
               >
-                Help Center
+                <span>Help Center</span>
               </button>
               <button type="button" onClick={openHowItWorksModal} className="app-menu-action">
-                How It Works
+                <span>How It Works</span>
               </button>
               <a href="mailto:mack@bracketball.io" className="app-menu-action">
-                Contact Support
+                <span>Contact Support</span>
               </a>
             </section>
 
             <section className="app-menu-section" aria-label="Legal links">
               <h2>Legal</h2>
-              <Link href="/terms" onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Terms of Service
+              <Link
+                href="/terms"
+                onClick={() => setDrawerOpen(false)}
+                className="app-menu-action"
+                data-active={isTermsActive}
+                aria-current={isTermsActive ? "page" : undefined}
+              >
+                <span>Terms of Service</span>
               </Link>
-              <Link href="/privacy" onClick={() => setDrawerOpen(false)} className="app-menu-action">
-                Privacy Policy
+              <Link
+                href="/privacy"
+                onClick={() => setDrawerOpen(false)}
+                className="app-menu-action"
+                data-active={isPrivacyActive}
+                aria-current={isPrivacyActive ? "page" : undefined}
+              >
+                <span>Privacy Policy</span>
               </Link>
             </section>
 
