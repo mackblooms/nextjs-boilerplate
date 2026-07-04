@@ -602,7 +602,7 @@ function ScorePanel({
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
-  emptyMessage: string;
+  emptyMessage: ReactNode;
   trackedEspnSet?: Set<string>;
   trackedKeySet?: Set<string>;
   competitionSlug: CompetitionSlug;
@@ -612,8 +612,9 @@ function ScorePanel({
   const trackedKeys = trackedKeySet ?? new Set<string>();
 
   return (
-    <aside className="home-score-panel" style={scorePanelStyle}>
+    <aside className="home-score-panel home-dashboard-card" style={scorePanelStyle}>
       <div
+        className="home-section-heading"
         style={{
           display: "flex",
           alignItems: "center",
@@ -1785,6 +1786,38 @@ export function HomeContent({
     </div>
   );
   const homeDraftCountLabel = `${homeDrafts.length}/${MAX_HOME_DRAFTS} drafts created`;
+  const selectedPoolPath = selectedPoolId ? `/pool/${selectedPoolId}` : competitionPoolPath;
+  const selectedLeaderboardPath = selectedPoolId
+    ? `/pool/${selectedPoolId}/leaderboard`
+    : competitionPoolPath;
+  const nextStepCopy =
+    homeDrafts.length === 0 && !homeDraftsLocked
+      ? {
+          title: "build your first draft",
+          body: "pick your teams, save the lineup, then use it when you join or create a pool.",
+          action: "create draft",
+          kind: "draft" as const,
+        }
+      : memberPools.length === 0
+        ? {
+            title: "join or create a pool",
+            body: "pools turn your draft into a competition with standings, scores, and bragging rights.",
+            action: "find pools",
+            kind: "pool" as const,
+          }
+        : trackedTeamCount === 0
+          ? {
+              title: "finish entering your pool",
+              body: "submit picks in your active pool so your teams can be highlighted across the dashboard.",
+              action: "open pool",
+              kind: "pool-detail" as const,
+            }
+          : {
+              title: "check the leaderboard",
+              body: "see where you stand, then track live scores for the teams that can move you up.",
+              action: "view leaderboard",
+              kind: "leaderboard" as const,
+            };
   const toggleDraftPools = (draftId: string) => {
     setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
   };
@@ -1944,30 +1977,70 @@ export function HomeContent({
         padding: 16,
       }}
     >
-      <div
-        style={{
-          marginTop: 0,
-          marginBottom: 16,
-          display: "grid",
-          gap: 10,
-        }}
-      >
-        <div
-          className="home-pool-context"
-          style={{
-            margin: 0,
-            fontSize: 14,
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
+      <section className="home-dashboard-hero home-dashboard-card" aria-label="Dashboard overview">
+        <div className="home-dashboard-intro">
+          <span className="home-dashboard-kicker">{activeCompetition.shortName} dashboard</span>
+          <h1>draft teams. join pools. track what moves the standings.</h1>
+          <p>
+            bracketball is your command center for saved drafts, active pools, live scores, and the teams that matter to your entries.
+          </p>
+        </div>
+
+        <div className="home-next-card">
+          <span>next best action</span>
+          <strong>{nextStepCopy.title}</strong>
+          <p>{nextStepCopy.body}</p>
+          {nextStepCopy.kind === "draft" ? (
+            <button
+              type="button"
+              onClick={() => void createHomeDraft()}
+              disabled={creatingHomeDraft || homeDraftsLocked}
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {creatingHomeDraft ? "creating draft..." : nextStepCopy.action}
+            </button>
+          ) : (
+            <Link
+              href={
+                nextStepCopy.kind === "leaderboard"
+                  ? selectedLeaderboardPath
+                  : nextStepCopy.kind === "pool-detail"
+                    ? selectedPoolPath
+                    : competitionPoolPath
+              }
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {nextStepCopy.action}
+            </Link>
+          )}
+        </div>
+      </section>
+
+      <section className="home-dashboard-stats" aria-label="Dashboard stats">
+        <div className="home-stat-card">
+          <span>competition</span>
+          <strong>{activeCompetition.shortName}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>joined pools</span>
+          <strong>{memberPools.length}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>saved drafts</span>
+          <strong>{homeDrafts.length}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>tracked teams</span>
+          <strong>{trackedTeamCount}</strong>
+        </div>
+      </section>
+
+      <section className="home-pool-toolbar home-dashboard-card" aria-label="Scoreboard context">
+        <div className="home-pool-context">
           <span>
             {scoreViewMode === "my-teams"
-              ? "Showing your selected teams from"
-              : "Highlighting your teams from"}
+              ? "showing selected teams from"
+              : "highlighting teams from"}
           </span>
           <select
             id="home-pool-selector"
@@ -1977,7 +2050,7 @@ export function HomeContent({
             className="ui-control ui-select home-pool-select"
           >
             {memberPools.length === 0 ? (
-              <option value="">No joined pools</option>
+              <option value="">no joined pools</option>
             ) : (
               memberPools.map((pool) => (
                 <option key={pool.id} value={pool.id}>
@@ -1986,21 +2059,20 @@ export function HomeContent({
               ))
             )}
           </select>
-          <span>.</span>
         </div>
 
         {memberPools.length === 0 ? (
           <p className="home-context-note">
-            Join a pool to highlight your drafted teams on the scoreboard.
+            join a pool to highlight your drafted teams on the scoreboard.
           </p>
         ) : null}
 
         {selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
           <p className="home-context-note">
-            You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
+            you have no drafted teams applied in <b>{selectedPoolName}</b> yet.
           </p>
         ) : null}
-      </div>
+      </section>
 
       <div className="home-layout">
         <div className="home-scores-left">
@@ -2009,7 +2081,12 @@ export function HomeContent({
             games={displayedRecentFinals}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage={recentFinalsEmptyMessage}
+            emptyMessage={
+              <>
+                <strong>nothing final to review yet.</strong>
+                <span>{recentFinalsEmptyMessage}</span>
+              </>
+            }
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
             competitionSlug={activeCompetitionSlug}
@@ -2040,6 +2117,7 @@ export function HomeContent({
             }}
           >
             <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
+              <span className="home-dashboard-kicker">draft center</span>
               <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
               <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
                 {activeCompetition.shortName} - {homeDraftCountLabel}
@@ -2070,9 +2148,20 @@ export function HomeContent({
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length === 0 ? (
-            <UiEmptyState as="div">
-              <strong>No drafts yet.</strong>
-              <span>Create a draft to start picking teams and entering pools.</span>
+            <UiEmptyState as="div" className="home-empty-state">
+              <strong>start with a saved draft.</strong>
+              <span>build one lineup, then reuse it when you join pools or compare entries.</span>
+              <button
+                type="button"
+                onClick={() => void createHomeDraft()}
+                disabled={creatingHomeDraft || homeDraftsLocked}
+                className="ui-btn ui-btn--md ui-btn--primary"
+              >
+                {creatingHomeDraft ? "creating draft..." : homeDraftsLocked ? "drafts locked" : "create draft"}
+              </button>
+              <Link href={competitionPoolPath} className="ui-btn ui-btn--md ui-btn--secondary">
+                browse pools
+              </Link>
             </UiEmptyState>
           ) : null}
 
@@ -2256,7 +2345,7 @@ export function HomeContent({
             </div>
           ) : null}
 
-          {isAuthenticated === true ? (
+          {isAuthenticated === true && homeDrafts.length > 0 ? (
             <button
               type="button"
               onClick={() => void createHomeDraft()}
@@ -2286,7 +2375,12 @@ export function HomeContent({
             games={displayedLiveAndUpcoming}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage={liveAndUpcomingEmptyMessage}
+            emptyMessage={
+              <>
+                <strong>nothing live right now.</strong>
+                <span>{liveAndUpcomingEmptyMessage}</span>
+              </>
+            }
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
             competitionSlug={activeCompetitionSlug}
