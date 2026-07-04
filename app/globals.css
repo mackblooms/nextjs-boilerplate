@@ -3318,6 +3318,25 @@ button.world-cup-bracket-team:hover {
   text-align: center;
 }
 
+.leaderboard-toolbar-copy {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 58ch;
+}
+
+.leaderboard-toolbar-copy strong {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-tight);
+}
+
+.leaderboard-toolbar-copy p {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-fg) 68%, transparent);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
 .leaderboard-segmented-control {
   display: inline-flex;
   border: 1px solid var(--color-border);

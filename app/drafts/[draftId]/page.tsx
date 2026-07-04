@@ -22,7 +22,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import DraftScoringNotice from "../../components/DraftScoringNotice";
 import WorldCupTeamLabel from "../../components/WorldCupTeamLabel";
-import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
+import { UiButton, UiCard, UiFormField, UiInput, UiStatus } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -588,17 +588,21 @@ export default function DraftDetailPage() {
           </UiButton>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <UiInput
-            value={renameValue}
-            onChange={(event) => setRenameValue(event.target.value)}
-            disabled={draftsLocked || saving}
-            placeholder="draft name"
-            style={{
-              width: "100%",
-              maxWidth: 400,
-            }}
-          />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end" }}>
+          <UiFormField
+            label="draft name"
+            htmlFor="draft-name"
+            helperText="rename the saved draft before entering it in pools."
+            style={{ width: "min(400px, 100%)" }}
+          >
+            <UiInput
+              id="draft-name"
+              value={renameValue}
+              onChange={(event) => setRenameValue(event.target.value)}
+              disabled={draftsLocked || saving}
+              placeholder="draft name"
+            />
+          </UiFormField>
           <UiButton
             type="button"
             onClick={() => void saveDraft()}
@@ -630,6 +634,9 @@ export default function DraftDetailPage() {
                 : linkedPools.length > 0
                   ? `${linkedPools.length} pool${linkedPools.length === 1 ? "" : "s"} using this draft`
                   : "This draft is not entered in any pools."}
+            </p>
+            <p className="ui-field-helper" style={{ marginTop: 4 }}>
+              linked entries update when you save this draft, so pool standings stay attached to your latest picks.
             </p>
           </div>
           <UiButton
@@ -700,6 +707,12 @@ export default function DraftDetailPage() {
             gap: 8,
           }}
         >
+          <div style={{ display: "grid", gap: 3 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>available teams</h2>
+            <p className="ui-field-helper">
+              check teams to add them to your draft; the summary tells you when your picks are valid.
+            </p>
+          </div>
           {teams.map((team) => {
             const checked = selected.has(team.id);
             return (
@@ -769,6 +782,9 @@ export default function DraftDetailPage() {
           }}
         >
           <div style={{ fontWeight: 900, fontSize: 18 }}>summary</div>
+          <p className="ui-field-helper">
+            use this panel as your guardrail: stay under budget and satisfy the competition limits before saving.
+          </p>
 
           <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -802,17 +818,9 @@ export default function DraftDetailPage() {
             )}
           </div>
 
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: summary.isValid ? "var(--success-bg)" : "var(--danger-bg)",
-              fontWeight: 900,
-            }}
-          >
+          <UiStatus tone={summary.isValid ? "success" : "error"}>
             {summary.isValid ? "draft is valid" : summary.error ?? "draft is invalid"}
-          </div>
+          </UiStatus>
 
           <UiButton
             type="button"
@@ -833,6 +841,9 @@ export default function DraftDetailPage() {
 
           <div style={{ display: "grid", gap: 4 }}>
             <div style={{ fontWeight: 800, fontSize: 13 }}>selected teams ({selectedTeams.length})</div>
+            <p className="ui-field-helper">
+              these are the teams that will be entered when this draft is attached to a pool.
+            </p>
             <div style={{ display: "grid", gap: 4 }}>
               {selectedTeams.slice(0, 18).map((team) => (
                 <div

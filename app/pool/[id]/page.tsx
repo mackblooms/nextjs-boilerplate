@@ -17,6 +17,8 @@ import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 import {
   UiButton,
   UiEmptyState,
+  UiFormField,
+  UiInput,
   UiLinkButton,
   UiLoadingState,
   UiStatus,
@@ -1713,18 +1715,26 @@ export default function PoolPage() {
             </p>
             <div className="pool-join-inline">
               {poolIsPrivate ? (
-                <input
-                  type="password"
-                  value={joinPassword}
-                  onChange={(e) => setJoinPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !joinDisabled) {
-                      void joinPool();
-                    }
-                  }}
-                  placeholder="Pool password"
-                  className="ui-control ui-control--full"
-                />
+                <UiFormField
+                  label="pool password"
+                  htmlFor="pool-detail-join-password"
+                  required
+                  helperText="this password comes from the pool creator."
+                  style={{ width: "100%" }}
+                >
+                  <UiInput
+                    id="pool-detail-join-password"
+                    type="password"
+                    value={joinPassword}
+                    onChange={(e) => setJoinPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !joinDisabled) {
+                        void joinPool();
+                      }
+                    }}
+                    placeholder="pool password"
+                  />
+                </UiFormField>
               ) : null}
 
               <button
@@ -1744,6 +1754,9 @@ export default function PoolPage() {
             className="pool-card-section pool-card-section--accent pool-dashboard-panel"
           >
             <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Next actions</h2>
+            <p className="ui-field-helper">
+              manage drafts before lock, then use the leaderboard and bracket to track results.
+            </p>
             <div className="pool-quick-actions">
               <Link
                 href={competitionPath("/drafts", competitionSlug)}
@@ -1926,6 +1939,9 @@ export default function PoolPage() {
               <p className="app-modal-copy">
                 Select one or more drafts below. Each selected draft creates its own entry in this pool.
               </p>
+              <p className="ui-field-helper">
+                use multiple drafts if you want separate leaderboard entries with different pick sets.
+              </p>
             </div>
 
             {draftModalLoading ? <UiLoadingState>Loading your drafts...</UiLoadingState> : null}
@@ -1979,6 +1995,11 @@ export default function PoolPage() {
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
                             {pickCount} team{pickCount === 1 ? "" : "s"} selected
                           </div>
+                          {!isAlreadyEntered ? (
+                            <div className="ui-field-helper">
+                              selecting this draft will add it as a new pool entry.
+                            </div>
+                          ) : null}
                         </div>
                       </label>
                     );
@@ -2074,6 +2095,9 @@ export default function PoolPage() {
               </h2>
               <p style={{ margin: 0, opacity: 0.8 }}>
                 Choose which entries to remove from this pool.
+              </p>
+              <p className="ui-field-helper">
+                removing an entry only takes it out of this pool; your saved draft stays in your draft library.
               </p>
             </div>
 

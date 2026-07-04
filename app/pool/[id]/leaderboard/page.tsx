@@ -1923,6 +1923,12 @@ export default function LeaderboardPage() {
               ) : null}
 
               <div className="leaderboard-view-toolbar">
+                <div className="leaderboard-toolbar-copy">
+                  <strong>leaderboard view</strong>
+                  <p>
+                    live shows current scoring; forecast estimates likely movement using expected outcomes.
+                  </p>
+                </div>
                 <div
                   role="tablist"
                   aria-label="Leaderboard view mode"

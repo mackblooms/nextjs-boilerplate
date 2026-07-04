@@ -982,6 +982,9 @@ function PoolsPageContent() {
                 ? "Enter the pool password to continue."
                 : "This is a public pool. Continue to pick which drafts to enter."}
             </p>
+            <p className="ui-field-helper">
+              joining gives you access to the pool; entering drafts creates the leaderboard entries.
+            </p>
 
             {(joinModalPool.is_private ?? true) !== false && !myPoolIds.has(joinModalPool.id) ? (
               <UiFormField
@@ -1047,6 +1050,9 @@ function PoolsPageContent() {
               <p className="app-modal-copy">
                 Select one or more drafts below. Each selected draft creates its own entry in this pool.
               </p>
+              <p className="ui-field-helper">
+                each selected draft is scored separately, so you can compare different strategies.
+              </p>
             </div>
 
             {draftModalLoading ? <p className="ui-loading-state">Loading your drafts...</p> : null}
@@ -1100,6 +1106,11 @@ function PoolsPageContent() {
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
                             {pickCount} team{pickCount === 1 ? "" : "s"} selected
                           </div>
+                          {!isAlreadyEntered ? (
+                            <div className="ui-field-helper">
+                              selecting this draft will add it to the pool standings.
+                            </div>
+                          ) : null}
                         </div>
                       </label>
                     );
