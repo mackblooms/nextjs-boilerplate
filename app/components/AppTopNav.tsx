@@ -725,7 +725,7 @@ export default function AppTopNav() {
     },
     {
       key: "leaderboard",
-      label: "Leaderboard",
+      label: "Standings",
       href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
       isActive: isLeaderboardActive,
       Icon: PodiumIcon,
