@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
-import { UiButton, UiInput } from "../../components/ui/primitives";
+import { UiButton, UiFormField, UiInput, UiStatus } from "../../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug } from "@/lib/competitions";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 
@@ -126,52 +126,92 @@ function NewPoolPageContent() {
   }
 
   return (
-    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>
+    <main className="page-shell page-card app-form-card" style={{ maxWidth: 520 }}>
+      <h1>
         Create a {competition.shortName} Pool
       </h1>
 
-      <form onSubmit={createPool}>
-        <UiInput
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={poolsLocked || saving}
-          placeholder="e.g., bracketball - Friends 2026"
-          style={{ marginBottom: 12 }}
-        />
-        <UiInput
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={poolsLocked || saving}
-          placeholder="Pool password (required)"
-          minLength={4}
-          style={{ marginBottom: 12 }}
-        />
-        <UiInput
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          disabled={poolsLocked || saving}
-          placeholder="Confirm pool password"
-          minLength={4}
-          style={{ marginBottom: 12 }}
-        />
+      <form onSubmit={createPool} className="app-form">
+        <UiFormField
+          label="pool name"
+          htmlFor="pool-name"
+          required
+          helperText="choose a name your group will recognize."
+          error={name.trim().length === 0 && msg === "Enter a pool name." ? msg : undefined}
+        >
+          <UiInput
+            id="pool-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={poolsLocked || saving}
+            placeholder="bracketball friends 2026"
+            aria-invalid={name.trim().length === 0 && msg === "Enter a pool name."}
+          />
+        </UiFormField>
+
+        <UiFormField
+          label="pool password"
+          htmlFor="pool-password"
+          required
+          helperText="members need this password to join."
+          error={password.trim().length > 0 && password.trim().length < 4 ? "use at least 4 characters." : undefined}
+        >
+          <UiInput
+            id="pool-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={poolsLocked || saving}
+            placeholder="pool password"
+            minLength={4}
+            aria-invalid={password.trim().length > 0 && password.trim().length < 4}
+          />
+        </UiFormField>
+
+        <UiFormField
+          label="confirm password"
+          htmlFor="pool-confirm-password"
+          required
+          error={confirmPassword && password !== confirmPassword ? "passwords do not match." : undefined}
+        >
+          <UiInput
+            id="pool-confirm-password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={poolsLocked || saving}
+            placeholder="confirm pool password"
+            minLength={4}
+            aria-invalid={Boolean(confirmPassword && password !== confirmPassword)}
+          />
+        </UiFormField>
+
         <UiButton
           type="submit"
           disabled={saving || poolsLocked}
           variant={poolsLocked ? "ghost" : "primary"}
           size="lg"
+          fullWidth
         >
           {saving ? "Creating..." : poolsLocked ? "Pool Creation Locked" : "Create pool"}
         </UiButton>
       </form>
 
-      <p style={{ marginTop: 12, opacity: 0.75, fontSize: 13 }}>
+      <p className="app-form-note">
         {poolsLocked ? poolsLockedMessage : "New pools are private by default and require this password to join."}
       </p>
 
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {msg ? (
+        <UiStatus
+          tone={
+            msg.toLowerCase().includes("created") || msg.toLowerCase().includes("success")
+              ? "success"
+              : "error"
+          }
+        >
+          {msg}
+        </UiStatus>
+      ) : null}
     </main>
   );
 }

@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
+  type ReactNode,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
@@ -166,4 +167,46 @@ export function UiLoadingState({ className, ...props }: UiLoadingStateProps) {
 export type UiFieldLabelProps = LabelHTMLAttributes<HTMLLabelElement>;
 export function UiFieldLabel({ className, ...props }: UiFieldLabelProps) {
   return <label className={cx("ui-field-label", className)} {...props} />;
+}
+
+export type UiFormFieldProps = HTMLAttributes<HTMLDivElement> & {
+  label: ReactNode;
+  htmlFor?: string;
+  helperText?: ReactNode;
+  error?: ReactNode;
+  required?: boolean;
+};
+
+export function UiFormField({
+  label,
+  htmlFor,
+  helperText,
+  error,
+  required = false,
+  className,
+  children,
+  ...props
+}: UiFormFieldProps) {
+  const helperId = htmlFor && helperText ? `${htmlFor}-hint` : undefined;
+  const errorId = htmlFor && error ? `${htmlFor}-error` : undefined;
+
+  return (
+    <div className={cx("ui-form-field", Boolean(error) && "ui-form-field--invalid", className)} {...props}>
+      <UiFieldLabel htmlFor={htmlFor}>
+        <span>{label}</span>
+        {required ? <span className="ui-field-required">required</span> : null}
+      </UiFieldLabel>
+      {children}
+      {helperText ? (
+        <p className="ui-field-helper" id={helperId}>
+          {helperText}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="ui-field-error" id={errorId} role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
 }

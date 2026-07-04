@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../../lib/accountPassword";
-import { UiButton, UiInput } from "../../components/ui/primitives";
+import { UiButton, UiFormField, UiInput, UiStatus } from "../../components/ui/primitives";
 
 export default function LoginResetPasswordPage() {
   const router = useRouter();
@@ -112,33 +112,48 @@ export default function LoginResetPasswordPage() {
   }
 
   return (
-    <main className="page-shell page-shell--stack page-card" style={{ maxWidth: 520 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Reset password</h1>
-      <p style={{ marginBottom: 24 }}>Enter your new password below.</p>
+    <main className="page-shell page-card app-form-card" style={{ maxWidth: 520 }}>
+      <h1>Reset password</h1>
+      <p className="app-form-note">Enter a new password for your bracketball account.</p>
 
       {ready ? (
-        <form onSubmit={onSubmit}>
-          <UiInput
-            type="password"
-            placeholder="New password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={PASSWORD_MIN_LENGTH}
-            autoComplete="new-password"
+        <form onSubmit={onSubmit} className="app-form">
+          <UiFormField
+            label="new password"
+            htmlFor="reset-password"
             required
-            style={{ marginBottom: 12 }}
-          />
+            helperText={`minimum ${PASSWORD_MIN_LENGTH} characters.`}
+          >
+            <UiInput
+              id="reset-password"
+              type="password"
+              placeholder="new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              required
+            />
+          </UiFormField>
 
-          <UiInput
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            minLength={PASSWORD_MIN_LENGTH}
-            autoComplete="new-password"
+          <UiFormField
+            label="confirm password"
+            htmlFor="reset-confirm-password"
             required
-            style={{ marginBottom: 12 }}
-          />
+            error={confirmPassword && password !== confirmPassword ? "passwords do not match." : undefined}
+          >
+            <UiInput
+              id="reset-confirm-password"
+              type="password"
+              placeholder="confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              minLength={PASSWORD_MIN_LENGTH}
+              autoComplete="new-password"
+              required
+              aria-invalid={Boolean(confirmPassword && password !== confirmPassword)}
+            />
+          </UiFormField>
 
           <UiButton
             type="button"
@@ -146,7 +161,6 @@ export default function LoginResetPasswordPage() {
             disabled={saving}
             variant="ghost"
             fullWidth
-            style={{ marginBottom: 12 }}
           >
             Generate strong password
           </UiButton>
@@ -163,9 +177,12 @@ export default function LoginResetPasswordPage() {
         </form>
       ) : null}
 
-      {msg ? <p style={{ marginTop: 16, whiteSpace: "pre-wrap" }}>{msg}</p> : null}
+      {msg ? (
+        <UiStatus tone={msg.toLowerCase().includes("error") || msg.toLowerCase().includes("failed") ? "error" : "info"}>
+          {msg}
+        </UiStatus>
+      ) : null}
     </main>
   );
 }
-
 

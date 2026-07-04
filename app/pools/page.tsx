@@ -8,6 +8,7 @@ import { isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftPickRow } f
 import { supabase } from "../../lib/supabaseClient";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
+import { UiFormField, UiInput } from "../components/ui/primitives";
 
 type PoolRow = {
   id: string;
@@ -983,18 +984,27 @@ function PoolsPageContent() {
             </p>
 
             {(joinModalPool.is_private ?? true) !== false && !myPoolIds.has(joinModalPool.id) ? (
-              <input
-                type="password"
-                value={joinPasswordInput}
-                onChange={(event) => setJoinPasswordInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !joiningPool) {
-                    void joinPoolThenPickDrafts();
-                  }
-                }}
-                placeholder="Pool password"
-                className="ui-control ui-control--full"
-              />
+              <UiFormField
+                label="pool password"
+                htmlFor="join-pool-password"
+                required
+                helperText="ask the pool creator if you do not have this yet."
+                error={joinStatus?.text === "Enter the pool password to continue." ? joinStatus.text : undefined}
+              >
+                <UiInput
+                  id="join-pool-password"
+                  type="password"
+                  value={joinPasswordInput}
+                  onChange={(event) => setJoinPasswordInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !joiningPool) {
+                      void joinPoolThenPickDrafts();
+                    }
+                  }}
+                  placeholder="pool password"
+                  aria-invalid={joinStatus?.text === "Enter the pool password to continue."}
+                />
+              </UiFormField>
             ) : null}
 
             <div className="app-modal-actions">

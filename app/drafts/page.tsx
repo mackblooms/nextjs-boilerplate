@@ -6,7 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
-import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
+import { UiButton, UiCard, UiFormField, UiInput, UiLinkButton } from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
@@ -370,12 +370,19 @@ function DraftsPageContent() {
         {draftsLocked ? <p className="drafts-lock-message">{lockMessage}</p> : null}
 
         <div className="drafts-create-row">
-          <UiInput
-            value={newDraftName}
-            onChange={(event) => setNewDraftName(event.target.value)}
-            disabled={draftsLocked || creating}
-            placeholder={`New draft name (${defaultDraftName(drafts.length + 1)})`}
-          />
+          <UiFormField
+            label="draft name"
+            htmlFor="new-draft-name"
+            helperText="leave blank to use the next default draft name."
+          >
+            <UiInput
+              id="new-draft-name"
+              value={newDraftName}
+              onChange={(event) => setNewDraftName(event.target.value)}
+              disabled={draftsLocked || creating}
+              placeholder={defaultDraftName(drafts.length + 1)}
+            />
+          </UiFormField>
           <UiButton
             type="button"
             onClick={() => void createDraft()}

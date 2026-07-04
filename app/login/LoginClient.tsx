@@ -9,7 +9,7 @@ import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 import { getStoredActiveCompetition } from "../../lib/activeCompetition";
 import BackArrowButton from "../components/BackArrowButton";
-import { UiButton, UiInput } from "../components/ui/primitives";
+import { UiButton, UiFormField, UiInput } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
 const POST_LOGIN_PATH = "/";
@@ -355,46 +355,72 @@ export default function LoginClient() {
         </div>
 
         <form onSubmit={onSubmit} className="login-form-fields" autoComplete="on">
-          <UiInput
-            ref={emailInputRef}
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="username"
-            inputMode="email"
-            enterKeyHint="next"
+          <UiFormField
+            label="email"
+            htmlFor="email"
             required
-          />
-
-          <UiInput
-            id={mode === "sign-up" ? "new-password" : "current-password"}
-            name={mode === "sign-up" ? "new-password" : "password"}
-            type="password"
-            placeholder={mode === "sign-up" ? "New password" : "Password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={PASSWORD_MIN_LENGTH}
-            autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-            enterKeyHint={mode === "sign-up" ? "next" : "done"}
-          />
-
-          {mode === "sign-up" ? (
+            helperText="use the email tied to your pools and drafts."
+          >
             <UiInput
-              id="confirm-password"
-              name="confirm-password"
+              ref={emailInputRef}
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              inputMode="email"
+              enterKeyHint="next"
+              required
+            />
+          </UiFormField>
+
+          <UiFormField
+            label={mode === "sign-up" ? "new password" : "password"}
+            htmlFor={mode === "sign-up" ? "new-password" : "current-password"}
+            required
+            helperText={
+              mode === "sign-up"
+                ? `minimum ${PASSWORD_MIN_LENGTH} characters.`
+                : "enter your bracketball password."
+            }
+          >
+            <UiInput
+              id={mode === "sign-up" ? "new-password" : "current-password"}
+              name={mode === "sign-up" ? "new-password" : "password"}
               type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={mode === "sign-up" ? "new password" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               minLength={PASSWORD_MIN_LENGTH}
-              autoComplete="new-password"
-              enterKeyHint="done"
+              autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
+              enterKeyHint={mode === "sign-up" ? "next" : "done"}
             />
+          </UiFormField>
+
+          {mode === "sign-up" ? (
+            <UiFormField
+              label="confirm password"
+              htmlFor="confirm-password"
+              required
+              error={confirmPassword && password !== confirmPassword ? "passwords do not match." : undefined}
+            >
+              <UiInput
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                placeholder="confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                autoComplete="new-password"
+                enterKeyHint="done"
+                aria-invalid={Boolean(confirmPassword && password !== confirmPassword)}
+              />
+            </UiFormField>
           ) : null}
 
           {mode === "sign-up" ? (
@@ -408,17 +434,8 @@ export default function LoginClient() {
               >
                 Generate strong password
               </UiButton>
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  background: acceptedLegal ? "var(--success-bg)" : "var(--surface-muted)",
-                  display: "grid",
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 700 }}>
+              <div className="ui-status" data-tone={acceptedLegal ? "success" : "warning"}>
+                <div style={{ fontWeight: 700 }}>
                   {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
                 </div>
                 <UiButton
