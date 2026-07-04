@@ -28,6 +28,7 @@ import {
   UiLinkButton,
   UiLoadingState,
   UiStatus,
+  UiTooltip,
 } from "@/app/components/ui/primitives";
 
 type Row = {
@@ -1867,23 +1868,27 @@ export default function LeaderboardPage() {
             </label>
           ) : null}
           {!draftLocked ? (
-            <button
-              className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
-              type="button"
-              onClick={() => void sharePoolInvite()}
-            >
-              Share Invite
-            </button>
+            <UiTooltip content="share or copy an invite link">
+              <button
+                className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--primary"
+                type="button"
+                onClick={() => void sharePoolInvite()}
+              >
+                Share Invite
+              </button>
+            </UiTooltip>
           ) : null}
           {isPoolOwner && !draftLocked ? (
-            <button
-              className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--danger"
-              type="button"
-              onClick={() => void deletePool()}
-              disabled={deletingPool}
-            >
-              {deletingPool ? "Deleting..." : "Delete Pool"}
-            </button>
+            <UiTooltip content={deletingPool ? "deleting pool" : "permanently delete this pool"}>
+              <button
+                className="leaderboard-hero-share ui-btn ui-btn--md ui-btn--danger"
+                type="button"
+                onClick={() => void deletePool()}
+                disabled={deletingPool}
+              >
+                {deletingPool ? "Deleting..." : "Delete Pool"}
+              </button>
+            </UiTooltip>
           ) : null}
         </div>
       </section>
@@ -2253,32 +2258,38 @@ export default function LeaderboardPage() {
                             </ExplainedValue>
                           </div>
                         ) : null}
-                        <div
-                          title={
+                        <UiTooltip
+                          content={
                             canViewTeams
-                              ? "Alive teams are drafted teams that still have a path to score more points."
-                              : undefined
+                              ? "alive teams can still score more points"
+                              : "teams stay hidden until draft lock"
                           }
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            opacity: 0.78,
-                          }}
+                          side="left"
                         >
-                          {canViewTeams
-                            ? `${r.active_team_count} alive`
-                            : "Hidden"}
-                        </div>
-                        {canViewTeams ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenBreakdownEntryId(r.entry_id);
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              opacity: 0.78,
                             }}
-                            className="leaderboard-details-link"
                           >
-                            Details
-                          </button>
+                            {canViewTeams
+                              ? `${r.active_team_count} alive`
+                              : "Hidden"}
+                          </div>
+                        </UiTooltip>
+                        {canViewTeams ? (
+                          <UiTooltip content="open pick breakdown" side="left">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenBreakdownEntryId(r.entry_id);
+                              }}
+                              className="leaderboard-details-link"
+                            >
+                              Details
+                            </button>
+                          </UiTooltip>
                         ) : null}
                       </div>
                     </div>

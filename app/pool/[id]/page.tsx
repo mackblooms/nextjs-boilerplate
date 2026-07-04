@@ -22,6 +22,7 @@ import {
   UiLinkButton,
   UiLoadingState,
   UiStatus,
+  UiTooltip,
 } from "@/app/components/ui/primitives";
 
 function competitionPathWithParams(
@@ -1544,26 +1545,27 @@ export default function PoolPage() {
           }}
         >
         <header className="pool-dashboard-header">
-          <button
-            onClick={sharePoolLink}
-            className="pool-dashboard-logo"
-            aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-            title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-          >
-            <Image
-              src="/pool-logo.svg?v=2"
-              alt=""
-              aria-hidden="true"
-              width={150}
-              height={61}
-              priority
-              style={{
-                width: "100%",
-                height: "auto",
-                filter: "var(--logo-filter)",
-              }}
-            />
-          </button>
+          <UiTooltip content={canNativeShare ? "share pool invite" : "copy shareable pool link"} side="bottom">
+            <button
+              onClick={sharePoolLink}
+              className="pool-dashboard-logo"
+              aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
+            >
+              <Image
+                src="/pool-logo.svg?v=2"
+                alt=""
+                aria-hidden="true"
+                width={150}
+                height={61}
+                priority
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  filter: "var(--logo-filter)",
+                }}
+              />
+            </button>
+          </UiTooltip>
 
           <div className="pool-dashboard-title">
             <span className="match-kicker">{poolIsPrivate ? "Private pool" : "Public pool"}</span>
@@ -1573,20 +1575,21 @@ export default function PoolPage() {
             <span>{isMember === true ? "Member dashboard" : "Pool preview"}</span>
           </div>
 
-          <button
-            type="button"
-            onClick={sharePoolLink}
-            className="native-only-icon-action"
-            aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-            title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
-              <path d="M7.5 12.5 16.5 7.4M7.5 11.5l9 5.1" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-              <circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
-              <circle cx="18" cy="6.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
-              <circle cx="18" cy="17.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
-            </svg>
-          </button>
+          <UiTooltip content={canNativeShare ? "share pool invite" : "copy shareable pool link"} side="left">
+            <button
+              type="button"
+              onClick={sharePoolLink}
+              className="native-only-icon-action"
+              aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
+                <path d="M7.5 12.5 16.5 7.4M7.5 11.5l9 5.1" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                <circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+                <circle cx="18" cy="6.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+                <circle cx="18" cy="17.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+              </svg>
+            </button>
+          </UiTooltip>
         </header>
 
         <div className="pool-dashboard-stats" aria-label="Pool status">

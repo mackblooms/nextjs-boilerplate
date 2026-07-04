@@ -25,6 +25,7 @@ import {
   UiEmptyState,
   UiLoadingState,
   UiStatus,
+  UiTooltip,
 } from "@/app/components/ui/primitives";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
@@ -2205,51 +2206,53 @@ export function HomeContent({
                         >
                           {draft.name}
                         </Link>
-                        <button
-                          type="button"
-                          onClick={() => void renameHomeDraft(draft)}
-                          disabled={renamingDraftId === draft.id}
-                          aria-label={`Rename ${draft.name}`}
-                          title={renamingDraftId === draft.id ? "Renaming..." : `Rename ${draft.name}`}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 8,
-                            border: "1px solid var(--border-color)",
-                            background: "var(--surface)",
-                            cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
-                            opacity: renamingDraftId === draft.id ? 0.7 : 1,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <PenIcon />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void deleteHomeDraft(draft)}
-                          disabled={deletingDraftId === draft.id}
-                          aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
-                          title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 8,
-                            border: "1px solid #dc2626",
-                            background: "rgba(220, 38, 38, 0.12)",
-                            color: "#dc2626",
-                            cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
-                            opacity: deletingDraftId === draft.id ? 0.7 : 1,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <TrashIcon />
-                        </button>
+                        <UiTooltip content={renamingDraftId === draft.id ? "renaming draft" : "rename this draft"}>
+                          <button
+                            type="button"
+                            onClick={() => void renameHomeDraft(draft)}
+                            disabled={renamingDraftId === draft.id}
+                            aria-label={`Rename ${draft.name}`}
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 8,
+                              border: "1px solid var(--border-color)",
+                              background: "var(--surface)",
+                              cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
+                              opacity: renamingDraftId === draft.id ? 0.7 : 1,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <PenIcon />
+                          </button>
+                        </UiTooltip>
+                        <UiTooltip content={deletingDraftId === draft.id ? "deleting draft" : "delete this draft"}>
+                          <button
+                            type="button"
+                            onClick={() => void deleteHomeDraft(draft)}
+                            disabled={deletingDraftId === draft.id}
+                            aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 8,
+                              border: "1px solid #dc2626",
+                              background: "rgba(220, 38, 38, 0.12)",
+                              color: "#dc2626",
+                              cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
+                              opacity: deletingDraftId === draft.id ? 0.7 : 1,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </UiTooltip>
                       </div>
                       <div className="home-draft-points" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
                         {currentPoints} pts

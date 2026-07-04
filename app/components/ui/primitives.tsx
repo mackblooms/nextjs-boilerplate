@@ -13,6 +13,7 @@ import {
 
 type UiVariant = "primary" | "secondary" | "ghost" | "danger" | "success";
 type UiSize = "sm" | "md" | "lg";
+type UiTooltipSide = "top" | "bottom" | "left" | "right";
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -208,5 +209,27 @@ export function UiFormField({
         </p>
       ) : null}
     </div>
+  );
+}
+
+export type UiTooltipProps = HTMLAttributes<HTMLSpanElement> & {
+  content: ReactNode;
+  side?: UiTooltipSide;
+};
+
+export function UiTooltip({
+  content,
+  side = "top",
+  className,
+  children,
+  ...props
+}: UiTooltipProps) {
+  return (
+    <span className={cx("ui-tooltip", className)} data-side={side} {...props}>
+      {children}
+      <span className="ui-tooltip-bubble" role="tooltip">
+        {content}
+      </span>
+    </span>
   );
 }

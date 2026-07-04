@@ -22,7 +22,7 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import DraftScoringNotice from "../../components/DraftScoringNotice";
 import WorldCupTeamLabel from "../../components/WorldCupTeamLabel";
-import { UiButton, UiCard, UiFormField, UiInput, UiStatus } from "../../components/ui/primitives";
+import { UiButton, UiCard, UiFormField, UiInput, UiStatus, UiTooltip } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -568,24 +568,25 @@ export default function DraftDetailPage() {
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
           </div>
-          <UiButton
-            type="button"
-            onClick={() => void deleteDraft()}
-            disabled={deleting}
-            variant="danger"
-            aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
-            title={deleting ? "Deleting..." : `Delete ${draftName || "draft"}`}
-            style={{
-              width: 42,
-              height: 42,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-            }}
-          >
-            <TrashIcon />
-          </UiButton>
+          <UiTooltip content={deleting ? "deleting draft" : "delete this draft"}>
+            <UiButton
+              type="button"
+              onClick={() => void deleteDraft()}
+              disabled={deleting}
+              variant="danger"
+              aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
+              style={{
+                width: 42,
+                height: 42,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0,
+              }}
+            >
+              <TrashIcon />
+            </UiButton>
+          </UiTooltip>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end" }}>
@@ -639,15 +640,17 @@ export default function DraftDetailPage() {
               linked entries update when you save this draft, so pool standings stay attached to your latest picks.
             </p>
           </div>
-          <UiButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => void loadLinkedPools(true)}
-            disabled={linkedPoolsLoading}
-          >
-            {linkedPoolsLoading ? "Refreshing..." : "Refresh"}
-          </UiButton>
+          <UiTooltip content="refresh linked pool entries">
+            <UiButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void loadLinkedPools(true)}
+              disabled={linkedPoolsLoading}
+            >
+              {linkedPoolsLoading ? "Refreshing..." : "Refresh"}
+            </UiButton>
+          </UiTooltip>
         </div>
 
         {linkedPools.length > 0 ? (
@@ -757,13 +760,15 @@ export default function DraftDetailPage() {
                 </label>
 
                 <div className="draft-team-actions">
-                  <button
-                    type="button"
-                    onClick={() => setInspectedTeam(team)}
-                    className="draft-team-detail-button"
-                  >
-                    Details
-                  </button>
+                  <UiTooltip content="view team scoring details">
+                    <button
+                      type="button"
+                      onClick={() => setInspectedTeam(team)}
+                      className="draft-team-detail-button"
+                    >
+                      Details
+                    </button>
+                  </UiTooltip>
                   <div style={{ fontWeight: 900 }}>{team.cost}</div>
                 </div>
               </article>

@@ -29,6 +29,7 @@ import {
 } from "../../lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "../../lib/competitionData";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
+import { UiTooltip } from "./ui/primitives";
 
 type Pool = { id: string; name: string; created_by: string; competition_slug?: string | null };
 type Theme = "light" | "dark";
@@ -869,24 +870,26 @@ export default function AppTopNav() {
             backdropFilter: isNativeApp ? undefined : "blur(12px) saturate(130%)",
           }}
         >
-          <button
-            className={isNativeApp ? "app-top-nav-pill app-glass-menu-button" : "app-top-nav-pill"}
-            type="button"
-            aria-label="Open app menu"
-            aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen((open) => !open)}
-            style={topBarButtonStyle}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
-              <path
-                d="M5 7.2h14M5 12h14M5 16.8h14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          <UiTooltip content="open app menu" side="bottom">
+            <button
+              className={isNativeApp ? "app-top-nav-pill app-glass-menu-button" : "app-top-nav-pill"}
+              type="button"
+              aria-label="Open app menu"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen((open) => !open)}
+              style={topBarButtonStyle}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+                <path
+                  d="M5 7.2h14M5 12h14M5 16.8h14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </UiTooltip>
 
           <Link
             href={competition.href}
@@ -916,22 +919,24 @@ export default function AppTopNav() {
             </span>
           </Link>
 
-          <Link
-            className="app-top-nav-pill"
-            href="/profile"
-            aria-label="Open profile"
-            aria-current={isProfileActive ? "page" : undefined}
-            data-active={isProfileActive}
-            style={topBarButtonStyle}
-          >
-            <img
-              src={resolvedAvatarUrl}
-              alt="Profile"
-              width={isCompact ? 40 : 44}
-              height={isCompact ? 40 : 44}
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-            />
-          </Link>
+          <UiTooltip content="open profile" side="bottom">
+            <Link
+              className="app-top-nav-pill"
+              href="/profile"
+              aria-label="Open profile"
+              aria-current={isProfileActive ? "page" : undefined}
+              data-active={isProfileActive}
+              style={topBarButtonStyle}
+            >
+              <img
+                src={resolvedAvatarUrl}
+                alt="Profile"
+                width={isCompact ? 40 : 44}
+                height={isCompact ? 40 : 44}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              />
+            </Link>
+          </UiTooltip>
         </div>
       </header>
 

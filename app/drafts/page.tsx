@@ -6,7 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
-import { UiButton, UiCard, UiFormField, UiInput, UiLinkButton } from "../components/ui/primitives";
+import { UiButton, UiCard, UiFormField, UiInput, UiLinkButton, UiTooltip } from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
@@ -428,46 +428,48 @@ function DraftsPageContent() {
               </Link>
 
               <div className="drafts-draft-actions">
-                <UiLinkButton
-                  href={draftHref}
-                  aria-label={`Edit ${draft.name}`}
-                  title={`Edit ${draft.name}`}
-                  size="sm"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 0,
-                  }}
-                >
-                  <PencilIcon />
-                </UiLinkButton>
+                <UiTooltip content="edit this draft">
+                  <UiLinkButton
+                    href={draftHref}
+                    aria-label={`Edit ${draft.name}`}
+                    size="sm"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 0,
+                    }}
+                  >
+                    <PencilIcon />
+                  </UiLinkButton>
+                </UiTooltip>
                 <UiLinkButton
                   href={enterPoolHref}
                   className="drafts-enter-action"
                 >
                   {returnPoolId ? "Enter in Pool" : "Join Pool(s)"}
                 </UiLinkButton>
-                <UiButton
-                  type="button"
-                  onClick={() => void deleteDraft(draft.id, draft.name)}
-                  disabled={deletingDraftId === draft.id}
-                  aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
-                  title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
-                  variant="danger"
-                  size="sm"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <TrashIcon />
-                </UiButton>
+                <UiTooltip content={deletingDraftId === draft.id ? "deleting draft" : "delete this draft"}>
+                  <UiButton
+                    type="button"
+                    onClick={() => void deleteDraft(draft.id, draft.name)}
+                    disabled={deletingDraftId === draft.id}
+                    aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                    variant="danger"
+                    size="sm"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <TrashIcon />
+                  </UiButton>
+                </UiTooltip>
               </div>
             </UiCard>
           );
