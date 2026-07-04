@@ -746,7 +746,7 @@ export default function PoolDraftPage() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "grid", gap: 4 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, opacity: 0.62 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0, opacity: 0.62 }}>
               Pool draft
             </div>
             <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>

@@ -1090,7 +1090,7 @@ export default function AppTopNav() {
                   display: isDockCollapsed ? "none" : undefined,
                   fontSize: isCompact ? 10 : 11,
                   fontWeight: 800,
-                  letterSpacing: "0.02em",
+                  letterSpacing: 0,
                   lineHeight: 1,
                   whiteSpace: "nowrap",
                 }}

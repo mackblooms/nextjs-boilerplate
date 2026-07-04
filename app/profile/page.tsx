@@ -907,7 +907,7 @@ export default function ProfilePage() {
                 height: 42,
                 borderRadius: 999,
                 border: "1px solid var(--border-color)",
-                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.36)",
+                background: pushEnabled ? "var(--color-success)" : "color-mix(in srgb, var(--color-fg) 18%, transparent)",
                 padding: 3,
                 position: "relative",
                 cursor: pushBusy || pushLoading ? "not-allowed" : "pointer",
@@ -945,7 +945,7 @@ export default function ProfilePage() {
                 width: 10,
                 height: 10,
                 borderRadius: 999,
-                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.9)",
+                background: pushEnabled ? "var(--color-success)" : "color-mix(in srgb, var(--color-fg) 62%, transparent)",
               }}
             />
             {pushLoading

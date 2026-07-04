@@ -599,7 +599,7 @@ function TeamValueTable({
               fontWeight: 800,
               borderBottom: "1px solid var(--border-color)",
               fontSize: 12,
-              letterSpacing: 0.2,
+              letterSpacing: 0,
             }}
           >
             <div>Team</div>
@@ -703,7 +703,7 @@ function TeamPopularityTable({
               fontWeight: 800,
               borderBottom: "1px solid var(--border-color)",
               fontSize: 12,
-              letterSpacing: 0.2,
+              letterSpacing: 0,
             }}
           >
             <div>Team</div>
@@ -1825,7 +1825,7 @@ export default function LeaderboardPage() {
             style={{
               fontSize: 12,
               fontWeight: 800,
-              letterSpacing: 0.24,
+              letterSpacing: 0,
               opacity: 0.62,
             }}
           >

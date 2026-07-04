@@ -117,7 +117,7 @@ export default function HomeButton() {
             fontFamily:
               "var(--font-brand-display), var(--font-app-sans), 'Avenir Next', sans-serif",
             fontSize: isCompact ? 18 : 23,
-            letterSpacing: "0.08em",
+            letterSpacing: 0,
             fontWeight: 700,
             lineHeight: 1,
             textTransform: "lowercase",
@@ -130,7 +130,7 @@ export default function HomeButton() {
             fontFamily: russoOne.style.fontFamily,
             fontSize: isCompact ? 11 : 14,
             lineHeight: 1,
-            letterSpacing: "0.06em",
+            letterSpacing: 0,
             textTransform: "lowercase",
             fontWeight: 400,
             color: "var(--focus-ring)",

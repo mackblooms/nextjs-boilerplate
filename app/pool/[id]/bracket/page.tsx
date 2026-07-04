@@ -1167,7 +1167,7 @@ export default function BracketPage() {
             opacity: 0.45,
             textAlign: "right",
             paddingBottom: 2,
-            letterSpacing: 0.2,
+            letterSpacing: 0,
           }}
         >
           G{gameNumber}
@@ -1353,7 +1353,7 @@ export default function BracketPage() {
           }}
         >
           <div style={{ display: "grid", gap: 4 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, opacity: 0.62 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0, opacity: 0.62 }}>
               Pool bracket
             </div>
             <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>

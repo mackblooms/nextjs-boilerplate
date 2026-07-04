@@ -95,6 +95,7 @@
   --highlight: #20365d;
   --highlight-border: #406eaa;
   --success-bg: #133227;
+  --success-border: #2f8f58;
   --danger-bg: #3a2027;
   --warning-bg: #3a2d1a;
   --warning-border: #826f42;
@@ -120,6 +121,7 @@
     --highlight: #20365d;
     --highlight-border: #406eaa;
     --success-bg: #133227;
+    --success-border: #2f8f58;
     --danger-bg: #3a2027;
     --warning-bg: #3a2d1a;
     --warning-border: #826f42;
@@ -352,7 +354,7 @@ body::before {
 .legal-doc > h1 {
   margin: 0;
   font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .legal-doc-section {
@@ -586,13 +588,13 @@ textarea::placeholder {
 
 .ui-btn--danger {
   border-color: var(--color-danger);
-  background: rgba(220, 38, 38, 0.12);
+  background: color-mix(in srgb, var(--danger-bg) 82%, var(--color-surface));
   color: var(--color-danger);
 }
 
 .ui-btn--success {
-  border-color: #16a34a;
-  background: rgba(22, 163, 74, 0.14);
+  border-color: var(--success-border);
+  background: var(--success-bg);
   color: var(--color-success);
 }
 
@@ -661,6 +663,7 @@ textarea::placeholder {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   line-height: var(--leading-normal);
+  overflow-wrap: anywhere;
 }
 
 .ui-status-icon,
@@ -689,6 +692,10 @@ textarea::placeholder {
   min-width: 0;
   display: grid;
   gap: var(--space-2);
+}
+
+.ui-status-content > :where(p, div) {
+  margin: 0;
 }
 
 .ui-status[data-tone="success"] {
@@ -722,10 +729,15 @@ textarea::placeholder {
   justify-items: start;
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
+  overflow-wrap: anywhere;
 }
 
 .ui-empty-state {
   gap: var(--space-2);
+}
+
+.ui-empty-state > :where(p, span) {
+  margin: 0;
 }
 
 .ui-empty-state[data-tone="error"] {
@@ -878,15 +890,30 @@ textarea::placeholder {
   padding: var(--space-3);
   background: var(--color-surface);
   cursor: pointer;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
+}
+
+.app-modal-option:hover,
+.app-modal-option:focus-within {
+  border-color: var(--highlight-border);
+  background: var(--color-surface-raised);
+  box-shadow: var(--elevation-sm);
+  transform: translateY(-1px);
 }
 
 .app-modal-option[data-checked="true"] {
+  border-color: var(--highlight-border);
   background: var(--color-surface-raised);
 }
 
 .app-modal-option[data-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.75;
+  transform: none;
 }
 
 .site-disclaimer {
@@ -982,7 +1009,7 @@ textarea::placeholder {
   font-family: var(--font-app-sans), "Avenir Next", "Segoe UI", sans-serif;
   font-size: clamp(1.92rem, 6.4vw, 3.1rem);
   font-weight: 700;
-  letter-spacing: 0.035em;
+  letter-spacing: 0;
   line-height: 0.96;
   transform: translateY(12px) scale(0.965);
   transition:
@@ -1058,7 +1085,7 @@ textarea::placeholder {
   font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
   font-size: clamp(1.72rem, 3.3vw, 2.3rem);
   line-height: 1.06;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .landing-copy {
@@ -1167,7 +1194,7 @@ textarea::placeholder {
   font-family: var(--font-app-mono), monospace;
   font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.09em;
+  letter-spacing: 0;
   opacity: 0.7;
 }
 
@@ -1205,7 +1232,7 @@ textarea::placeholder {
 .competition-choice-status {
   font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .competition-choice-status {
@@ -1216,9 +1243,9 @@ textarea::placeholder {
 }
 
 .competition-choice-status[data-status="live"] {
-  border-color: #16a34a;
-  background: rgba(22, 163, 74, 0.14);
-  color: #166534;
+  border-color: var(--success-border);
+  background: var(--success-bg);
+  color: var(--color-success);
 }
 
 .competition-choice strong {
@@ -1259,18 +1286,29 @@ body.is-native-app-shell .competition-switcher {
   padding: 0;
   cursor: pointer;
   text-decoration: none;
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
 }
 
 .native-only-icon-action--primary {
-  border-color: #00985f;
-  background: #00985f;
-  color: #ffffff;
+  border-color: var(--success-border);
+  background: var(--color-success);
+  color: var(--color-bg);
 }
 
 .native-only-icon-action:disabled,
 .native-only-icon-action[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.56;
+}
+
+.native-only-icon-action:not(:disabled):not([aria-disabled="true"]):hover,
+.native-only-icon-action:not(:disabled):not([aria-disabled="true"]):focus-visible {
+  border-color: var(--highlight-border);
+  box-shadow: var(--elevation-md);
+  transform: translateY(-1px);
 }
 
 .native-hidden {
@@ -1312,7 +1350,7 @@ body.is-native-app-shell .competition-switcher {
   font-family: var(--font-app-mono), monospace;
   font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   opacity: 0.72;
 }
 
@@ -1434,7 +1472,7 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .world-cup-group-card[data-live="true"] {
-  border-color: rgba(22, 163, 74, 0.55);
+  border-color: var(--success-border);
 }
 
 .world-cup-group-card-heading {
@@ -1447,10 +1485,10 @@ body.is-native-app-shell .competition-switcher {
 }
 
 .live-status-dot {
-  background: #16a34a;
+  background: var(--color-success);
   border: 2px solid var(--surface);
   border-radius: 999px;
-  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.22);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-success) 24%, transparent);
   display: inline-block;
   flex: 0 0 auto;
   height: 10px;
@@ -2390,7 +2428,7 @@ button.world-cup-bracket-team:hover {
   font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
   font-size: clamp(2rem, 3.7vw, 2.7rem);
   line-height: 1.04;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .login-hero-copy {
@@ -2472,7 +2510,7 @@ button.world-cup-bracket-team:hover {
   font-family: var(--font-brand-display), var(--font-app-sans), sans-serif;
   font-size: clamp(1.6rem, 2.8vw, 2rem);
   line-height: 1.1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .login-form-subtitle {
@@ -4023,9 +4061,9 @@ button.world-cup-bracket-team:hover {
 }
 
 .match-shell {
-  --match-accent: #00985f;
-  --match-accent-strong: #007a4f;
-  --match-accent-soft: rgba(0, 152, 95, 0.11);
+  --match-accent: var(--color-success);
+  --match-accent-strong: var(--color-success);
+  --match-accent-soft: color-mix(in srgb, var(--success-bg) 78%, transparent);
   --match-ink-muted: color-mix(in srgb, var(--foreground) 68%, transparent);
   --match-row-border: color-mix(in srgb, var(--border-color) 78%, transparent);
   width: min(760px, 100%);
@@ -4183,11 +4221,6 @@ button.world-cup-bracket-team:hover {
 
 .match-status {
   margin: 8px 0 10px;
-  border: 1px solid;
-  border-radius: 8px;
-  padding: 9px 10px;
-  font-size: 0.88rem;
-  font-weight: 800;
 }
 
 .match-section {
@@ -4469,6 +4502,17 @@ button.world-cup-bracket-team:hover {
   background: var(--surface-muted);
   padding: 9px 11px;
   font-weight: 750;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+.match-search-input:hover,
+.match-search-input:focus-visible {
+  border-color: var(--match-accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--match-accent-soft);
 }
 
 .match-row-action:hover,
@@ -4870,7 +4914,7 @@ body:not(.is-native-app-shell) .match-search-input {
 }
 
 .web-sport-rail-link[data-active="true"]::after {
-  background: #00985f;
+  background: var(--color-success);
 }
 
 .web-sport-rail-link:hover,
@@ -4962,7 +5006,7 @@ body:not(.is-native-app-shell) .match-search-input {
 }
 
 .app-sport-rail-link[data-active="true"]::after {
-  background: #00985f;
+  background: var(--color-success);
 }
 
 .app-sport-rail-link:hover,
@@ -5173,7 +5217,7 @@ body:not(.is-native-app-shell) .match-search-input {
 
 .app-top-nav-link {
   color: var(--foreground);
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   transition:
     background-color 140ms ease,
     box-shadow 140ms ease,

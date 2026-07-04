@@ -681,13 +681,6 @@ function PoolsPageContent() {
     setSelectedDraftIds(new Set());
   }
 
-  const statusStyle =
-    joinStatus?.tone === "success"
-      ? { background: "var(--success-bg)", borderColor: "var(--border-color)" }
-      : joinStatus?.tone === "error"
-        ? { background: "var(--danger-bg)", borderColor: "var(--border-color)" }
-        : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
-
   return (
     <main className="match-shell pools-match-shell">
       <section className="match-app-top" aria-label={`${competition.shortName} pools overview`}>
@@ -755,17 +748,14 @@ function PoolsPageContent() {
         </div>
 
         {joinStatus ? (
-          <p
+          <UiStatus
             role="status"
             aria-live="polite"
             className="match-status"
-            data-tone={joinStatus.tone}
-            style={{
-              ...statusStyle,
-            }}
+            tone={joinStatus.tone}
           >
             {joinStatus.text}
-          </p>
+          </UiStatus>
         ) : null}
       </section>
 
