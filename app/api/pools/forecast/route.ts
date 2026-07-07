@@ -16,6 +16,9 @@ import {
   resolveWorldCupThirdPlaceAssignments,
 } from "@/lib/worldCupBracket";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type TeamRow = {
   id: string;
   name: string | null;
@@ -195,6 +198,14 @@ const LOOKAHEAD_DAYS = 45;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
 const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["GROUP", "R64", "R32", "S16", "E8", "F4", "CHIP"];
+
+function forecastJson(body: unknown, init: ResponseInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  headers.set("Pragma", "no-cache");
+  headers.set("Expires", "0");
+  return NextResponse.json(body, { ...init, headers });
+}
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get("authorization");
@@ -1013,14 +1024,14 @@ function runWorldCupProjection(
 async function requirePoolAccess(req: Request, poolId: string) {
   const token = getBearerToken(req);
   if (!token) {
-    return { error: NextResponse.json({ error: "Missing authorization token." }, { status: 401 }) };
+    return { error: forecastJson({ error: "Missing authorization token." }, { status: 401 }) };
   }
 
   const supabaseAdmin = getSupabaseAdmin();
   const { data: authData, error: authErr } = await supabaseAdmin.auth.getUser(token);
   if (authErr || !authData.user) {
     return {
-      error: NextResponse.json({ error: authErr?.message ?? "Unauthorized." }, { status: 401 }),
+      error: forecastJson({ error: authErr?.message ?? "Unauthorized." }, { status: 401 }),
     };
   }
 
@@ -1033,12 +1044,12 @@ async function requirePoolAccess(req: Request, poolId: string) {
     .maybeSingle();
 
   if (memberErr) {
-    return { error: NextResponse.json({ error: memberErr.message }, { status: 400 }) };
+    return { error: forecastJson({ error: memberErr.message }, { status: 400 }) };
   }
 
   if (!memberRow) {
     return {
-      error: NextResponse.json(
+      error: forecastJson(
         { error: "Join this pool to view forecast standings." },
         { status: 403 },
       ),
@@ -1347,7 +1358,7 @@ export async function GET(req: Request) {
   try {
     const poolId = new URL(req.url).searchParams.get("poolId")?.trim() ?? "";
     if (!poolId) {
-      return NextResponse.json({ error: "poolId is required." }, { status: 400 });
+      return forecastJson({ error: "poolId is required." }, { status: 400 });
     }
 
     const access = await requirePoolAccess(req, poolId);
@@ -1360,14 +1371,14 @@ export async function GET(req: Request) {
       .eq("id", poolId)
       .single();
     if (poolErr) {
-      return NextResponse.json({ error: poolErr.message }, { status: 400 });
+      return forecastJson({ error: poolErr.message }, { status: 400 });
     }
     const competitionSlug = normalizeCompetitionSlug(poolRow?.competition_slug);
     const latestEntries = await loadLatestPoolEntries(supabaseAdmin, poolId, competitionSlug);
     const baseRows = latestEntries.entries;
 
     if (baseRows.length === 0) {
-      return NextResponse.json({
+      return forecastJson({
         ok: true,
         generated_at: new Date().toISOString(),
         horizon: "round",
@@ -1391,10 +1402,10 @@ export async function GET(req: Request) {
     ]);
 
     if (teamsResult.error) {
-      return NextResponse.json({ error: teamsResult.error.message }, { status: 400 });
+      return forecastJson({ error: teamsResult.error.message }, { status: 400 });
     }
     if (gamesResult.error) {
-      return NextResponse.json({ error: gamesResult.error.message }, { status: 400 });
+      return forecastJson({ error: gamesResult.error.message }, { status: 400 });
     }
 
     const teams =
@@ -1603,7 +1614,7 @@ export async function GET(req: Request) {
           a.entry_id.localeCompare(b.entry_id),
       );
 
-    return NextResponse.json({
+    return forecastJson({
       ok: true,
       generated_at: new Date().toISOString(),
       horizon: "round",
@@ -1614,7 +1625,7 @@ export async function GET(req: Request) {
       entries,
     });
   } catch (error: unknown) {
-    return NextResponse.json(
+    return forecastJson(
       { error: error instanceof Error ? error.message : "Unknown error." },
       { status: 500 },
     );
