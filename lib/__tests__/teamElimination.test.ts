@@ -103,4 +103,25 @@ describe("getEliminatedTeamIds", () => {
     expect(eliminated.has("australia")).toBe(true);
     expect(eliminated.has("egypt")).toBe(false);
   });
+
+  it("eliminates the S16 slot 4 official tied-score loser", () => {
+    const eliminated = getEliminatedTeamIds(
+      [
+        {
+          round: "S16",
+          slot: 4,
+          team1_id: "switzerland",
+          team2_id: "colombia",
+          winner_team_id: null,
+          status: "Final",
+          team1_score: 0,
+          team2_score: 0,
+        },
+      ],
+      "world-cup",
+    );
+
+    expect(eliminated.has("colombia")).toBe(true);
+    expect(eliminated.has("switzerland")).toBe(false);
+  });
 });

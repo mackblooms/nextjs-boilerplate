@@ -1279,7 +1279,8 @@ function applyForecastLiveFinalOverlay(
       team2_score: live.team2Score,
     };
     if (live.team1Score === live.team2Score) {
-      next.winner_team_id = null;
+      const round = String(game.round ?? "").toUpperCase();
+      next.winner_team_id = round === "GROUP" ? null : game.winner_team_id;
     } else if (game.team1_id && game.team2_id) {
       next.winner_team_id = live.team1Score > live.team2Score ? game.team1_id : game.team2_id;
     }

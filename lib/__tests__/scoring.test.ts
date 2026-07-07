@@ -168,6 +168,23 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     expect(r.teamScoresByTeamId.get("egypt")).toBe(50); // S16 win + value bonus
   });
 
+  it("S16 slot 4 tied final advances the Switzerland-side team", () => {
+    const game = {
+      round: "S16",
+      slot: 4,
+      team1_id: "switzerland",
+      team2_id: "colombia",
+      winner_team_id: null,
+      status: "Final",
+      team1_score: 0,
+      team2_score: 0,
+    };
+    const r = wc([game], costs(["switzerland", 22], ["colombia", 7]));
+    expect(getWorldCupManualWinnerId(game)).toBe("switzerland");
+    expect(r.teamScoresByTeamId.get("switzerland")).toBe(30);
+    expect(r.teamScoresByTeamId.has("colombia")).toBe(false);
+  });
+
   it("manual R32 slot 6 winner propagates into S16 slot 3", () => {
     const games = applyWorldCupManualResultOverrides([
       {
