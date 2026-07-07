@@ -187,7 +187,7 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
         team2_id: null,
         winner_team_id: null,
       },
-    ]);
+    ]) as ScoringGame[];
     expect(games.find((game) => game.round === "R32")?.winner_team_id).toBe("egypt");
     expect(games.find((game) => game.round === "S16")?.team2_id).toBe("egypt");
   });

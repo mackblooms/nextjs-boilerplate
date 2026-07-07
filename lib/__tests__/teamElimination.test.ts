@@ -82,4 +82,25 @@ describe("getEliminatedTeamIds", () => {
     expect(eliminated.has("loser")).toBe(true);
     expect(eliminated.has("winner")).toBe(false);
   });
+
+  it("eliminates World Cup official penalty losers when scores are tied", () => {
+    const eliminated = getEliminatedTeamIds(
+      [
+        {
+          round: "R32",
+          slot: 6,
+          team1_id: "australia",
+          team2_id: "egypt",
+          winner_team_id: null,
+          status: "Final",
+          team1_score: 1,
+          team2_score: 1,
+        },
+      ],
+      "world-cup",
+    );
+
+    expect(eliminated.has("australia")).toBe(true);
+    expect(eliminated.has("egypt")).toBe(false);
+  });
 });

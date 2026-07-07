@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
-import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { isFirstPlaceDominated } from "@/lib/forecastMath";
 import { matchLiveScoresToGames, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
+import { getEliminatedTeamIds } from "@/lib/teamElimination";
 import { withWorldCupDraftCost } from "@/lib/worldCupRules";
+import { applyWorldCupManualResultOverrides } from "@/lib/worldCupManualResults.js";
 import {
   WORLD_CUP_FIXED_R32_SLOT_TARGETS,
   WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
@@ -873,6 +875,7 @@ function runBracketProjection(
 
   return games.map((game) => ({
     round: String(game.round ?? ""),
+    slot: game.slot,
     team1_id: game.team1_id,
     team2_id: game.team2_id,
     winner_team_id: game.winner_team_id,
@@ -997,6 +1000,7 @@ function runWorldCupProjection(
 
   return games.map((game) => ({
     round: String(game.round ?? ""),
+    slot: game.slot,
     team1_id: game.team1_id,
     team2_id: game.team2_id,
     winner_team_id: game.winner_team_id,
@@ -1272,14 +1276,27 @@ function applyForecastLiveFinalOverlay(
   });
 }
 
-function collectActiveTeamIds(games: GameRow[], teams: TeamRow[], competitionSlug: string) {
+function collectActiveTeamIds(games: GameRow[], teams: TeamRow[], competitionSlug: CompetitionSlug) {
+  const eliminatedTeamIds = getEliminatedTeamIds(
+    games.map((game) => ({
+      round: String(game.round ?? ""),
+      slot: game.slot,
+      team1_id: game.team1_id,
+      team2_id: game.team2_id,
+      winner_team_id: game.winner_team_id,
+      status: game.status,
+      team1_score: game.team1_score,
+      team2_score: game.team2_score,
+    })),
+    competitionSlug,
+  );
   const activeTeamIds = new Set<string>();
   for (const game of games) {
     const hasWinner = Boolean(game.winner_team_id);
     const isGroupDraw = isFinalDraw(game);
     if (hasWinner || isGroupDraw) continue;
-    if (game.team1_id) activeTeamIds.add(String(game.team1_id));
-    if (game.team2_id) activeTeamIds.add(String(game.team2_id));
+    if (game.team1_id && !eliminatedTeamIds.has(game.team1_id)) activeTeamIds.add(String(game.team1_id));
+    if (game.team2_id && !eliminatedTeamIds.has(game.team2_id)) activeTeamIds.add(String(game.team2_id));
   }
 
   if (competitionSlug === "world-cup") {
@@ -1293,7 +1310,9 @@ function collectActiveTeamIds(games: GameRow[], teams: TeamRow[], competitionSlu
 
     for (const team of teams) {
       const group = groupCodeFromRegion(team.region);
-      if (group && groupHasUnresolvedGame.has(group)) activeTeamIds.add(String(team.id));
+      if (group && groupHasUnresolvedGame.has(group) && !eliminatedTeamIds.has(String(team.id))) {
+        activeTeamIds.add(String(team.id));
+      }
     }
   }
 
@@ -1418,11 +1437,15 @@ export async function GET(req: Request) {
     const soccerProbabilities = probabilityData.soccerProbabilities ?? new Map<string, SoccerMatchProbability>();
     const liveScores = probabilityData.liveScores ?? [];
     const gamesWithLiveFinals = applyForecastLiveFinalOverlay(games, teams, liveScores);
+    const gamesWithOfficialResults =
+      competitionSlug === "world-cup"
+        ? (applyWorldCupManualResultOverrides(gamesWithLiveFinals) as GameRow[])
+        : gamesWithLiveFinals;
 
-    const horizonRound = resolveForecastHorizonRound(gamesWithLiveFinals);
+    const horizonRound = resolveForecastHorizonRound(gamesWithOfficialResults);
     const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
     const scopedGames = normalizeKnownAdvancements(
-      gamesWithLiveFinals.filter(
+      gamesWithOfficialResults.filter(
         (game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder,
       ),
       competitionSlug,
@@ -1430,6 +1453,7 @@ export async function GET(req: Request) {
 
     const currentScoringGames = scopedGames.map((game) => ({
       round: String(game.round ?? ""),
+      slot: game.slot,
       team1_id: game.team1_id,
       team2_id: game.team2_id,
       winner_team_id: game.winner_team_id,
