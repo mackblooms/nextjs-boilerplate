@@ -96,11 +96,10 @@ export function BracketBoard({
   highlightTeamIds: Set<string>;
   liveScores?: LiveOverlayScoreGame[];
 }) {
-  const [localLiveScores, setLocalLiveScores] = useState<LiveOverlayScoreGame[]>(liveScores ?? []);
+  const [localLiveScores, setLocalLiveScores] = useState<LiveOverlayScoreGame[]>([]);
 
   useEffect(() => {
     if (liveScores) {
-      setLocalLiveScores(liveScores);
       return;
     }
 
@@ -126,6 +125,8 @@ export function BracketBoard({
     };
   }, [liveScores]);
 
+  const effectiveLiveScores = liveScores ?? localLiveScores;
+
   const teamById = useMemo(() => {
     const m = new Map<string, BracketBoardTeam>();
     for (const t of teams) m.set(t.id, t);
@@ -133,13 +134,13 @@ export function BracketBoard({
   }, [teams]);
 
   const displayGames = useMemo(
-    () => applyLiveScoreOverlay(games, teams, localLiveScores),
-    [games, localLiveScores, teams],
+    () => applyLiveScoreOverlay(games, teams, effectiveLiveScores),
+    [effectiveLiveScores, games, teams],
   );
 
   const liveByGameId = useMemo(
-    () => matchLiveScoresToGames(displayGames, teams, localLiveScores),
-    [displayGames, localLiveScores, teams],
+    () => matchLiveScoresToGames(displayGames, teams, effectiveLiveScores),
+    [displayGames, effectiveLiveScores, teams],
   );
 
   const byRoundByRegion = useMemo(() => {
@@ -295,7 +296,7 @@ export function BracketBoard({
             opacity: 0.45,
             textAlign: "right",
             paddingBottom: 2,
-            letterSpacing: 0.2,
+            letterSpacing: 0,
           }}
         >
           G{gameNumber}

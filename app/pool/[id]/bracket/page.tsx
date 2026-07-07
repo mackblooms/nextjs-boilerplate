@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { setStoredActivePoolId } from "../../../../lib/activePool";
 import { supabase } from "../../../../lib/supabaseClient";
@@ -20,6 +21,9 @@ import { normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitio
 import WorldCupBracketBoard from "@/app/components/WorldCupBracketBoard";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { fetchCompetitionSnapshot } from "@/lib/competitionSnapshot";
+import { buildWorldCupTeamPath } from "@/lib/worldCupTeamPath";
+import { worldCupLogoUrl } from "@/lib/worldCupLogos";
+import { UiLoadingState, UiStatus } from "@/app/components/ui/primitives";
 
 type Team = {
   id: string;
@@ -29,6 +33,7 @@ type Team = {
   cost: number | null;
   region: string | null;
   espn_team_id?: string | number | null;
+  logo_url?: string | null;
 };
 
 type Game = {
@@ -190,6 +195,7 @@ export default function BracketPage() {
   const [lockTime, setLockTime] = useState<string | null>(null);
   const [liveScores, setLiveScores] = useState<LiveScoreGame[]>([]);
   const [competitionSlug, setCompetitionSlug] = useState<CompetitionSlug>("march-madness");
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   const [scale, setScale] = useState(1);
   const [fitMode, setFitMode] = useState(true);
@@ -859,7 +865,9 @@ export default function BracketPage() {
     return matchLiveScoresToGames(displayGames, teams, liveScores);
   }, [displayGames, teams, liveScores]);
 
-  const formatGameTimeEst = useCallback((g: Game | null | undefined): string | null => {
+  const formatGameTimeEst = useCallback((
+    g: { start_time?: string | null; game_date?: string | null } | null | undefined,
+  ): string | null => {
     if (!g) return null;
 
     if (g.start_time) {
@@ -918,6 +926,35 @@ export default function BracketPage() {
   const finalFourTopLive = finalFour[0] ? liveByGameId.get(finalFour[0].id) : undefined;
   const finalFourBottomLive = finalFour[1] ? liveByGameId.get(finalFour[1].id) : undefined;
   const championshipLive = championship ? liveByGameId.get(championship.id) : undefined;
+  const selectedTeamPath = useMemo(() => {
+    if (competitionSlug !== "world-cup") return null;
+    return buildWorldCupTeamPath(selectedTeamId, teams, displayGames);
+  }, [competitionSlug, displayGames, selectedTeamId, teams]);
+
+  const selectedTeamLogoUrl = selectedTeamPath
+    ? worldCupLogoUrl(selectedTeamPath.team.name, selectedTeamPath.team.logo_url)
+    : null;
+
+  const formatWorldCupRoundLabel = (round: string) => {
+    const labels: Record<string, string> = {
+      GROUP: "Group",
+      R32: "R32",
+      S16: "R16",
+      E8: "QF",
+      F4: "SF",
+      CHIP: "Final",
+    };
+    return labels[String(round).toUpperCase()] ?? round;
+  };
+
+  const formatTeamPathGameLine = (
+    game: { round: string; start_time?: string | null; game_date?: string | null } | null,
+  ) => {
+    if (!game) return null;
+    const time = formatGameTimeEst(game);
+    const round = formatWorldCupRoundLabel(game.round);
+    return time ? `${round} - ${time}` : round;
+  };
 
   const r64SeedByTeamId = useMemo(() => {
     const out = new Map<string, number>();
@@ -1130,7 +1167,7 @@ export default function BracketPage() {
             opacity: 0.45,
             textAlign: "right",
             paddingBottom: 2,
-            letterSpacing: 0.2,
+            letterSpacing: 0,
           }}
         >
           G{gameNumber}
@@ -1281,8 +1318,16 @@ export default function BracketPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Bracket
         </h1>
-        {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
-        <p style={{ marginTop: 12, opacity: 0.8 }}>Loading…</p>
+        {msg ? (
+          <UiStatus tone="error" style={{ marginTop: 12 }}>
+            {msg}
+          </UiStatus>
+        ) : null}
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading bracket"
+          description="we're pulling teams, games, live scores, and pool entries."
+        />
       </main>
     );
   }
@@ -1308,7 +1353,7 @@ export default function BracketPage() {
           }}
         >
           <div style={{ display: "grid", gap: 4 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, opacity: 0.62 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0, opacity: 0.62 }}>
               Pool bracket
             </div>
             <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
@@ -1578,14 +1623,107 @@ export default function BracketPage() {
       </div>
 
       {competitionSlug === "world-cup" ? (
-        <WorldCupBracketBoard
-          teams={teams}
-          games={displayGames}
-          highlightTeamIds={highlightTeamIds}
-          liveByGameId={liveByGameId}
-          layout="side-groups"
-        />
+        <>
+          <WorldCupBracketBoard
+            teams={teams}
+            games={displayGames}
+            highlightTeamIds={highlightTeamIds}
+            liveByGameId={liveByGameId}
+            layout="side-groups"
+            selectedTeamId={selectedTeamId}
+            onTeamSelect={setSelectedTeamId}
+          />
+        </>
       ) : null}
+
+      {selectedTeamPath && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              role="presentation"
+              className="world-cup-team-path-overlay"
+              onClick={() => setSelectedTeamId(null)}
+            >
+              <section
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${selectedTeamPath.team.name} path`}
+                className="world-cup-team-path-modal"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="world-cup-team-path-hero">
+                  <span className="world-cup-team-path-logo" data-empty={selectedTeamLogoUrl ? undefined : "true"}>
+                    {selectedTeamLogoUrl ? <img src={selectedTeamLogoUrl} alt="" /> : null}
+                  </span>
+                  <div className="world-cup-team-path-title">
+                    <span>{selectedTeamPath.statusLabel}</span>
+                    <strong>{selectedTeamPath.team.name}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="world-cup-team-path-close"
+                    onClick={() => setSelectedTeamId(null)}
+                    aria-label="Close team details"
+                  >
+                    x
+                  </button>
+                </div>
+
+                <div className="world-cup-team-path-stats" aria-label="Team path summary">
+                  <div>
+                    <span>price</span>
+                    <strong>{selectedTeamPath.cost == null ? "-" : selectedTeamPath.cost}</strong>
+                  </div>
+                  <div>
+                    <span>earned</span>
+                    <strong>{selectedTeamPath.earnedPoints}</strong>
+                  </div>
+                  <div>
+                    <span>next win</span>
+                    <strong>{selectedTeamPath.nextWinPoints == null ? "-" : `+${selectedTeamPath.nextWinPoints}`}</strong>
+                  </div>
+                  <div>
+                    <span>max left</span>
+                    <strong>{selectedTeamPath.remainingMaxPoints > 0 ? `+${selectedTeamPath.remainingMaxPoints}` : "-"}</strong>
+                  </div>
+                </div>
+
+                <div className="world-cup-team-path-next">
+                  <div>
+                    <span>next matchup</span>
+                    <strong>
+                      {selectedTeamPath.nextGame
+                        ? `vs ${selectedTeamPath.nextOpponentLabel ?? "TBD"}`
+                        : selectedTeamPath.status === "eliminated"
+                          ? "No remaining matches"
+                          : "TBD"}
+                    </strong>
+                  </div>
+                  {selectedTeamPath.nextGame ? <small>{formatTeamPathGameLine(selectedTeamPath.nextGame)}</small> : null}
+                </div>
+
+                {selectedTeamPath.path.length > 0 ? (
+                  <div className="world-cup-team-path-route" aria-label="Remaining path">
+                    {selectedTeamPath.path.map((step, index) => (
+                      <div className="world-cup-team-path-step" key={`${step.round}-${index}`}>
+                        <div className="world-cup-team-path-step-marker" aria-hidden="true" />
+                        <div className="world-cup-team-path-step-main">
+                          <span>{step.label}</span>
+                          <strong>{step.opponentLabel ? `vs ${step.opponentLabel}` : "opponent TBD"}</strong>
+                        </div>
+                        <div className="world-cup-team-path-step-points">+{step.pointsWithWin}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="world-cup-team-path-empty">
+                    This team has no remaining scoring path.
+                  </div>
+                )}
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
 
       <div
         ref={viewportRef}

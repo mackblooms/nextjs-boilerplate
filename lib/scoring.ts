@@ -1,5 +1,8 @@
+import { getWorldCupManualWinnerId } from "./worldCupManualResults.js";
+
 export type ScoringGame = {
   round: string;
+  slot?: number | string | null;
   team1_id: string | null;
   team2_id: string | null;
   winner_team_id: string | null;
@@ -75,6 +78,22 @@ const WORLD_CUP_VALUE_BONUS_BY_ROUND: Record<string, number> = {
   CHIP: 160,
 };
 
+export function worldCupValuePickBonus(cost: number | null, round: string): number {
+  if (cost == null) return 0;
+  if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
+  if (cost <= 10) return WORLD_CUP_VALUE_BONUS_BY_ROUND[round] ?? 0;
+  return 0;
+}
+
+export function worldCupProjectedWinPoints(cost: number | null, round: string): number {
+  const normalizedRound = String(round ?? "").toUpperCase();
+  if (normalizedRound === "GROUP") return 6;
+  if (normalizedRound === "GROUP_DRAW") return 2;
+  if (normalizedRound === "GROUP_ADVANCE") return 12 + worldCupValuePickBonus(cost, "GROUP_ADVANCE");
+  const base = WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND[normalizedRound] ?? 0;
+  return base + worldCupValuePickBonus(cost, normalizedRound);
+}
+
 const HISTORIC_BONUS_BY_SEED: Record<number, number> = {
   14: 24,
   15: 40,
@@ -124,13 +143,6 @@ function worldCupTeamCost(teamId: string, options: ScoringOptions): number | nul
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
 }
 
-function worldCupValuePickBonus(cost: number | null, round: string): number {
-  if (cost == null) return 0;
-  if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
-  if (cost <= 10) return WORLD_CUP_VALUE_BONUS_BY_ROUND[round] ?? 0;
-  return 0;
-}
-
 function scoreWorldCupTeamResultsDetailed(
   games: ScoringGame[],
   teamSeedById: Map<string, number | null>,
@@ -144,13 +156,14 @@ function scoreWorldCupTeamResultsDetailed(
     const round = String(g.round ?? "").toUpperCase();
 
     if (round === "GROUP") {
-      if (g.winner_team_id && isBlankOrFinalStatus(g.status)) {
+      const groupWinnerId = getWorldCupManualWinnerId(g) ?? g.winner_team_id;
+      if (groupWinnerId && isBlankOrFinalStatus(g.status)) {
         addScoreEvent(totals, eventsByTeamId, {
           gameIndex: index,
           round,
-          teamId: g.winner_team_id,
-          opponentTeamId: g.team1_id === g.winner_team_id ? g.team2_id : g.team1_id,
-          winnerSeed: teamSeedById.get(g.winner_team_id) ?? null,
+          teamId: groupWinnerId,
+          opponentTeamId: g.team1_id === groupWinnerId ? g.team2_id : g.team1_id,
+          winnerSeed: teamSeedById.get(groupWinnerId) ?? null,
           opponentSeed: null,
           basePoints: 6,
           seedMultiplier: 1,
@@ -212,7 +225,7 @@ function scoreWorldCupTeamResultsDetailed(
       }
     }
 
-    const winnerId = g.winner_team_id;
+    const winnerId = getWorldCupManualWinnerId(g) ?? g.winner_team_id;
     if (!winnerId) return;
     const base = WORLD_CUP_KNOCKOUT_POINTS_BY_ROUND[round] ?? 0;
     if (!base) return;

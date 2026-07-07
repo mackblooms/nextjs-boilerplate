@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { withWorldCupDraftCost } from "@/lib/worldCupRules";
+import { applyWorldCupManualResultOverrides } from "@/lib/worldCupManualResults.js";
 
 function isMissingColumnError(error: { message?: string } | null | undefined) {
   const message = (error?.message ?? "").toLowerCase();
@@ -74,14 +75,30 @@ export async function GET(req: Request) {
         ? (teamRows ?? []).map((team) => withWorldCupDraftCost(team))
         : teamRows ?? [];
 
+    const games = ((gameRows ?? []) as Array<{
+      id: string;
+      round: string;
+      region: string | null;
+      slot: number | string | null;
+      status: string | null;
+      start_time: string | null;
+      game_date: string | null;
+      team1_id: string | null;
+      team2_id: string | null;
+      winner_team_id: string | null;
+      sportsdata_game_id: number | null;
+      team1_score: number | null;
+      team2_score: number | null;
+    }>).map((game) => ({
+      ...game,
+      slot: Number(game.slot ?? 0),
+    }));
+
     return NextResponse.json({
       ok: true,
       competition: competitionSlug,
       teams,
-      games: ((gameRows ?? []) as Array<{ slot: number | string | null }>).map((game) => ({
-        ...game,
-        slot: Number(game.slot ?? 0),
-      })),
+      games: competitionSlug === "world-cup" ? applyWorldCupManualResultOverrides(games) : games,
     });
   } catch (error) {
     return NextResponse.json(

@@ -6,7 +6,17 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { supabase } from "@/lib/supabaseClient";
 import { defaultDraftName, isMissingSavedDraftTablesError, type SavedDraftRow } from "@/lib/savedDrafts";
-import { UiButton, UiCard, UiInput, UiLinkButton } from "../components/ui/primitives";
+import {
+  UiButton,
+  UiCard,
+  UiEmptyState,
+  UiFormField,
+  UiInput,
+  UiLinkButton,
+  UiLoadingState,
+  UiStatus,
+  UiTooltip,
+} from "../components/ui/primitives";
 import { competitionPath, getCompetition, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "@/lib/competitionData";
 
@@ -288,36 +298,33 @@ function DraftsPageContent() {
         <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900 }}>
           {competition.shortName} Drafts
         </h1>
-        <p style={{ marginTop: 12 }}>Loading drafts...</p>
+        <UiLoadingState
+          title="loading drafts"
+          description="we're pulling your saved teams and pick counts."
+        />
       </main>
     );
   }
 
   return (
-    <main className="page-shell page-shell--stack" style={{ maxWidth: 960 }}>
+    <main className="page-shell page-shell--stack drafts-shell" style={{ maxWidth: 960 }}>
       <section
-        className="page-surface"
+        className="page-surface drafts-command-bar"
         style={{
           border: "1px solid var(--border-color)",
-          borderRadius: 14,
           background: "var(--surface)",
-          padding: 14,
-          display: "grid",
-          gap: 12,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 30, fontWeight: 900 }}>{competition.shortName} Drafts</h1>
-            <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-              {draftsLocked ? lockMessage : "Create multiple drafts here, then open one to edit teams and save."}
-            </p>
+        <div className="drafts-command-head">
+          <div className="drafts-title-stack">
+            <span className="match-kicker">{competition.sport}</span>
+            <h1>{competition.shortName} Drafts</h1>
+            <span>{drafts.length} saved</span>
           </div>
           <UiLinkButton
             href={competitionPath("/pools", competitionSlug)}
             variant="secondary"
             className="native-hidden"
-            style={{ height: "fit-content" }}
           >
             Open Pools
           </UiLinkButton>
@@ -371,17 +378,22 @@ function DraftsPageContent() {
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <UiInput
-            value={newDraftName}
-            onChange={(event) => setNewDraftName(event.target.value)}
-            disabled={draftsLocked || creating}
-            placeholder={`New draft name (default: ${defaultDraftName(drafts.length + 1)})`}
-            style={{
-              flex: "1 1 300px",
-              minWidth: 220,
-            }}
-          />
+        {draftsLocked ? <p className="drafts-lock-message">{lockMessage}</p> : null}
+
+        <div className="drafts-create-row">
+          <UiFormField
+            label="draft name"
+            htmlFor="new-draft-name"
+            helperText="leave blank to use the next default draft name."
+          >
+            <UiInput
+              id="new-draft-name"
+              value={newDraftName}
+              onChange={(event) => setNewDraftName(event.target.value)}
+              disabled={draftsLocked || creating}
+              placeholder={defaultDraftName(drafts.length + 1)}
+            />
+          </UiFormField>
           <UiButton
             type="button"
             onClick={() => void createDraft()}
@@ -395,7 +407,7 @@ function DraftsPageContent() {
       </section>
 
       {hasDrafts ? (
-        <section style={{ display: "grid", gap: 10 }}>
+        <section className="drafts-list">
           {drafts.map((draft) => {
             const draftHref = returnPoolId
               ? competitionPathWithParams(`/drafts/${draft.id}`, competitionSlug, { returnPoolId })
@@ -407,103 +419,95 @@ function DraftsPageContent() {
             return (
             <UiCard
               as="article"
-              className="drafts-draft-card"
+              className="drafts-draft-card drafts-draft-row"
               key={draft.id}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
+                position: "relative",
               }}
             >
-              <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
-                <Link
-                  href={draftHref}
-                  className="drafts-draft-link"
-                  title={`Open ${draft.name}`}
-                  style={{
-                    fontWeight: 900,
-                    fontSize: 18,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    color: "inherit",
-                  }}
-                >
+              <Link
+                href={draftHref}
+                className="drafts-draft-primary"
+                title={`Open ${draft.name}`}
+              >
+                <span className="drafts-draft-name">
                   {draft.name}
-                </Link>
-                <div style={{ fontSize: 13, opacity: 0.75 }}>
+                </span>
+                <span className="drafts-draft-meta">
                   {pickCountByDraft[draft.id] ?? 0} teams selected - updated {formatUpdatedAt(draft.updated_at)}
-                </div>
-              </div>
+                </span>
+              </Link>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <UiLinkButton
-                  href={draftHref}
-                  aria-label={`Edit ${draft.name}`}
-                  title={`Edit ${draft.name}`}
-                  size="sm"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: 0,
-                  }}
-                >
-                  <PencilIcon />
-                </UiLinkButton>
+              <div className="drafts-draft-actions">
+                <UiTooltip content="edit this draft">
+                  <UiLinkButton
+                    href={draftHref}
+                    aria-label={`Edit ${draft.name}`}
+                    size="sm"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 0,
+                    }}
+                  >
+                    <PencilIcon />
+                  </UiLinkButton>
+                </UiTooltip>
                 <UiLinkButton
                   href={enterPoolHref}
+                  className="drafts-enter-action"
                 >
                   {returnPoolId ? "Enter in Pool" : "Join Pool(s)"}
                 </UiLinkButton>
-                <UiButton
-                  type="button"
-                  onClick={() => void deleteDraft(draft.id, draft.name)}
-                  disabled={deletingDraftId === draft.id}
-                  aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
-                  title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
-                  variant="danger"
-                  size="sm"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <TrashIcon />
-                </UiButton>
+                <UiTooltip content={deletingDraftId === draft.id ? "deleting draft" : "delete this draft"}>
+                  <UiButton
+                    type="button"
+                    onClick={() => void deleteDraft(draft.id, draft.name)}
+                    disabled={deletingDraftId === draft.id}
+                    aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                    variant="danger"
+                    size="sm"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <TrashIcon />
+                  </UiButton>
+                </UiTooltip>
               </div>
             </UiCard>
           );
           })}
         </section>
       ) : (
-        <UiCard>
-          No drafts yet. Create one above.
-        </UiCard>
+        <UiEmptyState
+          aria-label="no drafts"
+          title="no drafts yet"
+          description="create one above, then add teams and enter it into a pool."
+        />
       )}
 
       {message ? (
-        <p
+        <UiStatus
           role="status"
           aria-live="polite"
-          style={{
-            margin: 0,
-            border: "1px solid var(--border-color)",
-            borderRadius: 10,
-            padding: "10px 12px",
-            background: "var(--surface-muted)",
-            fontWeight: 700,
-          }}
+          tone={
+            message.toLowerCase().includes("failed") ||
+            message.toLowerCase().includes("missing") ||
+            message.toLowerCase().includes("error")
+              ? "error"
+              : "success"
+          }
         >
           {message}
-        </p>
+        </UiStatus>
       ) : null}
     </main>
   );

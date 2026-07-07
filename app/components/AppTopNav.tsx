@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
+import { Haptics } from "@capacitor/haptics";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,12 +29,14 @@ import {
 } from "../../lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "../../lib/competitionData";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
+import { UiTooltip } from "./ui/primitives";
 
 type Pool = { id: string; name: string; created_by: string; competition_slug?: string | null };
 type Theme = "light" | "dark";
 
 const COMPACT_NAV_QUERY = "(max-width: 780px)";
 const DOCK_HOLD_DELAY_MS = 130;
+const SELECTION_HAPTIC_FALLBACK_MS = 7;
 
 function getPreferredTheme(): Theme {
   if (typeof window === "undefined") return "light";
@@ -59,6 +62,35 @@ function getSupabaseClient() {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function vibrateSelectionFallback() {
+  if (typeof navigator === "undefined" || !("vibrate" in navigator)) return;
+  navigator.vibrate(SELECTION_HAPTIC_FALLBACK_MS);
+}
+
+function triggerSelectionStartHaptic() {
+  if (!Capacitor.isNativePlatform()) {
+    vibrateSelectionFallback();
+    return;
+  }
+
+  void Haptics.selectionStart().catch(vibrateSelectionFallback);
+}
+
+function triggerSelectionChangedHaptic() {
+  if (!Capacitor.isNativePlatform()) {
+    vibrateSelectionFallback();
+    return;
+  }
+
+  void Haptics.selectionChanged().catch(vibrateSelectionFallback);
+}
+
+function triggerSelectionEndHaptic() {
+  if (!Capacitor.isNativePlatform()) return;
+
+  void Haptics.selectionEnd().catch(() => {});
 }
 
 function HomeIcon({ className }: { className?: string }) {
@@ -215,6 +247,8 @@ export default function AppTopNav() {
   const holdTimerRef = useRef<number | null>(null);
   const activePointerIdRef = useRef<number | null>(null);
   const activePointerTypeRef = useRef<string | null>(null);
+  const scrubIndexRef = useRef<number | null>(null);
+  const scrubHapticsActiveRef = useRef(false);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement | null>(null);
   const sportRailRef = useRef<HTMLElement | null>(null);
@@ -521,6 +555,11 @@ export default function AppTopNav() {
       setDockExpanded(false);
       setScrubActive(false);
       setScrubIndex(null);
+      scrubIndexRef.current = null;
+      if (scrubHapticsActiveRef.current) {
+        triggerSelectionEndHaptic();
+        scrubHapticsActiveRef.current = false;
+      }
     };
 
     const onPointerDown = (event: MouseEvent) => {
@@ -598,6 +637,17 @@ export default function AppTopNav() {
     router.push(selectedItem.href);
   }
 
+  function updateScrubIndex(index: number | null, shouldTick: boolean) {
+    if (index === scrubIndexRef.current) return;
+
+    scrubIndexRef.current = index;
+    setScrubIndex(index);
+
+    if (shouldTick && index !== null && scrubHapticsActiveRef.current) {
+      triggerSelectionChangedHaptic();
+    }
+  }
+
   async function signOut() {
     setUserId(null);
     setActivePoolId(null);
@@ -638,6 +688,10 @@ export default function AppTopNav() {
   const isHomeActive = pathname === "/" || pathname === competition.href;
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
+  const isSportsActive = pathname === "/sports";
+  const isProfileActive = pathname === "/profile";
+  const isTermsActive = pathname === "/terms";
+  const isPrivacyActive = pathname === "/privacy";
   const isLeaderboardActive = activePoolBasePath
     ? pathname === `${activePoolBasePath}/leaderboard` ||
       pathname.startsWith(`${activePoolBasePath}/leaderboard/`)
@@ -671,10 +725,26 @@ export default function AppTopNav() {
     },
     {
       key: "leaderboard",
-      label: "Leaderboard",
+      label: "Standings",
       href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
       isActive: isLeaderboardActive,
       Icon: PodiumIcon,
+    },
+  ];
+  const primaryMenuItems = [
+    { label: "Home", href: competition.href, isActive: isHomeActive },
+    { label: "Sports", href: "/sports", isActive: isSportsActive },
+    { label: "Drafts", href: competitionPath("/drafts", competitionSlug), isActive: isDraftsActive },
+    { label: "Pools", href: competitionPath("/pools", competitionSlug), isActive: isPoolsActive },
+    {
+      label: "Bracket",
+      href: activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug),
+      isActive: isBracketActive,
+    },
+    {
+      label: "Leaderboard",
+      href: activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug),
+      isActive: isLeaderboardActive,
     },
   ];
 
@@ -693,12 +763,14 @@ export default function AppTopNav() {
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const pointerIndex = pickDockIndex(event.clientX);
-    setScrubIndex(pointerIndex);
+    updateScrubIndex(pointerIndex, false);
 
     clearHoldTimer();
     holdTimerRef.current = window.setTimeout(() => {
       setDockExpanded(true);
       setScrubActive(true);
+      scrubHapticsActiveRef.current = true;
+      triggerSelectionStartHaptic();
     }, DOCK_HOLD_DELAY_MS);
   }
 
@@ -707,7 +779,7 @@ export default function AppTopNav() {
     if (!scrubActive) return;
 
     const pointerIndex = pickDockIndex(event.clientX);
-    setScrubIndex(pointerIndex);
+    updateScrubIndex(pointerIndex, true);
   }
 
   function stopScrub(pointerId: number, shouldNavigate: boolean) {
@@ -720,15 +792,21 @@ export default function AppTopNav() {
 
     if ((scrubActive && shouldNavigate) || shouldNavigateFromClick) {
       suppressClickRef.current = true;
-      navigateDockItem(scrubIndex, dockItems);
+      navigateDockItem(scrubIndexRef.current, dockItems);
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 220);
     }
 
+    if (scrubHapticsActiveRef.current) {
+      triggerSelectionEndHaptic();
+      scrubHapticsActiveRef.current = false;
+    }
+
     setDockExpanded(false);
     setScrubActive(false);
     setScrubIndex(null);
+    scrubIndexRef.current = null;
     activePointerIdRef.current = null;
     activePointerTypeRef.current = null;
   }
@@ -749,20 +827,6 @@ export default function AppTopNav() {
     transform: "var(--top-nav-pill-transform, translateY(0) scale(1))",
     transition:
       "transform 140ms ease, box-shadow 160ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease",
-  };
-
-  const drawerActionStyle: CSSProperties = {
-    width: "100%",
-    border: "1px solid var(--border-color)",
-    borderRadius: isNativeApp ? 8 : 12,
-    background: isNativeApp ? "color-mix(in srgb, var(--surface) 88%, transparent)" : "var(--surface)",
-    color: "var(--foreground)",
-    padding: isNativeApp ? "10px 11px" : "11px 12px",
-    textAlign: "left",
-    textDecoration: "none",
-    fontWeight: 800,
-    letterSpacing: "0.01em",
-    cursor: "pointer",
   };
 
   return (
@@ -789,7 +853,7 @@ export default function AppTopNav() {
         }}
       >
         <div
-          className={isNativeApp ? "app-glass-header-field" : "page-surface"}
+          className={`${isNativeApp ? "app-glass-header-field" : "page-surface"} app-shell-header-field`}
           style={{
             maxWidth: isNativeApp ? 760 : 980,
             margin: "0 auto",
@@ -806,42 +870,40 @@ export default function AppTopNav() {
             backdropFilter: isNativeApp ? undefined : "blur(12px) saturate(130%)",
           }}
         >
-          <button
-            className={isNativeApp ? "app-top-nav-pill app-glass-menu-button" : "app-top-nav-pill"}
-            type="button"
-            aria-label="Open app menu"
-            aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen((open) => !open)}
-            style={topBarButtonStyle}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
-              <path
-                d="M5 7.2h14M5 12h14M5 16.8h14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          <UiTooltip content="open app menu" side="bottom">
+            <button
+              className={isNativeApp ? "app-top-nav-pill app-glass-menu-button" : "app-top-nav-pill"}
+              type="button"
+              aria-label="Open app menu"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen((open) => !open)}
+              style={topBarButtonStyle}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 20, height: 20 }}>
+                <path
+                  d="M5 7.2h14M5 12h14M5 16.8h14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </UiTooltip>
 
           <Link
             href={competition.href}
             aria-label="Go to bracketball home"
-            className={isNativeApp ? "app-glass-header-logo" : undefined}
+            className={`${isNativeApp ? "app-glass-header-logo" : ""} app-shell-brand`}
             style={{
               justifySelf: "center",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
               minWidth: isNativeApp ? 96 : 120,
               minHeight: isNativeApp ? (isCompact ? 38 : 40) : (isCompact ? 40 : 44),
-              paddingInline: isNativeApp ? undefined : 10,
             }}
           >
             <img
               src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
+              alt="bracketball"
               style={{
                 width: isCompact ? 102 : 114,
                 height: "auto",
@@ -849,22 +911,32 @@ export default function AppTopNav() {
                 filter: "var(--logo-filter)",
               }}
             />
+            <span className="app-shell-brand-copy" aria-hidden="true">
+              <strong>bracketball</strong>
+              <span>
+                {activePool ? `${competition.shortName} / ${activePool.name}` : `${competition.shortName} / dashboard`}
+              </span>
+            </span>
           </Link>
 
-          <Link
-            className="app-top-nav-pill"
-            href="/profile"
-            aria-label="Open profile"
-            style={topBarButtonStyle}
-          >
-            <img
-              src={resolvedAvatarUrl}
-              alt="Profile"
-              width={isCompact ? 40 : 44}
-              height={isCompact ? 40 : 44}
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-            />
-          </Link>
+          <UiTooltip content="open profile" side="bottom">
+            <Link
+              className="app-top-nav-pill"
+              href="/profile"
+              aria-label="Open profile"
+              aria-current={isProfileActive ? "page" : undefined}
+              data-active={isProfileActive}
+              style={topBarButtonStyle}
+            >
+              <img
+                src={resolvedAvatarUrl}
+                alt="Profile"
+                width={isCompact ? 40 : 44}
+                height={isCompact ? 40 : 44}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              />
+            </Link>
+          </UiTooltip>
         </div>
       </header>
 
@@ -983,6 +1055,7 @@ export default function AppTopNav() {
               key={item.key}
               type="button"
               role="tab"
+              data-active={item.isActive}
               aria-label={item.label}
               aria-selected={isCurrent}
               aria-current={item.isActive ? "page" : undefined}
@@ -1017,7 +1090,7 @@ export default function AppTopNav() {
                   display: isDockCollapsed ? "none" : undefined,
                   fontSize: isCompact ? 10 : 11,
                   fontWeight: 800,
-                  letterSpacing: "0.02em",
+                  letterSpacing: 0,
                   lineHeight: 1,
                   whiteSpace: "nowrap",
                 }}
@@ -1068,20 +1141,13 @@ export default function AppTopNav() {
               overflowY: "auto",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <div style={{ display: "grid", gap: 3 }}>
-                <strong style={{ fontSize: 18, letterSpacing: "0.02em" }}>Menu</strong>
-                <span style={{ fontSize: 12, opacity: 0.74 }}>
+            <div className="app-menu-header">
+              <div className="app-menu-title-group">
+                <strong>Menu</strong>
+                <span>
                   {activePool
-                    ? `active pool: ${activePool.name}`
-                    : "select a pool to unlock bracket + leaderboard"}
+                    ? `Active pool: ${activePool.name}`
+                    : "Select a pool to unlock bracket + leaderboard"}
                 </span>
               </div>
               <button
@@ -1091,8 +1157,8 @@ export default function AppTopNav() {
                 aria-label="Close menu"
                 style={{
                   ...topBarButtonStyle,
-                  width: 34,
-                  height: 34,
+                  width: 40,
+                  height: 40,
                 }}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 16, height: 16 }}>
@@ -1107,60 +1173,41 @@ export default function AppTopNav() {
               </button>
             </div>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="Primary navigation">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                Navigate
-              </h2>
-              <Link href={competition.href} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                home
-              </Link>
-              <Link href="/sports" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                sports
-              </Link>
-              <Link href={competitionPath("/drafts", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                drafts
-              </Link>
-              <Link href={competitionPath("/pools", competitionSlug)} onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                pools
-              </Link>
-              <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/bracket` : competitionPath("/pools", competitionSlug)}
-                onClick={() => setDrawerOpen(false)}
-                style={drawerActionStyle}
-              >
-                bracket
-              </Link>
-              <Link
-                href={activePoolBasePath ? `${activePoolBasePath}/leaderboard` : competitionPath("/pools", competitionSlug)}
-                onClick={() => setDrawerOpen(false)}
-                style={drawerActionStyle}
-              >
-                leaderboard
-              </Link>
+            <section className="app-menu-section" aria-label="Primary navigation">
+              <h2>Navigate</h2>
+              {primaryMenuItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setDrawerOpen(false)}
+                  className="app-menu-action"
+                  data-active={item.isActive}
+                  aria-current={item.isActive ? "page" : undefined}
+                >
+                  <span>{item.label}</span>
+                </Link>
+              ))}
               {activePoolId && activePool?.created_by === userId ? (
                 <Link
                   href={`/pool/${activePoolId}/admin`}
                   onClick={() => setDrawerOpen(false)}
-                  style={drawerActionStyle}
+                  className="app-menu-action"
+                  data-active={isAdminActive}
+                  aria-current={isAdminActive ? "page" : undefined}
                 >
-                  admin
+                  <span>Admin</span>
                 </Link>
               ) : null}
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="account options">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                account
-              </h2>
+            <section className="app-menu-section" aria-label="Account options">
+              <h2>Account</h2>
               <Link
                 href="/profile"
                 onClick={() => setDrawerOpen(false)}
-                style={isNativeApp ? {
-                  ...drawerActionStyle,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                } : drawerActionStyle}
+                className="app-menu-action"
+                data-active={isProfileActive}
+                aria-current={isProfileActive ? "page" : undefined}
               >
                 {isNativeApp ? (
                   <img
@@ -1168,67 +1215,64 @@ export default function AppTopNav() {
                     alt=""
                     width={26}
                     height={26}
-                    style={{ width: 26, height: 26, objectFit: "cover", borderRadius: "50%" }}
                   />
                 ) : null}
-                profile
+                <span>Profile</span>
               </Link>
-              <button type="button" onClick={signOut} style={drawerActionStyle}>
-                log out
+              <button type="button" onClick={signOut} className="app-menu-action">
+                <span>Log Out</span>
               </button>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="help and support">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                support
-              </h2>
+            <section className="app-menu-section" aria-label="Help and support">
+              <h2>Support</h2>
               <button
                 type="button"
                 onClick={() => {
                   setDrawerOpen(false);
                   setHelpOpen(true);
                 }}
-                style={drawerActionStyle}
+                className="app-menu-action"
               >
-                help center
+                <span>Help Center</span>
               </button>
-              <button type="button" onClick={openHowItWorksModal} style={drawerActionStyle}>
-                how it works
+              <button type="button" onClick={openHowItWorksModal} className="app-menu-action">
+                <span>How It Works</span>
               </button>
-              <a href="mailto:mack@bracketball.io" style={drawerActionStyle}>
-                Contact support
+              <a href="mailto:mack@bracketball.io" className="app-menu-action">
+                <span>Contact Support</span>
               </a>
             </section>
 
-            <section style={{ display: "grid", gap: 8 }} aria-label="legal links">
-              <h2 style={{ margin: 0, fontSize: 13, letterSpacing: "0.04em", opacity: 0.72 }}>
-                legal
-              </h2>
-              <Link href="/terms" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Terms of service
+            <section className="app-menu-section" aria-label="Legal links">
+              <h2>Legal</h2>
+              <Link
+                href="/terms"
+                onClick={() => setDrawerOpen(false)}
+                className="app-menu-action"
+                data-active={isTermsActive}
+                aria-current={isTermsActive ? "page" : undefined}
+              >
+                <span>Terms of Service</span>
               </Link>
-              <Link href="/privacy" onClick={() => setDrawerOpen(false)} style={drawerActionStyle}>
-                Privacy policy
+              <Link
+                href="/privacy"
+                onClick={() => setDrawerOpen(false)}
+                className="app-menu-action"
+                data-active={isPrivacyActive}
+                aria-current={isPrivacyActive ? "page" : undefined}
+              >
+                <span>Privacy Policy</span>
               </Link>
             </section>
 
             <section
               aria-label="Theme toggle"
-              style={{
-                marginTop: "auto",
-                border: "1px solid var(--border-color)",
-                borderRadius: 12,
-                background: "var(--surface)",
-                padding: "11px 12px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 12,
-              }}
+              className="app-menu-theme"
             >
-              <div style={{ display: "grid", gap: 2 }}>
-                <strong style={{ fontSize: 13, letterSpacing: "0.03em" }}>Dark mode</strong>
-                <span style={{ fontSize: 12, opacity: 0.74 }}>
+              <div className="app-menu-theme-copy">
+                <strong>Dark Mode</strong>
+                <span>
                   Toggle app appearance
                 </span>
               </div>
@@ -1237,30 +1281,9 @@ export default function AppTopNav() {
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 role="switch"
                 aria-checked={theme === "dark"}
-                style={{
-                  width: 64,
-                  height: 34,
-                  borderRadius: 9999,
-                  border: "1px solid var(--border-color)",
-                  background: "var(--surface-muted)",
-                  cursor: "pointer",
-                  position: "relative",
-                  flexShrink: 0,
-                }}
+                className="app-menu-switch"
               >
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 3,
-                    left: theme === "dark" ? 33 : 3,
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface-elevated)",
-                    transition: "left 150ms ease",
-                  }}
-                />
+                <span />
               </button>
             </section>
           </aside>
@@ -1271,31 +1294,14 @@ export default function AppTopNav() {
         <div
           role="presentation"
           onClick={() => setHelpOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.56)",
-            zIndex: 2000,
-            display: "grid",
-            placeItems: "center",
-            padding: 16,
-          }}
+          className="app-modal-backdrop app-top-nav-help-backdrop"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Help"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(520px, 100%)",
-              border: "1px solid var(--border-color)",
-              borderRadius: 14,
-              background: "var(--surface)",
-              padding: 16,
-              display: "grid",
-              gap: 12,
-              boxShadow: "var(--shadow-lg)",
-            }}
+            className="app-modal"
           >
             <div
               style={{
@@ -1309,20 +1315,13 @@ export default function AppTopNav() {
               <button
                 type="button"
                 onClick={() => setHelpOpen(false)}
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 8,
-                  padding: "6px 9px",
-                  background: "transparent",
-                  cursor: "pointer",
-                  fontWeight: 700,
-                }}
+                className="ui-btn ui-btn--sm ui-btn--ghost"
               >
                 Close
               </button>
             </div>
 
-            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.9 }}>
+            <p className="app-modal-copy">
               For now, please send all questions, bug reports, and support requests to{" "}
               <a href="mailto:mack@bracketball.io" style={{ fontWeight: 800, color: "var(--foreground)" }}>
                 mack@bracketball.io
@@ -1330,7 +1329,7 @@ export default function AppTopNav() {
               . Including your pool name, device, and a screenshot helps us resolve issues faster.
             </p>
 
-            <p style={{ margin: 0, lineHeight: 1.5, opacity: 0.82 }}>
+            <p className="app-modal-copy">
               A full help center with FAQs and troubleshooting guides is on the roadmap.
             </p>
           </section>

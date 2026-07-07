@@ -21,7 +21,8 @@ import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
 import DraftScoringNotice from "../../components/DraftScoringNotice";
-import { UiButton, UiCard, UiInput } from "../../components/ui/primitives";
+import WorldCupTeamLabel from "../../components/WorldCupTeamLabel";
+import { UiButton, UiCard, UiFormField, UiInput, UiLoadingState, UiStatus, UiTooltip } from "../../components/ui/primitives";
 
 type DraftRow = {
   id: string;
@@ -31,7 +32,9 @@ type DraftRow = {
   competition_slug?: string;
 };
 
-type TeamRow = DraftableTeam;
+type TeamRow = DraftableTeam & {
+  logo_url?: string | null;
+};
 
 type GameRow = {
   round: string;
@@ -120,6 +123,7 @@ export default function DraftDetailPage() {
   const [linkedPools, setLinkedPools] = useState<LinkedPoolEntry[]>([]);
   const [linkedPoolsLoading, setLinkedPoolsLoading] = useState(false);
   const [removingPoolId, setRemovingPoolId] = useState<string | null>(null);
+  const [inspectedTeam, setInspectedTeam] = useState<TeamRow | null>(null);
   const draftsLocked = isDraftLibraryLocked(competitionSlug);
   const lockMessage = draftLibraryLockMessage(competitionSlug);
 
@@ -265,7 +269,7 @@ export default function DraftDetailPage() {
 
       let teamQuery = supabase
         .from("teams")
-        .select("id,name,seed,cost")
+        .select("id,name,seed,cost,logo_url")
         .eq("competition_slug", nextCompetitionSlug);
       if (r64TeamIds.length > 0) {
         teamQuery = teamQuery.in("id", r64TeamIds);
@@ -274,8 +278,8 @@ export default function DraftDetailPage() {
       let { data: teamRows, error: teamErr } = await teamQuery;
       if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, teamErr?.message)) {
         const fallback = r64TeamIds.length > 0
-          ? await supabase.from("teams").select("id,name,seed,cost").in("id", r64TeamIds)
-          : await supabase.from("teams").select("id,name,seed,cost");
+          ? await supabase.from("teams").select("id,name,seed,cost,logo_url").in("id", r64TeamIds)
+          : await supabase.from("teams").select("id,name,seed,cost,logo_url");
         teamRows = fallback.data;
         teamErr = fallback.error;
       }
@@ -530,7 +534,11 @@ export default function DraftDetailPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Draft
         </h1>
-        <p style={{ marginTop: 12 }}>Loading...</p>
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading draft"
+          description="we're pulling your picks, linked pools, and available teams."
+        />
       </main>
     );
   }
@@ -564,37 +572,42 @@ export default function DraftDetailPage() {
               {draftsLocked ? lockMessage : "Edit your teams and save this draft."}
             </p>
           </div>
-          <UiButton
-            type="button"
-            onClick={() => void deleteDraft()}
-            disabled={deleting}
-            variant="danger"
-            aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
-            title={deleting ? "Deleting..." : `Delete ${draftName || "draft"}`}
-            style={{
-              width: 42,
-              height: 42,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-            }}
-          >
-            <TrashIcon />
-          </UiButton>
+          <UiTooltip content={deleting ? "deleting draft" : "delete this draft"}>
+            <UiButton
+              type="button"
+              onClick={() => void deleteDraft()}
+              disabled={deleting}
+              variant="danger"
+              aria-label={deleting ? `Deleting ${draftName}` : `Delete ${draftName}`}
+              style={{
+                width: 42,
+                height: 42,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0,
+              }}
+            >
+              <TrashIcon />
+            </UiButton>
+          </UiTooltip>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <UiInput
-            value={renameValue}
-            onChange={(event) => setRenameValue(event.target.value)}
-            disabled={draftsLocked || saving}
-            placeholder="draft name"
-            style={{
-              width: "100%",
-              maxWidth: 400,
-            }}
-          />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end" }}>
+          <UiFormField
+            label="draft name"
+            htmlFor="draft-name"
+            helperText="rename the saved draft before entering it in pools."
+            style={{ width: "min(400px, 100%)" }}
+          >
+            <UiInput
+              id="draft-name"
+              value={renameValue}
+              onChange={(event) => setRenameValue(event.target.value)}
+              disabled={draftsLocked || saving}
+              placeholder="draft name"
+            />
+          </UiFormField>
           <UiButton
             type="button"
             onClick={() => void saveDraft()}
@@ -627,16 +640,21 @@ export default function DraftDetailPage() {
                   ? `${linkedPools.length} pool${linkedPools.length === 1 ? "" : "s"} using this draft`
                   : "This draft is not entered in any pools."}
             </p>
+            <p className="ui-field-helper" style={{ marginTop: 4 }}>
+              linked entries update when you save this draft, so pool standings stay attached to your latest picks.
+            </p>
           </div>
-          <UiButton
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => void loadLinkedPools(true)}
-            disabled={linkedPoolsLoading}
-          >
-            {linkedPoolsLoading ? "Refreshing..." : "Refresh"}
-          </UiButton>
+          <UiTooltip content="refresh linked pool entries">
+            <UiButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => void loadLinkedPools(true)}
+              disabled={linkedPoolsLoading}
+            >
+              {linkedPoolsLoading ? "Refreshing..." : "Refresh"}
+            </UiButton>
+          </UiTooltip>
         </div>
 
         {linkedPools.length > 0 ? (
@@ -696,11 +714,19 @@ export default function DraftDetailPage() {
             gap: 8,
           }}
         >
+          <div style={{ display: "grid", gap: 3 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>available teams</h2>
+            <p className="ui-field-helper">
+              check teams to add them to your draft; the summary tells you when your picks are valid.
+            </p>
+          </div>
           {teams.map((team) => {
             const checked = selected.has(team.id);
             return (
-              <label
+              <article
                 key={team.id}
+                className="draft-team-row"
+                data-selected={checked ? "true" : "false"}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -709,10 +735,9 @@ export default function DraftDetailPage() {
                   padding: "10px 12px",
                   border: "1px solid var(--border-color)",
                   borderRadius: 10,
-                  cursor: "pointer",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, cursor: "pointer" }}>
                   <input
                     type="checkbox"
                     checked={checked}
@@ -720,19 +745,38 @@ export default function DraftDetailPage() {
                     disabled={draftsLocked || saving}
                   />
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {toSchoolDisplayName(team.name)}
-                    </div>
+                    {competitionSlug === "world-cup" ? (
+                      <WorldCupTeamLabel
+                        name={team.name}
+                        logoUrl={team.logo_url}
+                        nameStyle={{ fontWeight: 800 }}
+                      />
+                    ) : (
+                      <div style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {toSchoolDisplayName(team.name)}
+                      </div>
+                    )}
                     <div style={{ fontSize: 12, opacity: 0.75 }}>
                       {competitionSlug === "world-cup"
                         ? `${getWorldCupTierForCost(team.cost)?.name ?? "world cup"} tier`
                         : `seed ${team.seed}`}
                     </div>
                   </div>
-                </div>
+                </label>
 
-                <div style={{ fontWeight: 900 }}>{team.cost}</div>
-              </label>
+                <div className="draft-team-actions">
+                  <UiTooltip content="view team scoring details">
+                    <button
+                      type="button"
+                      onClick={() => setInspectedTeam(team)}
+                      className="draft-team-detail-button"
+                    >
+                      Details
+                    </button>
+                  </UiTooltip>
+                  <div style={{ fontWeight: 900 }}>{team.cost}</div>
+                </div>
+              </article>
             );
           })}
         </UiCard>
@@ -748,6 +792,9 @@ export default function DraftDetailPage() {
           }}
         >
           <div style={{ fontWeight: 900, fontSize: 18 }}>summary</div>
+          <p className="ui-field-helper">
+            use this panel as your guardrail: stay under budget and satisfy the competition limits before saving.
+          </p>
 
           <div style={{ display: "grid", gap: 8, fontSize: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -781,17 +828,9 @@ export default function DraftDetailPage() {
             )}
           </div>
 
-          <div
-            style={{
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: summary.isValid ? "var(--success-bg)" : "var(--danger-bg)",
-              fontWeight: 900,
-            }}
-          >
+          <UiStatus tone={summary.isValid ? "success" : "error"}>
             {summary.isValid ? "draft is valid" : summary.error ?? "draft is invalid"}
-          </div>
+          </UiStatus>
 
           <UiButton
             type="button"
@@ -812,6 +851,9 @@ export default function DraftDetailPage() {
 
           <div style={{ display: "grid", gap: 4 }}>
             <div style={{ fontWeight: 800, fontSize: 13 }}>selected teams ({selectedTeams.length})</div>
+            <p className="ui-field-helper">
+              these are the teams that will be entered when this draft is attached to a pool.
+            </p>
             <div style={{ display: "grid", gap: 4 }}>
               {selectedTeams.slice(0, 18).map((team) => (
                 <div
@@ -825,11 +867,16 @@ export default function DraftDetailPage() {
                     background: "var(--surface-muted)",
                   }}
                 >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {competitionSlug === "world-cup"
-                      ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
-                      : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <span style={{ flexShrink: 0 }}>({getWorldCupTierForCost(team.cost)?.name ?? "World Cup"})</span>
+                      <WorldCupTeamLabel name={team.name} logoUrl={team.logo_url} />
+                    </span>
+                  ) : (
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      ({team.seed}) {toSchoolDisplayName(team.name)}
+                    </span>
+                  )}
                   <b style={{ marginLeft: 8 }}>{team.cost}</b>
                 </div>
               ))}
@@ -856,6 +903,65 @@ export default function DraftDetailPage() {
         >
           {message}
         </p>
+      ) : null}
+
+      {inspectedTeam ? (
+        <div
+          role="presentation"
+          onClick={() => setInspectedTeam(null)}
+          className="app-sheet-backdrop"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${toSchoolDisplayName(inspectedTeam.name)} details`}
+            onClick={(event) => event.stopPropagation()}
+            className="app-bottom-sheet"
+          >
+            <div className="app-sheet-grabber" aria-hidden="true" />
+            <div className="app-sheet-header">
+              <div>
+                <span className="match-kicker">Team detail</span>
+                <h2>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={inspectedTeam.name} logoUrl={inspectedTeam.logo_url} />
+                  ) : (
+                    toSchoolDisplayName(inspectedTeam.name)
+                  )}
+                </h2>
+              </div>
+              <button type="button" onClick={() => setInspectedTeam(null)} className="native-only-icon-action">
+                x
+              </button>
+            </div>
+            <div className="team-detail-grid">
+              <div>
+                <span>Cost</span>
+                <strong>{inspectedTeam.cost}</strong>
+              </div>
+              <div>
+                <span>{competitionSlug === "world-cup" ? "Tier" : "Seed"}</span>
+                <strong>
+                  {competitionSlug === "world-cup"
+                    ? getWorldCupTierForCost(inspectedTeam.cost)?.name ?? "World Cup"
+                    : inspectedTeam.seed}
+                </strong>
+              </div>
+              <div>
+                <span>Selected</span>
+                <strong>{selected.has(inspectedTeam.id) ? "Yes" : "No"}</strong>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleTeam(inspectedTeam.id)}
+              disabled={draftsLocked || saving}
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {selected.has(inspectedTeam.id) ? "Remove from draft" : "Add to draft"}
+            </button>
+          </section>
+        </div>
       ) : null}
     </main>
   );

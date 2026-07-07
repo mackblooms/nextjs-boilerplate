@@ -1,16 +1,18 @@
 import type { CompetitionSlug } from "./competitions";
 import type { ScoringGame } from "./scoring";
+import { getWorldCupManualWinnerId } from "./worldCupManualResults.js";
 
 function normalizedRound(round: unknown) {
   return String(round ?? "").trim().toUpperCase();
 }
 
 function addGameLoser(eliminatedTeamIds: Set<string>, game: ScoringGame) {
-  if (!game.winner_team_id || !game.team1_id || !game.team2_id) return;
+  const winnerTeamId = getWorldCupManualWinnerId(game) ?? game.winner_team_id;
+  if (!winnerTeamId || !game.team1_id || !game.team2_id) return;
 
-  if (game.winner_team_id === game.team1_id) {
+  if (winnerTeamId === game.team1_id) {
     eliminatedTeamIds.add(game.team2_id);
-  } else if (game.winner_team_id === game.team2_id) {
+  } else if (winnerTeamId === game.team2_id) {
     eliminatedTeamIds.add(game.team1_id);
   }
 }

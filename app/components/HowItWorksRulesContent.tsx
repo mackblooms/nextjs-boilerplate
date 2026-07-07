@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   WORLD_CUP_DRAFT_TIERS,
   WORLD_CUP_LONGSHOT_BONUS_EVENTS,
@@ -7,6 +8,7 @@ import {
   WORLD_CUP_VALUE_RUN_BONUS_EVENTS,
 } from "@/lib/worldCupRules";
 import type { CompetitionSlug } from "@/lib/competitions";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 
 const SEED_COSTS: Array<[number, number]> = [
   [1, 22], [2, 19], [3, 14], [4, 12], [5, 10], [6, 8], [7, 7], [8, 6],
@@ -27,7 +29,7 @@ function RulesTable({
   rows,
 }: {
   columns: [string, string];
-  rows: ReadonlyArray<readonly [string | number, string | number]>;
+  rows: ReadonlyArray<readonly [ReactNode, ReactNode]>;
 }) {
   return (
     <div style={{ marginTop: 12, border: "1px solid var(--border-color)", borderRadius: 12, overflow: "hidden" }}>
@@ -35,8 +37,8 @@ function RulesTable({
         <div>{columns[0]}</div>
         <div style={{ textAlign: "right" }}>{columns[1]}</div>
       </div>
-      {rows.map(([label, value]) => (
-        <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid var(--border-color)" }}>
+      {rows.map(([label, value], index) => (
+        <div key={index} style={{ display: "grid", gridTemplateColumns: "1fr 140px", padding: "10px 12px", borderTop: "1px solid var(--border-color)" }}>
           <div>{label}</div>
           <div style={{ textAlign: "right", fontWeight: 900 }}>{value}</div>
         </div>
@@ -90,7 +92,17 @@ function SoccerRules() {
         </p>
         <RulesTable
           columns={["Tier and National Teams", "Draft Cost"]}
-          rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [`${tier.name}: ${tier.teams.join(", ")}`, tier.cost])}
+          rows={WORLD_CUP_DRAFT_TIERS.map((tier) => [
+            <span key={tier.name} style={{ display: "grid", gap: 6 }}>
+              <strong>{tier.name}</strong>
+              <span style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {tier.teams.map((team) => (
+                  <WorldCupTeamLabel key={team} name={team} />
+                ))}
+              </span>
+            </span>,
+            tier.cost,
+          ])}
         />
         <p style={{ marginTop: 10, opacity: 0.85 }}>Example: Diamond-tier Spain costs 24 points. Moonshot teams cost 3 points.</p>
       </section>

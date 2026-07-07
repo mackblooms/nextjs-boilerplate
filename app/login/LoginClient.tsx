@@ -3,23 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveInvitePoolId } from "../../lib/poolInvite";
 import { PASSWORD_MIN_LENGTH, generateStrongPassword } from "../../lib/accountPassword";
 import { getStoredActiveCompetition } from "../../lib/activeCompetition";
 import BackArrowButton from "../components/BackArrowButton";
-import { UiButton, UiInput } from "../components/ui/primitives";
+import { UiButton, UiFormField, UiInput, UiLoadingState, UiStatus } from "../components/ui/primitives";
 
 type Mode = "sign-in" | "sign-up";
-
-function sanitizeNextPath(nextPath: string | null) {
-  if (!nextPath) return "/";
-  return nextPath.startsWith("/") ? nextPath : "/";
-}
+const POST_LOGIN_PATH = "/";
 
 export default function LoginClient() {
   const router = useRouter();
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,11 +28,6 @@ export default function LoginClient() {
   const [msg, setMsg] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
 
-  const nextPath =
-    typeof window !== "undefined"
-      ? sanitizeNextPath(new URLSearchParams(window.location.search).get("next"))
-      : "/";
-
   const invitePoolId =
     typeof window !== "undefined"
       ? resolveInvitePoolId(new URLSearchParams(window.location.search))
@@ -45,17 +37,6 @@ export default function LoginClient() {
       ? `/how-it-works?competition=${getStoredActiveCompetition()}`
       : "/how-it-works";
 
-  const profileSetupNext = useMemo(() => {
-    const params = new URLSearchParams({
-      onboarding: "1",
-      next: nextPath,
-    });
-    if (invitePoolId) params.set("invitePoolId", invitePoolId);
-    return `/profile?${params.toString()}`;
-  }, [invitePoolId, nextPath]);
-
-  const signInNext = invitePoolId ? `/pool/${invitePoolId}` : nextPath;
-
   useEffect(() => {
     let canceled = false;
 
@@ -64,7 +45,7 @@ export default function LoginClient() {
       if (canceled) return;
 
       if (data.session) {
-        router.replace(signInNext);
+        router.replace(POST_LOGIN_PATH);
         return;
       }
 
@@ -76,7 +57,7 @@ export default function LoginClient() {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (canceled) return;
       if (session) {
-        router.replace(signInNext);
+        router.replace(POST_LOGIN_PATH);
       }
     });
 
@@ -84,7 +65,17 @@ export default function LoginClient() {
       canceled = true;
       sub.subscription.unsubscribe();
     };
-  }, [router, signInNext]);
+  }, [router]);
+
+  useEffect(() => {
+    if (!authChecked || mode !== "sign-in") return;
+
+    const focusHandle = window.requestAnimationFrame(() => {
+      emailInputRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(focusHandle);
+  }, [authChecked, mode]);
 
   useEffect(() => {
     if (!legalModalOpen) return;
@@ -101,7 +92,7 @@ export default function LoginClient() {
     };
   }, [legalModalOpen]);
 
-  function buildAuthCallbackUrl(nextTargetPath: string) {
+  function buildAuthCallbackUrl(nextTargetPath = POST_LOGIN_PATH) {
     const params = new URLSearchParams({ next: nextTargetPath });
     if (invitePoolId) params.set("invitePoolId", invitePoolId);
     return `${window.location.origin}/auth/callback?${params.toString()}`;
@@ -125,7 +116,7 @@ export default function LoginClient() {
       type: "signup",
       email,
       options: {
-        emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
+        emailRedirectTo: buildAuthCallbackUrl(),
       },
     });
 
@@ -173,7 +164,7 @@ export default function LoginClient() {
       email,
       password,
       options: {
-        emailRedirectTo: buildAuthCallbackUrl(profileSetupNext),
+        emailRedirectTo: buildAuthCallbackUrl(),
       },
     });
 
@@ -189,7 +180,7 @@ export default function LoginClient() {
     setStatus("success");
     if (hasSession) {
       setMsg("Account created and signed in. Redirecting...");
-      window.location.replace(profileSetupNext);
+      window.location.replace(POST_LOGIN_PATH);
       return;
     }
 
@@ -219,7 +210,7 @@ export default function LoginClient() {
 
     setStatus("success");
     setMsg("Signed in successfully. Redirecting...");
-    window.location.replace(signInNext);
+    window.location.replace(POST_LOGIN_PATH);
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -269,7 +260,10 @@ export default function LoginClient() {
   if (!authChecked) {
     return (
       <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-        Loading...
+        <UiLoadingState
+          title="checking session"
+          description="we're confirming whether you're already signed in."
+        />
       </main>
     );
   }
@@ -363,36 +357,73 @@ export default function LoginClient() {
           </UiButton>
         </div>
 
-        <form onSubmit={onSubmit} className="login-form-fields">
-          <UiInput
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
+        <form onSubmit={onSubmit} className="login-form-fields" autoComplete="on">
+          <UiFormField
+            label="email"
+            htmlFor="email"
             required
-          />
-
-          <UiInput
-            type="password"
-            placeholder={mode === "sign-up" ? "New password" : "Password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={PASSWORD_MIN_LENGTH}
-            autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-          />
-
-          {mode === "sign-up" ? (
+            helperText="use the email tied to your pools and drafts."
+          >
             <UiInput
+              ref={emailInputRef}
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              inputMode="email"
+              enterKeyHint="next"
+              required
+            />
+          </UiFormField>
+
+          <UiFormField
+            label={mode === "sign-up" ? "new password" : "password"}
+            htmlFor={mode === "sign-up" ? "new-password" : "current-password"}
+            required
+            helperText={
+              mode === "sign-up"
+                ? `minimum ${PASSWORD_MIN_LENGTH} characters.`
+                : "enter your bracketball password."
+            }
+          >
+            <UiInput
+              id={mode === "sign-up" ? "new-password" : "current-password"}
+              name={mode === "sign-up" ? "new-password" : "password"}
               type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={mode === "sign-up" ? "new password" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               minLength={PASSWORD_MIN_LENGTH}
-              autoComplete="new-password"
+              autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
+              enterKeyHint={mode === "sign-up" ? "next" : "done"}
             />
+          </UiFormField>
+
+          {mode === "sign-up" ? (
+            <UiFormField
+              label="confirm password"
+              htmlFor="confirm-password"
+              required
+              error={confirmPassword && password !== confirmPassword ? "passwords do not match." : undefined}
+            >
+              <UiInput
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                placeholder="confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={PASSWORD_MIN_LENGTH}
+                autoComplete="new-password"
+                enterKeyHint="done"
+                aria-invalid={Boolean(confirmPassword && password !== confirmPassword)}
+              />
+            </UiFormField>
           ) : null}
 
           {mode === "sign-up" ? (
@@ -406,17 +437,8 @@ export default function LoginClient() {
               >
                 Generate strong password
               </UiButton>
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  background: acceptedLegal ? "var(--success-bg)" : "var(--surface-muted)",
-                  display: "grid",
-                  gap: 6,
-                }}
-              >
-                <div style={{ fontSize: 13, fontWeight: 700 }}>
+              <UiStatus tone={acceptedLegal ? "success" : "warning"}>
+                <div style={{ fontWeight: 700 }}>
                   {acceptedLegal ? "Legal agreement accepted." : "Legal agreement required."}
                 </div>
                 <UiButton
@@ -430,7 +452,7 @@ export default function LoginClient() {
                 >
                   {acceptedLegal ? "Review agreement" : "Review and agree"}
                 </UiButton>
-              </div>
+              </UiStatus>
             </div>
           ) : null}
 

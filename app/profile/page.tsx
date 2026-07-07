@@ -14,6 +14,13 @@ import {
   normalizePushPermissionState,
   type PushPermissionState,
 } from "@/lib/pushNotifications";
+import {
+  UiFormField,
+  UiInput,
+  UiLoadingState,
+  UiStatus,
+  UiTextarea,
+} from "../components/ui/primitives";
 
 type ProfileRow = {
   display_name: string | null;
@@ -538,7 +545,12 @@ export default function ProfilePage() {
         </p>
       </section>
 
-      {loading ? <p>Loading...</p> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading profile"
+          description="we're checking your avatar, player card, and notification settings."
+        />
+      ) : null}
 
       {!loading && isEditing ? (
         <section
@@ -700,53 +712,70 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Full name (first + last, required)
-          </label>
-          <input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="e.g., Jordan Matthews"
-            className="ui-control ui-control--full"
-            style={{ marginBottom: 12 }}
-          />
+          <div className="app-form">
+            <UiFormField
+              label="full name"
+              htmlFor="profile-full-name"
+              required
+              helperText="first and last name for your pool profile."
+              error={fullName.trim() && fullName.trim().split(/\s+/).length < 2 ? "enter first and last name." : undefined}
+            >
+              <UiInput
+                id="profile-full-name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="jordan matthews"
+                aria-invalid={Boolean(fullName.trim() && fullName.trim().split(/\s+/).length < 2)}
+              />
+            </UiFormField>
 
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Favorite college team
-          </label>
-          <input
-            value={favoriteTeam}
-            onChange={(e) => setFavoriteTeam(e.target.value)}
-            placeholder="e.g., UConn"
-            className="ui-control ui-control--full"
-            style={{ marginBottom: 12 }}
-          />
+            <UiFormField
+              label="favorite college team"
+              htmlFor="profile-favorite-team"
+              required
+              helperText="used to personalize your profile and pool context."
+              error={favoriteTeam.trim().length === 0 && msg === "Please add your favorite college team." ? msg : undefined}
+            >
+              <UiInput
+                id="profile-favorite-team"
+                value={favoriteTeam}
+                onChange={(e) => setFavoriteTeam(e.target.value)}
+                placeholder="uconn"
+                aria-invalid={favoriteTeam.trim().length === 0 && msg === "Please add your favorite college team."}
+              />
+            </UiFormField>
 
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Favorite soccer team
-          </label>
-          <input
-            value={favoriteSoccerTeam}
-            onChange={(e) => setFavoriteSoccerTeam(e.target.value)}
-            placeholder="e.g., USA"
-            className="ui-control ui-control--full"
-            style={{ marginBottom: 12 }}
-          />
+            <UiFormField
+              label="favorite soccer team"
+              htmlFor="profile-favorite-soccer-team"
+              helperText="optional for world cup pools."
+            >
+              <UiInput
+                id="profile-favorite-soccer-team"
+                value={favoriteSoccerTeam}
+                onChange={(e) => setFavoriteSoccerTeam(e.target.value)}
+                placeholder="usa"
+              />
+            </UiFormField>
 
-          <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>
-            Bio (optional)
-          </label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell your poolmates about your upset philosophy"
-            rows={3}
-            className="ui-control ui-control--full ui-textarea"
-            style={{ marginBottom: 12 }}
-          />
+            <UiFormField
+              label="bio"
+              htmlFor="profile-bio"
+              helperText="optional note your poolmates can see."
+            >
+              <UiTextarea
+                id="profile-bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="tell your poolmates about your upset philosophy"
+                rows={3}
+              />
+            </UiFormField>
+          </div>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="app-form-actions">
             <button
+              type="button"
               onClick={save}
               disabled={uploadingAvatar}
               className="ui-btn ui-btn--lg ui-btn--primary"
@@ -756,6 +785,7 @@ export default function ProfilePage() {
 
             {hasProfile && !onboarding ? (
               <button
+                type="button"
                 onClick={() => {
                   setIsEditing(false);
                   setMsg("");
@@ -873,11 +903,11 @@ export default function ProfilePage() {
               onClick={() => void togglePushNotifications()}
               disabled={pushBusy || pushLoading}
               style={{
-                width: 58,
-                height: 34,
+                width: 68,
+                height: 42,
                 borderRadius: 999,
                 border: "1px solid var(--border-color)",
-                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.36)",
+                background: pushEnabled ? "var(--color-success)" : "color-mix(in srgb, var(--color-fg) 18%, transparent)",
                 padding: 3,
                 position: "relative",
                 cursor: pushBusy || pushLoading ? "not-allowed" : "pointer",
@@ -888,12 +918,12 @@ export default function ProfilePage() {
                 aria-hidden="true"
                 style={{
                   display: "block",
-                  width: 26,
-                  height: 26,
+                  width: 32,
+                  height: 32,
                   borderRadius: 999,
                   background: "#fff",
                   boxShadow: "0 3px 10px rgba(15, 23, 42, 0.2)",
-                  transform: pushEnabled ? "translateX(24px)" : "translateX(0)",
+                  transform: pushEnabled ? "translateX(28px)" : "translateX(0)",
                   transition: "transform 160ms ease",
                 }}
               />
@@ -915,7 +945,7 @@ export default function ProfilePage() {
                 width: 10,
                 height: 10,
                 borderRadius: 999,
-                background: pushEnabled ? "#16a34a" : "rgba(148, 163, 184, 0.9)",
+                background: pushEnabled ? "var(--color-success)" : "color-mix(in srgb, var(--color-fg) 62%, transparent)",
               }}
             />
             {pushLoading
@@ -938,7 +968,20 @@ export default function ProfilePage() {
         </section>
       ) : null}
 
-      {msg ? <p style={{ marginTop: 12 }}>{msg}</p> : null}
+      {msg ? (
+        <UiStatus
+          tone={
+            msg.toLowerCase().includes("saved") || msg.toLowerCase().includes("selected")
+              ? "success"
+              : msg.toLowerCase().includes("please") || msg.toLowerCase().includes("failed") || msg.toLowerCase().includes("could")
+                ? "error"
+                : "info"
+          }
+          className="app-form-status"
+        >
+          {msg}
+        </UiStatus>
+      ) : null}
     </main>
   );
 }

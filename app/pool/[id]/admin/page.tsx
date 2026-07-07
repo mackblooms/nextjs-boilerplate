@@ -7,6 +7,7 @@ import AdminPlayerFetch from "@/app/components/AdminPlayerFetch";
 import AdminPlayerImport from "@/app/components/AdminPlayerImport";
 import AdminPlayerLookup from "@/app/components/AdminPlayerLookup";
 import AdminProjectionTool from "@/app/components/AdminProjectionTool";
+import { UiLoadingState } from "@/app/components/ui/primitives";
 
 type Team = {
   id: string;
@@ -921,7 +922,11 @@ export default function AdminPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900 }}>
           Commissioner Admin
         </h1>
-        <p style={{ marginTop: 12 }}>Loading...</p>
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading admin tools"
+          description="we're checking permissions, teams, games, pools, and stored pool settings."
+        />
       </main>
     );
   }

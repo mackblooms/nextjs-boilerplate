@@ -13,6 +13,17 @@ import { sameTeamSet, type SavedDraftPickRow } from "@/lib/savedDrafts";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import {
+  UiButton,
+  UiEmptyState,
+  UiFormField,
+  UiInput,
+  UiLinkButton,
+  UiLoadingState,
+  UiStatus,
+  UiTooltip,
+} from "@/app/components/ui/primitives";
 
 function competitionPathWithParams(
   path: string,
@@ -388,12 +399,16 @@ function ScoreSidebar({
   loading,
   error,
   emptyMessage,
+  competitionSlug,
+  onGameSelect,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
   emptyMessage: string;
+  competitionSlug: CompetitionSlug;
+  onGameSelect?: (game: LiveScoreGame) => void;
 }) {
   return (
     <aside
@@ -408,10 +423,19 @@ function ScoreSidebar({
       }}
     >
       <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
-      {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
-      {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading scores"
+          description="checking the latest games for this pool."
+        />
+      ) : null}
+      {!loading && error ? <UiStatus tone="error">{error}</UiStatus> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
+        <UiEmptyState
+          as="div"
+          title="no games to show"
+          description={emptyMessage}
+        />
       ) : null}
       {!loading &&
         !error &&
@@ -432,9 +456,13 @@ function ScoreSidebar({
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.awayTeamName}
                 >
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.awayTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.awayTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.awayTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
@@ -443,9 +471,13 @@ function ScoreSidebar({
                   style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}
                   title={game.homeTeamName}
                 >
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.homeTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.homeTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.homeTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
@@ -455,6 +487,20 @@ function ScoreSidebar({
               ) : null}
             </article>
           );
+
+          if (onGameSelect) {
+            return (
+              <button
+                key={game.id}
+                type="button"
+                onClick={() => onGameSelect(game)}
+                className="pool-score-button"
+                aria-label={`View pool impact for ${game.awayTeamName} at ${game.homeTeamName}`}
+              >
+                {row}
+              </button>
+            );
+          }
 
           if (!game.boxScoreUrl) return <div key={game.id}>{row}</div>;
 
@@ -523,6 +569,7 @@ export default function PoolPage() {
   const [draftedTeamCount, setDraftedTeamCount] = useState(0);
   const [draftedLoaded, setDraftedLoaded] = useState(false);
   const [autoDraftPromptHandled, setAutoDraftPromptHandled] = useState(false);
+  const [selectedImpactGame, setSelectedImpactGame] = useState<LiveScoreGame | null>(null);
   const sharePayload = useMemo(
     () => buildPoolInviteShareData(poolId, pool?.name ?? null, pool?.is_private ?? true),
     [pool?.is_private, pool?.name, poolId]
@@ -1461,13 +1508,26 @@ export default function PoolPage() {
     if (draftedTeamCount === 0) return "Enter a saved draft in this pool, then your games will show here.";
     return "No live games today or upcoming games tomorrow for your drafted teams.";
   }, [draftedLoaded, isMember, draftedTeamCount]);
+  const selectedImpactTeams = useMemo(() => {
+    if (!selectedImpactGame) return [];
+    const out: Array<{ name: string; side: "away" | "home" }> = [];
+    const awayKey = normalizeTeamKey(selectedImpactGame.awayTeamName || selectedImpactGame.awayTeam);
+    const homeKey = normalizeTeamKey(selectedImpactGame.homeTeamName || selectedImpactGame.homeTeam);
 
-  const statusStyle =
-    status?.tone === "success"
-      ? { background: "var(--success-bg)", borderColor: "var(--border-color)" }
-      : status?.tone === "error"
-        ? { background: "var(--danger-bg)", borderColor: "var(--border-color)" }
-        : { background: "var(--surface-muted)", borderColor: "var(--border-color)" };
+    if (
+      (selectedImpactGame.awayTeamId && draftedEspnIdSet.has(selectedImpactGame.awayTeamId)) ||
+      draftedKeySet.has(awayKey)
+    ) {
+      out.push({ name: selectedImpactGame.awayTeamName, side: "away" });
+    }
+    if (
+      (selectedImpactGame.homeTeamId && draftedEspnIdSet.has(selectedImpactGame.homeTeamId)) ||
+      draftedKeySet.has(homeKey)
+    ) {
+      out.push({ name: selectedImpactGame.homeTeamName, side: "home" });
+    }
+    return out;
+  }, [draftedEspnIdSet, draftedKeySet, selectedImpactGame]);
 
   return (
     <main className="page-shell page-shell--compact" style={{ maxWidth: 1320 }}>
@@ -1479,6 +1539,8 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={recentFinalsEmptyMessage}
+            competitionSlug={competitionSlug}
+            onGameSelect={setSelectedImpactGame}
           />
         </div>
 
@@ -1486,138 +1548,165 @@ export default function PoolPage() {
           className="pool-main-card page-surface"
           style={{
             display: "grid",
-            gap: 16,
+            gap: 12,
             border: "1px solid var(--border-color)",
-            borderRadius: 16,
-            padding: "16px 12px",
             background: "var(--surface)",
           }}
         >
-        <div className="pool-card-hero" style={{ display: "grid", justifyItems: "center", textAlign: "center", gap: 10 }}>
-          <button
-            onClick={sharePoolLink}
-            aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-            title={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
-            style={{
-              border: "none",
-              background: "transparent",
-              padding: 0,
-              cursor: "pointer",
-              lineHeight: 0,
-            }}
-          >
-            <Image
-              src="/pool-logo.svg?v=2"
-              alt=""
-              aria-hidden="true"
-              width={420}
-              height={170}
-              priority
-              style={{
-                maxWidth: "100%",
-                height: "auto",
-                filter: "var(--logo-filter)",
-              }}
-            />
-          </button>
-
-          <div style={{ fontSize: 14, opacity: 0.85, fontWeight: 700 }}>
-            {canNativeShare
-              ? "Tap the logo to share this pool invite"
-              : "Tap the logo to copy this pool invite link"}
-          </div>
-
-          <h1 className="page-title" style={{ fontSize: 30, fontWeight: 900, margin: 0 }}>
-            {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
-          </h1>
-
-          <p style={{ margin: 0, opacity: 0.8, maxWidth: 520 }}>
-            Open the bracket, check standings, and keep invites moving from one place.
-          </p>
-
-          <div className="pool-chip-row" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            <span
-              style={{
-                fontSize: 12,
-                borderRadius: 999,
-                padding: "6px 10px",
-                border: "1px solid var(--border-color)",
-                background: "var(--surface-muted)",
-                fontWeight: 800,
-              }}
+        <header className="pool-dashboard-header">
+          <UiTooltip content={canNativeShare ? "share pool invite" : "copy shareable pool link"} side="bottom">
+            <button
+              onClick={sharePoolLink}
+              className="pool-dashboard-logo"
+              aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
             >
-              {poolIsPrivate ? "Private pool" : "Public pool"}
-            </span>
-            {isMember === true ? (
-              <span
+              <Image
+                src="/pool-logo.svg?v=2"
+                alt=""
+                aria-hidden="true"
+                width={150}
+                height={61}
+                priority
                 style={{
-                  fontSize: 12,
-                  borderRadius: 999,
-                  padding: "6px 10px",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--success-bg)",
-                  fontWeight: 800,
+                  width: "100%",
+                  height: "auto",
+                  filter: "var(--logo-filter)",
                 }}
-              >
-                You are a member
-              </span>
-            ) : null}
-          </div>
-        </div>
+              />
+            </button>
+          </UiTooltip>
 
-        <div className="pool-card-section" style={{ display: "grid", gap: 8 }}>
-          <label htmlFor="share-link" style={{ fontWeight: 800, fontSize: 13 }}>
-            Share link
-          </label>
-          <div className="pool-share-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              id="share-link"
-              type="text"
-              value={shareLink}
-              readOnly
-              className="ui-control"
-              style={{ flex: "1 1 260px", minWidth: 0 }}
-            />
+          <div className="pool-dashboard-title">
+            <span className="match-kicker">{poolIsPrivate ? "Private pool" : "Public pool"}</span>
+            <h1 className="page-title">
+              {pool?.name ?? (loading ? "Loading pool..." : "Pool")}
+            </h1>
+            <span>{isMember === true ? "Member dashboard" : "Pool preview"}</span>
+          </div>
+
+          <UiTooltip content={canNativeShare ? "share pool invite" : "copy shareable pool link"} side="left">
             <button
               type="button"
               onClick={sharePoolLink}
-              className="ui-btn ui-btn--md ui-btn--primary"
-              style={{ flex: "1 1 140px" }}
+              className="native-only-icon-action"
+              aria-label={canNativeShare ? "Share pool invite" : "Copy shareable pool link"}
             >
-              {canNativeShare ? "Share invite" : "Share"}
+              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 18, height: 18 }}>
+                <path d="M7.5 12.5 16.5 7.4M7.5 11.5l9 5.1" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                <circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+                <circle cx="18" cy="6.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+                <circle cx="18" cy="17.5" r="2.6" fill="none" stroke="currentColor" strokeWidth="1.9" />
+              </svg>
+            </button>
+          </UiTooltip>
+        </header>
+
+        <div className="pool-dashboard-stats" aria-label="Pool status">
+          <div>
+            <span>Status</span>
+            <strong>{isMember === true ? "Joined" : "Preview"}</strong>
+          </div>
+          <div>
+            <span>Entries</span>
+            <strong>{entriesLocked ? "Locked" : "Open"}</strong>
+          </div>
+          <div>
+            <span>Teams</span>
+            <strong>{draftedLoaded ? draftedTeamCount : "-"}</strong>
+          </div>
+        </div>
+
+        {isMember === true ? (
+          <section className="pool-impact-strip" aria-label="My pool situation">
+            <button
+              type="button"
+              onClick={() => liveAndUpcoming[0] && setSelectedImpactGame(liveAndUpcoming[0])}
+              disabled={liveAndUpcoming.length === 0}
+            >
+              <span>Next impact</span>
+              <strong>
+                {liveAndUpcoming[0] ? (
+                  competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <WorldCupTeamLabel name={liveAndUpcoming[0].awayTeamName} />
+                      <span>/</span>
+                      <WorldCupTeamLabel name={liveAndUpcoming[0].homeTeamName} />
+                    </span>
+                  ) : (
+                    `${liveAndUpcoming[0].awayTeamName} / ${liveAndUpcoming[0].homeTeamName}`
+                  )
+                ) : (
+                  "None"
+                )}
+              </strong>
             </button>
             <button
               type="button"
-              onClick={copyShareLink}
-              className="ui-btn ui-btn--md ui-btn--secondary"
-              style={{ flex: "1 1 140px" }}
+              onClick={() => recentFinals[0] && setSelectedImpactGame(recentFinals[0])}
+              disabled={recentFinals.length === 0}
             >
-              Copy link
+              <span>Latest result</span>
+              <strong>
+                {recentFinals[0] ? (
+                  competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                      <WorldCupTeamLabel name={recentFinals[0].awayTeamName} />
+                      <span>/</span>
+                      <WorldCupTeamLabel name={recentFinals[0].homeTeamName} />
+                    </span>
+                  ) : (
+                    `${recentFinals[0].awayTeamName} / ${recentFinals[0].homeTeamName}`
+                  )
+                ) : (
+                  "None"
+                )}
+              </strong>
             </button>
-          </div>
-          {copyMsg ? <p style={{ margin: 0, fontSize: 13, fontWeight: 700 }}>{copyMsg}</p> : null}
+          </section>
+        ) : null}
+
+        <div className="pool-share-compact">
+          <input
+            id="share-link"
+            type="text"
+            value={shareLink}
+            readOnly
+            aria-label="Share link"
+            className="ui-control"
+          />
+          <button
+            type="button"
+            onClick={sharePoolLink}
+            className="ui-btn ui-btn--md ui-btn--primary"
+          >
+            {canNativeShare ? "Share" : "Copy"}
+          </button>
+          <button
+            type="button"
+            onClick={copyShareLink}
+            className="ui-btn ui-btn--md ui-btn--secondary native-hidden"
+          >
+            Copy
+          </button>
+          {copyMsg ? <p>{copyMsg}</p> : null}
         </div>
 
         {isPoolCreator ? (
           <section
-            className="pool-card-section"
+            className="pool-card-section pool-dashboard-panel"
             style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-              display: "grid",
-              gap: 8,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
             }}
           >
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Creator controls</h2>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 900 }}>Creator controls</h2>
             <button
               type="button"
               onClick={() => void deletePool()}
               disabled={deletingPool}
               className="ui-btn ui-btn--md ui-btn--danger"
-              style={{ width: "fit-content", maxWidth: "100%" }}
             >
               {deletingPool ? "Deleting..." : "Delete Pool"}
             </button>
@@ -1626,38 +1715,38 @@ export default function PoolPage() {
 
         {isMember === false && !loading ? (
           <section
-            className="pool-card-section pool-card-section--accent"
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-            }}
+            className="pool-card-section pool-card-section--accent pool-dashboard-panel"
           >
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Join this pool</h2>
-            <p style={{ margin: "6px 0 0", opacity: 0.85, fontSize: 14 }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Join this pool</h2>
+            <p style={{ margin: "4px 0 0", opacity: 0.85, fontSize: 13 }}>
               {entriesLocked
                 ? `Draft entry and leave are locked (${formatDraftLockTimeET(pool?.lock_time ?? null, competitionSlug)}).`
                 : poolIsPrivate
                 ? "This is a private pool. Enter the pool password to join, then pick draft(s) to enter."
                 : "This is a public pool. Join now, then pick draft(s) to enter."}
             </p>
-            <div style={{ marginTop: 12, width: "100%", maxWidth: 420 }}>
+            <div className="pool-join-inline">
               {poolIsPrivate ? (
-                <input
-                  type="password"
-                  value={joinPassword}
-                  onChange={(e) => setJoinPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !joinDisabled) {
-                      void joinPool();
-                    }
-                  }}
-                  placeholder="Pool password"
-                  className="ui-control ui-control--full"
-                  style={{ marginBottom: 10, background: "var(--surface)" }}
-                />
+                <UiFormField
+                  label="pool password"
+                  htmlFor="pool-detail-join-password"
+                  required
+                  helperText="this password comes from the pool creator."
+                  style={{ width: "100%" }}
+                >
+                  <UiInput
+                    id="pool-detail-join-password"
+                    type="password"
+                    value={joinPassword}
+                    onChange={(e) => setJoinPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !joinDisabled) {
+                        void joinPool();
+                      }
+                    }}
+                    placeholder="pool password"
+                  />
+                </UiFormField>
               ) : null}
 
               <button
@@ -1674,61 +1763,54 @@ export default function PoolPage() {
 
         {isMember === true ? (
           <section
-            className="pool-card-section pool-card-section--accent"
-            style={{
-              border: "1px solid var(--border-color)",
-              borderRadius: 12,
-              padding: 12,
-              background: "var(--surface-muted)",
-              width: "100%",
-              display: "grid",
-              gap: 10,
-            }}
+            className="pool-card-section pool-card-section--accent pool-dashboard-panel"
           >
-            <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>Quick actions</h2>
-            <div className="pool-quick-actions" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900 }}>Next actions</h2>
+            <p className="ui-field-helper">
+              manage drafts before lock, then use the leaderboard and bracket to track results.
+            </p>
+            <div className="pool-quick-actions">
               <Link
                 href={competitionPath("/drafts", competitionSlug)}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                className="pool-action-cell"
               >
-                My Drafts
+                <strong>My Drafts</strong>
+                <span>Edit saved teams</span>
               </Link>
               <Link
                 href={competitionPath(`/pool/${poolId}/draft`, competitionSlug)}
                 aria-disabled={entriesLocked}
-                className="ui-btn ui-btn--md ui-btn--primary"
+                className="pool-action-cell pool-action-cell--primary"
                 style={{
-                  flex: "1 1 140px",
-                  minWidth: 120,
                   pointerEvents: entriesLocked ? "none" : undefined,
                   opacity: entriesLocked ? 0.7 : undefined,
                 }}
               >
-                Enter Drafts
+                <strong>{entriesLocked ? "Entries Locked" : "Enter Drafts"}</strong>
+                <span>Add drafts here</span>
               </Link>
               <button
                 type="button"
                 onClick={() => void openLeaveModal()}
                 disabled={entriesLocked}
-                className="ui-btn ui-btn--md ui-btn--danger"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                className="pool-action-cell pool-action-cell--danger"
               >
-                Leave Entries
+                <strong>Leave Entries</strong>
+                <span>Remove a bracket</span>
               </button>
               <Link
-                href={`/pool/${poolId}/bracket`}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                href={competitionPath(`/pool/${poolId}/bracket`, competitionSlug)}
+                className="pool-action-cell"
               >
-                Bracket
+                <strong>Bracket</strong>
+                <span>View matchups</span>
               </Link>
               <Link
-                href={`/pool/${poolId}/leaderboard`}
-                className="ui-btn ui-btn--md ui-btn--secondary"
-                style={{ flex: "1 1 140px", minWidth: 120 }}
+                href={competitionPath(`/pool/${poolId}/leaderboard`, competitionSlug)}
+                className="pool-action-cell"
               >
-                Leaderboard
+                <strong>Leaderboard</strong>
+                <span>Check standings</span>
               </Link>
             </div>
             {entriesLocked ? (
@@ -1739,23 +1821,20 @@ export default function PoolPage() {
           </section>
         ) : null}
 
-        {loading ? <p style={{ margin: 0, fontWeight: 700, opacity: 0.85 }}>Checking your membership...</p> : null}
+        {loading ? (
+          <UiLoadingState>
+            <strong>Checking your membership...</strong>
+          </UiLoadingState>
+        ) : null}
 
         {status ? (
-          <p
+          <UiStatus
             role="status"
             aria-live="polite"
-            style={{
-              margin: 0,
-              border: "1px solid",
-              borderRadius: 10,
-              padding: "10px 12px",
-              fontWeight: 700,
-              ...statusStyle,
-            }}
+            tone={status.tone}
           >
             {status.text}
-          </p>
+          </UiStatus>
         ) : null}
         </div>
 
@@ -1766,89 +1845,147 @@ export default function PoolPage() {
             loading={scoresLoading || !draftedLoaded}
             error={scoresError}
             emptyMessage={liveAndUpcomingEmptyMessage}
+            competitionSlug={competitionSlug}
+            onGameSelect={setSelectedImpactGame}
           />
         </div>
       </div>
+
+      {selectedImpactGame ? (
+        <div
+          role="presentation"
+          onClick={() => setSelectedImpactGame(null)}
+          className="app-sheet-backdrop"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="Game impact"
+            onClick={(event) => event.stopPropagation()}
+            className="app-bottom-sheet"
+          >
+            <div className="app-sheet-grabber" aria-hidden="true" />
+            <div className="app-sheet-header">
+              <div>
+                <span className="match-kicker">Game impact</span>
+                <h2>
+                  {competitionSlug === "world-cup" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <WorldCupTeamLabel name={selectedImpactGame.awayTeamName} />
+                      <span>at</span>
+                      <WorldCupTeamLabel name={selectedImpactGame.homeTeamName} />
+                    </span>
+                  ) : (
+                    `${selectedImpactGame.awayTeamName} at ${selectedImpactGame.homeTeamName}`
+                  )}
+                </h2>
+              </div>
+              <button type="button" onClick={() => setSelectedImpactGame(null)} className="native-only-icon-action">
+                x
+              </button>
+            </div>
+            <div className="pool-impact-score">
+              <div>
+                <span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={selectedImpactGame.awayTeamName} />
+                  ) : (
+                    selectedImpactGame.awayTeamName
+                  )}
+                </span>
+                <strong>{selectedImpactGame.awayScore ?? "-"}</strong>
+              </div>
+              <div>
+                <span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={selectedImpactGame.homeTeamName} />
+                  ) : (
+                    selectedImpactGame.homeTeamName
+                  )}
+                </span>
+                <strong>{selectedImpactGame.homeScore ?? "-"}</strong>
+              </div>
+              <p>{statusLabel(selectedImpactGame)}</p>
+            </div>
+            <div className="pool-impact-teams">
+              <strong>On your drafts</strong>
+              {selectedImpactTeams.length > 0 ? (
+                selectedImpactTeams.map((team) => (
+                  <span key={`${selectedImpactGame.id}-${team.side}`}>
+                    {competitionSlug === "world-cup" ? <WorldCupTeamLabel name={team.name} /> : team.name}
+                  </span>
+                ))
+              ) : (
+                <p>No drafted teams matched this game.</p>
+              )}
+            </div>
+            {selectedImpactGame.boxScoreUrl ? (
+              <a
+                href={selectedImpactGame.boxScoreUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="ui-btn ui-btn--md ui-btn--secondary"
+              >
+                Open box score
+              </a>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
 
       {draftModalOpen ? (
         <div
           role="presentation"
           onClick={closeDraftModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 16,
-            zIndex: 125,
-          }}
+          className="app-modal-backdrop app-modal-backdrop--raised"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-label="Select drafts to enter"
             onClick={(event) => event.stopPropagation()}
-            style={{
-              width: "min(640px, 100%)",
-              maxHeight: "88vh",
-              overflow: "auto",
-              borderRadius: 12,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface)",
-              padding: 14,
-              display: "grid",
-              gap: 12,
-            }}
+            className="app-modal app-modal--wide"
           >
             <div style={{ display: "grid", gap: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>Enter Drafts in {pool?.name ?? "Pool"}</h2>
-              <p style={{ margin: 0, opacity: 0.8 }}>
+              <h2>Enter Drafts in {pool?.name ?? "Pool"}</h2>
+              <p className="app-modal-copy">
                 Select one or more drafts below. Each selected draft creates its own entry in this pool.
+              </p>
+              <p className="ui-field-helper">
+                use multiple drafts if you want separate leaderboard entries with different pick sets.
               </p>
             </div>
 
-            {draftModalLoading ? <p style={{ margin: 0 }}>Loading your drafts...</p> : null}
+            {draftModalLoading ? (
+              <UiLoadingState
+                title="loading your drafts"
+                description="checking saved drafts, selected teams, and existing pool entries."
+              />
+            ) : null}
 
             {!draftModalLoading && availableDrafts.length > 0 ? (
               <>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={selectAllDrafts}
-                  disabled={draftModalSubmitting || entriesLocked}
-                  style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
-                    }}
+                <div className="app-modal-actions" style={{ justifyContent: "flex-start" }}>
+                  <UiButton
+                    type="button"
+                    onClick={selectAllDrafts}
+                    disabled={draftModalSubmitting || entriesLocked}
+                    size="sm"
                   >
                     Select all
-                  </button>
-                  <button
+                  </UiButton>
+                  <UiButton
                     type="button"
                     onClick={clearDraftSelection}
                     disabled={draftModalSubmitting || entriesLocked}
-                    style={{
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: "1px solid var(--border-color)",
-                      background: "var(--surface)",
-                      fontWeight: 800,
-                      cursor: draftModalSubmitting || entriesLocked ? "not-allowed" : "pointer",
-                      opacity: draftModalSubmitting || entriesLocked ? 0.7 : 1,
-                    }}
+                    variant="ghost"
+                    size="sm"
                   >
                     Clear
-                  </button>
+                  </UiButton>
                 </div>
 
-                <div style={{ display: "grid", gap: 8 }}>
+                <div className="app-modal-option-list">
                   {availableDrafts.map((draft) => {
                     const picks = draftPickMap.get(draft.id);
                     const pickCount = picks?.size ?? 0;
@@ -1857,17 +1994,9 @@ export default function PoolPage() {
                     return (
                       <label
                         key={draft.id}
-                        style={{
-                          display: "flex",
-                          gap: 10,
-                          alignItems: "center",
-                          border: "1px solid var(--border-color)",
-                          borderRadius: 10,
-                          padding: "10px 12px",
-                          background: checked ? "var(--surface-elevated)" : "var(--surface)",
-                          cursor: isAlreadyEntered ? "not-allowed" : "pointer",
-                          opacity: isAlreadyEntered ? 0.75 : 1,
-                        }}
+                        className="app-modal-option"
+                        data-checked={checked}
+                        data-disabled={isAlreadyEntered}
                       >
                         <input
                           type="checkbox"
@@ -1883,6 +2012,11 @@ export default function PoolPage() {
                           <div style={{ fontSize: 13, opacity: 0.8 }}>
                             {pickCount} team{pickCount === 1 ? "" : "s"} selected
                           </div>
+                          {!isAlreadyEntered ? (
+                            <div className="ui-field-helper">
+                              selecting this draft will add it as a new pool entry.
+                            </div>
+                          ) : null}
                         </div>
                       </label>
                     );
@@ -1892,98 +2026,56 @@ export default function PoolPage() {
             ) : null}
 
             {!draftModalLoading && availableDrafts.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No drafts available.</p>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  <Link href={createDraftForPoolHref} onClick={closeDraftModal}>
-                    Create a draft
-                  </Link>{" "}
-                  and you can enter it here after saving.
-                </p>
-              </div>
+              <UiEmptyState
+                as="div"
+                title="no drafts available"
+                description="create a saved draft first, then come back to enter it in this pool."
+                actions={
+                  <UiLinkButton href={createDraftForPoolHref} onClick={closeDraftModal} variant="primary">
+                    create a draft
+                  </UiLinkButton>
+                }
+              />
             ) : null}
 
             {draftModalMessage ? (
-              <p
-                style={{
-                  margin: 0,
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                  fontWeight: 700,
-                }}
+              <UiStatus
+                tone={
+                  draftModalMessage.toLowerCase().includes("entered") ||
+                  draftModalMessage.toLowerCase().includes("created")
+                    ? "success"
+                    : "error"
+                }
               >
                 {draftModalMessage}
-              </p>
+              </UiStatus>
             ) : null}
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "space-between" }}>
-              <Link
+            <div className="app-modal-actions app-modal-actions--split">
+              <UiLinkButton
                 href={createDraftForPoolHref}
                 onClick={closeDraftModal}
-                style={{
-                  padding: "10px 12px",
-                  minHeight: 44,
-                  borderRadius: 10,
-                  border: "1px solid var(--border-color)",
-                  textDecoration: "none",
-                  background: "var(--surface)",
-                  fontWeight: 800,
-                  display: "inline-flex",
-                  alignItems: "center",
-                }}
               >
                 Create Draft
-              </Link>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
+              </UiLinkButton>
+              <div className="app-modal-actions">
+                <UiButton
                   type="button"
                   onClick={closeDraftModal}
                   disabled={draftModalSubmitting}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 800,
-                    cursor: draftModalSubmitting ? "not-allowed" : "pointer",
-                    opacity: draftModalSubmitting ? 0.7 : 1,
-                  }}
                 >
                   Close
-                </button>
-                <button
+                </UiButton>
+                <UiButton
                   type="button"
                   onClick={() => void submitSelectedDrafts()}
                   disabled={draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked}
-                  style={{
-                    padding: "10px 12px",
-                    minHeight: 44,
-                    borderRadius: 10,
-                    border: "1px solid var(--border-color)",
-                    background: "var(--surface)",
-                    fontWeight: 900,
-                    cursor:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked
-                        ? "not-allowed"
-                        : "pointer",
-                    opacity:
-                      draftModalSubmitting || selectedDraftCount === 0 || draftModalLoading || entriesLocked ? 0.7 : 1,
-                  }}
+                  variant="primary"
                 >
                   {draftModalSubmitting
                     ? "Entering..."
                     : `Enter ${selectedDraftCount} Draft${selectedDraftCount === 1 ? "" : "s"}`}
-                </button>
+                </UiButton>
               </div>
             </div>
           </section>
@@ -2029,9 +2121,17 @@ export default function PoolPage() {
               <p style={{ margin: 0, opacity: 0.8 }}>
                 Choose which entries to remove from this pool.
               </p>
+              <p className="ui-field-helper">
+                removing an entry only takes it out of this pool; your saved draft stays in your draft library.
+              </p>
             </div>
 
-            {leaveModalLoading ? <p style={{ margin: 0 }}>Loading your pool entries...</p> : null}
+            {leaveModalLoading ? (
+              <UiLoadingState
+                title="loading pool entries"
+                description="checking which entries are connected to this pool."
+              />
+            ) : null}
 
             {!leaveModalLoading && leaveEntries.length > 0 ? (
               <>
@@ -2105,19 +2205,11 @@ export default function PoolPage() {
             ) : null}
 
             {!leaveModalLoading && leaveEntries.length === 0 ? (
-              <div
-                style={{
-                  border: "1px solid var(--border-color)",
-                  borderRadius: 10,
-                  background: "var(--surface-muted)",
-                  padding: "10px 12px",
-                }}
-              >
-                <p style={{ margin: 0, fontWeight: 700 }}>No entries found for this pool.</p>
-                <p style={{ margin: "6px 0 0", opacity: 0.8 }}>
-                  Use the red button below to leave this pool.
-                </p>
-              </div>
+              <UiEmptyState
+                as="div"
+                title="no entries found"
+                description="you can still use the leave action below to remove yourself from this pool."
+              />
             ) : null}
 
             {leaveModalMessage ? (

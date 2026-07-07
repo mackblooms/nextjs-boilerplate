@@ -8,7 +8,6 @@ import { supabase } from "../lib/supabaseClient";
 import { trackEvent } from "@/lib/analytics";
 import { getStoredActiveCompetition, setStoredActiveCompetition } from "@/lib/activeCompetition";
 import { getStoredActivePoolId, setStoredActivePoolId } from "@/lib/activePool";
-import CompetitionSwitcher from "@/app/components/CompetitionSwitcher";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import {
   competitionPath,
@@ -21,6 +20,13 @@ import { draftLibraryLockMessage, isDraftLibraryLocked } from "@/lib/draftLock";
 import { toSchoolDisplayName } from "@/lib/teamNames";
 import { defaultDraftName, isMissingSavedDraftTablesError, sameTeamSet, type SavedDraftRow } from "@/lib/savedDrafts";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import {
+  UiEmptyState,
+  UiLoadingState,
+  UiStatus,
+  UiTooltip,
+} from "@/app/components/ui/primitives";
 
 type LiveScoreState = "LIVE" | "UPCOMING" | "FINAL";
 
@@ -262,26 +268,18 @@ function LandingPage({
         padding: 8,
       }}
     >
-        <header className="page-surface landing-logo-topbar" aria-label="bracketball top bar">
-          <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-            <Image
-              src="/bracketball-logo-mark.png"
-              alt="bracketball logo"
-              width={206}
-              height={58}
-              className="landing-topbar-mark"
-            />
-          </Link>
-        </header>
-
         <section className="landing-center-stage" aria-label="Landing actions">
-          <div className="page-surface landing-center-card">
-            <h1 className="landing-title">draft, track and win.</h1>
-            <p className="landing-copy">
-              Build drafts that fit the budget and cap rules. Every win adds points, with scaled
-              bonuses for upsets and deep runs. Compete to beat your friends and fellow fans.
-            </p>
-            <CompetitionSwitcher activeCompetition={activeCompetitionSlug} compact />
+          <div className="page-surface landing-center-card landing-simple-card">
+            <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
+              <Image
+                src="/bracketball-logo-mark.png"
+                alt="bracketball logo"
+                width={320}
+                height={90}
+                className="landing-primary-mark"
+                priority
+              />
+            </Link>
             {invitePoolId ? (
               <p className="landing-invite-text">
                 You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
@@ -461,7 +459,10 @@ function sortPoolsByName(a: { name: string }, b: { name: string }) {
 function HomeLoading() {
   return (
     <main className="page-shell page-card" style={{ maxWidth: 520 }}>
-      Loading...
+      <UiLoadingState
+        title="loading home"
+        description="preparing your dashboard, pools, drafts, and live scores."
+      />
     </main>
   );
 }
@@ -596,23 +597,26 @@ function ScorePanel({
   emptyMessage,
   trackedEspnSet,
   trackedKeySet,
+  competitionSlug,
   titleAccessory,
 }: {
   title: string;
   games: LiveScoreGame[];
   loading: boolean;
   error: string | null;
-  emptyMessage: string;
+  emptyMessage: ReactNode;
   trackedEspnSet?: Set<string>;
   trackedKeySet?: Set<string>;
+  competitionSlug: CompetitionSlug;
   titleAccessory?: ReactNode;
 }) {
   const trackedEspn = trackedEspnSet ?? new Set<string>();
   const trackedKeys = trackedKeySet ?? new Set<string>();
 
   return (
-    <aside className="home-score-panel" style={scorePanelStyle}>
+    <aside className="home-score-panel home-dashboard-card" style={scorePanelStyle}>
       <div
+        className="home-section-heading"
         style={{
           display: "flex",
           alignItems: "center",
@@ -624,10 +628,15 @@ function ScorePanel({
         <div style={{ fontWeight: 900, fontSize: 15 }}>{title}</div>
         {titleAccessory ? <div>{titleAccessory}</div> : null}
       </div>
-      {loading ? <div style={{ opacity: 0.8 }}>Loading scores...</div> : null}
-      {!loading && error ? <div style={{ opacity: 0.8 }}>{error}</div> : null}
+      {loading ? (
+        <UiLoadingState
+          title="loading scores"
+          description="checking live and upcoming games."
+        />
+      ) : null}
+      {!loading && error ? <UiStatus tone="error">{error}</UiStatus> : null}
       {!loading && !error && games.length === 0 ? (
-        <div style={{ opacity: 0.8 }}>{emptyMessage}</div>
+        <UiEmptyState as="div">{emptyMessage}</UiEmptyState>
       ) : null}
       {!loading &&
         !error &&
@@ -674,9 +683,13 @@ function ScorePanel({
                   title={game.awayTeamName}
                 >
                   {awayTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.awayTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.awayTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.awayTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
@@ -696,9 +709,13 @@ function ScorePanel({
                   title={game.homeTeamName}
                 >
                   {homeTracked ? <span style={{ fontWeight: 900 }}>★</span> : null}
-                  <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {game.homeTeamName}
-                  </span>
+                  {competitionSlug === "world-cup" ? (
+                    <WorldCupTeamLabel name={game.homeTeamName} />
+                  ) : (
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {game.homeTeamName}
+                    </span>
+                  )}
                 </span>
                 <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
@@ -1757,29 +1774,12 @@ export function HomeContent({
     <div
       role="group"
       aria-label="Score view mode"
-      style={{
-        display: "inline-flex",
-        border: "1px solid var(--border-color)",
-        borderRadius: 999,
-        padding: 2,
-        background: "var(--surface-muted)",
-      }}
+      className="leaderboard-segmented-control home-score-toggle"
     >
       <button
         type="button"
         onClick={() => setScoreViewMode("my-teams")}
         aria-pressed={scoreViewMode === "my-teams"}
-        style={{
-          border: "none",
-          borderRadius: 999,
-          padding: "4px 10px",
-          fontWeight: 800,
-          cursor: "pointer",
-          background:
-            scoreViewMode === "my-teams" ? "var(--surface)" : "transparent",
-          color: "inherit",
-          fontSize: 12,
-        }}
       >
         My Teams
       </button>
@@ -1787,23 +1787,44 @@ export function HomeContent({
         type="button"
         onClick={() => setScoreViewMode("all-scores")}
         aria-pressed={scoreViewMode === "all-scores"}
-        style={{
-          border: "none",
-          borderRadius: 999,
-          padding: "4px 10px",
-          fontWeight: 800,
-          cursor: "pointer",
-          background:
-            scoreViewMode === "all-scores" ? "var(--surface)" : "transparent",
-          color: "inherit",
-          fontSize: 12,
-        }}
       >
         All Scores
       </button>
     </div>
   );
   const homeDraftCountLabel = `${homeDrafts.length}/${MAX_HOME_DRAFTS} drafts created`;
+  const selectedPoolPath = selectedPoolId ? `/pool/${selectedPoolId}` : competitionPoolPath;
+  const selectedLeaderboardPath = selectedPoolId
+    ? `/pool/${selectedPoolId}/leaderboard`
+    : competitionPoolPath;
+  const nextStepCopy =
+    homeDrafts.length === 0 && !homeDraftsLocked
+      ? {
+          title: "build your first draft",
+          body: "pick your teams, save the lineup, then use it when you join or create a pool.",
+          action: "create draft",
+          kind: "draft" as const,
+        }
+      : memberPools.length === 0
+        ? {
+            title: "join or create a pool",
+            body: "pools turn your draft into a competition with standings, scores, and bragging rights.",
+            action: "find pools",
+            kind: "pool" as const,
+          }
+        : trackedTeamCount === 0
+          ? {
+              title: "finish entering your pool",
+              body: "submit picks in your active pool so your teams can be highlighted across the dashboard.",
+              action: "open pool",
+              kind: "pool-detail" as const,
+            }
+          : {
+              title: "check the leaderboard",
+              body: "see where you stand, then track live scores for the teams that can move you up.",
+              action: "view leaderboard",
+              kind: "leaderboard" as const,
+            };
   const toggleDraftPools = (draftId: string) => {
     setExpandedDraftPools((prev) => ({ ...prev, [draftId]: !prev[draftId] }));
   };
@@ -1963,44 +1984,77 @@ export function HomeContent({
         padding: 16,
       }}
     >
-      <div
-        style={{
-          marginTop: 0,
-          marginBottom: 16,
-          display: "grid",
-          gap: 10,
-        }}
-      >
-        <div
-          className="home-pool-context"
-          style={{
-            margin: 0,
-            fontSize: 14,
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
+      <section className="home-dashboard-hero home-dashboard-card" aria-label="Dashboard overview">
+        <div className="home-dashboard-intro">
+          <span className="home-dashboard-kicker">{activeCompetition.shortName} dashboard</span>
+          <h1>draft teams. join pools. track what moves the standings.</h1>
+          <p>
+            bracketball is your command center for saved drafts, active pools, live scores, and the teams that matter to your entries.
+          </p>
+        </div>
+
+        <div className="home-next-card">
+          <span>next best action</span>
+          <strong>{nextStepCopy.title}</strong>
+          <p>{nextStepCopy.body}</p>
+          {nextStepCopy.kind === "draft" ? (
+            <button
+              type="button"
+              onClick={() => void createHomeDraft()}
+              disabled={creatingHomeDraft || homeDraftsLocked}
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {creatingHomeDraft ? "creating draft..." : nextStepCopy.action}
+            </button>
+          ) : (
+            <Link
+              href={
+                nextStepCopy.kind === "leaderboard"
+                  ? selectedLeaderboardPath
+                  : nextStepCopy.kind === "pool-detail"
+                    ? selectedPoolPath
+                    : competitionPoolPath
+              }
+              className="ui-btn ui-btn--md ui-btn--primary"
+            >
+              {nextStepCopy.action}
+            </Link>
+          )}
+        </div>
+      </section>
+
+      <section className="home-dashboard-stats" aria-label="Dashboard stats">
+        <div className="home-stat-card">
+          <span>competition</span>
+          <strong>{activeCompetition.shortName}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>joined pools</span>
+          <strong>{memberPools.length}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>saved drafts</span>
+          <strong>{homeDrafts.length}</strong>
+        </div>
+        <div className="home-stat-card">
+          <span>tracked teams</span>
+          <strong>{trackedTeamCount}</strong>
+        </div>
+      </section>
+
+      <section className="home-pool-toolbar home-dashboard-card" aria-label="Scoreboard context">
+        <div className="home-pool-context">
           <span>
             {scoreViewMode === "my-teams"
-              ? "Showing your selected teams from"
-              : "Highlighting your teams from"}
+              ? "showing selected teams from"
+              : "highlighting teams from"}
           </span>
           <select
             id="home-pool-selector"
             value={selectedPoolId}
             onChange={(event) => setSelectedPoolId(event.target.value)}
             disabled={memberPools.length === 0}
-            style={{
-              padding: "8px 10px",
-              borderRadius: 10,
-              border: "1px solid var(--border-color)",
-              background: "var(--surface-muted)",
-              fontWeight: 700,
-              minHeight: 38,
-            }}
+            className="ui-control ui-select home-pool-select"
           >
             {memberPools.length === 0 ? (
               <option value="">no joined pools</option>
@@ -2012,21 +2066,20 @@ export function HomeContent({
               ))
             )}
           </select>
-          <span>.</span>
         </div>
 
         {memberPools.length === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-            Join a pool to highlight your drafted teams on the scoreboard.
+          <p className="home-context-note">
+            join a pool to highlight your drafted teams on the scoreboard.
           </p>
         ) : null}
 
         {selectedPoolName && personalizedLoaded && trackedTeamCount === 0 ? (
-          <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
-            You have no drafted teams applied in <b>{selectedPoolName}</b> yet.
+          <p className="home-context-note">
+            you have no drafted teams applied in <b>{selectedPoolName}</b> yet.
           </p>
         ) : null}
-      </div>
+      </section>
 
       <div className="home-layout">
         <div className="home-scores-left">
@@ -2035,9 +2088,15 @@ export function HomeContent({
             games={displayedRecentFinals}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage={recentFinalsEmptyMessage}
+            emptyMessage={
+              <>
+                <strong>nothing final to review yet.</strong>
+                <span>{recentFinalsEmptyMessage}</span>
+              </>
+            }
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            competitionSlug={activeCompetitionSlug}
             titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>
@@ -2065,6 +2124,7 @@ export function HomeContent({
             }}
           >
             <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
+              <span className="home-dashboard-kicker">draft center</span>
               <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>My Drafts</h2>
               <p style={{ margin: 0, fontSize: 14, opacity: 0.82 }}>
                 {activeCompetition.shortName} - {homeDraftCountLabel}
@@ -2087,15 +2147,36 @@ export function HomeContent({
           </div>
 
           {isAuthenticated !== true ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>Log in to view your saved drafts.</p>
+            <UiEmptyState
+              as="div"
+              title="log in to view drafts"
+              description="your saved drafts and pool entries will appear here after sign in."
+            />
           ) : null}
 
           {isAuthenticated === true && homeDraftsLoading && homeDrafts.length === 0 ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>Loading drafts...</p>
+            <UiLoadingState
+              title="loading drafts"
+              description="pulling your saved lineups and linked pools."
+            />
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length === 0 ? (
-            <p style={{ margin: 0, opacity: 0.82 }}>No drafts found.</p>
+            <UiEmptyState as="div" className="home-empty-state">
+              <strong>start with a saved draft.</strong>
+              <span>build one lineup, then reuse it when you join pools or compare entries.</span>
+              <button
+                type="button"
+                onClick={() => void createHomeDraft()}
+                disabled={creatingHomeDraft || homeDraftsLocked}
+                className="ui-btn ui-btn--md ui-btn--primary"
+              >
+                {creatingHomeDraft ? "creating draft..." : homeDraftsLocked ? "drafts locked" : "create draft"}
+              </button>
+              <Link href={competitionPoolPath} className="ui-btn ui-btn--md ui-btn--secondary">
+                browse pools
+              </Link>
+            </UiEmptyState>
           ) : null}
 
           {isAuthenticated === true && !homeDraftsLoading && homeDrafts.length > 0 ? (
@@ -2138,51 +2219,53 @@ export function HomeContent({
                         >
                           {draft.name}
                         </Link>
-                        <button
-                          type="button"
-                          onClick={() => void renameHomeDraft(draft)}
-                          disabled={renamingDraftId === draft.id}
-                          aria-label={`Rename ${draft.name}`}
-                          title={renamingDraftId === draft.id ? "Renaming..." : `Rename ${draft.name}`}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 8,
-                            border: "1px solid var(--border-color)",
-                            background: "var(--surface)",
-                            cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
-                            opacity: renamingDraftId === draft.id ? 0.7 : 1,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <PenIcon />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void deleteHomeDraft(draft)}
-                          disabled={deletingDraftId === draft.id}
-                          aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
-                          title={deletingDraftId === draft.id ? "Deleting..." : `Delete ${draft.name}`}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 8,
-                            border: "1px solid #dc2626",
-                            background: "rgba(220, 38, 38, 0.12)",
-                            color: "#dc2626",
-                            cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
-                            opacity: deletingDraftId === draft.id ? 0.7 : 1,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <TrashIcon />
-                        </button>
+                        <UiTooltip content={renamingDraftId === draft.id ? "renaming draft" : "rename this draft"}>
+                          <button
+                            type="button"
+                            onClick={() => void renameHomeDraft(draft)}
+                            disabled={renamingDraftId === draft.id}
+                            aria-label={`Rename ${draft.name}`}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 8,
+                              border: "1px solid var(--border-color)",
+                              background: "var(--surface)",
+                              cursor: renamingDraftId === draft.id ? "not-allowed" : "pointer",
+                              opacity: renamingDraftId === draft.id ? 0.7 : 1,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <PenIcon />
+                          </button>
+                        </UiTooltip>
+                        <UiTooltip content={deletingDraftId === draft.id ? "deleting draft" : "delete this draft"}>
+                          <button
+                            type="button"
+                            onClick={() => void deleteHomeDraft(draft)}
+                            disabled={deletingDraftId === draft.id}
+                            aria-label={deletingDraftId === draft.id ? `Deleting ${draft.name}` : `Delete ${draft.name}`}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 8,
+                              border: "1px solid #dc2626",
+                              background: "rgba(220, 38, 38, 0.12)",
+                              color: "#dc2626",
+                              cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
+                              opacity: deletingDraftId === draft.id ? 0.7 : 1,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <TrashIcon />
+                          </button>
+                        </UiTooltip>
                       </div>
                       <div className="home-draft-points" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
                         {currentPoints} pts
@@ -2226,7 +2309,7 @@ export function HomeContent({
                         }}
                       >
                         {pools.length === 0 ? (
-                          <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>This draft is not in any pools yet.</p>
+                          <p className="home-context-note">This draft is not in any pools yet.</p>
                         ) : (
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                             {pools.map((pool) => (
@@ -2259,27 +2342,13 @@ export function HomeContent({
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                           <Link
                             href={competitionNewPoolPath}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border-color)",
-                              textDecoration: "none",
-                              fontWeight: 800,
-                              background: "var(--surface)",
-                            }}
+                            className="ui-btn ui-btn--sm ui-btn--secondary"
                           >
                             Create Pool
                           </Link>
                           <Link
                             href={competitionPoolPath}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border-color)",
-                              textDecoration: "none",
-                              fontWeight: 800,
-                              background: "var(--surface)",
-                            }}
+                            className="ui-btn ui-btn--sm ui-btn--secondary"
                           >
                             Join Pool(s)
                           </Link>
@@ -2292,7 +2361,7 @@ export function HomeContent({
             </div>
           ) : null}
 
-          {isAuthenticated === true ? (
+          {isAuthenticated === true && homeDrafts.length > 0 ? (
             <button
               type="button"
               onClick={() => void createHomeDraft()}
@@ -2307,20 +2376,12 @@ export function HomeContent({
           ) : null}
 
           {homeDraftsMessage ? (
-            <p
+            <UiStatus
               role="status"
               aria-live="polite"
-              style={{
-                margin: 0,
-                border: "1px solid var(--border-color)",
-                borderRadius: 10,
-                padding: "10px 12px",
-                background: "var(--surface-muted)",
-                fontWeight: 700,
-              }}
             >
               {homeDraftsMessage}
-            </p>
+            </UiStatus>
           ) : null}
         </section>
 
@@ -2330,9 +2391,15 @@ export function HomeContent({
             games={displayedLiveAndUpcoming}
             loading={scoresLoading}
             error={scoresError}
-            emptyMessage={liveAndUpcomingEmptyMessage}
+            emptyMessage={
+              <>
+                <strong>nothing live right now.</strong>
+                <span>{liveAndUpcomingEmptyMessage}</span>
+              </>
+            }
             trackedEspnSet={trackedEspnSet}
             trackedKeySet={trackedKeySet}
+            competitionSlug={activeCompetitionSlug}
             titleAccessory={isAuthenticated ? renderScoreViewToggle() : undefined}
           />
         </div>

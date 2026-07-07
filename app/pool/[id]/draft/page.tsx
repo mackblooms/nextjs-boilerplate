@@ -21,6 +21,8 @@ import { toSchoolDisplayName } from "@/lib/teamNames";
 import { competitionPath, normalizeCompetitionSlug, type CompetitionSlug } from "@/lib/competitions";
 import { canUseLegacyMarchMadnessFallback } from "@/lib/competitionData";
 import { getWorldCupTierForCost, withWorldCupDraftCost } from "@/lib/worldCupRules";
+import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
+import { UiLoadingState } from "@/app/components/ui/primitives";
 
 type PoolRow = {
   id: string;
@@ -30,7 +32,9 @@ type PoolRow = {
   competition_slug?: string;
 };
 
-type TeamRow = DraftableTeam;
+type TeamRow = DraftableTeam & {
+  logo_url?: string | null;
+};
 
 type DraftRow = Pick<SavedDraftRow, "id" | "name" | "created_at" | "updated_at">;
 
@@ -292,7 +296,7 @@ export default function PoolDraftPage() {
 
     let teamQuery = supabase
       .from("teams")
-      .select("id,name,seed,cost")
+      .select("id,name,seed,cost,logo_url")
       .eq("competition_slug", nextCompetitionSlug);
     if (r64TeamIds.length > 0) {
       teamQuery = teamQuery.in("id", r64TeamIds);
@@ -301,8 +305,8 @@ export default function PoolDraftPage() {
     let { data: teamRows, error: teamErr } = await teamQuery;
     if (canUseLegacyMarchMadnessFallback(nextCompetitionSlug, teamErr?.message)) {
       const fallback = r64TeamIds.length > 0
-        ? await supabase.from("teams").select("id,name,seed,cost").in("id", r64TeamIds)
-        : await supabase.from("teams").select("id,name,seed,cost");
+        ? await supabase.from("teams").select("id,name,seed,cost,logo_url").in("id", r64TeamIds)
+        : await supabase.from("teams").select("id,name,seed,cost,logo_url");
       teamRows = fallback.data;
       teamErr = fallback.error;
     }
@@ -721,7 +725,11 @@ export default function PoolDraftPage() {
         <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
           Pool Draft
         </h1>
-        <p style={{ marginTop: 12 }}>Loading...</p>
+        <UiLoadingState
+          style={{ marginTop: 12 }}
+          title="loading pool draft"
+          description="we're checking your saved drafts, pool status, and available teams."
+        />
       </main>
     );
   }
@@ -738,7 +746,7 @@ export default function PoolDraftPage() {
       >
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "grid", gap: 4 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0.24, opacity: 0.62 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 0, opacity: 0.62 }}>
               Pool draft
             </div>
             <h1 className="page-title" style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>
@@ -981,11 +989,18 @@ export default function PoolDraftPage() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {competitionSlug === "world-cup"
-                        ? `(${getWorldCupTierForCost(team.cost)?.name ?? "World Cup"}) ${toSchoolDisplayName(team.name)}`
-                        : `(${team.seed}) ${toSchoolDisplayName(team.name)}`}
-                    </span>
+                    {competitionSlug === "world-cup" ? (
+                      <>
+                        <span style={{ flexShrink: 0 }}>
+                          ({getWorldCupTierForCost(team.cost)?.name ?? "World Cup"})
+                        </span>
+                        <WorldCupTeamLabel name={team.name} logoUrl={team.logo_url} />
+                      </>
+                    ) : (
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        ({team.seed}) {toSchoolDisplayName(team.name)}
+                      </span>
+                    )}
                   </div>
                   <b>{team.cost}</b>
                 </div>

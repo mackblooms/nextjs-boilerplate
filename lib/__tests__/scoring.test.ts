@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { seedMultiplier, scoreTeamWinsDetailed, scoreEntries, type ScoringGame } from "../scoring";
+import { applyWorldCupManualResultOverrides, getWorldCupManualWinnerId } from "../worldCupManualResults.js";
 
 function costs(...pairs: Array<[string, number | null]>): Map<string, number | null> {
   return new Map(pairs);
@@ -99,6 +100,96 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
       costs(["t1", 7], ["t2", 22]),
     );
     expect(r.teamScoresByTeamId.get("t1")).toBe(45); // (12+5) + (18+10)
+  });
+
+  it("R32 slot 6 tie advances Egypt-side team on penalties", () => {
+    const game = {
+      round: "R32",
+      slot: 6,
+      team1_id: "australia",
+      team2_id: "egypt",
+      winner_team_id: null,
+      status: "Final",
+      team1_score: 1,
+      team2_score: 1,
+    };
+    const r = wc([game], costs(["australia", 10], ["egypt", 7]));
+    expect(getWorldCupManualWinnerId(game)).toBe("egypt");
+    expect(r.teamScoresByTeamId.get("egypt")).toBe(45); // GROUP_ADVANCE + R32 win
+    expect(r.teamScoresByTeamId.get("australia")).toBe(17); // GROUP_ADVANCE only
+  });
+
+  it("R32 slot 6 non-tied final uses the score winner instead of the penalty fallback", () => {
+    const game = {
+      round: "R32",
+      slot: 6,
+      team1_id: "australia",
+      team2_id: "egypt",
+      winner_team_id: "egypt",
+      status: "Final",
+      team1_score: 2,
+      team2_score: 1,
+    };
+    const r = wc([game], costs(["australia", 10], ["egypt", 7]));
+    expect(getWorldCupManualWinnerId(game)).toBe("australia");
+    expect(r.teamScoresByTeamId.get("australia")).toBe(45); // GROUP_ADVANCE + R32 win
+    expect(r.teamScoresByTeamId.get("egypt")).toBe(17); // GROUP_ADVANCE only
+  });
+
+  it("knockout extra-time winner advances from the official final score", () => {
+    const game = {
+      round: "S16",
+      slot: 3,
+      team1_id: "argentina",
+      team2_id: "egypt",
+      winner_team_id: null,
+      status: "AET",
+      team1_score: 2,
+      team2_score: 1,
+    };
+    const r = wc([game], costs(["argentina", 22], ["egypt", 7]));
+    expect(getWorldCupManualWinnerId(game)).toBe("argentina");
+    expect(r.teamScoresByTeamId.get("argentina")).toBe(30);
+  });
+
+  it("tied knockout game uses a persisted official penalty advancer in any round", () => {
+    const game = {
+      round: "S16",
+      slot: 3,
+      team1_id: "argentina",
+      team2_id: "egypt",
+      winner_team_id: "egypt",
+      status: "Final",
+      team1_score: 1,
+      team2_score: 1,
+    };
+    const r = wc([game], costs(["argentina", 22], ["egypt", 7]));
+    expect(getWorldCupManualWinnerId(game)).toBe("egypt");
+    expect(r.teamScoresByTeamId.get("egypt")).toBe(50); // S16 win + value bonus
+  });
+
+  it("manual R32 slot 6 winner propagates into S16 slot 3", () => {
+    const games = applyWorldCupManualResultOverrides([
+      {
+        round: "R32",
+        slot: 6,
+        team1_id: "australia",
+        team2_id: "egypt",
+        winner_team_id: null,
+        status: "Final",
+        team1_score: 1,
+        team2_score: 1,
+      },
+      {
+        round: "S16",
+        slot: 3,
+        team1_id: "argentina",
+        team2_id: null,
+        winner_team_id: null,
+      },
+    ]);
+    expect(games.find((game) => game.round === "R32")?.winner_team_id).toBe("egypt");
+    expect(games.find((game) => game.round === "S16")?.team2_id).toBe("egypt");
   });
 
   it("R32: cost = 10 uses the lower value schedule", () => {

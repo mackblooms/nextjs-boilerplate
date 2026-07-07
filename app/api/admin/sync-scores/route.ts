@@ -3,14 +3,12 @@ import { requireSiteAdminOrCron } from "@/lib/adminAuth";
 import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 import { sendPoolFinalUpdateNotifications, type ChangedWinnerGame } from "@/lib/pushCampaigns";
 import {
-  WORLD_CUP_FIXED_R32_SLOT_TARGETS,
   WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
-  WORLD_CUP_THIRD_PLACE_R32_TARGETS,
-  groupCodeFromRegion,
-  resolveWorldCupThirdPlaceAssignments,
+  WORLD_CUP_REFERENCE_R32_MATCHUPS,
   type WorldCupPropagationTarget,
 } from "@/lib/worldCupBracket";
 import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
+import { getWorldCupManualWinnerId } from "@/lib/worldCupManualResults.js";
 
 const KEY = process.env.SPORTS_DATA_IO_KEY ?? process.env.SPORTSDATAIO_KEY;
 const BASE = "https://api.sportsdata.io";
@@ -36,6 +34,7 @@ type EspnTeam = {
 type EspnCompetitor = {
   homeAway?: "home" | "away";
   score?: string;
+  winner?: boolean;
   team?: EspnTeam;
 };
 
@@ -72,6 +71,8 @@ type FinalGame = {
   awayScore: number;
   homeTeamName?: string | null;
   awayTeamName?: string | null;
+  homeWinner?: boolean | null;
+  awayWinner?: boolean | null;
 };
 
 type LocalBracketGame = {
@@ -486,7 +487,7 @@ async function fetchGamesForPairMatching(
 async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, nowIso: string) {
   const { data: allGames, error: gamesErr } = await supabaseAdmin
     .from("games")
-    .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug");
+    .select("id,round,region,slot,status,team1_id,team2_id,winner_team_id,competition_slug,team1_score,team2_score");
   if (gamesErr) throw gamesErr;
 
   const games = ((allGames ?? []) as LocalBracketGame[]).map((g) => ({
@@ -522,7 +523,7 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
   for (const source of sorted) {
     const sourceTeam1 = source.team1_id ? String(source.team1_id) : null;
     const sourceTeam2 = source.team2_id ? String(source.team2_id) : null;
-    let winnerId = source.winner_team_id ? String(source.winner_team_id) : null;
+    let winnerId = getWorldCupManualWinnerId(source) ?? (source.winner_team_id ? String(source.winner_team_id) : null);
     if (winnerId && winnerId !== sourceTeam1 && winnerId !== sourceTeam2) {
       const { error: clearSourceErr } = await supabaseAdmin
         .from("games")
@@ -589,144 +590,6 @@ async function propagateWinnersToNextRounds(supabaseAdmin: ReturnType<typeof get
   };
 }
 
-type WorldCupTeamRow = {
-  id: string;
-  name: string | null;
-  region: string | null;
-};
-
-type WorldCupStanding = {
-  teamId: string;
-  group: string;
-  rank: number;
-  points: number;
-  goalDifference: number;
-  goalsFor: number;
-  wins: number;
-};
-
-function gameIsFinal(game: LocalBracketGame) {
-  return norm(game.status).startsWith("final") || game.winner_team_id != null;
-}
-
-function scoreForTeam(game: LocalBracketGame, teamId: string) {
-  if (typeof game.team1_score !== "number" || typeof game.team2_score !== "number") return null;
-  if (game.team1_id === teamId) return { goalsFor: game.team1_score, goalsAgainst: game.team2_score };
-  if (game.team2_id === teamId) return { goalsFor: game.team2_score, goalsAgainst: game.team1_score };
-  return null;
-}
-
-function compareStandings(a: Omit<WorldCupStanding, "rank">, b: Omit<WorldCupStanding, "rank">) {
-  return (
-    b.points - a.points ||
-    b.goalDifference - a.goalDifference ||
-    b.goalsFor - a.goalsFor ||
-    b.wins - a.wins
-  );
-}
-
-function compareHeadToHead(
-  a: Omit<WorldCupStanding, "rank">,
-  b: Omit<WorldCupStanding, "rank">,
-  games: LocalBracketGame[],
-) {
-  const tied = new Set([a.teamId, b.teamId]);
-  const h2h = new Map<string, Omit<WorldCupStanding, "rank">>();
-  for (const teamId of tied) {
-    h2h.set(teamId, {
-      teamId,
-      group: a.group,
-      points: 0,
-      goalDifference: 0,
-      goalsFor: 0,
-      wins: 0,
-    });
-  }
-
-  for (const game of games) {
-    if (!game.team1_id || !game.team2_id) continue;
-    if (!tied.has(game.team1_id) || !tied.has(game.team2_id)) continue;
-    for (const teamId of tied) {
-      const score = scoreForTeam(game, teamId);
-      if (!score) continue;
-      const row = h2h.get(teamId);
-      if (!row) continue;
-      row.goalsFor += score.goalsFor;
-      row.goalDifference += score.goalsFor - score.goalsAgainst;
-      if (score.goalsFor > score.goalsAgainst) {
-        row.points += 3;
-        row.wins++;
-      } else if (score.goalsFor === score.goalsAgainst) {
-        row.points += 1;
-      }
-    }
-  }
-
-  const aH2h = h2h.get(a.teamId);
-  const bH2h = h2h.get(b.teamId);
-  if (!aH2h || !bH2h) return 0;
-  return compareStandings(aH2h, bH2h);
-}
-
-function rankWorldCupGroup(group: string, teams: WorldCupTeamRow[], games: LocalBracketGame[]) {
-  if (games.length !== 6 || games.some((game) => !gameIsFinal(game))) return null;
-
-  const rows = new Map<string, Omit<WorldCupStanding, "rank">>();
-  for (const team of teams) {
-    rows.set(team.id, {
-      teamId: team.id,
-      group,
-      points: 0,
-      goalDifference: 0,
-      goalsFor: 0,
-      wins: 0,
-    });
-  }
-
-  for (const game of games) {
-    if (!game.team1_id || !game.team2_id) return null;
-    const team1 = rows.get(game.team1_id);
-    const team2 = rows.get(game.team2_id);
-    const team1Score = scoreForTeam(game, game.team1_id);
-    const team2Score = scoreForTeam(game, game.team2_id);
-    if (!team1 || !team2 || !team1Score || !team2Score) return null;
-
-    team1.goalsFor += team1Score.goalsFor;
-    team1.goalDifference += team1Score.goalsFor - team1Score.goalsAgainst;
-    team2.goalsFor += team2Score.goalsFor;
-    team2.goalDifference += team2Score.goalsFor - team2Score.goalsAgainst;
-
-    if (team1Score.goalsFor > team2Score.goalsFor) {
-      team1.points += 3;
-      team1.wins++;
-    } else if (team2Score.goalsFor > team1Score.goalsFor) {
-      team2.points += 3;
-      team2.wins++;
-    } else {
-      team1.points += 1;
-      team2.points += 1;
-    }
-  }
-
-  const ranked = [...rows.values()].sort((a, b) => {
-    const normalDiff = compareStandings(a, b);
-    if (normalDiff !== 0) return normalDiff;
-    const headToHeadDiff = compareHeadToHead(a, b, games);
-    if (headToHeadDiff !== 0) return headToHeadDiff;
-    return a.teamId.localeCompare(b.teamId);
-  });
-
-  for (let index = 0; index < ranked.length - 1; index++) {
-    const a = ranked[index];
-    const b = ranked[index + 1];
-    if (compareStandings(a, b) === 0 && compareHeadToHead(a, b, games) === 0) {
-      return null;
-    }
-  }
-
-  return ranked.map((row, index) => ({ ...row, rank: index + 1 }));
-}
-
 async function updateR32Slot(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   nowIso: string,
@@ -758,100 +621,59 @@ async function updateR32Slot(
   return 1;
 }
 
-async function applyWorldCupGroupAdvancementToR32(
+async function applyWorldCupReferenceBracketToR32(
   supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
   nowIso: string,
 ) {
   const { data: teamRows, error: teamErr } = await supabaseAdmin
     .from("teams")
-    .select("id,name,region")
+    .select("id,name")
     .eq("competition_slug", "world-cup");
   if (teamErr) throw teamErr;
 
+  const teamIdByName = new Map(
+    ((teamRows ?? []) as Array<{ id: string; name: string | null }>).map((team) => [
+      norm(team.name),
+      String(team.id),
+    ]),
+  );
+
   const { data: gameRows, error: gameErr } = await supabaseAdmin
     .from("games")
-    .select("id,round,region,slot,team1_id,team2_id,winner_team_id,competition_slug,status,team1_score,team2_score")
-    .eq("competition_slug", "world-cup");
+    .select("id,round,slot,team1_id,team2_id,winner_team_id")
+    .eq("competition_slug", "world-cup")
+    .eq("round", "R32");
   if (gameErr) throw gameErr;
 
-  const teamsByGroup = new Map<string, WorldCupTeamRow[]>();
-  for (const team of (teamRows ?? []) as WorldCupTeamRow[]) {
-    const group = groupCodeFromRegion(team.region);
-    if (!group) continue;
-    const list = teamsByGroup.get(group) ?? [];
-    list.push(team);
-    teamsByGroup.set(group, list);
-  }
-
-  const games = ((gameRows ?? []) as LocalBracketGame[]).map((game) => ({
-    ...game,
-    id: String(game.id),
-    team1_id: game.team1_id ? String(game.team1_id) : null,
-    team2_id: game.team2_id ? String(game.team2_id) : null,
-    winner_team_id: game.winner_team_id ? String(game.winner_team_id) : null,
-  }));
-
-  const groupGames = new Map<string, LocalBracketGame[]>();
-  const r32Games = new Map<number, LocalBracketGame>();
-  for (const game of games) {
-    const round = String(game.round ?? "").toUpperCase();
-    if (round === "GROUP") {
-      const group = groupCodeFromRegion(game.region);
-      if (!group) continue;
-      const list = groupGames.get(group) ?? [];
-      list.push(game);
-      groupGames.set(group, list);
-    } else if (round === "R32") {
-      const slot = Number(game.slot);
-      if (Number.isFinite(slot)) r32Games.set(Math.trunc(slot), game);
+  const gamesBySlot = new Map<number, LocalBracketGame>();
+  for (const game of (gameRows ?? []) as LocalBracketGame[]) {
+    const slot = Number(game.slot);
+    if (Number.isFinite(slot)) {
+      gamesBySlot.set(Math.trunc(slot), {
+        ...game,
+        id: String(game.id),
+        team1_id: game.team1_id ? String(game.team1_id) : null,
+        team2_id: game.team2_id ? String(game.team2_id) : null,
+        winner_team_id: game.winner_team_id ? String(game.winner_team_id) : null,
+      });
     }
   }
 
-  const rankingsByGroup = new Map<string, WorldCupStanding[]>();
-  for (const [group, teams] of teamsByGroup) {
-    const ranked = rankWorldCupGroup(group, teams, groupGames.get(group) ?? []);
-    if (ranked) rankingsByGroup.set(group, ranked);
-  }
-
-  let groupSlotsUpdated = 0;
-  for (const [label, target] of Object.entries(WORLD_CUP_FIXED_R32_SLOT_TARGETS)) {
-    const rank = Number(label.slice(0, 1));
-    const group = label.slice(1);
-    const ranked = rankingsByGroup.get(group);
-    const teamId = ranked?.find((row) => row.rank === rank)?.teamId ?? null;
-    if (!teamId) continue;
-    groupSlotsUpdated += await updateR32Slot(supabaseAdmin, nowIso, r32Games, target.slot, target.side, teamId);
-  }
-
-  const thirdRows = [...rankingsByGroup.values()]
-    .map((rows) => rows.find((row) => row.rank === 3))
-    .filter((row): row is WorldCupStanding => row != null)
-    .sort(compareStandings);
-
-  let thirdPlaceSlotsUpdated = 0;
-  let thirdPlaceAssignmentsResolved = false;
-  if (thirdRows.length === 12) {
-    const cutoff = thirdRows[7];
-    const next = thirdRows[8];
-    const cutoffIsClear = cutoff && next ? compareStandings(cutoff, next) !== 0 : true;
-    const qualifiedThirdGroups = thirdRows.slice(0, 8).map((row) => row.group);
-    const assignments = cutoffIsClear ? resolveWorldCupThirdPlaceAssignments(qualifiedThirdGroups) : null;
-    if (assignments) {
-      thirdPlaceAssignmentsResolved = true;
-      for (const [winnerSlot, group] of assignments) {
-        const target = WORLD_CUP_THIRD_PLACE_R32_TARGETS[winnerSlot];
-        const teamId = thirdRows.find((row) => row.group === group)?.teamId ?? null;
-        if (!target || !teamId) continue;
-        thirdPlaceSlotsUpdated += await updateR32Slot(supabaseAdmin, nowIso, r32Games, target.slot, target.side, teamId);
-      }
-    }
+  let bracketSlotsUpdated = 0;
+  for (const [index, [team1Name, team2Name]] of WORLD_CUP_REFERENCE_R32_MATCHUPS.entries()) {
+    const slot = index + 1;
+    const team1Id = teamIdByName.get(norm(team1Name)) ?? null;
+    const team2Id = teamIdByName.get(norm(team2Name)) ?? null;
+    if (!team1Id || !team2Id) continue;
+    bracketSlotsUpdated += await updateR32Slot(supabaseAdmin, nowIso, gamesBySlot, slot, "team1_id", team1Id);
+    bracketSlotsUpdated += await updateR32Slot(supabaseAdmin, nowIso, gamesBySlot, slot, "team2_id", team2Id);
   }
 
   return {
-    groupsResolved: rankingsByGroup.size,
-    groupSlotsUpdated,
-    thirdPlaceSlotsUpdated,
-    thirdPlaceAssignmentsResolved,
+    groupsResolved: 0,
+    groupSlotsUpdated: bracketSlotsUpdated,
+    thirdPlaceSlotsUpdated: 0,
+    thirdPlaceAssignmentsResolved: false,
   };
 }
 
@@ -978,6 +800,8 @@ async function fetchEspnFinalGames(lookbackDays: number): Promise<FinalGame[]> {
         awayTeamId: Math.trunc(awayTeamId),
         homeScore: homeScore,
         awayScore: awayScore,
+        homeWinner: home.winner === true,
+        awayWinner: away.winner === true,
       });
     }
   }
@@ -1037,6 +861,8 @@ async function fetchEspnWorldCupFinalGames(lookbackDays: number): Promise<FinalG
         awayScore,
         homeTeamName: espnTeamName(home.team),
         awayTeamName: espnTeamName(away.team),
+        homeWinner: home.winner === true,
+        awayWinner: away.winner === true,
       });
     }
   }
@@ -1205,7 +1031,7 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
   const canWriteStatus = await hasStatusColumn(supabaseAdmin);
 
   if (finals.length === 0) {
-    const groupAdvancement = await applyWorldCupGroupAdvancementToR32(supabaseAdmin, nowIso);
+    const groupAdvancement = await applyWorldCupReferenceBracketToR32(supabaseAdmin, nowIso);
     const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
     return {
       worldCupFinalsSeen: 0,
@@ -1239,7 +1065,13 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
     (game) => game.competition_slug === "world-cup",
   );
   const gamesByPair = new Map<string, LocalPairGame[]>();
+  const gamesByRoundSlot = new Map<string, LocalPairGame>();
   for (const g of gameRows as LocalPairGame[]) {
+    const normalizedRound = String(g.round ?? "").toUpperCase();
+    const slot = Number(g.slot);
+    if (normalizedRound && Number.isFinite(slot)) {
+      gamesByRoundSlot.set(`${normalizedRound}|${Math.trunc(slot)}`, g);
+    }
     if (!g.team1_id || !g.team2_id) continue;
     const key = teamPairKey(String(g.team1_id), String(g.team2_id));
     const bucket = gamesByPair.get(key) ?? [];
@@ -1316,12 +1148,42 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
 
     const team1Score = team1IsHome ? f.homeScore : f.awayScore;
     const team2Score = team2IsHome ? f.homeScore : f.awayScore;
-    const winnerLocalId =
+    let winnerLocalId =
       team1Score > team2Score
         ? localGame.team1_id
         : team2Score > team1Score
         ? localGame.team2_id
         : null;
+
+    if (!winnerLocalId && team1Score === team2Score) {
+      const espnWinner =
+        f.homeWinner === true && f.awayWinner !== true
+          ? (team1IsHome ? localGame.team1_id : localGame.team2_id)
+          : f.awayWinner === true && f.homeWinner !== true
+          ? (team1IsAway ? localGame.team1_id : localGame.team2_id)
+          : null;
+      const existingWinner =
+        localGame.winner_team_id === localGame.team1_id || localGame.winner_team_id === localGame.team2_id
+          ? localGame.winner_team_id
+          : null;
+      const roundSlotKey = `${String(localGame.round ?? "").toUpperCase()}|${Number(localGame.slot)}`;
+      const targetRef = WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT[roundSlotKey];
+      const targetGame = targetRef ? gamesByRoundSlot.get(`${targetRef.round}|${targetRef.slot}`) : null;
+      const propagatedWinner = targetRef && targetGame ? targetGame[targetRef.side] : null;
+      const scoreSyncedGame = {
+        ...localGame,
+        status: "Final",
+        team1_score: team1Score,
+        team2_score: team2Score,
+      };
+      winnerLocalId =
+        espnWinner ??
+        getWorldCupManualWinnerId(scoreSyncedGame) ??
+        existingWinner ??
+        (propagatedWinner === localGame.team1_id || propagatedWinner === localGame.team2_id
+          ? propagatedWinner
+          : null);
+    }
 
     const alreadySynced =
       localGame.winner_team_id === winnerLocalId &&
@@ -1355,7 +1217,7 @@ async function applyEspnWorldCupFinalsToLocalGames(finals: FinalGame[]) {
     if (winnerLocalId) changedGames.push({ gameId: localGame.id, winnerTeamId: winnerLocalId });
   }
 
-  const groupAdvancement = await applyWorldCupGroupAdvancementToR32(supabaseAdmin, nowIso);
+  const groupAdvancement = await applyWorldCupReferenceBracketToR32(supabaseAdmin, nowIso);
   const propagation = await propagateWinnersToNextRounds(supabaseAdmin, nowIso);
 
   return {
