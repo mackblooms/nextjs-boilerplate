@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { scoreEntries, type ScoringGame } from "@/lib/scoring";
 import { normalizeCompetitionSlug } from "@/lib/competitions";
+import { isFirstPlaceDominated } from "@/lib/forecastMath";
+import { matchLiveScoresToGames, type LiveOverlayScoreGame } from "@/lib/liveBracket";
 import { loadLatestPoolEntries } from "@/lib/latestPoolEntries";
 import { withWorldCupDraftCost } from "@/lib/worldCupRules";
 import {
@@ -49,6 +51,10 @@ type MutableGame = {
 
 type EspnTeam = {
   id?: string | number;
+  location?: string;
+  shortDisplayName?: string;
+  displayName?: string;
+  name?: string;
 };
 
 type EspnCompetitor = {
@@ -85,6 +91,7 @@ type EspnStatus = {
   type?: {
     state?: string;
     completed?: boolean;
+    shortDetail?: string;
   };
 };
 
@@ -181,6 +188,7 @@ const ROUND_ORDER: Record<string, number> = {
 };
 
 const SCOREBOARD_WINDOW_DAYS = 3;
+const SCOREBOARD_LOOKBACK_DAYS = 3;
 const LOOKAHEAD_DAYS = 45;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
@@ -259,6 +267,52 @@ function shiftDate(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d;
+}
+
+function toScore(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+function toLiveScoreState(status: EspnStatus | undefined): LiveOverlayScoreGame["state"] {
+  const state = status?.type?.state?.toLowerCase();
+  if (state === "in") return "LIVE";
+  if (state === "post" || status?.type?.completed) return "FINAL";
+  return "UPCOMING";
+}
+
+function competitorDisplayName(competitor: EspnCompetitor | undefined, fallback: string) {
+  return (
+    competitor?.team?.location?.trim() ||
+    competitor?.team?.shortDisplayName?.trim() ||
+    competitor?.team?.displayName?.trim() ||
+    competitor?.team?.name?.trim() ||
+    fallback
+  );
+}
+
+function liveScoreFromEvent(event: EspnEvent): LiveOverlayScoreGame | null {
+  const competition = event.competitions?.[0];
+  const competitors = competition?.competitors ?? [];
+  const away = competitors.find((competitor) => competitor.homeAway === "away");
+  const home = competitors.find((competitor) => competitor.homeAway === "home");
+  if (!away || !home) return null;
+
+  const awayTeamName = competitorDisplayName(away, "Away Team");
+  const homeTeamName = competitorDisplayName(home, "Home Team");
+  return {
+    id: String(event.id ?? `${event.date ?? "game"}-${awayTeamName}-${homeTeamName}`),
+    state: toLiveScoreState(event.status),
+    detail: event.status?.type?.shortDetail?.trim() || "Scheduled",
+    startTime: event.date ?? null,
+    awayTeamId: away.team?.id != null ? String(away.team.id) : null,
+    homeTeamId: home.team?.id != null ? String(home.team.id) : null,
+    awayTeamName,
+    homeTeamName,
+    awayScore: toScore(away.score),
+    homeScore: toScore(home.score),
+  };
 }
 
 function normalizeProbability(raw: unknown): number | null {
@@ -440,15 +494,16 @@ function extractProbabilities(
   homeEspnTeamId: string,
   awayEspnTeamId: string,
 ) {
-  const homePredictor = normalizeProbability(summary?.predictor?.homeTeam?.gameProjection);
-  const awayPredictor = normalizeProbability(summary?.predictor?.awayTeam?.gameProjection);
-  if (homePredictor != null && awayPredictor != null) {
-    const normalized = normalizePair(homePredictor, awayPredictor);
-    return { home: normalized.home, away: normalized.away, source: "predictor" };
+  if (state === "post") {
+    const competitors = summary?.header?.competitions?.[0]?.competitors ?? [];
+    const home = competitors.find((competitor) => String(competitor?.team?.id ?? "") === homeEspnTeamId);
+    const away = competitors.find((competitor) => String(competitor?.team?.id ?? "") === awayEspnTeamId);
+    if (isWinnerFlag(home?.winner)) return { home: 1, away: 0, source: "final_result" };
+    if (isWinnerFlag(away?.winner)) return { home: 0, away: 1, source: "final_result" };
   }
 
   const winRows = Array.isArray(summary?.winprobability) ? summary.winprobability : [];
-  if (winRows.length > 0) {
+  if (state === "in" && winRows.length > 0) {
     const last = winRows[winRows.length - 1];
     const homeLive = normalizeProbability(last?.homeWinPercentage);
     if (homeLive != null) {
@@ -461,12 +516,24 @@ function extractProbabilities(
     }
   }
 
-  if (state === "post") {
-    const competitors = summary?.header?.competitions?.[0]?.competitors ?? [];
-    const home = competitors.find((competitor) => String(competitor?.team?.id ?? "") === homeEspnTeamId);
-    const away = competitors.find((competitor) => String(competitor?.team?.id ?? "") === awayEspnTeamId);
-    if (isWinnerFlag(home?.winner)) return { home: 1, away: 0, source: "final_result" };
-    if (isWinnerFlag(away?.winner)) return { home: 0, away: 1, source: "final_result" };
+  const homePredictor = normalizeProbability(summary?.predictor?.homeTeam?.gameProjection);
+  const awayPredictor = normalizeProbability(summary?.predictor?.awayTeam?.gameProjection);
+  if (homePredictor != null && awayPredictor != null) {
+    const normalized = normalizePair(homePredictor, awayPredictor);
+    return { home: normalized.home, away: normalized.away, source: "predictor" };
+  }
+
+  if (winRows.length > 0) {
+    const last = winRows[winRows.length - 1];
+    const homeLive = normalizeProbability(last?.homeWinPercentage);
+    if (homeLive != null) {
+      const normalized = normalizePair(homeLive, 1 - homeLive);
+      return {
+        home: normalized.home,
+        away: normalized.away,
+        source: "live_win_probability",
+      };
+    }
   }
 
   return { home: 0.5, away: 0.5, source: "fallback_even" };
@@ -496,6 +563,21 @@ function extractSoccerProbabilities(
     }
   }
 
+  const winRows = Array.isArray(summary?.winprobability) ? summary.winprobability : [];
+  if (state === "in" && winRows.length > 0) {
+    const last = winRows[winRows.length - 1];
+    const homeLive = normalizeProbability(last?.homeWinPercentage);
+    if (homeLive != null) {
+      const draw = drawProbabilityFromStrengths(homeStrength, awayStrength) * 0.65;
+      return {
+        home: homeLive * (1 - draw),
+        draw,
+        away: (1 - homeLive) * (1 - draw),
+        source: "live_win_probability",
+      };
+    }
+  }
+
   const odds = event.competitions?.[0]?.odds?.[0];
   const homeOdds = impliedProbabilityFromOddsTeam(odds?.homeTeamOdds);
   const drawOdds = impliedProbabilityFromOddsTeam(odds?.drawOdds);
@@ -519,7 +601,6 @@ function extractSoccerProbabilities(
     };
   }
 
-  const winRows = Array.isArray(summary?.winprobability) ? summary.winprobability : [];
   if (winRows.length > 0) {
     const last = winRows[winRows.length - 1];
     const homeLive = normalizeProbability(last?.homeWinPercentage);
@@ -967,7 +1048,7 @@ async function fetchPairProbabilities(
   localTeamIdByEspnTeamId: Map<string, string>,
 ) {
   const dateRanges: string[] = [];
-  for (let day = 0; day <= LOOKAHEAD_DAYS; day += SCOREBOARD_WINDOW_DAYS) {
+  for (let day = -SCOREBOARD_LOOKBACK_DAYS; day <= LOOKAHEAD_DAYS; day += SCOREBOARD_WINDOW_DAYS) {
     const endDay = Math.min(day + SCOREBOARD_WINDOW_DAYS - 1, LOOKAHEAD_DAYS);
     const start = toEtYyyymmdd(shiftDate(day));
     const end = toEtYyyymmdd(shiftDate(endDay));
@@ -985,13 +1066,17 @@ async function fetchPairProbabilities(
   );
 
   const eventById = new Map<string, EspnEvent>();
+  const liveScores: LiveOverlayScoreGame[] = [];
   for (const payload of scoreboardPayloads) {
     if (!payload) continue;
     for (const event of payload.events ?? []) {
       if (!isNcaaTournamentEvent(event)) continue;
       const id = String(event.id ?? "").trim();
       if (!id) continue;
-      if (!eventById.has(id)) eventById.set(id, event);
+      if (eventById.has(id)) continue;
+      eventById.set(id, event);
+      const liveScore = liveScoreFromEvent(event);
+      if (liveScore) liveScores.push(liveScore);
     }
   }
 
@@ -1046,7 +1131,7 @@ async function fetchPairProbabilities(
     }),
   );
 
-  return pairProbabilities;
+  return { pairProbabilities, liveScores };
 }
 
 async function fetchWorldCupSoccerProbabilities(
@@ -1054,7 +1139,7 @@ async function fetchWorldCupSoccerProbabilities(
   teamStrengthById: Map<string, number>,
 ) {
   const dateRanges: string[] = [];
-  for (let day = 0; day <= LOOKAHEAD_DAYS; day += SCOREBOARD_WINDOW_DAYS) {
+  for (let day = -SCOREBOARD_LOOKBACK_DAYS; day <= LOOKAHEAD_DAYS; day += SCOREBOARD_WINDOW_DAYS) {
     const endDay = Math.min(day + SCOREBOARD_WINDOW_DAYS - 1, LOOKAHEAD_DAYS);
     const start = toEtYyyymmdd(shiftDate(day));
     const end = toEtYyyymmdd(shiftDate(endDay));
@@ -1072,12 +1157,16 @@ async function fetchWorldCupSoccerProbabilities(
   );
 
   const eventById = new Map<string, EspnEvent>();
+  const liveScores: LiveOverlayScoreGame[] = [];
   for (const payload of scoreboardPayloads) {
     if (!payload) continue;
     for (const event of payload.events ?? []) {
       const id = String(event.id ?? "").trim();
       if (!id) continue;
-      if (!eventById.has(id)) eventById.set(id, event);
+      if (eventById.has(id)) continue;
+      eventById.set(id, event);
+      const liveScore = liveScoreFromEvent(event);
+      if (liveScore) liveScores.push(liveScore);
     }
   }
 
@@ -1139,7 +1228,100 @@ async function fetchWorldCupSoccerProbabilities(
     }),
   );
 
-  return soccerProbabilities;
+  return { soccerProbabilities, liveScores };
+}
+
+function applyForecastLiveFinalOverlay(
+  games: GameRow[],
+  teams: TeamRow[],
+  liveScores: LiveOverlayScoreGame[],
+) {
+  if (liveScores.length === 0) return games;
+
+  const overlayGames = games.map((game) => ({
+    id: game.id,
+    round: String(game.round ?? ""),
+    region: game.region ?? null,
+    slot: Number(game.slot ?? 0),
+    status: game.status,
+    team1_id: game.team1_id,
+    team2_id: game.team2_id,
+    winner_team_id: game.winner_team_id,
+    team1_score: game.team1_score,
+    team2_score: game.team2_score,
+  }));
+  const liveByGameId = matchLiveScoresToGames(overlayGames, teams, liveScores);
+
+  return games.map((game) => {
+    const live = liveByGameId.get(game.id);
+    if (!live || live.state !== "FINAL") return game;
+    if (typeof live.team1Score !== "number" || typeof live.team2Score !== "number") return game;
+
+    const next: GameRow = {
+      ...game,
+      status: "Final",
+      team1_score: live.team1Score,
+      team2_score: live.team2Score,
+    };
+    if (live.team1Score === live.team2Score) {
+      next.winner_team_id = null;
+    } else if (game.team1_id && game.team2_id) {
+      next.winner_team_id = live.team1Score > live.team2Score ? game.team1_id : game.team2_id;
+    }
+    return next;
+  });
+}
+
+function collectActiveTeamIds(games: GameRow[], teams: TeamRow[], competitionSlug: string) {
+  const activeTeamIds = new Set<string>();
+  for (const game of games) {
+    const hasWinner = Boolean(game.winner_team_id);
+    const isGroupDraw = isFinalDraw(game);
+    if (hasWinner || isGroupDraw) continue;
+    if (game.team1_id) activeTeamIds.add(String(game.team1_id));
+    if (game.team2_id) activeTeamIds.add(String(game.team2_id));
+  }
+
+  if (competitionSlug === "world-cup") {
+    const groupHasUnresolvedGame = new Set<string>();
+    for (const game of games) {
+      if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
+      if (game.winner_team_id || isFinalDraw(game)) continue;
+      const group = groupCodeFromRegion(game.region);
+      if (group) groupHasUnresolvedGame.add(group);
+    }
+
+    for (const team of teams) {
+      const group = groupCodeFromRegion(team.region);
+      if (group && groupHasUnresolvedGame.has(group)) activeTeamIds.add(String(team.id));
+    }
+  }
+
+  return activeTeamIds;
+}
+
+function normalizeKnownAdvancements(games: GameRow[], competitionSlug: string): GameRow[] {
+  const normalized = cloneGames(games);
+  const sorted = sortedGamesForSimulation(normalized);
+  const byKey = new Map<string, MutableGame>();
+
+  for (const game of sorted) {
+    const round = String(game.round ?? "").toUpperCase();
+    const slot = Number(game.slot);
+    if (!round || !Number.isFinite(slot) || slot < 1) continue;
+    byKey.set(gameKey(round, game.region ?? null, Math.trunc(slot)), game);
+  }
+
+  for (const game of sorted) {
+    if (!game.winner_team_id) continue;
+    if (competitionSlug === "world-cup") {
+      propagateWorldCupWinner(game, byKey);
+    } else {
+      propagateWinner(game, byKey);
+    }
+  }
+
+  return normalized;
 }
 
 export async function GET(req: Request) {
@@ -1222,18 +1404,28 @@ export async function GET(req: Request) {
       }
     }
 
-    const pairProbabilities =
+    const probabilityData =
       competitionSlug === "world-cup"
-        ? new Map<string, PairProbability>()
-        : await fetchPairProbabilities(localTeamIdByEspnTeamId);
-    const soccerProbabilities =
-      competitionSlug === "world-cup"
-        ? await fetchWorldCupSoccerProbabilities(localTeamIdByEspnTeamId, teamStrengthById)
-        : new Map<string, SoccerMatchProbability>();
-    const horizonRound = resolveForecastHorizonRound(games);
+        ? {
+            pairProbabilities: new Map<string, PairProbability>(),
+            ...(await fetchWorldCupSoccerProbabilities(localTeamIdByEspnTeamId, teamStrengthById)),
+          }
+        : {
+            soccerProbabilities: new Map<string, SoccerMatchProbability>(),
+            ...(await fetchPairProbabilities(localTeamIdByEspnTeamId)),
+          };
+    const pairProbabilities = probabilityData.pairProbabilities ?? new Map<string, PairProbability>();
+    const soccerProbabilities = probabilityData.soccerProbabilities ?? new Map<string, SoccerMatchProbability>();
+    const liveScores = probabilityData.liveScores ?? [];
+    const gamesWithLiveFinals = applyForecastLiveFinalOverlay(games, teams, liveScores);
+
+    const horizonRound = resolveForecastHorizonRound(gamesWithLiveFinals);
     const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
-    const scopedGames = games.filter(
-      (game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder,
+    const scopedGames = normalizeKnownAdvancements(
+      gamesWithLiveFinals.filter(
+        (game) => roundOrder(game.round) > 0 && roundOrder(game.round) <= horizonRoundOrder,
+      ),
+      competitionSlug,
     );
 
     const currentScoringGames = scopedGames.map((game) => ({
@@ -1261,6 +1453,14 @@ export async function GET(req: Request) {
     const currentRanked = rankByScore(currentRows);
     const currentRankByEntryId = new Map(currentRanked.map((row) => [row.entry_id, row.rank]));
     const currentScoreByEntryId = new Map(currentRows.map((row) => [row.entry_id, row.score]));
+    const activeTeamIds = collectActiveTeamIds(scopedGames, teams, competitionSlug);
+    const remainingTeamIdsByEntryId = new Map<string, Set<string>>();
+    for (const entryId of entryIds) {
+      remainingTeamIdsByEntryId.set(
+        entryId,
+        new Set((picksByEntry.get(entryId) ?? []).filter((teamId) => activeTeamIds.has(teamId))),
+      );
+    }
 
     const unresolvedGameCount = scopedGames.filter((game) => !game.winner_team_id).length;
     const monteCarloRuns =
@@ -1351,6 +1551,13 @@ export async function GET(req: Request) {
         const currentScore = currentScoreByEntryId.get(entryId) ?? 0;
         const expectedScore = (expectedScoreAccumulator.get(entryId) ?? 0) / runs;
         const projectedMostLikely = mostLikelyScores.totalScoreByEntryId.get(entryId) ?? currentScore;
+        const firstPlaceProbability = isFirstPlaceDominated(
+          entryId,
+          currentScoreByEntryId,
+          remainingTeamIdsByEntryId,
+        )
+          ? 0
+          : Number((((firstPlaceCountByEntry.get(entryId) ?? 0) / runs) * 100).toFixed(1));
 
         return {
           entry_id: entryId,
@@ -1362,9 +1569,7 @@ export async function GET(req: Request) {
           projected_add_most_likely: projectedMostLikely - currentScore,
           projected_rank_most_likely: mostLikelyRankByEntryId.get(entryId) ?? 0,
           expected_rank: Number(((expectedRankAccumulator.get(entryId) ?? 0) / runs).toFixed(3)),
-          first_place_probability: Number(
-            (((firstPlaceCountByEntry.get(entryId) ?? 0) / runs) * 100).toFixed(1),
-          ),
+          first_place_probability: firstPlaceProbability,
         };
       })
       .sort(
