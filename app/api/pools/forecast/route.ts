@@ -198,6 +198,7 @@ const LOOKAHEAD_DAYS = 45;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
 const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["GROUP", "R64", "R32", "S16", "E8", "F4", "CHIP"];
+const FORECAST_BUILD = "wc-chip-routing-2026-07-08";
 
 function forecastJson(body: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -1620,6 +1621,14 @@ export async function GET(req: Request) {
       generated_at: new Date().toISOString(),
       horizon: "round",
       horizon_round: horizonRound,
+      forecast_build: FORECAST_BUILD,
+      world_cup_championship_routing:
+        competitionSlug === "world-cup"
+          ? Boolean(
+              WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT["F4|1"]?.round === "CHIP" &&
+                WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT["F4|2"]?.round === "CHIP",
+            )
+          : null,
       monte_carlo_runs: runs,
       unresolved_game_count: unresolvedGameCount,
       pair_probability_count: competitionSlug === "world-cup" ? soccerProbabilities.size : pairProbabilities.size,

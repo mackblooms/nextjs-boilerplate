@@ -767,6 +767,8 @@ export default function LeaderboardPage() {
   const [forecastByEntry, setForecastByEntry] = useState<Record<string, ForecastEntry>>({});
   const [forecastUpdatedAt, setForecastUpdatedAt] = useState<string | null>(null);
   const [forecastHorizonRound, setForecastHorizonRound] = useState<ForecastRoundCode | null>(null);
+  const [forecastBuild, setForecastBuild] = useState<string | null>(null);
+  const [forecastWorldCupChampionshipRouting, setForecastWorldCupChampionshipRouting] = useState<boolean | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
   const [poolCompetitionSlug, setPoolCompetitionSlug] = useState<CompetitionSlug>("march-madness");
@@ -978,6 +980,8 @@ export default function LeaderboardPage() {
         setForecastByEntry({});
         setForecastUpdatedAt(null);
         setForecastHorizonRound(null);
+        setForecastBuild(null);
+        setForecastWorldCupChampionshipRouting(null);
       }
       setMsg("");
       setForecastMsg("");
@@ -1604,6 +1608,8 @@ export default function LeaderboardPage() {
             entries?: ForecastEntry[];
             generated_at?: string;
             horizon_round?: ForecastRoundCode;
+            forecast_build?: string;
+            world_cup_championship_routing?: boolean | null;
             error?: string;
           };
 
@@ -1624,6 +1630,12 @@ export default function LeaderboardPage() {
           setForecastByEntry(nextForecastByEntry);
           setForecastUpdatedAt(forecastPayload.generated_at ?? null);
           setForecastHorizonRound(forecastPayload.horizon_round ?? null);
+          setForecastBuild(forecastPayload.forecast_build ?? null);
+          setForecastWorldCupChampionshipRouting(
+            typeof forecastPayload.world_cup_championship_routing === "boolean"
+              ? forecastPayload.world_cup_championship_routing
+              : null,
+          );
           setForecastMsg("");
         } catch (error: unknown) {
           setForecastMsg(
@@ -1633,12 +1645,16 @@ export default function LeaderboardPage() {
             setForecastByEntry({});
             setForecastUpdatedAt(null);
             setForecastHorizonRound(null);
+            setForecastBuild(null);
+            setForecastWorldCupChampionshipRouting(null);
           }
         }
       } else if (!isBackgroundRefresh) {
         setForecastByEntry({});
         setForecastUpdatedAt(null);
         setForecastHorizonRound(null);
+        setForecastBuild(null);
+        setForecastWorldCupChampionshipRouting(null);
       }
 
       setLoading(false);
@@ -2497,6 +2513,14 @@ export default function LeaderboardPage() {
               <p style={{ margin: 0, opacity: 0.82 }}>
                 These numbers are not final standings and can move quickly with any upset.
               </p>
+              {forecastBuild ? (
+                <p style={{ margin: 0, opacity: 0.62, fontSize: 12 }}>
+                  Forecast build: {forecastBuild}
+                  {forecastWorldCupChampionshipRouting == null
+                    ? ""
+                    : ` · title routing ${forecastWorldCupChampionshipRouting ? "on" : "off"}`}
+                </p>
+              ) : null}
             </div>
             <div
               style={{
