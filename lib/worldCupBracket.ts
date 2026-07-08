@@ -135,6 +135,32 @@ export const WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT: Record<string, WorldCupPropaga
   "F4|2": { round: "CHIP", region: null, slot: 1, side: "team2_id" },
 };
 
+export type WorldCupBracketLockGame = {
+  round?: string | null;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  winner_team_id?: string | null;
+};
+
+export function isWorldCupKnockoutBracketLocked(games: WorldCupBracketLockGame[]) {
+  let populatedR32Games = 0;
+
+  for (const game of games) {
+    const round = String(game.round ?? "").trim().toUpperCase();
+    const hasTeam = Boolean(game.team1_id || game.team2_id);
+    const hasBothTeams = Boolean(game.team1_id && game.team2_id);
+    const hasWinner = Boolean(game.winner_team_id);
+
+    if (round === "R32" && hasBothTeams) populatedR32Games++;
+    if (round === "R32" && hasWinner) return true;
+    if ((round === "S16" || round === "E8" || round === "F4" || round === "CHIP") && (hasTeam || hasWinner)) {
+      return true;
+    }
+  }
+
+  return populatedR32Games >= 8;
+}
+
 export function groupCodeFromRegion(region: string | null | undefined): string | null {
   const match = String(region ?? "").trim().match(/group\s+([A-L])$/i);
   return match ? match[1].toUpperCase() : null;

@@ -769,6 +769,7 @@ export default function LeaderboardPage() {
   const [forecastHorizonRound, setForecastHorizonRound] = useState<ForecastRoundCode | null>(null);
   const [forecastBuild, setForecastBuild] = useState<string | null>(null);
   const [forecastWorldCupChampionshipRouting, setForecastWorldCupChampionshipRouting] = useState<boolean | null>(null);
+  const [forecastWorldCupKnockoutBracketLocked, setForecastWorldCupKnockoutBracketLocked] = useState<boolean | null>(null);
   const [forecastMsg, setForecastMsg] = useState("");
   const [forecastInfoOpen, setForecastInfoOpen] = useState(false);
   const [poolCompetitionSlug, setPoolCompetitionSlug] = useState<CompetitionSlug>("march-madness");
@@ -1610,6 +1611,7 @@ export default function LeaderboardPage() {
             horizon_round?: ForecastRoundCode;
             forecast_build?: string;
             world_cup_championship_routing?: boolean | null;
+            world_cup_knockout_bracket_locked?: boolean | null;
             error?: string;
           };
 
@@ -1636,6 +1638,11 @@ export default function LeaderboardPage() {
               ? forecastPayload.world_cup_championship_routing
               : null,
           );
+          setForecastWorldCupKnockoutBracketLocked(
+            typeof forecastPayload.world_cup_knockout_bracket_locked === "boolean"
+              ? forecastPayload.world_cup_knockout_bracket_locked
+              : null,
+          );
           setForecastMsg("");
         } catch (error: unknown) {
           setForecastMsg(
@@ -1647,6 +1654,7 @@ export default function LeaderboardPage() {
             setForecastHorizonRound(null);
             setForecastBuild(null);
             setForecastWorldCupChampionshipRouting(null);
+            setForecastWorldCupKnockoutBracketLocked(null);
           }
         }
       } else if (!isBackgroundRefresh) {
@@ -2519,6 +2527,9 @@ export default function LeaderboardPage() {
                   {forecastWorldCupChampionshipRouting == null
                     ? ""
                     : ` · title routing ${forecastWorldCupChampionshipRouting ? "on" : "off"}`}
+                  {forecastWorldCupKnockoutBracketLocked == null
+                    ? ""
+                    : ` · knockout lock ${forecastWorldCupKnockoutBracketLocked ? "on" : "off"}`}
                 </p>
               ) : null}
             </div>

@@ -7,6 +7,7 @@ import {
   WORLD_CUP_SLOT_LABELS,
   WORLD_CUP_FIXED_R32_SLOT_TARGETS,
   groupCodeFromRegion,
+  isWorldCupKnockoutBracketLocked,
 } from "../worldCupBracket";
 
 // ---------------------------------------------------------------------------
@@ -20,6 +21,48 @@ describe("groupCodeFromRegion", () => {
   it("returns null for non-group region strings", () => expect(groupCodeFromRegion("East")).toBeNull());
   it("returns null for null", () => expect(groupCodeFromRegion(null)).toBeNull());
   it("returns null for empty string", () => expect(groupCodeFromRegion("")).toBeNull());
+});
+
+// ---------------------------------------------------------------------------
+// isWorldCupKnockoutBracketLocked
+// ---------------------------------------------------------------------------
+
+describe("isWorldCupKnockoutBracketLocked", () => {
+  it("stays unlocked before knockout rows are populated", () => {
+    expect(
+      isWorldCupKnockoutBracketLocked([
+        { round: "GROUP", team1_id: "a", team2_id: "b", winner_team_id: "a" },
+        { round: "R32", team1_id: null, team2_id: null, winner_team_id: null },
+      ]),
+    ).toBe(false);
+  });
+
+  it("locks once enough official R32 matchups are populated", () => {
+    const games = Array.from({ length: 8 }, (_, index) => ({
+      round: "R32",
+      team1_id: `team-${index}-a`,
+      team2_id: `team-${index}-b`,
+      winner_team_id: null,
+    }));
+
+    expect(isWorldCupKnockoutBracketLocked(games)).toBe(true);
+  });
+
+  it("locks when any knockout winner has been recorded", () => {
+    expect(
+      isWorldCupKnockoutBracketLocked([
+        { round: "R32", team1_id: "a", team2_id: "b", winner_team_id: "a" },
+      ]),
+    ).toBe(true);
+  });
+
+  it("locks when later knockout rows have propagated teams", () => {
+    expect(
+      isWorldCupKnockoutBracketLocked([
+        { round: "E8", team1_id: "a", team2_id: null, winner_team_id: null },
+      ]),
+    ).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------

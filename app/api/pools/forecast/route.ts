@@ -13,6 +13,7 @@ import {
   WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT,
   WORLD_CUP_THIRD_PLACE_R32_TARGETS,
   groupCodeFromRegion,
+  isWorldCupKnockoutBracketLocked,
   resolveWorldCupThirdPlaceAssignments,
 } from "@/lib/worldCupBracket";
 
@@ -198,7 +199,7 @@ const LOOKAHEAD_DAYS = 45;
 const MONTE_CARLO_RUNS = 5000;
 const MONTE_CARLO_RUNS_LIGHT = 2500;
 const ROUND_SEQUENCE: Array<keyof typeof ROUND_ORDER> = ["GROUP", "R64", "R32", "S16", "E8", "F4", "CHIP"];
-const FORECAST_BUILD = "wc-chip-routing-2026-07-08";
+const FORECAST_BUILD = "wc-knockout-lock-2026-07-08";
 
 function forecastJson(body: unknown, init: ResponseInit = {}) {
   const headers = new Headers(init.headers);
@@ -906,6 +907,7 @@ function runWorldCupProjection(
   maxRoundOrder: number,
 ) {
   const games = cloneGames(baseGames);
+  const lockKnockoutBracket = isWorldCupKnockoutBracketLocked(games);
   const sorted = sortedGamesForSimulation(games);
   const byKey = new Map<string, MutableGame>();
   for (const game of sorted) {
@@ -915,19 +917,21 @@ function runWorldCupProjection(
     byKey.set(gameKey(round, game.region ?? null, Math.trunc(slot)), game);
   }
 
-  for (const game of sorted) {
-    if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
-    if (!game.team1_id || !game.team2_id) continue;
-    if (game.winner_team_id || isFinalDraw(game)) continue;
+  if (!lockKnockoutBracket) {
+    for (const game of sorted) {
+      if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
+      if (!game.team1_id || !game.team2_id) continue;
+      if (game.winner_team_id || isFinalDraw(game)) continue;
 
-    const outcome = chooseSoccerOutcome(
-      String(game.team1_id),
-      String(game.team2_id),
-      soccerProbabilities,
-      teamStrengthById,
-      chooseMostLikely,
-    );
-    setProjectedGroupResult(game, outcome);
+      const outcome = chooseSoccerOutcome(
+        String(game.team1_id),
+        String(game.team2_id),
+        soccerProbabilities,
+        teamStrengthById,
+        chooseMostLikely,
+      );
+      setProjectedGroupResult(game, outcome);
+    }
   }
 
   const teamsByGroup = new Map<string, TeamRow[]>();
@@ -955,35 +959,37 @@ function runWorldCupProjection(
     if (ranked.length > 0) rankingsByGroup.set(group, ranked);
   }
 
-  for (const [label, target] of Object.entries(WORLD_CUP_FIXED_R32_SLOT_TARGETS)) {
-    const rank = Number(label.slice(0, 1));
-    const group = label.slice(1);
-    const teamId = rankingsByGroup.get(group)?.find((row) => row.rank === rank)?.teamId ?? null;
-    if (!teamId) continue;
-    const game = byKey.get(gameKey("R32", null, target.slot));
-    if (!game) continue;
-    game[target.side] = teamId;
-    if (game.winner_team_id && game.winner_team_id !== game.team1_id && game.winner_team_id !== game.team2_id) {
-      game.winner_team_id = null;
-    }
-  }
-
-  const thirdRows = [...rankingsByGroup.values()]
-    .map((rows) => rows.find((row) => row.rank === 3))
-    .filter((row): row is WorldCupStanding => row != null)
-    .sort(compareWorldCupStandings);
-  const qualifiedThirdGroups = thirdRows.slice(0, 8).map((row) => row.group);
-  const thirdPlaceAssignments = resolveWorldCupThirdPlaceAssignments(qualifiedThirdGroups);
-  if (thirdPlaceAssignments) {
-    for (const [winnerSlot, group] of thirdPlaceAssignments) {
-      const teamId = thirdRows.find((row) => row.group === group)?.teamId ?? null;
-      const slotTarget = WORLD_CUP_THIRD_PLACE_R32_TARGETS[winnerSlot] ?? null;
-      if (!teamId || !slotTarget) continue;
-      const game = byKey.get(gameKey("R32", null, slotTarget.slot));
+  if (!lockKnockoutBracket) {
+    for (const [label, target] of Object.entries(WORLD_CUP_FIXED_R32_SLOT_TARGETS)) {
+      const rank = Number(label.slice(0, 1));
+      const group = label.slice(1);
+      const teamId = rankingsByGroup.get(group)?.find((row) => row.rank === rank)?.teamId ?? null;
+      if (!teamId) continue;
+      const game = byKey.get(gameKey("R32", null, target.slot));
       if (!game) continue;
-      game[slotTarget.side] = teamId;
+      game[target.side] = teamId;
       if (game.winner_team_id && game.winner_team_id !== game.team1_id && game.winner_team_id !== game.team2_id) {
         game.winner_team_id = null;
+      }
+    }
+
+    const thirdRows = [...rankingsByGroup.values()]
+      .map((rows) => rows.find((row) => row.rank === 3))
+      .filter((row): row is WorldCupStanding => row != null)
+      .sort(compareWorldCupStandings);
+    const qualifiedThirdGroups = thirdRows.slice(0, 8).map((row) => row.group);
+    const thirdPlaceAssignments = resolveWorldCupThirdPlaceAssignments(qualifiedThirdGroups);
+    if (thirdPlaceAssignments) {
+      for (const [winnerSlot, group] of thirdPlaceAssignments) {
+        const teamId = thirdRows.find((row) => row.group === group)?.teamId ?? null;
+        const slotTarget = WORLD_CUP_THIRD_PLACE_R32_TARGETS[winnerSlot] ?? null;
+        if (!teamId || !slotTarget) continue;
+        const game = byKey.get(gameKey("R32", null, slotTarget.slot));
+        if (!game) continue;
+        game[slotTarget.side] = teamId;
+        if (game.winner_team_id && game.winner_team_id !== game.team1_id && game.winner_team_id !== game.team2_id) {
+          game.winner_team_id = null;
+        }
       }
     }
   }
@@ -1312,7 +1318,7 @@ function collectActiveTeamIds(games: GameRow[], teams: TeamRow[], competitionSlu
     if (game.team2_id && !eliminatedTeamIds.has(game.team2_id)) activeTeamIds.add(String(game.team2_id));
   }
 
-  if (competitionSlug === "world-cup") {
+  if (competitionSlug === "world-cup" && !isWorldCupKnockoutBracketLocked(games)) {
     const groupHasUnresolvedGame = new Set<string>();
     for (const game of games) {
       if (String(game.round ?? "").toUpperCase() !== "GROUP") continue;
@@ -1454,6 +1460,8 @@ export async function GET(req: Request) {
       competitionSlug === "world-cup"
         ? (applyWorldCupManualResultOverrides(gamesWithLiveFinals) as GameRow[])
         : gamesWithLiveFinals;
+    const worldCupKnockoutBracketLocked =
+      competitionSlug === "world-cup" ? isWorldCupKnockoutBracketLocked(gamesWithOfficialResults) : null;
 
     const horizonRound = resolveForecastHorizonRound(gamesWithOfficialResults);
     const horizonRoundOrder = ROUND_ORDER[horizonRound] ?? ROUND_ORDER.CHIP;
@@ -1499,7 +1507,10 @@ export async function GET(req: Request) {
       );
     }
 
-    const unresolvedGameCount = scopedGames.filter((game) => !game.winner_team_id).length;
+    const unresolvedGameCount = scopedGames.filter((game) => {
+      if (worldCupKnockoutBracketLocked && String(game.round ?? "").toUpperCase() === "GROUP") return false;
+      return !game.winner_team_id && !isFinalDraw(game);
+    }).length;
     const monteCarloRuns =
       unresolvedGameCount >= 16 ? MONTE_CARLO_RUNS_LIGHT : MONTE_CARLO_RUNS;
 
@@ -1629,6 +1640,7 @@ export async function GET(req: Request) {
                 WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT["F4|2"]?.round === "CHIP",
             )
           : null,
+      world_cup_knockout_bracket_locked: worldCupKnockoutBracketLocked,
       monte_carlo_runs: runs,
       unresolved_game_count: unresolvedGameCount,
       pair_probability_count: competitionSlug === "world-cup" ? soccerProbabilities.size : pairProbabilities.size,
