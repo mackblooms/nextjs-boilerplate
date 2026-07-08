@@ -131,6 +131,8 @@ export const WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT: Record<string, WorldCupPropaga
   "E8|2": { round: "F4", region: null, slot: 1, side: "team2_id" },
   "E8|3": { round: "F4", region: null, slot: 2, side: "team1_id" },
   "E8|4": { round: "F4", region: null, slot: 2, side: "team2_id" },
+  "F4|1": { round: "CHIP", region: null, slot: 1, side: "team1_id" },
+  "F4|2": { round: "CHIP", region: null, slot: 1, side: "team2_id" },
 };
 
 export function groupCodeFromRegion(region: string | null | undefined): string | null {

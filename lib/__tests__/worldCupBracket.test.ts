@@ -356,3 +356,20 @@ describe("resolveWorldCupThirdPlaceAssignments", () => {
     }
   });
 });
+
+describe("WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT - F4 to CHIP routing", () => {
+  it("routes both semifinal winners into the championship game", () => {
+    expect(WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT["F4|1"]).toEqual({
+      round: "CHIP",
+      region: null,
+      slot: 1,
+      side: "team1_id",
+    });
+    expect(WORLD_CUP_NEXT_TARGET_BY_ROUND_SLOT["F4|2"]).toEqual({
+      round: "CHIP",
+      region: null,
+      slot: 1,
+      side: "team2_id",
+    });
+  });
+});

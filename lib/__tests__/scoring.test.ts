@@ -209,6 +209,42 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     expect(games.find((game) => game.round === "S16")?.team2_id).toBe("egypt");
   });
 
+  it("manual F4 winners propagate into the championship game", () => {
+    const games = applyWorldCupManualResultOverrides([
+      {
+        round: "F4",
+        slot: 1,
+        team1_id: "spain",
+        team2_id: "england",
+        winner_team_id: "spain",
+        status: "Final",
+        team1_score: 2,
+        team2_score: 0,
+      },
+      {
+        round: "F4",
+        slot: 2,
+        team1_id: "france",
+        team2_id: "morocco",
+        winner_team_id: "morocco",
+        status: "Final",
+        team1_score: 0,
+        team2_score: 1,
+      },
+      {
+        round: "CHIP",
+        slot: 1,
+        team1_id: null,
+        team2_id: null,
+        winner_team_id: null,
+      },
+    ]) as ScoringGame[];
+
+    const championship = games.find((game) => game.round === "CHIP");
+    expect(championship?.team1_id).toBe("spain");
+    expect(championship?.team2_id).toBe("morocco");
+  });
+
   it("R32: cost = 10 uses the lower value schedule", () => {
     const r = wc(
       [{ round: "R32", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
