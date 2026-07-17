@@ -148,9 +148,12 @@ function parsePlayerRows(workbook) {
       }
 
       if (!row.player) return null;
+      const sourceRow =
+        typeof rawRow.__rowNum__ === "number" ? rawRow.__rowNum__ + 1 : index + 2;
 
       return {
         id: makePlayerId(row, index),
+        sourceRow,
         rank: null,
         ...row,
       };

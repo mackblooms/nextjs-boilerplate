@@ -1,0 +1,824 @@
+{
+  "generatedAt": "2026-07-17T19:01:01.622Z",
+  "sourceWorkbook": "bracketball_player_rating_26-27.xlsx",
+  "configuredRows": 36,
+  "matchedRows": 36,
+  "scoringContext": [
+    "Projected starter and projected role should reflect researched expectation of starting status and solid-minute likelihood.",
+    "Talent score inputs should consider mock draft placement, NBA projection, tools/upside, and broader player sentiment.",
+    "Opportunity inputs should consider team situation, transfer destination, returning roster context, and expected offensive burden.",
+    "Automation should produce suggestions and keep manual overrides as the highest-priority source."
+  ],
+  "summaries": [
+    {
+      "label": "Freshman",
+      "rows": [
+        160,
+        161,
+        162,
+        163
+      ],
+      "missingRows": [],
+      "count": 4,
+      "completed": 4,
+      "needsReview": 0,
+      "starterBreakdown": {
+        "Yes": 4
+      },
+      "fieldSummary": {
+        "projectedRole": {
+          "avg": 92.5,
+          "min": 85,
+          "max": 100
+        },
+        "opportunityChange": {
+          "avg": 85,
+          "min": 80,
+          "max": 90
+        },
+        "offensiveBurden": {
+          "avg": 80,
+          "min": 75,
+          "max": 85
+        },
+        "opportunityScore": {
+          "avg": 87.75,
+          "min": 81.5,
+          "max": 94
+        },
+        "entryTalentGrade": {
+          "avg": 98.75,
+          "min": 95,
+          "max": 100
+        },
+        "nbaProjectionScore": {
+          "avg": 100,
+          "min": 100,
+          "max": 100
+        },
+        "upsideToolsScore": {
+          "avg": 94.25,
+          "min": 90,
+          "max": 100
+        },
+        "talentScore": {
+          "avg": 98.22,
+          "min": 95.9,
+          "max": 100
+        },
+        "developmentScore": {
+          "avg": 100,
+          "min": 100,
+          "max": 100
+        },
+        "projectionScore": {
+          "avg": 93.87,
+          "min": 90.24,
+          "max": 97.3
+        },
+        "projectedBbpr": {
+          "avg": 93.87,
+          "min": 90.24,
+          "max": 97.3
+        },
+        "confidenceScore": {
+          "avg": 65,
+          "min": 65,
+          "max": 65
+        }
+      },
+      "players": [
+        {
+          "row": 160,
+          "player": "Tyran Stokes",
+          "team": "Kansas",
+          "previousTeam": null,
+          "type": "Freshman",
+          "projectedBbpr": 97.3,
+          "projectionScore": 97.3,
+          "opportunityScore": 94,
+          "talentScore": 100,
+          "confidenceGrade": "B-",
+          "needsReview": false
+        },
+        {
+          "row": 161,
+          "player": "Jordan Smith Jr.",
+          "team": "Arkansas",
+          "previousTeam": null,
+          "type": "Freshman",
+          "projectedBbpr": 96.95,
+          "projectionScore": 96.95,
+          "opportunityScore": 94,
+          "talentScore": 99,
+          "confidenceGrade": "B-",
+          "needsReview": false
+        },
+        {
+          "row": 162,
+          "player": "Caleb Holt",
+          "team": "Arizona",
+          "previousTeam": null,
+          "type": "Freshman",
+          "projectedBbpr": 90.975,
+          "projectionScore": 90.975,
+          "opportunityScore": 81.5,
+          "talentScore": 98,
+          "confidenceGrade": "B-",
+          "needsReview": false
+        },
+        {
+          "row": 163,
+          "player": "Bruce Branch III",
+          "team": "BYU",
+          "previousTeam": null,
+          "type": "Freshman",
+          "projectedBbpr": 90.24,
+          "projectionScore": 90.24,
+          "opportunityScore": 81.5,
+          "talentScore": 95.9,
+          "confidenceGrade": "B-",
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "label": "Returning",
+      "rows": [
+        164,
+        165,
+        186
+      ],
+      "missingRows": [],
+      "count": 3,
+      "completed": 3,
+      "needsReview": 0,
+      "starterBreakdown": {
+        "Yes": 3
+      },
+      "fieldSummary": {
+        "projectedRole": {
+          "avg": 91,
+          "min": 77,
+          "max": 100
+        },
+        "opportunityChange": {
+          "avg": 80,
+          "min": 75,
+          "max": 90
+        },
+        "offensiveBurden": {
+          "avg": 82.33,
+          "min": 70,
+          "max": 90
+        },
+        "opportunityScore": {
+          "avg": 85.97,
+          "min": 75,
+          "max": 92.4
+        },
+        "entryTalentGrade": {
+          "avg": null,
+          "min": null,
+          "max": null
+        },
+        "nbaProjectionScore": {
+          "avg": 86.67,
+          "min": 75,
+          "max": 95
+        },
+        "upsideToolsScore": {
+          "avg": 90.67,
+          "min": 90,
+          "max": 92
+        },
+        "talentScore": {
+          "avg": 88.27,
+          "min": 81,
+          "max": 93.8
+        },
+        "developmentScore": {
+          "avg": 66.67,
+          "min": 40,
+          "max": 80
+        },
+        "projectionScore": {
+          "avg": 82.91,
+          "min": 78.1,
+          "max": 89.08
+        },
+        "projectedBbpr": {
+          "avg": 67.03,
+          "min": 54.1,
+          "max": 80.69
+        },
+        "confidenceScore": {
+          "avg": 95,
+          "min": 95,
+          "max": 95
+        }
+      },
+      "players": [
+        {
+          "row": 164,
+          "player": "Braylon Mullins",
+          "team": "Connecticut",
+          "previousTeam": "Connecticut",
+          "type": "Returning",
+          "projectedBbpr": 54.1013,
+          "projectionScore": 89.08,
+          "opportunityScore": 92.4,
+          "talentScore": 90,
+          "confidenceGrade": "A+",
+          "needsReview": false
+        },
+        {
+          "row": 165,
+          "player": "Thomas Haugh",
+          "team": "Florida",
+          "previousTeam": "Florida",
+          "type": "Returning",
+          "projectedBbpr": 80.6855,
+          "projectionScore": 81.555,
+          "opportunityScore": 90.5,
+          "talentScore": 93.8,
+          "confidenceGrade": "A+",
+          "needsReview": false
+        },
+        {
+          "row": 186,
+          "player": "Malachi Moreno",
+          "team": "Kentucky",
+          "previousTeam": "Kentucky",
+          "type": "Returning",
+          "projectedBbpr": 66.2962,
+          "projectionScore": 78.1,
+          "opportunityScore": 75,
+          "talentScore": 81,
+          "confidenceGrade": "A+",
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "label": "International",
+      "rows": [
+        352,
+        362
+      ],
+      "missingRows": [],
+      "count": 2,
+      "completed": 2,
+      "needsReview": 0,
+      "starterBreakdown": {
+        "Yes": 2
+      },
+      "fieldSummary": {
+        "projectedRole": {
+          "avg": 60,
+          "min": 60,
+          "max": 60
+        },
+        "opportunityChange": {
+          "avg": 62.5,
+          "min": 60,
+          "max": 65
+        },
+        "offensiveBurden": {
+          "avg": 55,
+          "min": 55,
+          "max": 55
+        },
+        "opportunityScore": {
+          "avg": 59.75,
+          "min": 59,
+          "max": 60.5
+        },
+        "entryTalentGrade": {
+          "avg": 75,
+          "min": 75,
+          "max": 75
+        },
+        "nbaProjectionScore": {
+          "avg": 50.5,
+          "min": 48,
+          "max": 53
+        },
+        "upsideToolsScore": {
+          "avg": 68.5,
+          "min": 68,
+          "max": 69
+        },
+        "talentScore": {
+          "avg": 64.8,
+          "min": 64.05,
+          "max": 65.55
+        },
+        "developmentScore": {
+          "avg": 100,
+          "min": 100,
+          "max": 100
+        },
+        "projectionScore": {
+          "avg": 69.57,
+          "min": 68.97,
+          "max": 70.17
+        },
+        "projectedBbpr": {
+          "avg": 69.57,
+          "min": 68.97,
+          "max": 70.17
+        },
+        "confidenceScore": {
+          "avg": 55,
+          "min": 55,
+          "max": 55
+        }
+      },
+      "players": [
+        {
+          "row": 352,
+          "player": "Quinn Ellis",
+          "team": "St. John's",
+          "previousTeam": null,
+          "type": "International",
+          "projectedBbpr": 70.1675,
+          "projectionScore": 70.1675,
+          "opportunityScore": 60.5,
+          "talentScore": 65.55,
+          "confidenceGrade": "C",
+          "needsReview": false
+        },
+        {
+          "row": 362,
+          "player": "Ousmane N'Diaye",
+          "team": "Kentucky",
+          "previousTeam": null,
+          "type": "International",
+          "projectedBbpr": 68.9675,
+          "projectionScore": 68.9675,
+          "opportunityScore": 59,
+          "talentScore": 64.05,
+          "confidenceGrade": "C",
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "label": "Transfer",
+      "rows": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "missingRows": [],
+      "count": 27,
+      "completed": 26,
+      "needsReview": 1,
+      "starterBreakdown": {
+        "Yes": 23,
+        "No": 3,
+        "blank": 1
+      },
+      "fieldSummary": {
+        "projectedRole": {
+          "avg": 78.65,
+          "min": 38,
+          "max": 100
+        },
+        "opportunityChange": {
+          "avg": 46.96,
+          "min": 20,
+          "max": 73
+        },
+        "offensiveBurden": {
+          "avg": 69.92,
+          "min": 30,
+          "max": 90
+        },
+        "opportunityScore": {
+          "avg": 67.4,
+          "min": 32,
+          "max": 89.9
+        },
+        "entryTalentGrade": {
+          "avg": null,
+          "min": null,
+          "max": null
+        },
+        "nbaProjectionScore": {
+          "avg": 48.08,
+          "min": 10,
+          "max": 75
+        },
+        "upsideToolsScore": {
+          "avg": 57.08,
+          "min": 40,
+          "max": 85
+        },
+        "talentScore": {
+          "avg": 51.68,
+          "min": 22,
+          "max": 79
+        },
+        "developmentScore": {
+          "avg": 51.11,
+          "min": 40,
+          "max": 80
+        },
+        "projectionScore": {
+          "avg": 58.72,
+          "min": 30.1,
+          "max": 84.11
+        },
+        "projectedBbpr": {
+          "avg": 67.4,
+          "min": 52.35,
+          "max": 80.95
+        },
+        "confidenceScore": {
+          "avg": 79.11,
+          "min": 56,
+          "max": 80
+        }
+      },
+      "players": [
+        {
+          "row": 3,
+          "player": "Colby Garland",
+          "team": "Georgia Tech",
+          "previousTeam": "San Jose State",
+          "type": "Transfer",
+          "projectedBbpr": 62.8793,
+          "projectionScore": 55.72,
+          "opportunityScore": 81,
+          "talentScore": 32.2,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 4,
+          "player": "Dior Johnson",
+          "team": "UCF",
+          "previousTeam": "Tarleton State",
+          "type": "Transfer",
+          "projectedBbpr": 64.916,
+          "projectionScore": 35.75,
+          "opportunityScore": 36,
+          "talentScore": 33,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 5,
+          "player": "Milan Momcilovic",
+          "team": "Kentucky",
+          "previousTeam": "Iowa State",
+          "type": "Transfer",
+          "projectedBbpr": 77.247,
+          "projectionScore": 66.825,
+          "opportunityScore": 75.5,
+          "talentScore": 71,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 6,
+          "player": "Juke Harris",
+          "team": "Tennessee",
+          "previousTeam": "Wake Forest",
+          "type": "Transfer",
+          "projectedBbpr": 78.7858,
+          "projectionScore": 71.75,
+          "opportunityScore": 76,
+          "talentScore": 73,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 7,
+          "player": "John Blackwell",
+          "team": "Duke",
+          "previousTeam": "Wisconsin",
+          "type": "Transfer",
+          "projectedBbpr": 69.698,
+          "projectionScore": 59.58,
+          "opportunityScore": 73.4,
+          "talentScore": 53,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 8,
+          "player": "Paulius Murauskas",
+          "team": "Arizona State",
+          "previousTeam": "Saint Mary's",
+          "type": "Transfer",
+          "projectedBbpr": 80.9471,
+          "projectionScore": 64.595,
+          "opportunityScore": 79.1,
+          "talentScore": 60,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 9,
+          "player": "Isaiah Johnson",
+          "team": "Texas",
+          "previousTeam": "Colorado",
+          "type": "Transfer",
+          "projectedBbpr": 71.3564,
+          "projectionScore": 65.28,
+          "opportunityScore": 64.4,
+          "talentScore": 58,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 10,
+          "player": "Jack Karasinski",
+          "team": "Northwestern",
+          "previousTeam": "Bellarmine",
+          "type": "Transfer",
+          "projectedBbpr": 71.6018,
+          "projectionScore": 62.7,
+          "opportunityScore": 78,
+          "talentScore": 56,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 11,
+          "player": "Cruz Davis",
+          "team": "Texas Tech",
+          "previousTeam": "Hofstra",
+          "type": "Transfer",
+          "projectedBbpr": 62.8021,
+          "projectionScore": 50.425,
+          "opportunityScore": 58.5,
+          "talentScore": 46,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 12,
+          "player": "Flory Bidunga",
+          "team": "Louisville",
+          "previousTeam": "Kansas",
+          "type": "Transfer",
+          "projectedBbpr": 80.1503,
+          "projectionScore": 73,
+          "opportunityScore": 85,
+          "talentScore": 65,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 13,
+          "player": "Dedan Thomas Jr.",
+          "team": "Houston",
+          "previousTeam": "LSU",
+          "type": "Transfer",
+          "projectedBbpr": 65.6274,
+          "projectionScore": 60.23,
+          "opportunityScore": 75,
+          "talentScore": 52.8,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 14,
+          "player": "Ryan Prather Jr.",
+          "team": "Iowa State",
+          "previousTeam": "Robert Morris",
+          "type": "Transfer",
+          "projectedBbpr": 61.9668,
+          "projectionScore": 30.1,
+          "opportunityScore": 32,
+          "talentScore": 22,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 15,
+          "player": "PJ Haggerty",
+          "team": "Texas A&M",
+          "previousTeam": "Kansas State",
+          "type": "Transfer",
+          "projectedBbpr": 52.4321,
+          "projectionScore": 60.12,
+          "opportunityScore": 76,
+          "talentScore": 51.2,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 16,
+          "player": "Dra Gibbs-Lawhorn",
+          "team": "Texas Tech",
+          "previousTeam": "UNLV",
+          "type": "Transfer",
+          "projectedBbpr": 62.1931,
+          "projectionScore": 56.515,
+          "opportunityScore": 72.5,
+          "talentScore": 45.4,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 17,
+          "player": "Markus Burton",
+          "team": "Indiana",
+          "previousTeam": "Notre Dame",
+          "type": "Transfer",
+          "projectedBbpr": 62.2356,
+          "projectionScore": 58.625,
+          "opportunityScore": 77.5,
+          "talentScore": 45,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 18,
+          "player": "Daniel Freitag",
+          "team": "Oregon State",
+          "previousTeam": "Buffalo",
+          "type": "Transfer",
+          "projectedBbpr": 67.7741,
+          "projectionScore": 61.54,
+          "opportunityScore": 75.4,
+          "talentScore": 44.6,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 19,
+          "player": "Isaac Celiscar",
+          "team": "Baylor",
+          "previousTeam": "Yale",
+          "type": "Transfer",
+          "projectedBbpr": 69.2428,
+          "projectionScore": 60.235,
+          "opportunityScore": 66.9,
+          "talentScore": 51.8,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 20,
+          "player": "Tijan Saine Jr.",
+          "team": null,
+          "previousTeam": "Weber State",
+          "type": "Transfer",
+          "projectedBbpr": null,
+          "projectionScore": null,
+          "opportunityScore": null,
+          "talentScore": null,
+          "confidenceGrade": "C",
+          "needsReview": true
+        },
+        {
+          "row": 21,
+          "player": "Terrence Brown",
+          "team": "North Carolina",
+          "previousTeam": "Utah",
+          "type": "Transfer",
+          "projectedBbpr": 52.3507,
+          "projectionScore": 55.98,
+          "opportunityScore": 71,
+          "talentScore": 45.8,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 22,
+          "player": "Jake Fiegen",
+          "team": "Villanova",
+          "previousTeam": "Cornell",
+          "type": "Transfer",
+          "projectedBbpr": 63.9102,
+          "projectionScore": 36.035,
+          "opportunityScore": 32.9,
+          "talentScore": 37.8,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 23,
+          "player": "Logan Duncomb",
+          "team": "Notre Dame",
+          "previousTeam": "Winthrop",
+          "type": "Transfer",
+          "projectedBbpr": 68.8046,
+          "projectionScore": 46.875,
+          "opportunityScore": 54.5,
+          "talentScore": 41,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 24,
+          "player": "DeSean Goode",
+          "team": "Miami",
+          "previousTeam": "Robert Morris",
+          "type": "Transfer",
+          "projectedBbpr": 76.6684,
+          "projectionScore": 64.7,
+          "opportunityScore": 65,
+          "talentScore": 67,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 25,
+          "player": "Gavin Doty",
+          "team": "Syracuse",
+          "previousTeam": "Siena",
+          "type": "Transfer",
+          "projectedBbpr": 69.2267,
+          "projectionScore": 60.38,
+          "opportunityScore": 63.8,
+          "talentScore": 56.2,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 26,
+          "player": "Terrence Hill Jr.",
+          "team": "Tennessee",
+          "previousTeam": "VCU",
+          "type": "Transfer",
+          "projectedBbpr": 75.9264,
+          "projectionScore": 61.1,
+          "opportunityScore": 62.6,
+          "talentScore": 59.8,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 27,
+          "player": "Tounde Yessoufou",
+          "team": "St. John's",
+          "previousTeam": "Baylor",
+          "type": "Transfer",
+          "projectedBbpr": 62.6916,
+          "projectionScore": 84.105,
+          "opportunityScore": 89.9,
+          "talentScore": 79,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 28,
+          "player": "Lewis Walker",
+          "team": "UCF",
+          "previousTeam": "North Carolina A&T",
+          "type": "Transfer",
+          "projectedBbpr": 59.3206,
+          "projectionScore": 67.575,
+          "opportunityScore": 69.5,
+          "talentScore": 58,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        },
+        {
+          "row": 29,
+          "player": "Preston Edmead",
+          "team": "North Carolina State",
+          "previousTeam": "Hofstra",
+          "type": "Transfer",
+          "projectedBbpr": 61.7201,
+          "projectionScore": 57.1,
+          "opportunityScore": 61,
+          "talentScore": 39,
+          "confidenceGrade": "A-",
+          "needsReview": false
+        }
+      ]
+    }
+  ]
+}

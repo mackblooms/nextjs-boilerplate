@@ -19,6 +19,7 @@
     "sim:balance": "node scripts/scoring-balance-sim.js",
     "sim:world-cup-pricing": "node scripts/world-cup-pricing-audit.js",
     "import:cbb-projections": "node scripts/import-cbb-projections.mjs",
+    "audit:cbb-gold-standards": "node scripts/audit-cbb-gold-standards.mjs",
     "mobile:prepare-web": "node scripts/mobile-prepare-web.mjs",
     "mobile:sync": "npm run mobile:prepare-web && npx cap sync",
     "mobile:copy": "npm run mobile:prepare-web && npx cap copy",

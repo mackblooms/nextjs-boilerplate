@@ -1,5 +1,6 @@
 export type CbbPlayerProjection = {
   id: string;
+  sourceRow: number;
   rank: number | null;
   player: string;
   currentTeam: string | null;
