@@ -11,7 +11,8 @@ import type {
 
 const dataDir = path.join(process.cwd(), "data", "cbb");
 const projectionsPath = path.join(dataDir, "player-projections.json");
-const researchBatchPattern = /^transfer-research-batch-\d+\.json$/;
+const researchBatchPattern =
+  /^(?:player|transfer|freshman|returning|returner|international)-research-batch-\d+\.json$/;
 
 function nearlyEqual(a: number | null | undefined, b: number | null | undefined) {
   if (a == null || b == null) return a == null && b == null;
@@ -101,6 +102,7 @@ export function buildCbbResearchPayload(
               talentScore: current.talentScore,
               projectionScore: current.projectionScore,
               projectedBbpr: current.projectedBbpr,
+              playerType: current.playerType,
               confidenceScore: current.confidenceScore,
               confidenceGrade: current.confidenceGrade,
               needsReview: current.needsReview,

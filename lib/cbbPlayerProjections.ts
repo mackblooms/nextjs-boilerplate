@@ -126,6 +126,7 @@ export type CbbResearchPlayerWithState = CbbResearchPlayer & {
     | "talentScore"
     | "projectionScore"
     | "projectedBbpr"
+    | "playerType"
     | "confidenceScore"
     | "confidenceGrade"
     | "needsReview"

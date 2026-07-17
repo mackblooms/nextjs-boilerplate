@@ -92,7 +92,7 @@ export default function CbbPlayerProjectionsPage() {
   const [classFilter, setClassFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
   const [reviewFilter, setReviewFilter] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("rank");
+  const [sortKey, setSortKey] = useState<SortKey>("projectedBbpr");
 
   useEffect(() => {
     let canceled = false;
@@ -238,6 +238,7 @@ export default function CbbPlayerProjectionsPage() {
     setPayload(json.projections);
     setResearchPayload(json.research);
     setSelectedRows(new Set());
+    setSortKey("projectedBbpr");
     setApplyMessage(`applied ${json.appliedRows?.length ?? sourceRows.length} researched projections`);
     setApplying(false);
   }
@@ -380,8 +381,8 @@ export default function CbbPlayerProjectionsPage() {
         <label>
           <span>sort</span>
           <UiSelect value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
-            <option value="rank">rank</option>
             <option value="projectedBbpr">projected bbpr</option>
+            <option value="rank">rank</option>
             <option value="confidence">confidence</option>
             <option value="review">review status</option>
             <option value="player">player</option>
@@ -455,7 +456,7 @@ export default function CbbPlayerProjectionsPage() {
                       disabled={applying}
                     />
                     <span>
-                      row {player.sourceRow} · {player.batchId}
+                      row {player.sourceRow} · {player.currentProjection?.playerType ?? "research"} · {player.batchId}
                     </span>
                   </label>
 
