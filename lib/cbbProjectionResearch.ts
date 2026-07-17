@@ -8,6 +8,7 @@ import type {
   CbbResearchPlayer,
   CbbResearchPlayerWithState,
 } from "@/lib/cbbPlayerProjections";
+import { calibrateProjectedBbpr } from "@/lib/cbbProjectionCalibration";
 
 const dataDir = path.join(process.cwd(), "data", "cbb");
 const projectionsPath = path.join(dataDir, "player-projections.json");
@@ -21,6 +22,7 @@ function nearlyEqual(a: number | null | undefined, b: number | null | undefined)
 
 function isSuggestionApplied(player: CbbPlayerProjection | undefined, suggestion: CbbResearchPlayer) {
   if (!player) return false;
+  const calibratedProjectedBbpr = calibrateProjectedBbpr(player, suggestion.suggested);
   return (
     !player.needsReview &&
     player.projectionInputCompleteness === 100 &&
@@ -33,7 +35,7 @@ function isSuggestionApplied(player: CbbPlayerProjection | undefined, suggestion
     nearlyEqual(player.upsideToolsScore, suggestion.suggested.upsideToolsScore) &&
     nearlyEqual(player.talentScore, suggestion.suggested.talentScore) &&
     nearlyEqual(player.projectionScore, suggestion.suggested.projectionScore) &&
-    nearlyEqual(player.projectedBbpr, suggestion.suggested.projectedBbpr)
+    nearlyEqual(player.projectedBbpr, calibratedProjectedBbpr)
   );
 }
 
@@ -86,8 +88,15 @@ export function buildCbbResearchPayload(
   const players: CbbResearchPlayerWithState[] = batches.flatMap((batch) =>
     batch.players.map((player) => {
       const current = playerByRow.get(player.sourceRow);
+      const suggested = current
+        ? {
+            ...player.suggested,
+            projectedBbpr: calibrateProjectedBbpr(current, player.suggested),
+          }
+        : player.suggested;
       return {
         ...player,
+        suggested,
         batchId: batch.batchId,
         applied: isSuggestionApplied(current, player),
         currentProjection: current
@@ -169,7 +178,7 @@ export async function applyCbbResearchRows(sourceRows: number[]) {
       upsideToolsScore: suggestion.suggested.upsideToolsScore,
       talentScore: suggestion.suggested.talentScore,
       projectionScore: suggestion.suggested.projectionScore,
-      projectedBbpr: suggestion.suggested.projectedBbpr,
+      projectedBbpr: calibrateProjectedBbpr(player, suggestion.suggested),
       projectionInputCompleteness: 100,
       confidenceScore: suggestion.suggested.confidenceScore,
       confidenceGrade: suggestion.suggested.confidenceGrade,

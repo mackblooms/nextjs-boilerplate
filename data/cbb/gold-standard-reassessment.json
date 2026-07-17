@@ -1,0 +1,111 @@
+{
+  "auditId": "gold-standard-reassessment-001",
+  "createdAt": "2026-07-17",
+  "purpose": "Re-score the user-provided gold-standard rows using the updated calibration I would use going forward.",
+  "coreChanges": [
+    "Returning players with major breakout, national-award, or NBA sentiment should not be locked to a weak freshman-year historical anchor.",
+    "Freshmen and international newcomers should keep strong role/talent inputs, but their final projected BBPR should be compressed because they have no college sample yet.",
+    "Transfers keep the conservative historical blend unless there is a separate reason to override the prior production anchor.",
+    "Board rank should use calibrated projected BBPR where available, then historical/profile anchors for unapproved players."
+  ],
+  "calibrationRules": {
+    "returningBreakoutBlend": "High-sentiment sophomore returners can use as little as 20% historical anchor / 80% projection score.",
+    "ordinaryReturningBlend": "Returning players usually use 40-60% historical anchor depending on role, opportunity, development score, and NBA/upside signal.",
+    "newcomerCompression": "Freshmen/internationals are compressed toward a 75 baseline and capped by role/talent certainty.",
+    "eliteFreshmanCap": "Even elite freshmen are capped around low-90s unless the evidence is truly generational.",
+    "transferBlend": "Transfers continue to use 75% historical anchor / 25% projection score unless later model work adds a transfer-specific override."
+  },
+  "headlineFindings": [
+    {
+      "player": "Braylon Mullins",
+      "row": 164,
+      "oldProjectedBbpr": 54.1013,
+      "reassessedProjectedBbpr": 79.7523,
+      "verdict": "major upward correction",
+      "reasoning": "National sentiment, UConn role, first-round/possible lottery buzz, and award-level upside make the prior 75% historical anchor too punitive."
+    },
+    {
+      "player": "Tyran Stokes",
+      "row": 160,
+      "oldProjectedBbpr": 97.3,
+      "reassessedProjectedBbpr": 91,
+      "verdict": "freshman nerf",
+      "reasoning": "Still an elite top-board player, but no freshman should default to a near-100 college projection before playing."
+    },
+    {
+      "player": "Jordan Smith Jr.",
+      "row": 161,
+      "oldProjectedBbpr": 96.95,
+      "reassessedProjectedBbpr": 90.804,
+      "verdict": "freshman nerf",
+      "reasoning": "Elite role/talent signal remains, but the final score now reflects freshman uncertainty."
+    },
+    {
+      "player": "Thomas Haugh",
+      "row": 165,
+      "oldProjectedBbpr": 80.6855,
+      "reassessedProjectedBbpr": 81.0912,
+      "verdict": "slight upward correction",
+      "reasoning": "Established returning star with Wooden odds/sentiment; historical and projection already agree."
+    }
+  ],
+  "rows": [
+    { "row": 160, "player": "Tyran Stokes", "type": "Freshman", "oldProjectedBbpr": 97.3, "reassessedProjectedBbpr": 91, "rankAmongProjected": 1 },
+    { "row": 161, "player": "Jordan Smith Jr.", "type": "Freshman", "oldProjectedBbpr": 96.95, "reassessedProjectedBbpr": 90.804, "rankAmongProjected": 3 },
+    { "row": 162, "player": "Caleb Holt", "type": "Freshman", "oldProjectedBbpr": 90.975, "reassessedProjectedBbpr": 84, "rankAmongProjected": 7 },
+    { "row": 163, "player": "Bruce Branch III", "type": "Freshman", "oldProjectedBbpr": 90.24, "reassessedProjectedBbpr": 83.8392, "rankAmongProjected": 8 },
+    { "row": 164, "player": "Braylon Mullins", "type": "Returning", "oldProjectedBbpr": 54.1013, "reassessedProjectedBbpr": 79.7523, "rankAmongProjected": 14 },
+    { "row": 165, "player": "Thomas Haugh", "type": "Returning", "oldProjectedBbpr": 80.6855, "reassessedProjectedBbpr": 81.0912, "rankAmongProjected": 9 },
+    { "row": 186, "player": "Malachi Moreno", "type": "Returning", "oldProjectedBbpr": 66.2962, "reassessedProjectedBbpr": 68.657, "rankAmongProjected": 39 },
+    { "row": 352, "player": "Quinn Ellis", "type": "International", "oldProjectedBbpr": 70.1675, "reassessedProjectedBbpr": 72.3905, "rankAmongProjected": 30 },
+    { "row": 362, "player": "Ousmane N'Diaye", "type": "International", "oldProjectedBbpr": 68.9675, "reassessedProjectedBbpr": 71.7425, "rankAmongProjected": 32 },
+    { "row": 3, "player": "Colby Garland", "type": "Transfer", "oldProjectedBbpr": 62.8793, "reassessedProjectedBbpr": 62.8793, "rankAmongProjected": 54 },
+    { "row": 4, "player": "Dior Johnson", "type": "Transfer", "oldProjectedBbpr": 64.916, "reassessedProjectedBbpr": 64.916, "rankAmongProjected": 49 },
+    { "row": 5, "player": "Milan Momcilovic", "type": "Transfer", "oldProjectedBbpr": 77.247, "reassessedProjectedBbpr": 77.247, "rankAmongProjected": 17 },
+    { "row": 6, "player": "Juke Harris", "type": "Transfer", "oldProjectedBbpr": 78.7858, "reassessedProjectedBbpr": 78.7858, "rankAmongProjected": 15 },
+    { "row": 7, "player": "John Blackwell", "type": "Transfer", "oldProjectedBbpr": 69.698, "reassessedProjectedBbpr": 69.698, "rankAmongProjected": 35 },
+    { "row": 8, "player": "Paulius Murauskas", "type": "Transfer", "oldProjectedBbpr": 80.9471, "reassessedProjectedBbpr": 80.9471, "rankAmongProjected": 10 },
+    { "row": 9, "player": "Isaiah Johnson", "type": "Transfer", "oldProjectedBbpr": 71.3564, "reassessedProjectedBbpr": 71.3564, "rankAmongProjected": 34 },
+    { "row": 10, "player": "Jack Karasinski", "type": "Transfer", "oldProjectedBbpr": 71.6018, "reassessedProjectedBbpr": 71.6018, "rankAmongProjected": 33 },
+    { "row": 11, "player": "Cruz Davis", "type": "Transfer", "oldProjectedBbpr": 62.8021, "reassessedProjectedBbpr": 62.8021, "rankAmongProjected": 55 },
+    { "row": 12, "player": "Flory Bidunga", "type": "Transfer", "oldProjectedBbpr": 80.1503, "reassessedProjectedBbpr": 80.1504, "rankAmongProjected": 13 },
+    { "row": 13, "player": "Dedan Thomas Jr.", "type": "Transfer", "oldProjectedBbpr": 65.6274, "reassessedProjectedBbpr": 65.6274, "rankAmongProjected": 48 },
+    { "row": 14, "player": "Ryan Prather Jr.", "type": "Transfer", "oldProjectedBbpr": 61.9668, "reassessedProjectedBbpr": 61.9668, "rankAmongProjected": 59 },
+    { "row": 15, "player": "PJ Haggerty", "type": "Transfer", "oldProjectedBbpr": 52.4321, "reassessedProjectedBbpr": 52.4321, "rankAmongProjected": 83 },
+    { "row": 16, "player": "Dra Gibbs-Lawhorn", "type": "Transfer", "oldProjectedBbpr": 62.1931, "reassessedProjectedBbpr": 62.1931, "rankAmongProjected": 58 },
+    { "row": 17, "player": "Markus Burton", "type": "Transfer", "oldProjectedBbpr": 62.2356, "reassessedProjectedBbpr": 62.2356, "rankAmongProjected": 57 },
+    { "row": 18, "player": "Daniel Freitag", "type": "Transfer", "oldProjectedBbpr": 67.7741, "reassessedProjectedBbpr": 67.7741, "rankAmongProjected": 42 },
+    { "row": 19, "player": "Isaac Celiscar", "type": "Transfer", "oldProjectedBbpr": 69.2428, "reassessedProjectedBbpr": 69.2428, "rankAmongProjected": 36 },
+    { "row": 21, "player": "Terrence Brown", "type": "Transfer", "oldProjectedBbpr": 52.3507, "reassessedProjectedBbpr": 52.3507, "rankAmongProjected": 84 },
+    { "row": 22, "player": "Jake Fiegen", "type": "Transfer", "oldProjectedBbpr": 63.9102, "reassessedProjectedBbpr": 63.9102, "rankAmongProjected": 52 },
+    { "row": 23, "player": "Logan Duncomb", "type": "Transfer", "oldProjectedBbpr": 68.8046, "reassessedProjectedBbpr": 68.8046, "rankAmongProjected": 38 },
+    { "row": 24, "player": "DeSean Goode", "type": "Transfer", "oldProjectedBbpr": 76.6684, "reassessedProjectedBbpr": 76.6683, "rankAmongProjected": 19 },
+    { "row": 25, "player": "Gavin Doty", "type": "Transfer", "oldProjectedBbpr": 69.2267, "reassessedProjectedBbpr": 69.2268, "rankAmongProjected": 37 },
+    { "row": 26, "player": "Terrence Hill Jr.", "type": "Transfer", "oldProjectedBbpr": 75.9264, "reassessedProjectedBbpr": 75.9264, "rankAmongProjected": 23 },
+    { "row": 27, "player": "Tounde Yessoufou", "type": "Transfer", "oldProjectedBbpr": 62.6916, "reassessedProjectedBbpr": 62.6916, "rankAmongProjected": 56 },
+    { "row": 28, "player": "Lewis Walker", "type": "Transfer", "oldProjectedBbpr": 59.3206, "reassessedProjectedBbpr": 59.3207, "rankAmongProjected": 70 },
+    { "row": 29, "player": "Preston Edmead", "type": "Transfer", "oldProjectedBbpr": 61.7201, "reassessedProjectedBbpr": 61.7201, "rankAmongProjected": 61 }
+  ],
+  "sources": [
+    {
+      "source": "Field Level Media",
+      "url": "https://fieldlevelmedia.com/ncaab/braylon-mullins-passes-on-nba-draft-staying-at-uconn/",
+      "notes": "Mullins returned to UConn despite first-round/possible lottery draft buzz and started 29 of final 30 games."
+    },
+    {
+      "source": "CT Insider",
+      "url": "https://www.ctinsider.com/sports/uconn-mens-basketball/article/dan-hurley-roster-preview-analysis-espn-nba-22342399.php",
+      "notes": "Current UConn roster preview frames the backcourt around Braylon Mullins and Silas Demary Jr."
+    },
+    {
+      "source": "The Champaign Room",
+      "url": "https://www.thechampaignroom.com/illinois-fighting-illini-news/55070/david-mirkovic-third-in-early-john-wooden-award-odds-illinois-illini-basketball-underwood",
+      "notes": "Early Wooden odds context places returning stars Thomas Haugh and Jeremy Fears at the top of the national board."
+    },
+    {
+      "source": "UConn Athletics",
+      "url": "https://uconnhuskies.com/news/2025/10/29/braylon-mullins-named-to-juilus-erving-award-watch-list",
+      "notes": "Mullins had preseason positional-award recognition as a freshman."
+    }
+  ]
+}
