@@ -133,7 +133,7 @@ export async function POST(req: Request) {
   let body: unknown;
   try {
     body = await req.json();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
@@ -141,7 +141,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Expected an object with a rows array." }, { status: 400 });
   }
 
-  const rows = Array.isArray((body as any).rows) ? (body as any).rows : null;
+  const candidateRows = (body as { rows?: unknown }).rows;
+  const rows = Array.isArray(candidateRows) ? candidateRows : null;
   if (!rows || !Array.isArray(rows) || rows.length === 0) {
     return NextResponse.json({ error: "Payload must include a non-empty rows array." }, { status: 400 });
   }
