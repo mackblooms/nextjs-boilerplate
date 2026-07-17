@@ -19,6 +19,12 @@ import {
 } from "@/app/components/ui/primitives";
 
 type SortKey = "rank" | "player" | "team" | "projectedBbpr" | "confidence" | "review";
+type LeaderboardSource = "projected" | "historical" | "profile" | "unscored";
+type RankedCbbPlayer = CbbPlayerProjection & {
+  leaderboardRank: number;
+  leaderboardScore: number | null;
+  leaderboardSource: LeaderboardSource;
+};
 
 function formatNumber(value: number | null | undefined, digits = 1) {
   if (value == null || !Number.isFinite(value)) return "-";
@@ -65,7 +71,40 @@ function compareNullableNumber(a: number | null, b: number | null, direction: "a
   return direction === "asc" ? a - b : b - a;
 }
 
-function sortPlayers(players: CbbPlayerProjection[], sortKey: SortKey) {
+function getLeaderboardMetric(player: CbbPlayerProjection): Pick<RankedCbbPlayer, "leaderboardScore" | "leaderboardSource"> {
+  if (player.projectedBbpr != null) {
+    return { leaderboardScore: player.projectedBbpr, leaderboardSource: "projected" };
+  }
+
+  const historicalScore = player.historicalRating ?? player.historicalBbpr;
+  if (historicalScore != null) {
+    return { leaderboardScore: historicalScore, leaderboardSource: "historical" };
+  }
+
+  const profileScore = player.starScore ?? player.entryTalentGrade;
+  if (profileScore != null) {
+    return { leaderboardScore: profileScore, leaderboardSource: "profile" };
+  }
+
+  return { leaderboardScore: null, leaderboardSource: "unscored" };
+}
+
+function compareLeaderboardPlayers(a: RankedCbbPlayer, b: RankedCbbPlayer) {
+  const scoreCompare = compareNullableNumber(a.leaderboardScore, b.leaderboardScore, "desc");
+  if (scoreCompare !== 0) return scoreCompare;
+  const confidenceCompare = compareNullableNumber(a.confidenceScore, b.confidenceScore, "desc");
+  if (confidenceCompare !== 0) return confidenceCompare;
+  return a.player.localeCompare(b.player);
+}
+
+function buildRankedPlayers(players: CbbPlayerProjection[]): RankedCbbPlayer[] {
+  return [...players]
+    .map((player) => ({ ...player, ...getLeaderboardMetric(player), leaderboardRank: 0 }))
+    .sort(compareLeaderboardPlayers)
+    .map((player, index) => ({ ...player, leaderboardRank: index + 1 }));
+}
+
+function sortPlayers(players: RankedCbbPlayer[], sortKey: SortKey) {
   const sorted = [...players];
   sorted.sort((a, b) => {
     if (sortKey === "player") return a.player.localeCompare(b.player);
@@ -73,7 +112,7 @@ function sortPlayers(players: CbbPlayerProjection[], sortKey: SortKey) {
     if (sortKey === "projectedBbpr") return compareNullableNumber(a.projectedBbpr, b.projectedBbpr, "desc");
     if (sortKey === "confidence") return compareNullableNumber(a.confidenceScore, b.confidenceScore, "desc");
     if (sortKey === "review") return Number(b.needsReview) - Number(a.needsReview);
-    return compareNullableNumber(a.rank, b.rank, "asc");
+    return a.leaderboardRank - b.leaderboardRank;
   });
   return sorted;
 }
@@ -92,7 +131,7 @@ export default function CbbPlayerProjectionsPage() {
   const [classFilter, setClassFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
   const [reviewFilter, setReviewFilter] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("projectedBbpr");
+  const [sortKey, setSortKey] = useState<SortKey>("rank");
 
   useEffect(() => {
     let canceled = false;
@@ -159,6 +198,7 @@ export default function CbbPlayerProjectionsPage() {
   }, []);
 
   const players = useMemo(() => payload?.players ?? [], [payload]);
+  const rankedPlayers = useMemo(() => buildRankedPlayers(players), [players]);
   const researchPlayers = useMemo(() => researchPayload?.players ?? [], [researchPayload]);
   const typeOptions = useMemo(() => uniqueOptions(players, "playerType"), [players]);
   const classOptions = useMemo(() => uniqueOptions(players, "classYear"), [players]);
@@ -171,7 +211,7 @@ export default function CbbPlayerProjectionsPage() {
 
   const filteredPlayers = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const filtered = players.filter((player) => {
+    const filtered = rankedPlayers.filter((player) => {
       const matchesQuery =
         !needle ||
         player.player.toLowerCase().includes(needle) ||
@@ -190,7 +230,7 @@ export default function CbbPlayerProjectionsPage() {
     });
 
     return sortPlayers(filtered, sortKey);
-  }, [players, query, typeFilter, classFilter, teamFilter, reviewFilter, sortKey]);
+  }, [rankedPlayers, query, typeFilter, classFilter, teamFilter, reviewFilter, sortKey]);
 
   async function applyResearchRows(sourceRows: number[]) {
     if (sourceRows.length === 0) return;
@@ -238,7 +278,7 @@ export default function CbbPlayerProjectionsPage() {
     setPayload(json.projections);
     setResearchPayload(json.research);
     setSelectedRows(new Set());
-    setSortKey("projectedBbpr");
+    setSortKey("rank");
     setApplyMessage(`applied ${json.appliedRows?.length ?? sourceRows.length} researched projections`);
     setApplying(false);
   }
@@ -381,8 +421,8 @@ export default function CbbPlayerProjectionsPage() {
         <label>
           <span>sort</span>
           <UiSelect value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
+            <option value="rank">board rank</option>
             <option value="projectedBbpr">projected bbpr</option>
-            <option value="rank">rank</option>
             <option value="confidence">confidence</option>
             <option value="review">review status</option>
             <option value="player">player</option>
@@ -560,7 +600,7 @@ export default function CbbPlayerProjectionsPage() {
                   <th>player</th>
                   <th>team</th>
                   <th>type</th>
-                  <th>proj bbpr</th>
+                  <th>board score</th>
                   <th>projection</th>
                   <th>opportunity</th>
                   <th>talent</th>
@@ -571,7 +611,10 @@ export default function CbbPlayerProjectionsPage() {
               <tbody>
                 {filteredPlayers.map((player) => (
                   <tr key={player.id} data-review={player.needsReview}>
-                    <td>{player.rank ?? "-"}</td>
+                    <td>
+                      <strong className="cbb-projections-rank">#{player.leaderboardRank}</strong>
+                      <span>{player.leaderboardSource}</span>
+                    </td>
                     <td>
                       <strong>{player.player}</strong>
                       <span>
@@ -583,7 +626,10 @@ export default function CbbPlayerProjectionsPage() {
                       {player.previousTeam ? <span>from {player.previousTeam}</span> : <span>upcoming roster</span>}
                     </td>
                     <td>{player.playerType ?? "-"}</td>
-                    <td className="cbb-projections-score">{formatNumber(player.projectedBbpr, 2)}</td>
+                    <td className="cbb-projections-score" data-provisional={player.leaderboardSource !== "projected"}>
+                      {formatNumber(player.projectedBbpr ?? player.leaderboardScore, 2)}
+                      {player.leaderboardSource !== "projected" ? <span>{player.leaderboardSource} anchor</span> : null}
+                    </td>
                     <td>{formatNumber(player.projectionScore, 2)}</td>
                     <td>{formatNumber(player.opportunityScore)}</td>
                     <td>{formatNumber(player.talentScore)}</td>

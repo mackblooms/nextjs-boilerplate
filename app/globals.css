@@ -797,6 +797,20 @@ textarea::placeholder {
   color: var(--focus-ring);
 }
 
+.cbb-projections-score[data-provisional="true"] {
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+.cbb-projections-score span {
+  margin-top: 2px;
+}
+
+.cbb-projections-rank {
+  color: var(--foreground);
+  font-size: 16px;
+  line-height: 1.05;
+}
+
 .cbb-projections-status {
   display: inline-flex;
   align-items: center;
