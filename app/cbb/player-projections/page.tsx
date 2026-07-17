@@ -93,6 +93,9 @@ export default function CbbPlayerProjectionsPage() {
         return;
       }
 
+      const { data: userData } = await supabase.auth.getUser();
+      const signedInUserId = userData.user?.id ?? null;
+
       const res = await fetch("/api/admin/cbb-player-projections", {
         headers: { authorization: `Bearer ${token}` },
       }).catch(() => null);
@@ -108,7 +111,9 @@ export default function CbbPlayerProjectionsPage() {
       if (!res.ok) {
         const message =
           res.status === 403
-            ? "Not authorized. Only site admins can view this workspace."
+            ? signedInUserId
+              ? `Not authorized. Add this user id to POOL_SITE_ADMIN_USER_IDS in .env.local: ${signedInUserId}`
+              : "Not authorized. Only site admins can view this workspace."
             : "Could not load player projections.";
         if (!canceled) {
           setError(message);
