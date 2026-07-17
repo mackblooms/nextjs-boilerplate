@@ -1,0 +1,336 @@
+{
+  "auditId": "gold-standard-research-audit-001",
+  "createdAt": "2026-07-17",
+  "sourceSheet": "player database",
+  "scope": "Independent rubric audit of configured gold-standard rows across Freshman, Returning, International, and Transfer player types.",
+  "overallConclusion": "The gold rows are directionally strong and usable as calibration examples. The biggest difference between the manual rows and the stricter research workflow is not the final BBPR shape, but role/opportunity calibration. I would usually match the top freshman and clear returning-star rows, trim some transfer role/opportunity values when projected-lineup evidence is thin, and raise Quinn Ellis-style international role values when direct starter evidence is present.",
+  "rubricUsed": [
+    "Use Yes for projectedStarter only with projected-lineup evidence, explicit starter reporting, or a very clear roster path.",
+    "Use 90+ role only for primary stars, top freshmen, or clear team focal points.",
+    "Lower-major production does not automatically mean opportunity goes up after a high-major transfer.",
+    "NBA/upside should reflect current draft sentiment and tools, not just production.",
+    "Freshmen and internationals should include entryTalentGrade in the talent score."
+  ],
+  "summaryByType": [
+    {
+      "type": "Freshman",
+      "rowsAudited": [160, 161, 162, 163],
+      "verdict": "very close",
+      "notes": "The top freshman gold rows are aggressive, but that matches the intended top-of-board calibration. Stokes and Jordan Smith Jr. deserve true 100-ish talent treatment. Caleb Holt and Bruce Branch III are also reasonable in the 90-ish BBPR band, though I would keep role/opportunity below the top two unless projected-lineup evidence says otherwise.",
+      "similarity": "high"
+    },
+    {
+      "type": "Returning",
+      "rowsAudited": [164, 165, 186],
+      "verdict": "mostly close",
+      "notes": "Thomas Haugh is strongly calibrated as a returning star. Braylon Mullins has a high role/upside path but a 96 role and 90 opportunity are slightly aggressive if UConn has multiple elite options. Malachi Moreno's role/opportunity look directionally right, though direct Kentucky frontcourt lineup evidence should decide whether he belongs closer to low-80s or high-70s.",
+      "similarity": "medium-high"
+    },
+    {
+      "type": "International",
+      "rowsAudited": [352, 362],
+      "verdict": "mixed",
+      "notes": "The talent grades are reasonable, but the role inputs need player-specific context. Quinn Ellis looks low on role if St. John's projected-lineup evidence has him starting or running major guard minutes. Ousmane N'Diaye's 60 role is more defensible because Kentucky has more frontcourt uncertainty and competition.",
+      "similarity": "medium"
+    },
+    {
+      "type": "Transfer",
+      "rowsAudited": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+      "verdict": "directionally close with some role/opportunity optimism",
+      "notes": "The final projected BBPRs generally make sense because the historical anchor prevents huge overreaction. The main places I would differ are starter and role scores for transfers entering crowded high-major rosters. Strong examples: Milan Momcilovic, Flory Bidunga, Paulius Murauskas, and Tounde Yessoufou look sensibly high. More fragile examples: players marked Yes with role 85-90 but limited projected-lineup evidence should be trimmed into the 70s/low-80s until depth charts confirm them.",
+      "similarity": "medium-high"
+    }
+  ],
+  "rowFindings": [
+    {
+      "row": 160,
+      "player": "Tyran Stokes",
+      "type": "Freshman",
+      "manualProjectedBbpr": 97.3,
+      "auditVerdict": "match",
+      "reasoning": "Top overall freshman/NBA prospect profile supports 100 role/talent calibration if Kansas projects him as an immediate focal point."
+    },
+    {
+      "row": 161,
+      "player": "Jordan Smith Jr.",
+      "type": "Freshman",
+      "manualProjectedBbpr": 96.95,
+      "auditVerdict": "match",
+      "reasoning": "Elite recruit and Arkansas projected role justify top-tier freshman treatment, though crowded roster keeps this just below Stokes."
+    },
+    {
+      "row": 162,
+      "player": "Caleb Holt",
+      "type": "Freshman",
+      "manualProjectedBbpr": 90.975,
+      "auditVerdict": "match",
+      "reasoning": "Five-star/top freshman score is reasonable; role/opportunity are already capped below the top two."
+    },
+    {
+      "row": 163,
+      "player": "Bruce Branch III",
+      "type": "Freshman",
+      "manualProjectedBbpr": 90.24,
+      "auditVerdict": "match",
+      "reasoning": "Top freshman tier with a slightly lower role than Stokes/Smith is consistent with the rubric."
+    },
+    {
+      "row": 164,
+      "player": "Braylon Mullins",
+      "type": "Returning",
+      "manualProjectedBbpr": 54.1013,
+      "auditVerdict": "slightly_high_role",
+      "reasoning": "NBA/upside and role are strong, but 96 role and 90 opportunity are aggressive for a UConn roster with multiple high-end options."
+    },
+    {
+      "row": 165,
+      "player": "Thomas Haugh",
+      "type": "Returning",
+      "manualProjectedBbpr": 80.6855,
+      "auditVerdict": "match",
+      "reasoning": "Clear returning Florida star profile; 100 role is defensible because he is a frontcourt centerpiece."
+    },
+    {
+      "row": 186,
+      "player": "Malachi Moreno",
+      "type": "Returning",
+      "manualProjectedBbpr": 66.2962,
+      "auditVerdict": "close",
+      "reasoning": "The 77 role is a reasonable conservative starter/rotation-big score; could rise if Kentucky's frontcourt depth chart confirms a starter path."
+    },
+    {
+      "row": 352,
+      "player": "Quinn Ellis",
+      "type": "International",
+      "manualProjectedBbpr": 70.1675,
+      "auditVerdict": "slightly_low_role",
+      "reasoning": "If projected-lineup evidence has him starting at St. John's, role 60 undersells his minutes even if talent/upside are calibrated reasonably."
+    },
+    {
+      "row": 362,
+      "player": "Ousmane N'Diaye",
+      "type": "International",
+      "manualProjectedBbpr": 68.9675,
+      "auditVerdict": "close",
+      "reasoning": "Role 60 is defensible with Kentucky roster competition; talent/upside values are plausible."
+    },
+    {
+      "row": 3,
+      "player": "Colby Garland",
+      "type": "Transfer",
+      "manualProjectedBbpr": 62.8793,
+      "auditVerdict": "close",
+      "reasoning": "Starter/role profile makes sense if Georgia Tech has a clear guard need, though opportunityChange 60 is appropriately not overdone."
+    },
+    {
+      "row": 4,
+      "player": "Dior Johnson",
+      "type": "Transfer",
+      "manualProjectedBbpr": 64.916,
+      "auditVerdict": "match",
+      "reasoning": "Manual row correctly separates high historical talent from low projected role/starter certainty."
+    },
+    {
+      "row": 5,
+      "player": "Milan Momcilovic",
+      "type": "Transfer",
+      "manualProjectedBbpr": 77.247,
+      "auditVerdict": "match",
+      "reasoning": "High-major scorer with real Kentucky role; role/opportunity are strong but not extreme."
+    },
+    {
+      "row": 6,
+      "player": "Juke Harris",
+      "type": "Transfer",
+      "manualProjectedBbpr": 78.7858,
+      "auditVerdict": "slightly_high_role",
+      "reasoning": "Role 90 is plausible only with strong Tennessee starter evidence; otherwise I would cap closer to mid-80s."
+    },
+    {
+      "row": 7,
+      "player": "John Blackwell",
+      "type": "Transfer",
+      "manualProjectedBbpr": 69.698,
+      "auditVerdict": "close",
+      "reasoning": "Duke role is valuable but crowded; manual opportunity cap at 50 is a good restraint."
+    },
+    {
+      "row": 8,
+      "player": "Paulius Murauskas",
+      "type": "Transfer",
+      "manualProjectedBbpr": 80.9471,
+      "auditVerdict": "match",
+      "reasoning": "Strong historical anchor and clear Arizona State opportunity support a high score."
+    },
+    {
+      "row": 9,
+      "player": "Isaiah Johnson",
+      "type": "Transfer",
+      "manualProjectedBbpr": 71.3564,
+      "auditVerdict": "close",
+      "reasoning": "Texas role is likely meaningful, and the low opportunityChange properly accounts for a harder roster."
+    },
+    {
+      "row": 10,
+      "player": "Jack Karasinski",
+      "type": "Transfer",
+      "manualProjectedBbpr": 71.6018,
+      "auditVerdict": "close",
+      "reasoning": "Starter and usage projection are plausible if Northwestern needs him as a primary forward scorer."
+    },
+    {
+      "row": 11,
+      "player": "Cruz Davis",
+      "type": "Transfer",
+      "manualProjectedBbpr": 62.8021,
+      "auditVerdict": "match",
+      "reasoning": "Manual row correctly caps Texas Tech opportunity despite starter possibility."
+    },
+    {
+      "row": 12,
+      "player": "Flory Bidunga",
+      "type": "Transfer",
+      "manualProjectedBbpr": 80.1503,
+      "auditVerdict": "match",
+      "reasoning": "Louisville starter/role bump is well-supported by profile and roster fit."
+    },
+    {
+      "row": 13,
+      "player": "Dedan Thomas Jr.",
+      "type": "Transfer",
+      "manualProjectedBbpr": 65.6274,
+      "auditVerdict": "close",
+      "reasoning": "Houston role is strong but usage-sharing concerns are real; manual score captures that."
+    },
+    {
+      "row": 14,
+      "player": "Ryan Prather Jr.",
+      "type": "Transfer",
+      "manualProjectedBbpr": 61.9668,
+      "auditVerdict": "match",
+      "reasoning": "Strong historical anchor but low Iowa State role is the right conservative treatment."
+    },
+    {
+      "row": 15,
+      "player": "PJ Haggerty",
+      "type": "Transfer",
+      "manualProjectedBbpr": 52.4321,
+      "auditVerdict": "close",
+      "reasoning": "Projected role/burden are high, but the historical anchor keeps final BBPR moderate."
+    },
+    {
+      "row": 16,
+      "player": "Dra Gibbs-Lawhorn",
+      "type": "Transfer",
+      "manualProjectedBbpr": 62.1931,
+      "auditVerdict": "close",
+      "reasoning": "Texas Tech guard role could be real; I would require lineup evidence for 85 role but final score is reasonable."
+    },
+    {
+      "row": 17,
+      "player": "Markus Burton",
+      "type": "Transfer",
+      "manualProjectedBbpr": 62.2356,
+      "auditVerdict": "close",
+      "reasoning": "Indiana role/opportunity are plausible, with NBA/upside appropriately modest."
+    },
+    {
+      "row": 18,
+      "player": "Daniel Freitag",
+      "type": "Transfer",
+      "manualProjectedBbpr": 67.7741,
+      "auditVerdict": "match",
+      "reasoning": "Role-driven Oregon State projection with modest NBA/upside is consistent."
+    },
+    {
+      "row": 19,
+      "player": "Isaac Celiscar",
+      "type": "Transfer",
+      "manualProjectedBbpr": 69.2428,
+      "auditVerdict": "close",
+      "reasoning": "Baylor fit is useful but crowded; manual role and opportunity are capped enough."
+    },
+    {
+      "row": 21,
+      "player": "Terrence Brown",
+      "type": "Transfer",
+      "manualProjectedBbpr": 52.3507,
+      "auditVerdict": "close",
+      "reasoning": "North Carolina role is potentially starter-level but usage cap is appropriate."
+    },
+    {
+      "row": 22,
+      "player": "Jake Fiegen",
+      "type": "Transfer",
+      "manualProjectedBbpr": 63.9102,
+      "auditVerdict": "match",
+      "reasoning": "Manual row correctly treats him as a low-role player despite strong historical anchor."
+    },
+    {
+      "row": 23,
+      "player": "Logan Duncomb",
+      "type": "Transfer",
+      "manualProjectedBbpr": 68.8046,
+      "auditVerdict": "close",
+      "reasoning": "Notre Dame role likely matters, but opportunityChange 25 properly avoids over-crediting."
+    },
+    {
+      "row": 24,
+      "player": "DeSean Goode",
+      "type": "Transfer",
+      "manualProjectedBbpr": 76.6684,
+      "auditVerdict": "match",
+      "reasoning": "Miami role and high-upside frontcourt profile support a strong score."
+    },
+    {
+      "row": 25,
+      "player": "Gavin Doty",
+      "type": "Transfer",
+      "manualProjectedBbpr": 69.2267,
+      "auditVerdict": "close",
+      "reasoning": "Syracuse role is plausible; opportunity and burden are not overly inflated."
+    },
+    {
+      "row": 26,
+      "player": "Terrence Hill Jr.",
+      "type": "Transfer",
+      "manualProjectedBbpr": 75.9264,
+      "auditVerdict": "close",
+      "reasoning": "Tennessee role might be slightly optimistic, but historical anchor and upside justify a strong score."
+    },
+    {
+      "row": 27,
+      "player": "Tounde Yessoufou",
+      "type": "Transfer",
+      "manualProjectedBbpr": 62.6916,
+      "auditVerdict": "match",
+      "reasoning": "High role/upside is justified by talent and St. John's usage path; final BBPR is restrained by historical anchor."
+    },
+    {
+      "row": 28,
+      "player": "Lewis Walker",
+      "type": "Transfer",
+      "manualProjectedBbpr": 59.3206,
+      "auditVerdict": "close",
+      "reasoning": "UCF starter/role path is plausible, with reasonable NBA/upside values."
+    },
+    {
+      "row": 29,
+      "player": "Preston Edmead",
+      "type": "Transfer",
+      "manualProjectedBbpr": 61.7201,
+      "auditVerdict": "match",
+      "reasoning": "NC State guard role is useful but properly capped below star levels."
+    }
+  ],
+  "sourceLinks": [
+    "https://new.cbssports.com/college-basketball/news/big-east-rankings-st-johns-uconn/",
+    "https://www.si.com/college-basketball/mens-hoops-way-too-early-top-25-projected-starting-lineups-transfer-portal-chaos/",
+    "https://www.si.com/college/kansas/basketball/projecting-kansas-2026-27-starting-lineup-after-tyran-stokes-commitment",
+    "https://kuathletics.com/sports/mens-basketball/roster",
+    "https://arkansasrazorbacks.com/sports/mbball/roster/",
+    "https://floridagators.com/sports/mens-basketball/roster",
+    "https://ukathletics.com/sports/mbball/roster/",
+    "https://goxavier.com/sports/mens-basketball/roster"
+  ]
+}

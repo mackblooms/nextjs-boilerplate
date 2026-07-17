@@ -21,7 +21,7 @@ export type CbbPlayerProjection = {
   opportunityChange: number | null;
   offensiveBurden: number | null;
   opportunityScore: number | null;
-  entryTalentGrade: number | null;
+  entryTalentGrade?: number | null;
   nbaProjectionScore: number | null;
   upsideToolsScore: number | null;
   talentScore: number | null;
@@ -70,6 +70,7 @@ export type CbbResearchSuggestion = {
   opportunityChange: number | null;
   offensiveBurden: number | null;
   opportunityScore: number | null;
+  entryTalentGrade: number | null;
   nbaProjectionScore: number | null;
   upsideToolsScore: number | null;
   talentScore: number | null;
@@ -121,6 +122,7 @@ export type CbbResearchPlayerWithState = CbbResearchPlayer & {
     | "opportunityChange"
     | "offensiveBurden"
     | "opportunityScore"
+    | "entryTalentGrade"
     | "nbaProjectionScore"
     | "upsideToolsScore"
     | "talentScore"

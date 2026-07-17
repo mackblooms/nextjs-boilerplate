@@ -1,0 +1,720 @@
+{
+  "batchId": "player-research-005",
+  "createdAt": "2026-07-17",
+  "sourceSheet": "player database",
+  "scope": "Mixed player-type research batch: returning players, freshmen, internationals, and next transfer rows",
+  "method": [
+    "Research role/minutes expectation from projected lineups, roster context, school announcements, transfer reports, recruiting rankings, draft sentiment, and team fit.",
+    "Use historical rating as the anchor for returning players and transfers.",
+    "Use entry talent grade as part of the talent score for freshmen and international newcomers.",
+    "Translate evidence into the manual input fields used by the spreadsheet: starter, role, opportunity change, offensive burden, entry talent, NBA projection, and upside/tools.",
+    "Cap role/opportunity when roster competition is strong or projected-lineup evidence is unavailable."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating*0.75 + projectionScore*0.25",
+    "projectedBbprNewcomer": "projectionScore"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Use Yes with projected-lineup evidence, explicit starter reporting, or a clear returning-star path. Use Uncertain for strong-minute players without direct lineup evidence.",
+    "projectedRole": "Use 90+ for projected stars/primary options, 80-89 for likely starters or top-four options, and 70-79 for rotation players with meaningful but capped paths.",
+    "opportunityChange": "For returners, reward expected role growth or roster departures. For newcomers, reward clear immediate-minute paths. For transfers, evaluate the new roster, not just prior production.",
+    "offensiveBurden": "Tie burden to expected usage within the new lineup and team hierarchy.",
+    "talentScore": "Freshmen and internationals include entry talent grade; transfers and returning players use NBA/upside only."
+  },
+  "players": [
+    {
+      "sourceRow": 50,
+      "player": "Silas Demary Jr.",
+      "currentTeam": "Connecticut",
+      "previousTeam": "Connecticut",
+      "status": "researched_suggestion",
+      "historicalRating": 74.3489,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 82,
+        "offensiveBurden": 88,
+        "opportunityScore": 89.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 85,
+        "upsideToolsScore": 85,
+        "talentScore": 85,
+        "projectionScore": 78.115,
+        "projectedBbpr": 75.2904,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Demary is a strong returning-star projection. UConn added him as a centerpiece guard, and roster context points to a high-minute, high-usage role. The BBPR stays close to his historical anchor because he already owns a strong profile, but the role and offensive burden should be top-tier.",
+      "teamContext": {
+        "projectedLineup": "UConn coverage and roster context consistently frame Demary as a featured starting guard.",
+        "returningStars": "UConn has other elite pieces, but Demary is expected to be one of the primary perimeter engines.",
+        "incomingStars": "Braylon Mullins and other talent create usage competition, not role danger.",
+        "positionCompetition": "Backcourt depth is strong, but Demary's two-way production and experience give him the clearest veteran guard path.",
+        "starterEvidence": "featured-returner context and UConn roster construction",
+        "roleCap": "near-primary guard; cap mid-90s because UConn has multiple high-end options"
+      },
+      "evidence": [
+        {
+          "source": "UConn Athletics",
+          "url": "https://uconnhuskies.com/sports/mens-basketball/roster",
+          "notes": "Confirms UConn roster placement and guard context."
+        },
+        {
+          "source": "CBS Sports",
+          "url": "https://new.cbssports.com/college-basketball/news/big-east-rankings-st-johns-uconn/",
+          "notes": "Big East projected-lineup/ranking context for UConn's 2026-27 roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 172,
+      "player": "Motiejus Krivas",
+      "currentTeam": "Arizona",
+      "previousTeam": "Arizona",
+      "status": "researched_suggestion",
+      "historicalRating": 78.9229,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 75,
+        "offensiveBurden": 78,
+        "opportunityScore": 84.1,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 75,
+        "talentScore": 72,
+        "projectionScore": 71.045,
+        "projectedBbpr": 76.9534,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Krivas projects as Arizona's veteran frontcourt anchor if healthy. His historical rating is already strong, and Arizona's roster gives him a starter path, but offensive burden is capped because Arizona has multiple talented perimeter and freshman options.",
+      "teamContext": {
+        "projectedLineup": "Projected as an Arizona starting/anchor big in roster outlooks.",
+        "returningStars": "Arizona has guard/wing talent that keeps Krivas from being the primary offensive hub.",
+        "incomingStars": "Caleb Holt and other incoming talent add scoring pressure around him.",
+        "positionCompetition": "Arizona has frontcourt depth, but Krivas has the clearest veteran center profile.",
+        "starterEvidence": "returning frontcourt anchor context",
+        "roleCap": "likely starter; cap low-90s due health and shared offensive hierarchy"
+      },
+      "evidence": [
+        {
+          "source": "Arizona Athletics",
+          "url": "https://arizonawildcats.com/sports/mens-basketball/roster",
+          "notes": "Confirms roster placement and Arizona frontcourt context."
+        },
+        {
+          "source": "Sports-Reference",
+          "url": "https://www.sports-reference.com/cbb/players/motiejus-krivas-1.html",
+          "notes": "Historical production profile and efficiency context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 175,
+      "player": "Alex Condon",
+      "currentTeam": "Florida",
+      "previousTeam": "Florida",
+      "status": "researched_suggestion",
+      "historicalRating": 77.2415,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 96,
+        "opportunityChange": 80,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 82,
+        "talentScore": 80.8,
+        "projectionScore": 76.42,
+        "projectedBbpr": 77.0361,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Condon is a high-confidence returning frontcourt star. Florida's roster context supports a major role, and his NBA/pro production sentiment is stronger than most returners. The score stays tethered to history but gives him a meaningful talent/role boost.",
+      "teamContext": {
+        "projectedLineup": "Florida roster outlooks project Condon as a starting frontcourt centerpiece.",
+        "returningStars": "Rueben Chinyelu and other frontcourt pieces share some usage, but Condon is the most versatile big.",
+        "incomingStars": "Florida's additions do not materially threaten his starting role.",
+        "positionCompetition": "Frontcourt depth caps burden slightly, not role.",
+        "starterEvidence": "returning-star/frontcourt centerpiece evidence",
+        "roleCap": "near-primary frontcourt piece; cap high-90s rather than 100 due shared frontcourt"
+      },
+      "evidence": [
+        {
+          "source": "Florida Athletics",
+          "url": "https://floridagators.com/sports/mens-basketball/roster",
+          "notes": "Confirms Florida roster context."
+        },
+        {
+          "source": "Sports-Reference",
+          "url": "https://www.sports-reference.com/cbb/players/alex-condon-1.html",
+          "notes": "Historical production and efficiency profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 185,
+      "player": "Tyler Tanner",
+      "currentTeam": "Vanderbilt",
+      "previousTeam": "Vanderbilt",
+      "status": "researched_suggestion",
+      "historicalRating": 93.1817,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 100,
+        "opportunityChange": 90,
+        "offensiveBurden": 95,
+        "opportunityScore": 96,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 90,
+        "upsideToolsScore": 88,
+        "talentScore": 89.2,
+        "projectionScore": 90.42,
+        "projectedBbpr": 92.4913,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Tanner gets an elite returning-player score because the historical anchor is already exceptional and the role path at Vanderbilt is enormous. The projection is slightly below his historical rating, not because of a role concern, but because the formula is conservative after an extreme historical anchor.",
+      "teamContext": {
+        "projectedLineup": "Vanderbilt context points to Tanner as a starting/primary perimeter player.",
+        "returningStars": "Tanner is the highest-upside returning guard profile in this slice of the board.",
+        "incomingStars": "Ace Glass and other additions add competition but also spacing/athletic support.",
+        "positionCompetition": "Competition is more about usage sharing than minutes.",
+        "starterEvidence": "elite returning production and team need",
+        "roleCap": "primary player; role can be 100 because the historical anchor is elite"
+      },
+      "evidence": [
+        {
+          "source": "Vanderbilt Athletics",
+          "url": "https://vucommodores.com/sports/mbball/roster/",
+          "notes": "Confirms Vanderbilt roster context."
+        },
+        {
+          "source": "Sports-Reference",
+          "url": "https://www.sports-reference.com/cbb/players/tyler-tanner-1.html",
+          "notes": "Historical production profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 166,
+      "player": "Jason Crowe Jr.",
+      "currentTeam": "Missouri",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 80,
+        "offensiveBurden": 85,
+        "opportunityScore": 86,
+        "entryTalentGrade": 95,
+        "nbaProjectionScore": 85,
+        "upsideToolsScore": 90,
+        "talentScore": 90.25,
+        "projectionScore": 90.2875,
+        "projectedBbpr": 90.2875,
+        "confidenceScore": 68,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Crowe is a five-star/elite-scoring freshman with a clear immediate role at Missouri. The role is high, but not 100, because freshman guard efficiency and Missouri's veteran context create some translation risk.",
+      "teamContext": {
+        "projectedLineup": "Missouri roster context suggests an immediate lead-guard or featured-guard role.",
+        "returningStars": "Missouri has veterans, but Crowe's scoring/recruiting profile should command minutes.",
+        "incomingStars": "Toni Bryant and other newcomers create a strong class but do not block his backcourt role.",
+        "positionCompetition": "Freshman guard volatility caps him below the Stokes/Jordan Smith tier.",
+        "starterEvidence": "elite recruit plus immediate-usage roster fit",
+        "roleCap": "high-impact freshman starter/creator; cap around 90"
+      },
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/jason-crowe-jr-154445/",
+          "notes": "Recruiting profile and rating context."
+        },
+        {
+          "source": "Missouri Athletics",
+          "url": "https://mutigers.com/sports/mens-basketball/roster",
+          "notes": "Confirms Missouri roster context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 167,
+      "player": "Anthony Thompson",
+      "currentTeam": "Ohio State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 80,
+        "opportunityScore": 83.4,
+        "entryTalentGrade": 96,
+        "nbaProjectionScore": 95,
+        "upsideToolsScore": 93,
+        "talentScore": 94.9,
+        "projectionScore": 90.745,
+        "projectedBbpr": 90.745,
+        "confidenceScore": 68,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Thompson scores as a premium freshman prospect with major NBA/upside signals. Ohio State's roster should give him enough early runway, but his role score is kept slightly below the freshman gold top tier until starting-lineup evidence is firmer.",
+      "teamContext": {
+        "projectedLineup": "No definitive projected lineup found, but recruiting/talent level indicates immediate rotation-to-starter path.",
+        "returningStars": "Ohio State has returning/incoming competition but needs elite wing/forward talent.",
+        "incomingStars": "Thompson is one of the major incoming talent bets.",
+        "positionCompetition": "Role is strong but not fully guaranteed.",
+        "starterEvidence": "elite recruit and roster fit, not direct projected-lineup proof",
+        "roleCap": "high-impact freshman; cap high-80s without a direct lineup source"
+      },
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/anthony-thompson-154486/",
+          "notes": "Recruiting profile and five-star/top prospect context."
+        },
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Confirms Ohio State roster context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 180,
+      "player": "Brandon McCoy",
+      "currentTeam": "Michigan",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 76,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.8,
+        "entryTalentGrade": 95,
+        "nbaProjectionScore": 90,
+        "upsideToolsScore": 92,
+        "talentScore": 92.5,
+        "projectionScore": 89.635,
+        "projectedBbpr": 89.635,
+        "confidenceScore": 68,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "McCoy's NBA/upside profile is high, and Michigan should have a real need for perimeter creation. His score sits just below the top freshman tier because the roster includes other major pieces and the starting role is more inferred than directly reported.",
+      "teamContext": {
+        "projectedLineup": "No direct projected lineup found, but Michigan roster construction supports a major guard role.",
+        "returningStars": "Trey McKenney and other pieces compete for perimeter usage.",
+        "incomingStars": "McCoy is one of Michigan's most important newcomer talents.",
+        "positionCompetition": "Guard/wing competition keeps role below 90 despite major upside.",
+        "starterEvidence": "elite recruit and roster-need context",
+        "roleCap": "high-impact freshman guard; cap high-80s until lineup evidence is stronger"
+      },
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/brandon-mccoy-154492/",
+          "notes": "Recruiting profile and top-prospect context."
+        },
+        {
+          "source": "Michigan Athletics",
+          "url": "https://mgoblue.com/sports/mens-basketball/roster",
+          "notes": "Confirms Michigan roster context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 179,
+      "player": "Jaxon Richardson",
+      "currentTeam": "Alabama",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 65,
+        "offensiveBurden": 65,
+        "opportunityScore": 70.5,
+        "entryTalentGrade": 84,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 75,
+        "talentScore": 73.35,
+        "projectionScore": 77.3975,
+        "projectedBbpr": 77.3975,
+        "confidenceScore": 65,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Richardson is a useful high-major freshman bet, but Alabama's roster is crowded with older transfers and frontcourt/wing competition. His development score helps, while role/opportunity are capped until he has clearer rotation reporting.",
+      "teamContext": {
+        "projectedLineup": "No projected-lineup evidence placing Richardson as a starter.",
+        "returningStars": "Alabama has returning guard talent and a transfer-heavy roster.",
+        "incomingStars": "Drew Fielder, Brandon Garrison and other frontcourt pieces crowd the role map.",
+        "positionCompetition": "Likely rotation path, not clear starter path.",
+        "starterEvidence": "recruiting/roster fit only",
+        "roleCap": "rotation freshman with upside; cap mid-70s"
+      },
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/jaxon-richardson-236791/",
+          "notes": "Recruiting profile and rating context."
+        },
+        {
+          "source": "Alabama Athletics",
+          "url": "https://rolltide.com/news/2026/6/3/mens-basketball-adds-seven-players-to-its-2026-27-roster",
+          "notes": "Shows Alabama's crowded 2026-27 newcomer/frontcourt context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 170,
+      "player": "Miikka Muurinen",
+      "currentTeam": "Arkansas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 70,
+        "offensiveBurden": 68,
+        "opportunityScore": 74.6,
+        "entryTalentGrade": 94,
+        "nbaProjectionScore": 85,
+        "upsideToolsScore": 92,
+        "talentScore": 90.35,
+        "projectionScore": 85.1925,
+        "projectedBbpr": 85.1925,
+        "confidenceScore": 66,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Muurinen is a major international/upside prospect, but Arkansas has one of the most crowded high-end rosters in the country. Talent is high; role is capped until preseason lineup evidence separates him from Arkansas' other forwards.",
+      "teamContext": {
+        "projectedLineup": "Arkansas projected-lineup context is crowded and does not clearly lock him into a starting spot.",
+        "returningStars": "Billy Richmond and other Arkansas returners compete for forward minutes.",
+        "incomingStars": "Jordan Smith Jr., Jeremiah Wilkinson, Cooper Bowser and Abdou Toure all affect the role map.",
+        "positionCompetition": "Elite talent, but heavy competition.",
+        "starterEvidence": "international/recruiting profile plus roster fit, not clear starter proof",
+        "roleCap": "high-upside rotation/starter contender; cap around 80"
+      },
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/miikka-muurinen-236741/",
+          "notes": "International/recruiting profile and high-end prospect context."
+        },
+        {
+          "source": "Best of Arkansas Sports",
+          "url": "https://www.bestofarkansassports.com/arkansas-basketball-2026-27-roster-tracker-leaving-staying-deciding/",
+          "notes": "Shows Arkansas' crowded roster and freshman/transfer additions."
+        }
+      ]
+    },
+    {
+      "sourceRow": 221,
+      "player": "Michael Ruzic",
+      "currentTeam": "LSU",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 75,
+        "offensiveBurden": 72,
+        "opportunityScore": 79.4,
+        "entryTalentGrade": 88,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 83,
+        "talentScore": 83.25,
+        "projectionScore": 84.8675,
+        "projectedBbpr": 84.8675,
+        "confidenceScore": 70,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Ruzic has a stronger immediate-role signal than most internationals because he brings professional experience and LSU has a clear need for frontcourt talent. Talent is very strong, but not quite elite one-and-done tier.",
+      "teamContext": {
+        "projectedLineup": "No direct lineup source, but LSU roster need supports starter-level opportunity.",
+        "returningStars": "LSU frontcourt hierarchy has room for an international forward with pro experience.",
+        "incomingStars": "Other additions compete, but Ruzic's experience is a separator.",
+        "positionCompetition": "Starter path is plausible, but not fully confirmed.",
+        "starterEvidence": "pro experience plus roster-need context",
+        "roleCap": "starter-level international newcomer; cap mid-80s"
+      },
+      "evidence": [
+        {
+          "source": "LSU Athletics",
+          "url": "https://lsusports.net/sports/mb/roster/",
+          "notes": "Confirms LSU roster context."
+        },
+        {
+          "source": "RealGM",
+          "url": "https://basketball.realgm.com/player/Michael-Ruzic/Summary/196569",
+          "notes": "International/pro profile and background."
+        }
+      ]
+    },
+    {
+      "sourceRow": 261,
+      "player": "Dominykas Daubaris",
+      "currentTeam": "California",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 75,
+        "opportunityChange": 70,
+        "offensiveBurden": 68,
+        "opportunityScore": 72.1,
+        "entryTalentGrade": 78,
+        "nbaProjectionScore": 55,
+        "upsideToolsScore": 70,
+        "talentScore": 67.95,
+        "projectionScore": 76.2275,
+        "projectedBbpr": 76.2275,
+        "confidenceScore": 63,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Daubaris is more of an international development/rotation projection than an instant star. Cal's roster can create opportunity, but draft/upside signals are not as loud as the top internationals.",
+      "teamContext": {
+        "projectedLineup": "No direct starter evidence found.",
+        "returningStars": "Cal has a broader ACC roster rebuild context.",
+        "incomingStars": "Daubaris is part of the incoming international/development group.",
+        "positionCompetition": "Minutes are plausible, but role should be capped until direct reporting appears.",
+        "starterEvidence": "developmental international profile",
+        "roleCap": "rotation/starter-contender; cap mid-70s"
+      },
+      "evidence": [
+        {
+          "source": "California Athletics",
+          "url": "https://calbears.com/sports/mens-basketball/roster",
+          "notes": "Confirms Cal roster context."
+        },
+        {
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/",
+          "notes": "International player background and competition context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 96,
+      "player": "Blake Barkley",
+      "currentTeam": "Grand Canyon",
+      "previousTeam": "ETSU",
+      "status": "researched_suggestion",
+      "historicalRating": 60.5895,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 80,
+        "opportunityScore": 83.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 50,
+        "talentScore": 35,
+        "projectionScore": 61.78,
+        "projectedBbpr": 60.8871,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Barkley is a strong role/opportunity transfer because Grand Canyon added him after a productive ETSU season and has a clear path for him to be a featured forward. NBA/upside remains modest, so the BBPR is driven mostly by role and historical anchor.",
+      "teamContext": {
+        "projectedLineup": "No direct projected lineup found, but GCU roster fit supports starter-level opportunity.",
+        "returningStars": "GCU has proven pieces but needed frontcourt production.",
+        "incomingStars": "Barkley is one of the more production-ready additions.",
+        "positionCompetition": "Forward minutes are competitive but his production gives him a clear path.",
+        "starterEvidence": "school/transfer fit and production",
+        "roleCap": "likely starter/featured forward at GCU; cap high-80s"
+      },
+      "evidence": [
+        {
+          "source": "Grand Canyon Athletics",
+          "url": "https://gculopes.com/sports/mens-basketball/roster",
+          "notes": "Confirms roster context."
+        },
+        {
+          "source": "ETSU Athletics",
+          "url": "https://etsubucs.com/sports/mens-basketball/roster",
+          "notes": "Prior team production context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 98,
+      "player": "Sam Orme",
+      "currentTeam": "Nebraska",
+      "previousTeam": "Belmont",
+      "status": "researched_suggestion",
+      "historicalRating": 66.1832,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 72,
+        "offensiveBurden": 70,
+        "opportunityScore": 76.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 30,
+        "upsideToolsScore": 55,
+        "talentScore": 40,
+        "projectionScore": 60.47,
+        "projectedBbpr": 64.7549,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Orme brings valuable shooting/forward production to Nebraska, but the Big Ten jump and Nebraska's returning pieces cap the projection. He is a likely rotation or starter-adjacent forward, not a clear primary option.",
+      "teamContext": {
+        "projectedLineup": "No direct projected-lineup evidence found.",
+        "returningStars": "Pryce Sandfort and other Nebraska pieces create frontcourt/wing competition.",
+        "incomingStars": "Nebraska's portal class adds several role candidates.",
+        "positionCompetition": "Likely role player with a starter path if shooting translates.",
+        "starterEvidence": "production/fit, no direct lineup proof",
+        "roleCap": "top-six forward; cap low-80s"
+      },
+      "evidence": [
+        {
+          "source": "Nebraska Athletics",
+          "url": "https://huskers.com/sports/mens-basketball/roster",
+          "notes": "Confirms Nebraska roster context."
+        },
+        {
+          "source": "Belmont Athletics",
+          "url": "https://belmontbruins.com/sports/mens-basketball/roster",
+          "notes": "Prior team production context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 100,
+      "player": "Kory Mincy",
+      "currentTeam": "South Carolina",
+      "previousTeam": "George Mason",
+      "status": "researched_suggestion",
+      "historicalRating": 53.2143,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 78,
+        "offensiveBurden": 82,
+        "opportunityScore": 82.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 50,
+        "talentScore": 35,
+        "projectionScore": 57.285,
+        "projectedBbpr": 54.232,
+        "confidenceScore": 79,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Mincy projects as a useful veteran guard/creator for South Carolina. The role score is strong because of roster need and prior production, but limited NBA/upside keeps the total score from climbing too far.",
+      "teamContext": {
+        "projectedLineup": "No direct projected lineup found, but roster need gives him a plausible starting guard path.",
+        "returningStars": "South Carolina's guard hierarchy is unsettled enough for a veteran transfer to matter.",
+        "incomingStars": "Marcus Johnson and other newcomers compete for perimeter usage.",
+        "positionCompetition": "Competition exists but Mincy's experience helps.",
+        "starterEvidence": "veteran creator profile and team need",
+        "roleCap": "likely starter/top-six guard; cap mid-80s"
+      },
+      "evidence": [
+        {
+          "source": "South Carolina Athletics",
+          "url": "https://gamecocksonline.com/sports/mbball/roster/",
+          "notes": "Confirms roster context."
+        },
+        {
+          "source": "George Mason Athletics",
+          "url": "https://gomason.com/sports/mens-basketball/roster",
+          "notes": "Prior team production context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 112,
+      "player": "J.P. Estrella",
+      "currentTeam": "Michigan",
+      "previousTeam": "Tennessee",
+      "status": "researched_suggestion",
+      "historicalRating": 73.8187,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 75,
+        "offensiveBurden": 74,
+        "opportunityScore": 80.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 45,
+        "upsideToolsScore": 65,
+        "talentScore": 53,
+        "projectionScore": 66.685,
+        "projectedBbpr": 72.0353,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Estrella has a strong historical anchor and a clean Michigan frontcourt fit, but starter status is kept Uncertain because direct lineup evidence is limited. His role can still be high because Michigan needs size and he has high-major experience.",
+      "teamContext": {
+        "projectedLineup": "No direct projected lineup found.",
+        "returningStars": "Michigan has young perimeter talent and several frontcourt options.",
+        "incomingStars": "Freshman and transfer competition keeps usage shared.",
+        "positionCompetition": "Frontcourt role is strong but not guaranteed as a starter.",
+        "starterEvidence": "high-major transfer fit and roster need, no lineup proof",
+        "roleCap": "starter-contender big; cap mid-80s"
+      },
+      "evidence": [
+        {
+          "source": "Michigan Athletics",
+          "url": "https://mgoblue.com/sports/mens-basketball/roster",
+          "notes": "Confirms Michigan roster context."
+        },
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/sports/mens-basketball/roster/j-p--estrella/21277",
+          "notes": "Prior Tennessee profile and high-major background."
+        }
+      ]
+    }
+  ]
+}
