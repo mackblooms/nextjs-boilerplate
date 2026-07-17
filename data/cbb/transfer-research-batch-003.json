@@ -1,0 +1,578 @@
+{
+  "batchId": "transfer-research-003",
+  "createdAt": "2026-07-17",
+  "sourceSheet": "player database",
+  "scope": "Next 10 incomplete transfer rows after transfer-research-002, sorted by source row",
+  "method": [
+    "Research player role/minutes expectation from roster pages, school announcements, transfer reports, projected lineups, and team context.",
+    "Use historical rating from the imported spreadsheet as the historical anchor.",
+    "Translate evidence into the manual input fields used by the spreadsheet: starter, role, opportunity change, offensive burden, NBA projection, and upside/tools.",
+    "Cap starter/role/opportunity when projected-lineup or depth-chart evidence is unclear.",
+    "Keep every researched suggestion in review status until manually accepted."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScore": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprTransfer": "historicalRating*0.75 + projectionScore*0.25"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Use Yes only with projected-lineup evidence, explicit likely-starter reporting, or a roster context with a clear open starting path. Use Uncertain for high-minute players without clear starting evidence.",
+    "projectedRole": "Cap likely rotation or specialist profiles in the 60-75 range. Use 80-89 for likely starters or top-four options. Use 90+ only for projected primary/near-primary stars.",
+    "opportunityChange": "Do not reward prior production by itself. Lower-major stars moving into crowded high-major rosters should usually sit in the 45-65 range unless reporting shows a clear role increase.",
+    "offensiveBurden": "Tie burden to expected usage within the new lineup, not just prior usage.",
+    "roleCap": "Each researched player gets a role cap based on projected lineup, returning stars, incoming stars, position competition, and starter evidence."
+  },
+  "players": [
+    {
+      "sourceRow": 52,
+      "player": "Ryan Sabol",
+      "currentTeam": "Providence",
+      "previousTeam": "Buffalo",
+      "status": "researched_suggestion",
+      "historicalRating": 48.1169,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 65,
+        "opportunityChange": 50,
+        "offensiveBurden": 55,
+        "opportunityScore": 58.5,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 45,
+        "talentScore": 33,
+        "projectionScore": 45.875,
+        "projectedBbpr": 47.5564,
+        "confidenceScore": 74,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Elite shooting production at Buffalo gives Sabol a clear specialist path, but Providence's roster has multiple high-usage or higher-upside perimeter pieces, including Dink Pate, Malik Mack, Gavin Hightower, Miles Byrd and Ryan Mela. RotoWire explicitly framed him as a sneaky shooter off the bench, so starter/role/opportunity are capped despite the strong shooting history.",
+      "teamContext": {
+        "projectedLineup": "No direct projected-lineup source found placing Sabol in the starting five.",
+        "returningStars": "Providence has returning/perimeter competition from Miles Byrd, Ryan Mela and Gavin Hightower, plus transfer Malik Mack.",
+        "incomingStars": "Dink Pate is a major newcomer and likely absorbs guard/wing creation minutes.",
+        "positionCompetition": "Crowded guard and wing mix; Sabol's clearest path is shooting gravity rather than primary creation.",
+        "starterEvidence": "bench-specialist projection from RotoWire plus crowded roster context",
+        "roleCap": "shooting specialist/rotation guard; cap role mid-60s unless preseason lineup evidence changes"
+      },
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster/ryan-sabol/11676",
+          "notes": "Confirms Providence roster placement and Buffalo production, including 122 made threes and many 20-point games."
+        },
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster?view=1",
+          "notes": "Shows 2026-27 roster competition including Dink Pate, Arrinten Page, Gavin Hightower, Malik Mack, Miles Byrd and Ryan Mela."
+        },
+        {
+          "source": "RotoWire",
+          "url": "https://www.rotowire.com/cbasketball/player/ryan-sabol-25252",
+          "notes": "Projects Sabol as a shooter off the bench after 39.9 percent three-point shooting at Buffalo."
+        },
+        {
+          "source": "On3/Rivals",
+          "url": "https://www.on3.com/rivals/ryan-sabol-286095/",
+          "notes": "Lists Sabol as committed to Providence with a 90.00 transfer portal rating."
+        }
+      ]
+    },
+    {
+      "sourceRow": 57,
+      "player": "Darin Smith, Jr.",
+      "currentTeam": "Rutgers",
+      "previousTeam": "Central Connecticut",
+      "status": "researched_suggestion",
+      "historicalRating": 59.4172,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 63,
+        "offensiveBurden": 70,
+        "opportunityScore": 71.9,
+        "nbaProjectionScore": 30,
+        "upsideToolsScore": 55,
+        "talentScore": 40,
+        "projectionScore": 58.355,
+        "projectedBbpr": 59.1517,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Smith brings real scoring credibility after winning NEC Player of the Year and averaging 20.7 points, but Rutgers has a fairly crowded group with returning guards Tariq Francis and Jamichael Davis plus frontcourt/wing additions Will Sydnor, Christian Gurdak and Lewis Duarte. I like him as a rotation scorer/top-six piece, but without a projected-lineup source he stays below likely-starter treatment.",
+      "teamContext": {
+        "projectedLineup": "No direct projected-lineup evidence found placing Smith as a starter.",
+        "returningStars": "Tariq Francis and Jamichael Davis return as established guards; Darren Buchanan also returns as a bigger wing/forward.",
+        "incomingStars": "Will Sydnor was Rutgers' highest-ranked portal add; Lewis Duarte and Christian Gurdak add competition at wing/frontcourt slots.",
+        "positionCompetition": "Smith's 6-7 scoring profile helps, but Rutgers has multiple guards/wings competing for starting usage.",
+        "starterEvidence": "strong transfer ranking and production, but no starting-five confirmation",
+        "roleCap": "high-usage rotation scorer; cap high-70s until a starting path is reported"
+      },
+      "evidence": [
+        {
+          "source": "Rutgers Athletics",
+          "url": "https://scarletknights.com/sports/mens-basketball/roster/darin-smith-jr/16695",
+          "notes": "Confirms roster placement; notes NEC Player of the Year, 20.7 ppg, 5.4 rpg and efficient scoring."
+        },
+        {
+          "source": "Rutgers Athletics",
+          "url": "https://scarletknights.com/sports/mbball/roster",
+          "notes": "Shows 2026-27 roster composition and returning guard/wing competition."
+        },
+        {
+          "source": "The Knight Report / On3",
+          "url": "https://www.on3.com/sites/the-knight-report/news/rutgers-basketball-ranks-top-20-nationally-transfer-portal/",
+          "notes": "Frames Rutgers' portal class as top 20 nationally and identifies Smith as a versatile scoring wing."
+        },
+        {
+          "source": "On3/Rivals",
+          "url": "https://www.on3.com/rivals/darin-smith-jr-286168/",
+          "notes": "Lists Smith committed to Rutgers with transfer ranking context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 58,
+      "player": "Drew Fielder",
+      "currentTeam": "Alabama",
+      "previousTeam": "Boise State",
+      "status": "researched_suggestion",
+      "historicalRating": 71.4466,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 83,
+        "opportunityChange": 72,
+        "offensiveBurden": 70,
+        "opportunityScore": 77.1,
+        "nbaProjectionScore": 35,
+        "upsideToolsScore": 60,
+        "talentScore": 45,
+        "projectionScore": 58.445,
+        "projectedBbpr": 68.1962,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Fielder's profile is high-major friendly: 6-11, efficient inside, real shooting, All-Mountain West production. Alabama's own release praises his perimeter skill and immediate fit, and BamaHammer projected him into the starting lineup after his commitment. The cap comes from Alabama's crowded frontcourt with Brandon Garrison, Cole Cloer, Jamarion Davis-Fleming and other size, so he gets starter treatment but not primary-star opportunity.",
+      "teamContext": {
+        "projectedLineup": "BamaHammer projected Fielder in Alabama's 2026-27 starting lineup after his commitment.",
+        "returningStars": "Aden Holloway and Preston Murphy Jr. return in the backcourt; Alabama rebuilt the frontcourt after major departures.",
+        "incomingStars": "Brandon Garrison, Cole Cloer and Jamarion Davis-Fleming also join a very large frontcourt group.",
+        "positionCompetition": "Direct competition with Garrison and other bigs limits offensive burden even if Fielder starts.",
+        "starterEvidence": "projected-lineup evidence plus Alabama fit comments",
+        "roleCap": "likely starter in a platoon-heavy frontcourt; cap low-80s because frontcourt usage will be shared"
+      },
+      "evidence": [
+        {
+          "source": "Alabama Athletics",
+          "url": "https://rolltide.com/news/2026/6/3/mens-basketball-adds-seven-players-to-its-2026-27-roster",
+          "notes": "Confirms Fielder addition; notes 14.7 ppg, 5.7 rpg, 40.9 percent from three and Nate Oats' fit comments."
+        },
+        {
+          "source": "BamaCentral / Sports Illustrated",
+          "url": "https://www.si.com/college/alabama/basketball/alabama-basketball-adds-boise-state-big-man-transfer-portal",
+          "notes": "Details Alabama's incoming frontcourt and roster context after Fielder's addition."
+        },
+        {
+          "source": "Bama Hammer",
+          "url": "https://bamahammer.com/projecting-alabama-basketball-s-2026-27-starting-lineup-after-drew-fielder-commitment",
+          "notes": "Projected Alabama's starting lineup after Fielder's commitment."
+        },
+        {
+          "source": "Boise State Athletics",
+          "url": "https://broncosports.com/sports/mens-basketball/roster/drew-fielder/13749",
+          "notes": "Confirms All-Mountain West Second Team production and efficiency profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 59,
+      "player": "Jordan Frison",
+      "currentTeam": "Wichita State",
+      "previousTeam": "Chattanooga",
+      "status": "researched_suggestion",
+      "historicalRating": 59.7518,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 83,
+        "offensiveBurden": 85,
+        "opportunityScore": 87.9,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 50,
+        "talentScore": 35,
+        "projectionScore": 59.805,
+        "projectedBbpr": 59.7651,
+        "confidenceScore": 84,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "This is the clearest usage winner in the batch. Wichita State specifically targeted Frison to organize the offense, school coverage describes him and Jahari Long as key pieces in remaking the offense, and local reporting says he is poised to run the show. He is still not an NBA-upside play, but his role/opportunity should be very high.",
+      "teamContext": {
+        "projectedLineup": "No formal projected-five source, but multiple Wichita sources frame Frison as a lead guard/key offensive piece.",
+        "returningStars": "Wichita State is reshaping its guard play after a 24-win season.",
+        "incomingStars": "Jahari Long is another major guard addition and will share backcourt creation.",
+        "positionCompetition": "Long adds competition, but Frison's lead-guard skill set is directly tied to the offensive rebuild.",
+        "starterEvidence": "explicit lead-guard/organizer reporting and school fit comments",
+        "roleCap": "projected lead guard; allow low-90s role because usage path is clear"
+      },
+      "evidence": [
+        {
+          "source": "Wichita State Athletics",
+          "url": "https://goshockers.com/news/2026/4/17/mens-basketball-socon-all-conference-guard-signs-with-wichita-state.aspx",
+          "notes": "Announcement says Frison led Chattanooga in scoring and assists and fits as defender, facilitator and shooter."
+        },
+        {
+          "source": "Wichita State Athletics",
+          "url": "https://goshockers.com/news/2026/6/18/mens-basketball-rh-i-want-to-maximize-their-strengths.aspx",
+          "notes": "Summer feature says Frison and Jahari Long are key pieces in remaking Wichita State's offense."
+        },
+        {
+          "source": "Wichita Eagle",
+          "url": "https://www.kansas.com/sports/college/wichita-state/article315379217.html",
+          "notes": "Local reporting says Frison looks poised to run the show and was recruited to organize a veteran roster."
+        },
+        {
+          "source": "RealGM",
+          "url": "https://basketball.realgm.com/ncaa/conferences/American-Conference/4/Wichita-State/206/transfers",
+          "notes": "Confirms Wichita State 2026-27 transfer status."
+        }
+      ]
+    },
+    {
+      "sourceRow": 60,
+      "player": "Jeremiah Wilkinson",
+      "currentTeam": "Arkansas",
+      "previousTeam": "Georgia",
+      "status": "researched_suggestion",
+      "historicalRating": 63.3216,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 75,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.5,
+        "nbaProjectionScore": 45,
+        "upsideToolsScore": 65,
+        "talentScore": 53,
+        "projectionScore": 67.675,
+        "projectedBbpr": 64.4099,
+        "confidenceScore": 86,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Wilkinson gets one of the stronger scores here because there is direct projected-lineup evidence from SI and Arkansas is bringing in an SEC-proven scorer who led Georgia at 17.4 ppg. I stop short of 90+ because Arkansas has elite freshman talent and multiple athletic guards/wings who can claim touches, but he should be a high-minute, high-usage piece.",
+      "teamContext": {
+        "projectedLineup": "SI projected Wilkinson as Arkansas' starting shooting guard.",
+        "returningStars": "Billy Richmond returns and several younger Arkansas players remain in the mix.",
+        "incomingStars": "Jordan Smith Jr., Miikka Muurinen, JJ Andrews and Abdou Toure headline a loaded incoming group.",
+        "positionCompetition": "Freshman star power and Arkansas depth cap him below primary-star levels, but he is the proven scorer in the backcourt.",
+        "starterEvidence": "direct projected-lineup evidence and SEC production",
+        "roleCap": "likely starter/top scoring option; cap high-80s because Arkansas has multiple blue-chip usage threats"
+      },
+      "evidence": [
+        {
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/jeremiah-wilkinson-becomes-a-razorback/",
+          "notes": "Confirms signing; notes 17.4 ppg at Georgia, team-high scoring and 1,024 career points."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college-basketball/mens-hoops-way-too-early-top-25-projected-starting-lineups-transfer-portal-chaos/",
+          "notes": "Projects Wilkinson as Arkansas' starting SG and calls him one of the SEC's elite scorers."
+        },
+        {
+          "source": "Best of Arkansas Sports",
+          "url": "https://www.bestofarkansassports.com/arkansas-basketball-2026-27-roster-tracker-leaving-staying-deciding/",
+          "notes": "Shows confirmed Arkansas roster, including incoming five-star freshmen and transfer context."
+        },
+        {
+          "source": "Atlanta Journal-Constitution",
+          "url": "https://www.ajc.com/sports/2026/07/offseason-reset-mike-white-breaks-down-georgias-roster-for-2026-27-season/",
+          "notes": "Notes Wilkinson as a notable Georgia transfer loss."
+        }
+      ]
+    },
+    {
+      "sourceRow": 61,
+      "player": "Cooper Bowser",
+      "currentTeam": "Arkansas",
+      "previousTeam": "Furman",
+      "status": "researched_suggestion",
+      "historicalRating": 50.2614,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 82,
+        "opportunityChange": 72,
+        "offensiveBurden": 65,
+        "opportunityScore": 75.6,
+        "nbaProjectionScore": 30,
+        "upsideToolsScore": 55,
+        "talentScore": 40,
+        "projectionScore": 56.02,
+        "projectedBbpr": 51.7011,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Bowser has direct projected-lineup evidence as Arkansas' starting center and an efficient, rim-running profile that fits with the Razorbacks' guard-heavy roster. The offensive burden is capped because Wilkinson, Richmond and high-end freshmen should drive more of the offense, but Bowser's size/finishing should earn a real starting or starter-adjacent role.",
+      "teamContext": {
+        "projectedLineup": "SI projected Bowser as Arkansas' starting center.",
+        "returningStars": "Arkansas returns Billy Richmond and a group of younger athletes.",
+        "incomingStars": "The freshman class includes Jordan Smith Jr., Miikka Muurinen, JJ Andrews and Abdou Toure.",
+        "positionCompetition": "Frontcourt competition exists, but Bowser has the clearest veteran center profile.",
+        "starterEvidence": "direct projected-lineup evidence plus efficient Furman production",
+        "roleCap": "likely starter/rim-finishing big; cap low-80s because scoring hierarchy runs through guards/wings"
+      },
+      "evidence": [
+        {
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/cooper-bowser-signs-with-arkansas/",
+          "notes": "Confirms signing; notes 13.8 ppg on 76.6 percent shooting, 22 starts and SoCon tournament production."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college-basketball/mens-hoops-way-too-early-top-25-projected-starting-lineups-transfer-portal-chaos/",
+          "notes": "Projects Bowser as Arkansas' starting center."
+        },
+        {
+          "source": "Best of Arkansas Sports",
+          "url": "https://www.bestofarkansassports.com/arkansas-basketball-2026-27-roster-tracker-leaving-staying-deciding/",
+          "notes": "Confirms Arkansas roster context and transfer/freshman additions."
+        },
+        {
+          "source": "HawgBeat / On3",
+          "url": "https://www.on3.com/sites/hawg-beat/news/arkansas-basketball-gets-first-transfer-portal-commitment/",
+          "notes": "Reports Bowser as Arkansas' first portal commitment and notes SoCon All-Defensive background."
+        }
+      ]
+    },
+    {
+      "sourceRow": 62,
+      "player": "Justin Neely",
+      "currentTeam": "Colorado",
+      "previousTeam": "UNCG",
+      "status": "researched_suggestion",
+      "historicalRating": 68.5258,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 82,
+        "offensiveBurden": 82,
+        "opportunityScore": 86,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 55,
+        "talentScore": 37,
+        "projectionScore": 59.65,
+        "projectedBbpr": 66.3069,
+        "confidenceScore": 82,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Neely looks like a very real opportunity play. Colorado lost its top three players and the Denver Gazette described Neely as the Buffs' only real portal splash, while Tad Boyle specifically highlighted rebounding as a major need. His NBA score stays modest, but role and opportunity are high because the roster needs exactly what he does.",
+      "teamContext": {
+        "projectedLineup": "No formal projected lineup found, but Colorado's roster losses and Tad Boyle's public comments create a clear starting path.",
+        "returningStars": "Barrington Hargress returns, but Colorado lost Isaiah Johnson, Bangot Dak and Sebastian Rancik.",
+        "incomingStars": "Colorado added young/international pieces, but Neely is the veteran proven frontcourt producer.",
+        "positionCompetition": "Noah Feddersen and Eric Jacobsen add size, but Neely's rebounding/scoring profile is unique on the roster.",
+        "starterEvidence": "clear roster-need context, major-transfer framing and coach comments",
+        "roleCap": "projected starter/top frontcourt option; low-90s role is acceptable because Colorado has a thin Big 12 roster"
+      },
+      "evidence": [
+        {
+          "source": "Colorado Athletics",
+          "url": "https://cubuffs.com/news/2026/5/7/mens-basketball-buffs-add-uncg-transfer-forward-justin-neely",
+          "notes": "Confirms addition; says Neely was second nationally in rebounding and averaged 17.9 ppg and 11.5 rpg."
+        },
+        {
+          "source": "Colorado Athletics",
+          "url": "https://cubuffs.com/sports/mbball/roster",
+          "notes": "Shows 2026-27 roster with Neely as a graduate forward."
+        },
+        {
+          "source": "Denver Gazette",
+          "url": "https://www.denvergazette.com/2026/05/19/where-tad-boyles-cu-buffs-rank-among-biggest-big-12-winners-and-losers-in-transfer-portal/",
+          "notes": "Notes Colorado lost its top three players and calls Neely the only real portal splash."
+        },
+        {
+          "source": "Sports-Reference",
+          "url": "https://www.sports-reference.com/cbb/schools/colorado/men/2026.html",
+          "notes": "Shows outgoing 2025-26 Colorado production from Johnson, Dak and Rancik."
+        }
+      ]
+    },
+    {
+      "sourceRow": 64,
+      "player": "Keanu Dawes",
+      "currentTeam": "Kansas",
+      "previousTeam": "Utah",
+      "status": "researched_suggestion",
+      "historicalRating": 54.8159,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 72,
+        "offensiveBurden": 65,
+        "opportunityScore": 77.1,
+        "nbaProjectionScore": 50,
+        "upsideToolsScore": 70,
+        "talentScore": 58,
+        "projectionScore": 62.995,
+        "projectedBbpr": 56.8607,
+        "confidenceScore": 84,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Dawes has strong starter evidence: Kansas' own bio calls him an immediate-impact veteran, Bill Self praised his versatility, and SI projected him into likely starting combinations. His opportunity is capped because Kansas has Tyran Stokes, Taylen Kinney, Leroy Blyden Jr. and other scoring/creation pieces, so his role is more versatile starter than primary option.",
+      "teamContext": {
+        "projectedLineup": "SI projected Dawes as Kansas' starting PF in multiple likely 2026-27 lineup combinations.",
+        "returningStars": "Kansas returns limited rotation but has Kohl Rosario and several young pieces.",
+        "incomingStars": "Tyran Stokes, Taylen Kinney, Davion Adkins, Trent Perry and others create a high-upside roster.",
+        "positionCompetition": "Dawes competes with young forwards but has the veteran Big 12 production edge.",
+        "starterEvidence": "direct projected-lineup evidence and Kansas immediate-impact language",
+        "roleCap": "likely starter/versatile glue forward; cap mid-80s because Kansas usage will be shared"
+      },
+      "evidence": [
+        {
+          "source": "Kansas Athletics",
+          "url": "https://kuathletics.com/news/2026/4/21/mens-basketball-dawes-signs-with-kansas-mens-basketball",
+          "notes": "Bill Self calls Dawes a versatile immediate-impact forward; confirms 12.5 ppg and 8.8 rpg at Utah."
+        },
+        {
+          "source": "Kansas Athletics",
+          "url": "https://kuathletics.com/sports/mens-basketball/roster/keanu-dawes/17961",
+          "notes": "Confirms roster placement and 95 career games, 57 starts, 868 points and 612 rebounds."
+        },
+        {
+          "source": "Kansas On SI",
+          "url": "https://www.si.com/college/kansas/basketball/projecting-kansas-2026-27-starting-lineup-after-tyran-stokes-commitment",
+          "notes": "Projects Dawes as Kansas' starting PF."
+        },
+        {
+          "source": "Kansas On SI",
+          "url": "https://www.si.com/college/kansas/basketball/3-potential-starting-lineup-combinations-for-2026-27-kansas-basketball-team",
+          "notes": "Lists Dawes in all likely starting lineup combinations."
+        }
+      ]
+    },
+    {
+      "sourceRow": 65,
+      "player": "Chance Westry",
+      "currentTeam": "Xavier",
+      "previousTeam": "UAB",
+      "status": "researched_suggestion",
+      "historicalRating": 75.2812,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 84,
+        "offensiveBurden": 88,
+        "opportunityScore": 88.8,
+        "nbaProjectionScore": 55,
+        "upsideToolsScore": 75,
+        "talentScore": 63,
+        "projectionScore": 74.01,
+        "projectedBbpr": 74.9634,
+        "confidenceScore": 89,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Westry is a premium role and talent projection. CBS projects him as Xavier's starting guard and says Xavier's success comes down to whether he can be the true catalyst. Xavier's own release says he led the American in assists and assist-to-turnover ratio and expects immediate impact. This is one of the few batch players who deserves a 90+ role score.",
+      "teamContext": {
+        "projectedLineup": "CBS projects Westry in Xavier's starting lineup.",
+        "returningStars": "Jovan Milicevic and Gabriel Pozzato give Xavier returning frontcourt/wing scoring.",
+        "incomingStars": "Tru Washington, Mike Nwoko and Ruben Dominguez add major transfer support.",
+        "positionCompetition": "There is more talent around him, but the roster is built for Westry to initiate offense.",
+        "starterEvidence": "direct projected-lineup evidence and catalyst language",
+        "roleCap": "projected starting jumbo creator; allow low-90s role because creation burden is central"
+      },
+      "evidence": [
+        {
+          "source": "Xavier Athletics",
+          "url": "https://goxavier.com/news/2026/4/15/mens-basketball-signs-talented-point-guard-transfer-from-uab",
+          "notes": "Says Westry led the American in assists and assist-to-turnover ratio; Pitino expects immediate impact."
+        },
+        {
+          "source": "CBS Sports",
+          "url": "https://new.cbssports.com/college-basketball/news/big-east-rankings-st-johns-uconn/",
+          "notes": "Projects Westry as Xavier starter and frames him as the club's true catalyst."
+        },
+        {
+          "source": "Xavier Athletics",
+          "url": "https://goxavier.com/sports/mens-basketball/roster/?path=mbball",
+          "notes": "Confirms 2026-27 roster with Westry, Washington, Dominguez, Milicevic and Nwoko."
+        },
+        {
+          "source": "Xavier Newswire",
+          "url": "https://xaviernewswire.com/2026/04/21/with-the-portal-open-next-years-basketball-roster-takes-shape/",
+          "notes": "Describes roster construction around returning pieces and portal additions, including Westry's 15.5 ppg and 5.6 apg."
+        }
+      ]
+    },
+    {
+      "sourceRow": 66,
+      "player": "Amir Lindsey",
+      "currentTeam": "Fordham",
+      "previousTeam": "Albany",
+      "status": "researched_suggestion",
+      "historicalRating": 41.3777,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 80,
+        "opportunityScore": 79.8,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 55,
+        "talentScore": 37,
+        "projectionScore": 60.86,
+        "projectedBbpr": 46.2483,
+        "confidenceScore": 75,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Lindsey was a true engine at UAlbany, leading America East in scoring while ranking near the top of the league in assists. Fordham's roster has returning frontcourt starters but less proven guard creation, so the role path is strong. I kept starter at Uncertain because I did not find a Fordham projected-lineup source or explicit signing article naming him a starter.",
+      "teamContext": {
+        "projectedLineup": "No direct projected-lineup source found for Fordham.",
+        "returningStars": "Fordham retained five players who had started, notably frontcourt/size pieces Abass Bodija, Rikus Schulte, Akira Jacobs, Roor Akhuar and Jack Whitbourn.",
+        "incomingStars": "Fordham added multiple transfers and freshmen, but Lindsey is the most proven high-usage guard profile found.",
+        "positionCompetition": "Lateef Patrick Jr., JJ Laboy and young guards compete, but Lindsey fills a clear creation need.",
+        "starterEvidence": "clear roster need and production, but no starting-five confirmation",
+        "roleCap": "likely high-minute guard/creator; cap low-80s until Fordham lineup reporting confirms starter status"
+      },
+      "evidence": [
+        {
+          "source": "Fordham Athletics",
+          "url": "https://fordhamsports.com/sports/mens-basketball/roster",
+          "notes": "Confirms Lindsey on the 2026-27 Fordham roster and shows guard/frontcourt mix."
+        },
+        {
+          "source": "UAlbany Athletics",
+          "url": "https://ualbanysports.com/sports/mens-basketball/roster/amir-lindsey/11024",
+          "notes": "Notes Lindsey was America East First Team, led the conference in scoring, and ranked second in assists per game."
+        },
+        {
+          "source": "UAlbany Athletics",
+          "url": "https://ualbanysports.com/sports/mens-basketball/stats/2025-26",
+          "notes": "Confirms 17.9 ppg, 4.9 apg and full-season statistical profile."
+        },
+        {
+          "source": "Fordham Now",
+          "url": "https://now.fordham.edu/athletics/a-winning-culture-5-starting-players-stick-with-fordham-mens-basketball/",
+          "notes": "Reports Fordham retained five players who had been starters, mostly frontcourt/size pieces."
+        }
+      ]
+    }
+  ]
+}
