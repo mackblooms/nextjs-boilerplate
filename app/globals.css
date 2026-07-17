@@ -818,6 +818,173 @@ textarea::placeholder {
   color: #8a5a00;
 }
 
+.cbb-research-review {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cbb-research-review-head {
+  background: var(--surface);
+}
+
+.cbb-research-review-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cbb-research-review-actions > span {
+  font-size: 12px;
+  font-weight: 850;
+  opacity: 0.72;
+}
+
+.cbb-research-review-status {
+  margin: 12px;
+}
+
+.cbb-research-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.cbb-research-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.cbb-research-card-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cbb-research-card-select input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.cbb-research-card-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.cbb-research-card-main h3,
+.cbb-research-card-main p,
+.cbb-research-summary {
+  margin: 0;
+}
+
+.cbb-research-card-main h3 {
+  font-size: 18px;
+  line-height: 1.08;
+  font-weight: 950;
+}
+
+.cbb-research-card-main p,
+.cbb-research-summary,
+.cbb-research-context span {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.cbb-research-card-main > strong {
+  border: 1px solid var(--highlight-border);
+  border-radius: 999px;
+  background: var(--highlight);
+  color: var(--focus-ring);
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 950;
+  min-width: 58px;
+  padding: 6px 9px;
+  text-align: center;
+}
+
+.cbb-research-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.cbb-research-card-metrics > div {
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: 8px;
+  background: var(--surface);
+  min-width: 0;
+  padding: 7px;
+}
+
+.cbb-research-card-metrics span,
+.cbb-research-card-metrics small {
+  display: block;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.2;
+  opacity: 0.64;
+}
+
+.cbb-research-card-metrics strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 950;
+}
+
+.cbb-research-summary {
+  color: color-mix(in srgb, var(--foreground) 82%, transparent);
+}
+
+.cbb-research-context {
+  border-top: 1px solid var(--border-color);
+  display: grid;
+  gap: 5px;
+  padding-top: 9px;
+}
+
+.cbb-research-context span {
+  color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  font-weight: 760;
+}
+
+.cbb-research-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cbb-research-evidence a {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--surface);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 4px 8px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @media (max-width: 980px) {
   .cbb-projections-hero,
   .cbb-projections-board-head {
@@ -837,6 +1004,10 @@ textarea::placeholder {
   .cbb-projections-toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .cbb-research-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -847,6 +1018,10 @@ textarea::placeholder {
 
   .cbb-projections-hero h1 {
     font-size: 34px;
+  }
+
+  .cbb-research-card-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

@@ -63,3 +63,83 @@ export type CbbProjectionPayload = {
   };
   players: CbbPlayerProjection[];
 };
+
+export type CbbResearchSuggestion = {
+  projectedStarter: string | null;
+  projectedRole: number | null;
+  opportunityChange: number | null;
+  offensiveBurden: number | null;
+  opportunityScore: number | null;
+  nbaProjectionScore: number | null;
+  upsideToolsScore: number | null;
+  talentScore: number | null;
+  projectionScore: number | null;
+  projectedBbpr: number | null;
+  confidenceScore: number | null;
+  confidenceGrade: string | null;
+  needsReview: boolean;
+};
+
+export type CbbResearchEvidence = {
+  source: string;
+  url: string;
+  notes: string;
+};
+
+export type CbbResearchPlayer = {
+  sourceRow: number;
+  player: string;
+  currentTeam: string | null;
+  previousTeam: string | null;
+  status: string;
+  historicalRating: number | null;
+  developmentScore: number | null;
+  suggested: CbbResearchSuggestion;
+  researchSummary: string;
+  teamContext: Record<string, string>;
+  evidence: CbbResearchEvidence[];
+};
+
+export type CbbResearchBatch = {
+  batchId: string;
+  createdAt: string;
+  sourceSheet: string;
+  scope: string;
+  method: string[];
+  formulas: Record<string, string>;
+  teamContextRubric: Record<string, string>;
+  players: CbbResearchPlayer[];
+};
+
+export type CbbResearchPlayerWithState = CbbResearchPlayer & {
+  batchId: string;
+  applied: boolean;
+  currentProjection: Pick<
+    CbbPlayerProjection,
+    | "projectedStarter"
+    | "projectedRole"
+    | "opportunityChange"
+    | "offensiveBurden"
+    | "opportunityScore"
+    | "nbaProjectionScore"
+    | "upsideToolsScore"
+    | "talentScore"
+    | "projectionScore"
+    | "projectedBbpr"
+    | "confidenceScore"
+    | "confidenceGrade"
+    | "needsReview"
+    | "projectionInputCompleteness"
+    | "lastUpdated"
+  > | null;
+};
+
+export type CbbResearchPayload = {
+  generatedAt: string;
+  batchCount: number;
+  playerCount: number;
+  appliedCount: number;
+  pendingCount: number;
+  batches: Array<Pick<CbbResearchBatch, "batchId" | "createdAt" | "scope"> & { playerCount: number }>;
+  players: CbbResearchPlayerWithState[];
+};

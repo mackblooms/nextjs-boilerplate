@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import type { CbbPlayerProjection, CbbProjectionPayload } from "@/lib/cbbPlayerProjections";
+import type {
+  CbbPlayerProjection,
+  CbbProjectionPayload,
+  CbbResearchPayload,
+  CbbResearchPlayerWithState,
+} from "@/lib/cbbPlayerProjections";
 import {
+  UiButton,
   UiEmptyState,
   UiErrorState,
   UiInput,
@@ -22,6 +28,13 @@ function formatNumber(value: number | null | undefined, digits = 1) {
 function formatInteger(value: number | null | undefined) {
   if (value == null || !Number.isFinite(value)) return "-";
   return String(Math.round(value));
+}
+
+function formatDelta(value: number | null | undefined, current: number | null | undefined, digits = 1) {
+  if (value == null || current == null || !Number.isFinite(value) || !Number.isFinite(current)) return "";
+  const delta = value - current;
+  if (Math.abs(delta) < 0.001) return "even";
+  return `${delta > 0 ? "+" : ""}${delta.toFixed(digits)}`;
 }
 
 function formatDateTime(value: string) {
@@ -67,8 +80,13 @@ function sortPlayers(players: CbbPlayerProjection[], sortKey: SortKey) {
 
 export default function CbbPlayerProjectionsPage() {
   const [payload, setPayload] = useState<CbbProjectionPayload | null>(null);
+  const [researchPayload, setResearchPayload] = useState<CbbResearchPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [applyError, setApplyError] = useState("");
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
@@ -96,11 +114,13 @@ export default function CbbPlayerProjectionsPage() {
       const { data: userData } = await supabase.auth.getUser();
       const signedInUserId = userData.user?.id ?? null;
 
-      const res = await fetch("/api/admin/cbb-player-projections", {
-        headers: { authorization: `Bearer ${token}` },
-      }).catch(() => null);
+      const headers = { authorization: `Bearer ${token}` };
+      const [res, researchRes] = await Promise.all([
+        fetch("/api/admin/cbb-player-projections", { headers }).catch(() => null),
+        fetch("/api/admin/cbb-player-projection-research", { headers }).catch(() => null),
+      ]);
 
-      if (!res) {
+      if (!res || !researchRes) {
         if (!canceled) {
           setError("Could not load player projections.");
           setLoading(false);
@@ -108,9 +128,9 @@ export default function CbbPlayerProjectionsPage() {
         return;
       }
 
-      if (!res.ok) {
+      if (!res.ok || !researchRes.ok) {
         const message =
-          res.status === 403
+          res.status === 403 || researchRes.status === 403
             ? signedInUserId
               ? `Not authorized. Add this user id to POOL_SITE_ADMIN_USER_IDS in .env.local: ${signedInUserId}`
               : "Not authorized. Only site admins can view this workspace."
@@ -123,8 +143,10 @@ export default function CbbPlayerProjectionsPage() {
       }
 
       const json = (await res.json()) as CbbProjectionPayload;
+      const researchJson = (await researchRes.json()) as CbbResearchPayload;
       if (!canceled) {
         setPayload(json);
+        setResearchPayload(researchJson);
         setLoading(false);
       }
     }
@@ -137,9 +159,15 @@ export default function CbbPlayerProjectionsPage() {
   }, []);
 
   const players = useMemo(() => payload?.players ?? [], [payload]);
+  const researchPlayers = useMemo(() => researchPayload?.players ?? [], [researchPayload]);
   const typeOptions = useMemo(() => uniqueOptions(players, "playerType"), [players]);
   const classOptions = useMemo(() => uniqueOptions(players, "classYear"), [players]);
   const teamOptions = useMemo(() => uniqueOptions(players, "currentTeam"), [players]);
+  const pendingResearchPlayers = useMemo(
+    () => researchPlayers.filter((player) => !player.applied),
+    [researchPlayers]
+  );
+  const visibleResearchPlayers = useMemo(() => pendingResearchPlayers.slice(0, 12), [pendingResearchPlayers]);
 
   const filteredPlayers = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -163,6 +191,78 @@ export default function CbbPlayerProjectionsPage() {
 
     return sortPlayers(filtered, sortKey);
   }, [players, query, typeFilter, classFilter, teamFilter, reviewFilter, sortKey]);
+
+  async function applyResearchRows(sourceRows: number[]) {
+    if (sourceRows.length === 0) return;
+
+    setApplying(true);
+    setApplyError("");
+    setApplyMessage("");
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setApplyError("Please log in with a site admin account to apply projections.");
+      setApplying(false);
+      return;
+    }
+
+    const res = await fetch("/api/admin/cbb-player-projection-research/apply", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ sourceRows }),
+    }).catch(() => null);
+
+    if (!res) {
+      setApplyError("Could not apply researched projections.");
+      setApplying(false);
+      return;
+    }
+
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      appliedRows?: number[];
+      projections?: CbbProjectionPayload;
+      research?: CbbResearchPayload;
+    };
+
+    if (!res.ok || !json.projections || !json.research) {
+      setApplyError(json.error ?? "Could not apply researched projections.");
+      setApplying(false);
+      return;
+    }
+
+    setPayload(json.projections);
+    setResearchPayload(json.research);
+    setSelectedRows(new Set());
+    setApplyMessage(`applied ${json.appliedRows?.length ?? sourceRows.length} researched projections`);
+    setApplying(false);
+  }
+
+  function toggleResearchRow(sourceRow: number) {
+    setSelectedRows((current) => {
+      const next = new Set(current);
+      if (next.has(sourceRow)) {
+        next.delete(sourceRow);
+      } else {
+        next.add(sourceRow);
+      }
+      return next;
+    });
+  }
+
+  function selectVisibleResearchRows(rows: CbbResearchPlayerWithState[]) {
+    setSelectedRows((current) => {
+      const next = new Set(current);
+      for (const player of rows) {
+        if (!player.applied) next.add(player.sourceRow);
+      }
+      return next;
+    });
+  }
 
   if (loading) {
     return (
@@ -293,6 +393,147 @@ export default function CbbPlayerProjectionsPage() {
       <UiStatus tone="info" className="cbb-projections-note">
         {payload.model.historicalPlayerBlend} · {payload.model.newcomerBlend}
       </UiStatus>
+
+      <section className="cbb-research-review" aria-label="Research review queue">
+        <div className="cbb-projections-board-head cbb-research-review-head">
+          <div>
+            <span className="cbb-projections-kicker">research queue</span>
+            <h2>{researchPayload?.pendingCount ?? 0} pending suggestions</h2>
+          </div>
+          <div className="cbb-research-review-actions">
+            <span>
+              {researchPayload?.appliedCount ?? 0} applied · {researchPayload?.playerCount ?? 0} researched
+            </span>
+            <UiButton
+              type="button"
+              size="sm"
+              onClick={() => selectVisibleResearchRows(visibleResearchPlayers)}
+              disabled={applying || visibleResearchPlayers.length === 0}
+            >
+              select shown
+            </UiButton>
+            <UiButton
+              type="button"
+              size="sm"
+              variant="success"
+              onClick={() => void applyResearchRows(Array.from(selectedRows))}
+              disabled={applying || selectedRows.size === 0}
+            >
+              {applying ? "applying..." : `apply selected (${selectedRows.size})`}
+            </UiButton>
+          </div>
+        </div>
+
+        {applyError ? (
+          <UiStatus tone="error" className="cbb-research-review-status">
+            {applyError}
+          </UiStatus>
+        ) : null}
+        {applyMessage ? (
+          <UiStatus tone="success" className="cbb-research-review-status">
+            {applyMessage}
+          </UiStatus>
+        ) : null}
+
+        {visibleResearchPlayers.length === 0 ? (
+          <UiEmptyState
+            as="div"
+            title="all researched suggestions applied"
+            description="new research batches will appear here when they are added."
+          />
+        ) : (
+          <div className="cbb-research-grid">
+            {visibleResearchPlayers.map((player) => {
+              const selected = selectedRows.has(player.sourceRow);
+              return (
+                <article className="cbb-research-card" key={`${player.batchId}-${player.sourceRow}`}>
+                  <label className="cbb-research-card-select">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => toggleResearchRow(player.sourceRow)}
+                      disabled={applying}
+                    />
+                    <span>
+                      row {player.sourceRow} · {player.batchId}
+                    </span>
+                  </label>
+
+                  <div className="cbb-research-card-main">
+                    <div>
+                      <h3>{player.player}</h3>
+                      <p>
+                        {player.currentTeam ?? "-"} from {player.previousTeam ?? "-"}
+                      </p>
+                    </div>
+                    <strong>{formatNumber(player.suggested.projectedBbpr, 2)}</strong>
+                  </div>
+
+                  <div className="cbb-research-card-metrics">
+                    <div>
+                      <span>starter</span>
+                      <strong>{player.suggested.projectedStarter ?? "-"}</strong>
+                    </div>
+                    <div>
+                      <span>role</span>
+                      <strong>{formatInteger(player.suggested.projectedRole)}</strong>
+                      <small>{formatDelta(player.suggested.projectedRole, player.currentProjection?.projectedRole)}</small>
+                    </div>
+                    <div>
+                      <span>opp</span>
+                      <strong>{formatInteger(player.suggested.opportunityChange)}</strong>
+                      <small>
+                        {formatDelta(
+                          player.suggested.opportunityChange,
+                          player.currentProjection?.opportunityChange
+                        )}
+                      </small>
+                    </div>
+                    <div>
+                      <span>burden</span>
+                      <strong>{formatInteger(player.suggested.offensiveBurden)}</strong>
+                    </div>
+                    <div>
+                      <span>nba</span>
+                      <strong>{formatInteger(player.suggested.nbaProjectionScore)}</strong>
+                    </div>
+                    <div>
+                      <span>upside</span>
+                      <strong>{formatInteger(player.suggested.upsideToolsScore)}</strong>
+                    </div>
+                  </div>
+
+                  <p className="cbb-research-summary">{player.researchSummary}</p>
+
+                  <div className="cbb-research-context">
+                    <span>{player.teamContext.starterEvidence ?? "researched role context"}</span>
+                    <span>{player.teamContext.roleCap ?? "role cap applied from roster context"}</span>
+                  </div>
+
+                  <div className="cbb-research-evidence">
+                    {player.evidence.slice(0, 3).map((item) => (
+                      <a href={item.url} key={`${player.sourceRow}-${item.url}`} target="_blank" rel="noreferrer">
+                        {item.source}
+                      </a>
+                    ))}
+                  </div>
+
+                  <UiButton
+                    type="button"
+                    size="sm"
+                    variant="primary"
+                    onClick={() => void applyResearchRows([player.sourceRow])}
+                    disabled={applying}
+                    fullWidth
+                  >
+                    apply this projection
+                  </UiButton>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <section className="cbb-projections-board" aria-label="Player projection board">
         <div className="cbb-projections-board-head">
