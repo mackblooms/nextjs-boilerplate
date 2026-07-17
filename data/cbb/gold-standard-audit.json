@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-17T19:01:01.622Z",
+  "generatedAt": "2026-07-17T19:02:48.547Z",
   "sourceWorkbook": "bracketball_player_rating_26-27.xlsx",
-  "configuredRows": 36,
-  "matchedRows": 36,
+  "configuredRows": 35,
+  "matchedRows": 35,
   "scoringContext": [
     "Projected starter and projected role should reflect researched expectation of starting status and solid-minute likelihood.",
     "Talent score inputs should consider mock draft placement, NBA projection, tools/upside, and broader player sentiment.",
@@ -384,7 +384,6 @@
         17,
         18,
         19,
-        20,
         21,
         22,
         23,
@@ -396,13 +395,12 @@
         29
       ],
       "missingRows": [],
-      "count": 27,
+      "count": 26,
       "completed": 26,
-      "needsReview": 1,
+      "needsReview": 0,
       "starterBreakdown": {
         "Yes": 23,
-        "No": 3,
-        "blank": 1
+        "No": 3
       },
       "fieldSummary": {
         "projectedRole": {
@@ -446,7 +444,7 @@
           "max": 79
         },
         "developmentScore": {
-          "avg": 51.11,
+          "avg": 51.54,
           "min": 40,
           "max": 80
         },
@@ -461,8 +459,8 @@
           "max": 80.95
         },
         "confidenceScore": {
-          "avg": 79.11,
-          "min": 56,
+          "avg": 80,
+          "min": 80,
           "max": 80
         }
       },
@@ -687,19 +685,6 @@
           "talentScore": 51.8,
           "confidenceGrade": "A-",
           "needsReview": false
-        },
-        {
-          "row": 20,
-          "player": "Tijan Saine Jr.",
-          "team": null,
-          "previousTeam": "Weber State",
-          "type": "Transfer",
-          "projectedBbpr": null,
-          "projectionScore": null,
-          "opportunityScore": null,
-          "talentScore": null,
-          "confidenceGrade": "C",
-          "needsReview": true
         },
         {
           "row": 21,

@@ -1,0 +1,517 @@
+{
+  "batchId": "transfer-research-001",
+  "createdAt": "2026-07-17",
+  "sourceSheet": "player database",
+  "scope": "First 10 incomplete transfer rows by sourceRow",
+  "method": [
+    "Research player role/minutes expectation from roster pages, school announcements, transfer reports, and credible team coverage.",
+    "Use historical rating from the imported spreadsheet as the historical anchor.",
+    "Translate evidence into the manual input fields used by the spreadsheet: starter, role, opportunity change, offensive burden, NBA projection, and upside/tools.",
+    "Keep every researched suggestion in review status until manually accepted."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScore": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprTransfer": "historicalRating*0.75 + projectionScore*0.25"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Use Yes only with projected-lineup evidence, explicit likely-starter reporting, or a roster context with a clear open starting path. Use Uncertain for high-minute players without clear starting evidence.",
+    "projectedRole": "Cap likely rotation or specialist profiles in the 60-75 range. Use 80-89 for likely starters or top-four options. Use 90+ only for projected primary/near-primary stars.",
+    "opportunityChange": "Do not reward prior production by itself. Lower-major stars moving into crowded high-major rosters should usually sit in the 45-65 range unless reporting shows a clear role increase.",
+    "offensiveBurden": "Tie burden to expected usage within the new lineup, not just prior usage.",
+    "roleCap": "Each researched player gets a role cap based on projected lineup, returning stars, incoming stars, position competition, and starter evidence."
+  },
+  "players": [
+    {
+      "sourceRow": 20,
+      "player": "Tijan Saine Jr.",
+      "currentTeam": null,
+      "previousTeam": "Weber State",
+      "status": "hold_no_current_team",
+      "historicalRating": 60.9519,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": null,
+        "projectedRole": null,
+        "opportunityChange": null,
+        "offensiveBurden": null,
+        "opportunityScore": null,
+        "nbaProjectionScore": null,
+        "upsideToolsScore": null,
+        "talentScore": null,
+        "projectionScore": null,
+        "projectedBbpr": null,
+        "confidenceScore": 35,
+        "confidenceGrade": "D",
+        "needsReview": true
+      },
+      "researchSummary": "Strong Weber State production and usage, but the sheet has no upcoming team. A July 2026 Gonzaga roster-needs article lists him as an available option, not as a committed player. Do not score final opportunity until destination is known.",
+      "teamContext": {
+        "projectedLineup": "unknown",
+        "returningStars": "unknown",
+        "incomingStars": "unknown",
+        "positionCompetition": "unknown",
+        "starterEvidence": "none; no current team listed",
+        "roleCap": "hold until current team is known"
+      },
+      "evidence": [
+        {
+          "source": "Weber State Athletics",
+          "url": "https://weberstatesports.com/sports/mens-basketball/roster/tijan-saine-jr-/8237",
+          "notes": "Started all 32 games in 2025-26, first-team All-Big Sky, 17.5 ppg, 4.3 apg, elite free throw shooting."
+        },
+        {
+          "source": "The Slipper Still Fits",
+          "url": "https://www.slipperstillfits.com/gonzaga-mens-basketball/29286/gonzaga-needs-another-point-guard-heres-some-names-still-available",
+          "notes": "Listed among possible Gonzaga guard options as of mid-July 2026, not reported as committed."
+        }
+      ]
+    },
+    {
+      "sourceRow": 30,
+      "player": "Rowan Brumbaugh",
+      "currentTeam": "SMU",
+      "previousTeam": "Tulane",
+      "status": "researched_suggestion",
+      "historicalRating": 59.1103,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 60,
+        "offensiveBurden": 75,
+        "opportunityScore": 73,
+        "nbaProjectionScore": 35,
+        "upsideToolsScore": 55,
+        "talentScore": 43,
+        "projectionScore": 55.9,
+        "projectedBbpr": 58.3077,
+        "confidenceScore": 72,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Treat as a likely high-minute guard, but not an automatic starter until SMU lineup context is confirmed. SMU lists him on the 2026-27 roster after a Tulane season where he started every game, led the team across scoring/rebounds/assists/steals, and played 36.1 minutes. The ACC/high-major jump and lack of direct projected-lineup evidence cap starter/role/opportunity.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "needs separate SMU lineup pass",
+        "incomingStars": "needs separate SMU lineup pass",
+        "positionCompetition": "unknown guard competition at SMU; do not assume Tulane role transfers 1:1",
+        "starterEvidence": "production suggests major minutes, but no direct starter projection found in this batch",
+        "roleCap": "high-minute rotation/possible starter; cap role around 80 until lineup source supports more"
+      },
+      "evidence": [
+        {
+          "source": "SMU Athletics",
+          "url": "https://smumustangs.com/sports/mens-basketball/roster/rowan-brumbaugh/15800",
+          "notes": "2026-27 roster bio: started all 33 games at Tulane; 19.1 ppg, 4.9 rpg, 4.6 apg, 1.6 spg, 36.1 mpg."
+        },
+        {
+          "source": "SMU Athletics roster",
+          "url": "https://smumustangs.com/sports/mens-basketball/roster/2026-27",
+          "notes": "Confirms SMU 2026-27 roster placement."
+        }
+      ]
+    },
+    {
+      "sourceRow": 31,
+      "player": "Baraka Okojie",
+      "currentTeam": "George Mason",
+      "previousTeam": "Mercer",
+      "status": "researched_suggestion",
+      "historicalRating": 58.111,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 70,
+        "offensiveBurden": 80,
+        "opportunityScore": 79.5,
+        "nbaProjectionScore": 30,
+        "upsideToolsScore": 50,
+        "talentScore": 38,
+        "projectionScore": 57.075,
+        "projectedBbpr": 57.852,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Strong fit/role signal, but revised down from primary-star treatment. George Mason announced his return and explicitly framed him as someone who knows Tony Skinn's system. He was First Team All-SoCon after ranking second in that league in scoring, so the projection gives him a starter/major-guard opportunity but not a 90+ role without a lineup projection.",
+      "teamContext": {
+        "projectedLineup": "not fully projected in sourced material",
+        "returningStars": "Tony Skinn system familiarity is positive, but team hierarchy still needs lineup pass",
+        "incomingStars": "George Mason transfer class context supports meaningful role",
+        "positionCompetition": "guard role likely strong because of production and prior George Mason connection",
+        "starterEvidence": "strong circumstantial evidence from return/system fit, not explicit projected lineup",
+        "roleCap": "likely starter/major-minute guard; cap role around 85"
+      },
+      "evidence": [
+        {
+          "source": "George Mason Athletics",
+          "url": "https://gomason.com/news/2026/4/30/mens-basketball-patriots-welcome-home-standout-guard-baraka-okojie.aspx",
+          "notes": "Returned to George Mason; First Team All-SoCon at Mercer; 19.7 ppg; coach notes system familiarity."
+        },
+        {
+          "source": "George Mason Athletics",
+          "url": "https://gomason.com/news/2026/7/10/mens-basketball-george-mason-announces-addition-of-baylor-transfer-james-nnaji.aspx",
+          "notes": "Team preview language identifies Okojie in nationally ranked transfer class and projected Patriot core."
+        }
+      ]
+    },
+    {
+      "sourceRow": 32,
+      "player": "Finley Bizjack",
+      "currentTeam": "West Virginia",
+      "previousTeam": "Butler",
+      "status": "researched_suggestion",
+      "historicalRating": 44.7262,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 60,
+        "offensiveBurden": 75,
+        "opportunityScore": 73,
+        "nbaProjectionScore": 40,
+        "upsideToolsScore": 60,
+        "talentScore": 48,
+        "projectionScore": 57.65,
+        "projectedBbpr": 47.9572,
+        "confidenceScore": 73,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Strong scoring addition, but revised from likely-star to possible-starter/major-rotation. WVU added him after an All-Big East level scoring season at Butler, and WVU coverage describes him as a playmaker/scorer who could play guard or wing. The word 'could' matters: without a projected lineup, starter and opportunity change should be capped.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "needs WVU lineup pass",
+        "incomingStars": "needs WVU transfer-class pass",
+        "positionCompetition": "could play SG/wing, but role is not guaranteed from sources",
+        "starterEvidence": "coverage says could start/play guard or wing; not definitive starter language",
+        "roleCap": "possible starter/major rotation; cap role around 80"
+      },
+      "evidence": [
+        {
+          "source": "BlueGoldNews/WV News",
+          "url": "https://www.wvnews.com/bluegoldnews/finley-bizjack-commits-to-west-virginia-after-visit/article_066bcd32-d6b6-499b-8249-90adbcf7baaf.html",
+          "notes": "Committed to WVU; All-Big East third team; 17.1 ppg; shooting profile; possible SG/wing usage."
+        },
+        {
+          "source": "Butler Athletics",
+          "url": "https://butlersports.com/news/2026/1/26/mens-basketball-big-east-selects-bizjack-as-player-of-the-week.aspx",
+          "notes": "Big East Player of the Week; second in Big East scoring at the time; high-volume scoring/shooting."
+        },
+        {
+          "source": "Sports Illustrated / WVU",
+          "url": "https://www.si.com/college/westvirginia/basketball/done-deal-butler-transfer-finley-bizjack-signs-with-wvu",
+          "notes": "WVU coach quote describes him as playmaker who can score and get others involved."
+        }
+      ]
+    },
+    {
+      "sourceRow": 33,
+      "player": "Tyler Lundblade",
+      "currentTeam": "Tennessee",
+      "previousTeam": "Belmont",
+      "status": "researched_suggestion",
+      "historicalRating": 52.4929,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 65,
+        "opportunityChange": 35,
+        "offensiveBurden": 45,
+        "opportunityScore": 52,
+        "nbaProjectionScore": 20,
+        "upsideToolsScore": 35,
+        "talentScore": 26,
+        "projectionScore": 40.5,
+        "projectedBbpr": 49.4947,
+        "confidenceScore": 68,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Clear elite-shooter addition, revised slightly lower because Tennessee added a large transfer group and his likely usage is more specialist/spacing than primary creator. Give solid minutes, uncertain starter status, lower burden, and low NBA/upside scores despite high college value.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "Tennessee rotation needs separate projected-lineup pass",
+        "incomingStars": "large transfer group creates role competition",
+        "positionCompetition": "elite shooting gives path to minutes, but crowded roster caps role",
+        "starterEvidence": "no direct starter projection found in this batch",
+        "roleCap": "specialist/rotation shooter; cap role in mid-60s unless lineup supports more"
+      },
+      "evidence": [
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/news/2026/4/2/mens-basketball-vols-sign-mvc-player-of-the-year-tyler-lundblade",
+          "notes": "MVC Player of the Year; described by Rick Barnes as one of the best shooters in college basketball; career 43.5% from three."
+        },
+        {
+          "source": "On3 Tennessee",
+          "url": "https://www.on3.com/teams/tennessee-volunteers/news/tyler-lundblade-tennessee-basketball-transfer-portal-rick-barnes/",
+          "notes": "First portal commitment; 219 threes over two seasons at Belmont; 43.9% from three."
+        },
+        {
+          "source": "A to Z Sports",
+          "url": "https://atozsports.com/nashville/volunteers/vols-transfer-addition-tyler-lundblade-elephant-tennessee-basketball-program/",
+          "notes": "Tennessee added eight transfers, creating role competition."
+        }
+      ]
+    },
+    {
+      "sourceRow": 34,
+      "player": "Zoom Diallo",
+      "currentTeam": "Kentucky",
+      "previousTeam": "Washington",
+      "status": "researched_suggestion",
+      "historicalRating": 56.3377,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 75,
+        "offensiveBurden": 85,
+        "opportunityScore": 84.5,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 75.925,
+        "projectedBbpr": 61.2345,
+        "confidenceScore": 82,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Strongest role/talent signal in this batch, but trimmed slightly to account for other projected Kentucky stars. Kentucky signed him as a major portal addition at point guard after he started 29 games at Washington. Current coverage describes him settling in as Kentucky's starting point guard, so role, opportunity, and burden remain high.",
+      "teamContext": {
+        "projectedLineup": "source reports him stepping in as Kentucky's point guard",
+        "returningStars": "Kentucky has other high-usage/high-talent pieces, so burden is high but not unchecked",
+        "incomingStars": "Kentucky roster includes multiple projected impact players",
+        "positionCompetition": "strongest direct PG role evidence in batch",
+        "starterEvidence": "direct report of starting point guard role",
+        "roleCap": "likely starter/lead guard; role can reach 90 but not 95+ unless clear primary-star usage emerges"
+      },
+      "evidence": [
+        {
+          "source": "Kentucky Athletics",
+          "url": "https://ukathletics.com/news/2026/04/20/kentucky-lands-point-guard-zoom-diallo/",
+          "notes": "Signed with Kentucky; 29 starts at Washington; 15.7 ppg, 4.5 apg, 48.9% FG."
+        },
+        {
+          "source": "Kentucky roster bio",
+          "url": "https://ukathletics.com/sports/mbball/roster/player/zoom-diallo/",
+          "notes": "2026-27 Kentucky roster; confirms junior guard, previous school Washington, production profile."
+        },
+        {
+          "source": "Lexington Herald-Leader",
+          "url": "https://www.kentucky.com/sports/college/kentucky-sports/uk-recruiting/article315385394.html",
+          "notes": "First Kentucky portal commitment and described as a major addition at point guard."
+        },
+        {
+          "source": "Lexington Times",
+          "url": "https://lexingtonky.news/2026/06/25/diallo-steps-in-as-kentucky-s-point-guard-embracing-leadership-role/",
+          "notes": "Reports Diallo stepping in as Kentucky's starting point guard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 35,
+      "player": "Michael McNair",
+      "currentTeam": "Maryland",
+      "previousTeam": "Boston",
+      "status": "researched_suggestion",
+      "historicalRating": 60.2329,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 65,
+        "opportunityChange": 45,
+        "offensiveBurden": 50,
+        "opportunityScore": 56,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 45,
+        "talentScore": 33,
+        "projectionScore": 44.75,
+        "projectedBbpr": 56.3622,
+        "confidenceScore": 70,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "High-level shooter/scorer stepping up from the Patriot League, revised lower because Maryland guard depth lowers certainty on starter status and offensive burden. Strong shooting can earn minutes, but not enough sourced lineup evidence for a 75 role.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "Maryland roster includes other established/high-profile guards",
+        "incomingStars": "guard depth creates role competition",
+        "positionCompetition": "shooting creates rotation path, but starter path is unclear",
+        "starterEvidence": "no direct starter projection found in this batch",
+        "roleCap": "high-major rotation shooter; cap role in mid-60s pending lineup evidence"
+      },
+      "evidence": [
+        {
+          "source": "Maryland Athletics roster bio",
+          "url": "https://umterps.com/sports/mens-basketball/roster/mike-mcnair-jr/16092",
+          "notes": "2026-27 Maryland bio; grad guard from Boston; All-Patriot League First Team; 16.9 ppg, 5.1 rpg, 44.4% 3FG, 36.1 mpg."
+        },
+        {
+          "source": "Boston University Athletics",
+          "url": "https://goterriers.com/sports/mens-basketball/roster/michael-mcnair/26606",
+          "notes": "Boston bio confirms production, 34 starts, national-level three-point efficiency."
+        },
+        {
+          "source": "Maryland roster",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Roster context includes other guards such as DJ Wagner and Bishop Boswell."
+        }
+      ]
+    },
+    {
+      "sourceRow": 37,
+      "player": "Gavin Sykes",
+      "currentTeam": "TCU",
+      "previousTeam": "Long Beach State",
+      "status": "researched_suggestion",
+      "historicalRating": 43.8595,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 75,
+        "opportunityChange": 65,
+        "offensiveBurden": 65,
+        "opportunityScore": 70,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 75,
+        "talentScore": 66,
+        "projectionScore": 70.6,
+        "projectedBbpr": 50.5446,
+        "confidenceScore": 75,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Major breakout freshman scorer with real upside, revised from projected starter to possible starter. TCU coverage says he could start at shooting guard next to Brock Harding. Give high talent for age/scoring profile, but cap role/opportunity until the projected lineup becomes firmer.",
+      "teamContext": {
+        "projectedLineup": "coverage says he could start next to Brock Harding",
+        "returningStars": "Brock Harding mention indicates at least one established guard role",
+        "incomingStars": "needs full TCU roster pass",
+        "positionCompetition": "possible SG role, but 'could start' is not definitive",
+        "starterEvidence": "possible-starter language only",
+        "roleCap": "possible starter/major rotation; cap role around 75 until starter evidence strengthens"
+      },
+      "evidence": [
+        {
+          "source": "Long Beach State Athletics",
+          "url": "https://longbeachstate.com/news/2026/3/4/mens-basketball-beach-reads-a-proven-scorer",
+          "notes": "Broke Long Beach State freshman scoring record."
+        },
+        {
+          "source": "Long Beach State Athletics",
+          "url": "https://longbeachstate.com/news/2026/2/17/mens-basketball-black-and-blue-rivalry-returns-to-long-beach-thursday",
+          "notes": "Freshman phenom; Big West Player of the Week; among elite freshman scorers nationally."
+        },
+        {
+          "source": "Fort Worth Star-Telegram",
+          "url": "https://www.star-telegram.com/sports/article315501333.html",
+          "notes": "Committed to TCU; Big West Freshman of the Year; 19.4 ppg; article says he could start at shooting guard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 38,
+      "player": "Jalen Cox",
+      "currentTeam": "USC",
+      "previousTeam": "Colgate",
+      "status": "researched_suggestion",
+      "historicalRating": 72.5872,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 75,
+        "opportunityChange": 55,
+        "offensiveBurden": 65,
+        "opportunityScore": 67,
+        "nbaProjectionScore": 35,
+        "upsideToolsScore": 55,
+        "talentScore": 43,
+        "projectionScore": 53.2,
+        "projectedBbpr": 67.7404,
+        "confidenceScore": 75,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "High-floor two-way guard with strong production and coach endorsement, revised lower on starter/opportunity because USC added multiple transfers and the batch did not find a projected lineup. Strong historical rating still supports a high projected BBPR even with moderated role inputs.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "needs USC lineup pass",
+        "incomingStars": "USC added multiple transfers, creating role competition",
+        "positionCompetition": "coach endorsement supports minutes; starter path remains unclear",
+        "starterEvidence": "no direct projected-starter source found in this batch",
+        "roleCap": "major rotation/possible starter; cap role around 75"
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics signing release",
+          "url": "https://usctrojans.com/news/2026/5/11/usc-mens-basketball-signs-jalen-cox",
+          "notes": "USC signing; Musselman quote; 17.9 ppg, 5.2 rpg, 5.3 apg, All-Patriot League/All-Defense, four-star portal rating."
+        },
+        {
+          "source": "USC roster bio",
+          "url": "https://usctrojans.com/sports/mens-basketball/roster/jalen-cox/18591",
+          "notes": "2026-27 roster bio confirms production and honors."
+        },
+        {
+          "source": "Colgate Athletics stats",
+          "url": "https://colgateathletics.com/sports/mens-basketball/stats",
+          "notes": "2025-26 stats show 31 starts, 34.0 mpg, 17.9 ppg, 5.2 rpg, 5.3 apg."
+        }
+      ]
+    },
+    {
+      "sourceRow": 40,
+      "player": "Stefan Vaaks",
+      "currentTeam": "Illinois",
+      "previousTeam": "Providence",
+      "status": "researched_suggestion",
+      "historicalRating": 45.0794,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 70,
+        "offensiveBurden": 80,
+        "opportunityScore": 79.5,
+        "nbaProjectionScore": 65,
+        "upsideToolsScore": 80,
+        "talentScore": 71,
+        "projectionScore": 76.625,
+        "projectedBbpr": 52.9658,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Top-end researched projection, but revised down from 90+ role because Illinois has other important pieces and the exact lineup hierarchy still needs confirmation. ESPN called him a top-10 transfer, and Illinois describes him as one of the best offensive players in the portal. He helps replace Illinois' starting backcourt after a Final Four season, with size, shooting, and playmaking upside.",
+      "teamContext": {
+        "projectedLineup": "not fully confirmed in sourced material, but roster construction suggests a major role",
+        "returningStars": "Illinois has other high-level pieces, limiting primary-star assumption",
+        "incomingStars": "Vaaks is a premier transfer, but not the only projected impact player",
+        "positionCompetition": "strong path to start/major role replacing backcourt losses",
+        "starterEvidence": "high-end transfer reporting and roster need support starter assumption, but no exact projected lineup cited",
+        "roleCap": "likely starter/top option; cap role around 85 until projected lineup confirms primary usage"
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics signing release",
+          "url": "https://fightingillini.com/news/2026/5/1/mens-basketball-vaaks-signs-with-fighting-illini",
+          "notes": "Big East All-Freshman, 15.8 ppg, 91 threes, 3.2 apg; Underwood calls him one of the best offensive players in the portal."
+        },
+        {
+          "source": "ESPN",
+          "url": "https://www.espn.com/mens-college-basketball/story/_/id/48468889/guard-stefan-vaaks-transfer-illinois-agents-say",
+          "notes": "ESPN ranked him as a top-10 transfer; notes size, playmaking, offensive versatility, and role replacing Illinois backcourt losses."
+        },
+        {
+          "source": "Daily Illini",
+          "url": "https://dailyillini.com/sports-stories/mens-sports/men-basketball/2026/04/12/stefan-vaaks-transfer-portal/",
+          "notes": "Illinois top target and first portal pickup; focal point of Providence offense."
+        }
+      ]
+    }
+  ]
+}

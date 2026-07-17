@@ -1,0 +1,533 @@
+{
+  "batchId": "transfer-research-002",
+  "createdAt": "2026-07-17",
+  "sourceSheet": "player database",
+  "scope": "Next 10 incomplete transfer rows after transfer-research-001",
+  "method": [
+    "Research player role/minutes expectation from roster pages, school announcements, transfer reports, projected lineups, and team context.",
+    "Use historical rating from the imported spreadsheet as the historical anchor.",
+    "Translate evidence into the manual input fields used by the spreadsheet: starter, role, opportunity change, offensive burden, NBA projection, and upside/tools.",
+    "Cap starter/role/opportunity when projected-lineup or depth-chart evidence is unclear.",
+    "Keep every researched suggestion in review status until manually accepted."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScore": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprTransfer": "historicalRating*0.75 + projectionScore*0.25"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Use Yes only with projected-lineup evidence, explicit likely-starter reporting, or a roster context with a clear open starting path. Use Uncertain for high-minute players without clear starting evidence.",
+    "projectedRole": "Cap likely rotation or specialist profiles in the 60-75 range. Use 80-89 for likely starters or top-four options. Use 90+ only for projected primary/near-primary stars.",
+    "opportunityChange": "Do not reward prior production by itself. Lower-major stars moving into crowded high-major rosters should usually sit in the 45-65 range unless reporting shows a clear role increase.",
+    "offensiveBurden": "Tie burden to expected usage within the new lineup, not just prior usage.",
+    "roleCap": "Each researched player gets a role cap based on projected lineup, returning stars, incoming stars, position competition, and starter evidence."
+  },
+  "players": [
+    {
+      "sourceRow": 41,
+      "player": "Money Williams",
+      "currentTeam": "Boston College",
+      "previousTeam": "Montana",
+      "status": "researched_suggestion",
+      "historicalRating": 62.1757,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 75,
+        "offensiveBurden": 85,
+        "opportunityScore": 83.5,
+        "nbaProjectionScore": 35,
+        "upsideToolsScore": 55,
+        "talentScore": 43,
+        "projectionScore": 60.625,
+        "projectedBbpr": 61.788,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Strong starter/lead-guard signal. CBS projects him in Boston College's starting lineup, BC coverage frames him as a main offensive focal point, and Boston College underwent major roster turnover under a new coach. The high-major jump keeps him below true 90+ star treatment, but opportunity is legitimately strong.",
+      "teamContext": {
+        "projectedLineup": "CBS projects him as a starting guard for Boston College.",
+        "returningStars": "BC had heavy roster turnover, reducing incumbency pressure.",
+        "incomingStars": "BC added many portal pieces, but Williams is the most proven scorer in the group.",
+        "positionCompetition": "Other guards are present, but his scoring/playmaking profile projects near the top of the backcourt.",
+        "starterEvidence": "direct projected-lineup evidence plus roster-reset context",
+        "roleCap": "likely starter/lead scorer; cap role high-80s until ACC translation is proven"
+      },
+      "evidence": [
+        {
+          "source": "CBS Sports",
+          "url": "https://new.cbssports.com/college-basketball/news/acc-basketball-rankings-tiers-duke-louisville/",
+          "notes": "Projected Boston College starting lineup includes Money Williams."
+        },
+        {
+          "source": "Boston College On SI",
+          "url": "https://www.si.com/college/bostoncollege/basketball/report-boston-college-mens-basketball-lands-montana-guard-transfer",
+          "notes": "Reported BC commitment; 20.6 ppg, 4.3 rpg, 4.7 apg; Big Sky scoring leader."
+        },
+        {
+          "source": "BC Interruption",
+          "url": "https://www.bcinterruption.com/boston-college-mens-basketball/51938/a-new-era-for-boston-college-mens-basketball",
+          "notes": "Describes Williams as one of the main focal points for BC's offense."
+        },
+        {
+          "source": "Boston College Athletics",
+          "url": "https://bceagles.com/sports/mens-basketball/roster/money-williams/27062",
+          "notes": "Confirms 2026-27 BC roster placement."
+        }
+      ]
+    },
+    {
+      "sourceRow": 42,
+      "player": "Christian Bliss",
+      "currentTeam": "Stanford",
+      "previousTeam": "Delaware",
+      "status": "researched_suggestion",
+      "historicalRating": 53.4816,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 82,
+        "opportunityChange": 65,
+        "offensiveBurden": 75,
+        "opportunityScore": 75.5,
+        "nbaProjectionScore": 45,
+        "upsideToolsScore": 65,
+        "talentScore": 53,
+        "projectionScore": 60.525,
+        "projectedBbpr": 55.2425,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Good starter signal. CBS projects him as Stanford's starting guard, and Stanford's release says he can step in and help immediately after a massive Delaware role. The role is capped low-80s because Stanford also has a strong freshman/newcomer group and Bliss is moving up from CUSA/Delaware to the ACC.",
+      "teamContext": {
+        "projectedLineup": "CBS projects him as a starting guard.",
+        "returningStars": "Stanford lost important guard production, creating guard opportunity.",
+        "incomingStars": "Stanford has talented freshmen/newcomers expected to get real minutes.",
+        "positionCompetition": "Perimeter depth exists, but his production/playmaking gives him a starting path.",
+        "starterEvidence": "direct projected-lineup evidence",
+        "roleCap": "likely starter/major creator; cap role low-80s due to ACC jump and newcomer competition"
+      },
+      "evidence": [
+        {
+          "source": "Stanford Athletics",
+          "url": "https://gostanford.com/news/2026/06/3/mens-basketball-signs-bliss",
+          "notes": "Stanford signing release; CUSA Freshman of the Year; 16.7 ppg, 5.2 rpg, 5.9 apg, 39.8 mpg; coach praises versatility."
+        },
+        {
+          "source": "CBS Sports",
+          "url": "https://new.cbssports.com/college-basketball/news/acc-basketball-rankings-tiers-duke-louisville/",
+          "notes": "Projected Stanford starting lineup includes Christian Bliss."
+        }
+      ]
+    },
+    {
+      "sourceRow": 43,
+      "player": "Sonny Wilson",
+      "currentTeam": "South Florida",
+      "previousTeam": "Toledo",
+      "status": "researched_suggestion",
+      "historicalRating": 49.3483,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 60,
+        "offensiveBurden": 70,
+        "opportunityScore": 71,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 45,
+        "talentScore": 33,
+        "projectionScore": 51.5,
+        "projectedBbpr": 49.8862,
+        "confidenceScore": 72,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Strong experience and production, but starter status should stay uncertain because USF added a full 15-man roster with multiple guards and four-star talent. Wilson's 98 starts and 17.0/4.6 profile support major minutes, but the team-context cap keeps role under 80 until a projected lineup confirms him.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "USF has no returning players from the 2025-26 squad.",
+        "incomingStars": "USF added 15 players, including 12 transfers and multiple four-star recruits.",
+        "positionCompetition": "crowded guard group includes Mike James, Chris Davis Jr., AJ Dancler and others",
+        "starterEvidence": "production and experience support possible starter, but no projected-lineup source found",
+        "roleCap": "major rotation/possible starter; cap role high-70s pending lineup"
+      },
+      "evidence": [
+        {
+          "source": "USF Athletics roster",
+          "url": "https://gousfbulls.com/sports/mens-basketball/roster",
+          "notes": "Confirms Sonny Wilson on 2026-27 roster; roster includes several guards and transfers."
+        },
+        {
+          "source": "USF Athletics bio",
+          "url": "https://gousfbulls.com/sports/mens-basketball/roster/sonny-wilson/16263",
+          "notes": "98 career starts at Toledo; 1,338 points; 17.0 ppg and 4.6 apg as junior."
+        },
+        {
+          "source": "USF Athletics roster-building article",
+          "url": "https://gousfbulls.com/news/2026/5/13/mens-basketball-mack-completes-usf-mens-basketball-roster-with-one-of-the-top-ranked-classes-in-the-american",
+          "notes": "USF added 15 players, 12 via portal, with multiple highly rated additions."
+        }
+      ]
+    },
+    {
+      "sourceRow": 44,
+      "player": "Tyler Tejada",
+      "currentTeam": "Cincinnati",
+      "previousTeam": "Towson",
+      "status": "researched_suggestion",
+      "historicalRating": 55.1102,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 75,
+        "opportunityChange": 55,
+        "offensiveBurden": 65,
+        "opportunityScore": 67,
+        "nbaProjectionScore": 35,
+        "upsideToolsScore": 55,
+        "talentScore": 43,
+        "projectionScore": 53.2,
+        "projectedBbpr": 54.6327,
+        "confidenceScore": 70,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Versatile, productive forward stepping up to Cincinnati. His Towson production is strong and Cincinnati's release praises positional versatility, but no projected-lineup source was found and Cincinnati's 2025-26 roster context includes multiple frontcourt/wing pieces. Cap as strong rotation/possible starter.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "Cincinnati has returning frontcourt/wing context that needs a separate projected-lineup pass.",
+        "incomingStars": "Tejada is a significant portal addition but not clearly identified as a starter.",
+        "positionCompetition": "frontcourt/wing role competition likely at Big 12 level",
+        "starterEvidence": "coach quote highlights versatility, not an explicit starter role",
+        "roleCap": "strong rotation/possible starter; cap role mid-70s"
+      },
+      "evidence": [
+        {
+          "source": "Cincinnati Athletics bio",
+          "url": "https://gobearcats.com/sports/mens-basketball/roster/player/tyler-tejada",
+          "notes": "2026-27 roster bio; prior Towson production, CAA honors, 17.7 ppg and 5.5 rpg."
+        },
+        {
+          "source": "WCPO",
+          "url": "https://www.wcpo.com/sports/college-sports/university-of-cincinnati-sports/uc-mens-basketball-team-announces-signing-of-forward-tyler-tejada-for-2026-27-season",
+          "notes": "Cincinnati signing announcement; coach says Tejada can play multiple positions."
+        },
+        {
+          "source": "Towson Athletics",
+          "url": "https://towsontigers.com/news/2026/3/6/mens-basketball-tejada-and-williamson-named-to-all-caa-third-team.aspx",
+          "notes": "All-CAA Third Team; preseason CAA Player of the Year; 1,000-point scorer."
+        }
+      ]
+    },
+    {
+      "sourceRow": 45,
+      "player": "Hamad Mousa",
+      "currentTeam": "Cal Poly",
+      "previousTeam": "Cal Poly",
+      "status": "researched_suggestion",
+      "historicalRating": 57.4603,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 50,
+        "offensiveBurden": 95,
+        "opportunityScore": 81.5,
+        "nbaProjectionScore": 50,
+        "upsideToolsScore": 70,
+        "talentScore": 58,
+        "projectionScore": 68.975,
+        "projectedBbpr": 60.339,
+        "confidenceScore": 88,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "This looks more like a returning-star profile than a normal transfer. Cal Poly's roster confirms him back, and 2025-26 data shows he led the Big West in scoring while starting 30 games. Role and burden are elite; opportunity change is only moderate because he is staying in the same team context rather than gaining a new role.",
+      "teamContext": {
+        "projectedLineup": "returning Cal Poly star; starter status strongly supported by prior starts and roster return",
+        "returningStars": "Cayden Ward and other Cal Poly contributors return, but Mousa is the clear scoring anchor",
+        "incomingStars": "no incoming player found that displaces his role",
+        "positionCompetition": "role is secure unless roster changes substantially",
+        "starterEvidence": "2026-27 roster confirms return; 30 starts and league-leading scoring in 2025-26",
+        "roleCap": "primary returning star; role can reach mid-90s, but opportunity change should not be high because context is stable"
+      },
+      "evidence": [
+        {
+          "source": "Cal Poly roster bio",
+          "url": "https://gopoly.com/sports/mens-basketball/roster/hamad-mousa/11124",
+          "notes": "Confirms 2026-27 Cal Poly roster placement."
+        },
+        {
+          "source": "Sports Reference",
+          "url": "https://www.sports-reference.com/cbb/players/hamad-mousa-1.html",
+          "notes": "2025-26 Cal Poly: 30 starts, 31.3 mpg, 20.4 ppg, 6.3 rpg, 37.2% 3FG."
+        },
+        {
+          "source": "Big West stats",
+          "url": "https://bigwest.org/stats.aspx?path=mbball&year=2025",
+          "notes": "Big West scoring leader by overall stats."
+        }
+      ]
+    },
+    {
+      "sourceRow": 46,
+      "player": "Aiden Sherrell",
+      "currentTeam": "Indiana",
+      "previousTeam": "Alabama",
+      "status": "researched_suggestion",
+      "historicalRating": 74.4939,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 75,
+        "offensiveBurden": 70,
+        "opportunityScore": 80.5,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 85,
+        "talentScore": 79,
+        "projectionScore": 75.875,
+        "projectedBbpr": 74.8392,
+        "confidenceScore": 84,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Strong role and starter signal. Indiana's roster confirms him, Indiana coverage highlights him as a major part of the roster rebuild, and SI projects him as the starting power forward. Burden stays below lead-creator territory because Indiana also has Markus Burton, Samet Yigitoglu, Jaeden Mustaf, and other pieces.",
+      "teamContext": {
+        "projectedLineup": "SI projects him as starting power forward.",
+        "returningStars": "Indiana has multiple major pieces around him, including guard and center talent.",
+        "incomingStars": "transfer class is highly ranked and deep.",
+        "positionCompetition": "frontcourt has size, but Sherrell is projected as premier interior presence.",
+        "starterEvidence": "direct projected-lineup source",
+        "roleCap": "likely starter/high-impact frontcourt piece; cap role high-80s because he is not necessarily primary offensive engine"
+      },
+      "evidence": [
+        {
+          "source": "Indiana roster",
+          "url": "https://iuhoosiers.com/sports/mens-basketball/roster",
+          "notes": "Confirms Sherrell on 2026-27 roster."
+        },
+        {
+          "source": "Indiana Athletics",
+          "url": "https://iuhoosiers.com/news/2026/5/12/mens-basketball-lessons-learned-devries-excited-by-bigger-stronger-faster-roster-rebuild",
+          "notes": "Indiana transfer class ranked highly; article highlights Sherrell as part of roster rebuild."
+        },
+        {
+          "source": "Sports Illustrated Indiana",
+          "url": "https://www.si.com/college/indiana/basketball/indiana-2026-27-starting-lineup-aiden-sherrell",
+          "notes": "Projects Sherrell as starting power forward and premier interior presence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 47,
+      "player": "Brett Decker Jr.",
+      "currentTeam": "Baylor",
+      "previousTeam": "Liberty",
+      "status": "researched_suggestion",
+      "historicalRating": 48.3955,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 70,
+        "opportunityChange": 50,
+        "offensiveBurden": 55,
+        "opportunityScore": 61,
+        "nbaProjectionScore": 30,
+        "upsideToolsScore": 45,
+        "talentScore": 36,
+        "projectionScore": 52.05,
+        "projectedBbpr": 49.3091,
+        "confidenceScore": 70,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Elite shooter and obvious Baylor need-fit, but role should be capped as specialist/rotation until a projected lineup emerges. Baylor signed multiple transfers and has guard competition, so prior Liberty scoring does not automatically become a starting Big 12 role.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "Baylor guard/wing room needs full lineup pass.",
+        "incomingStars": "Baylor signed several transfer additions after Decker.",
+        "positionCompetition": "shooting need creates path, but there is meaningful guard competition",
+        "starterEvidence": "Baylor need-fit, no direct starter projection",
+        "roleCap": "specialist/rotation shooter; cap role around 70 until lineup supports more"
+      },
+      "evidence": [
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/news/2026/4/12/mens-basketball-mbb-signs-transfer-from-liberty-brett-decker-jr",
+          "notes": "Baylor signing release; 16.9 ppg and 47% from three at Liberty."
+        },
+        {
+          "source": "Baylor Lariat",
+          "url": "https://baylorlariat.com/2026/04/11/liberty-sharpshooter-brett-decker-jr-commits-to-baylor/",
+          "notes": "Describes him as one of the nation's top returning three-point shooters."
+        },
+        {
+          "source": "Baylor On SI",
+          "url": "https://www.si.com/college/baylor/basketball/baylor-lands-transfer-commitment-from-prolific-three-point-shooter-brett-decker/",
+          "notes": "Baylor needed guard shooting; Decker viewed as portal answer to spacing/shooting need."
+        },
+        {
+          "source": "Baylor roster",
+          "url": "https://d1nnrx9kca53zl.cloudfront.net/sports/mens-basketball/roster",
+          "notes": "2026-27 roster includes Decker and multiple other guards/transfers."
+        }
+      ]
+    },
+    {
+      "sourceRow": 48,
+      "player": "Leroy Blyden Jr.",
+      "currentTeam": "Kansas",
+      "previousTeam": "Toledo",
+      "status": "researched_suggestion",
+      "historicalRating": 66.3686,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 65,
+        "offensiveBurden": 75,
+        "opportunityScore": 74.5,
+        "nbaProjectionScore": 65,
+        "upsideToolsScore": 80,
+        "talentScore": 71,
+        "projectionScore": 74.375,
+        "projectedBbpr": 68.3702,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "High-upside young guard with strong Kansas coach endorsement. Bill Self called him one of the best guard prospects in the portal and said he can be lead/scoring guard, but Kansas also has major incoming backcourt talent. Treat as high-minute possible starter, not automatic lead guard.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "Kansas roster includes other high-end recruits/transfers.",
+        "incomingStars": "Kansas fall signees include multiple guards; portal class also adds talent.",
+        "positionCompetition": "guard competition likely high at Kansas",
+        "starterEvidence": "coach praise is strong, but no direct projected lineup",
+        "roleCap": "high-upside possible starter/major rotation; cap role around 80"
+      },
+      "evidence": [
+        {
+          "source": "Kansas Athletics",
+          "url": "https://kuathletics.com/news/2026/4/22/mens-basketball-blyden-signs-with-kansas-mens-basketball",
+          "notes": "Bill Self quote calls him one of the best guard prospects in the portal; MAC Freshman of the Year; 16.4 ppg, 4.5 apg, 40.7% 3FG."
+        },
+        {
+          "source": "KU Sports",
+          "url": "https://www2.kusports.com/sports/college/basketball-men/2026/apr/20/toledo-transfer-blyden-commits-to-ku/",
+          "notes": "Commitment report; 32 starts, 16.4 ppg, 4.0 rpg, 4.5 apg."
+        },
+        {
+          "source": "On3/Rivals",
+          "url": "https://www.on3.com/rivals/leroy-blyden-jr-245626//",
+          "notes": "High portal rating and Kansas commitment."
+        }
+      ]
+    },
+    {
+      "sourceRow": 49,
+      "player": "Denzel Aberdeen",
+      "currentTeam": "Florida",
+      "previousTeam": "Kentucky",
+      "status": "eligibility_hold_researched_suggestion",
+      "historicalRating": 51.9154,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 65,
+        "opportunityChange": 40,
+        "offensiveBurden": 45,
+        "opportunityScore": 53.5,
+        "nbaProjectionScore": 25,
+        "upsideToolsScore": 40,
+        "talentScore": 31,
+        "projectionScore": 42.925,
+        "projectedBbpr": 49.6678,
+        "confidenceScore": 45,
+        "confidenceGrade": "D",
+        "needsReview": true
+      },
+      "researchSummary": "Do not treat as normal transfer until eligibility is settled. He is reportedly returning to Florida but needs a fifth-year waiver. If eligible, his Kentucky production suggests a useful veteran rotation guard, but Florida's strong roster context and waiver uncertainty cap role/opportunity sharply.",
+      "teamContext": {
+        "projectedLineup": "not confirmed; eligibility uncertain",
+        "returningStars": "Florida projects as a strong roster with multiple key pieces.",
+        "incomingStars": "Florida roster strength reduces path to high burden.",
+        "positionCompetition": "veteran guard minutes possible if eligible, but not starter lock",
+        "starterEvidence": "none; waiver required",
+        "roleCap": "eligibility hold; cap role mid-60s until waiver and lineup context clear"
+      },
+      "evidence": [
+        {
+          "source": "Lexington Herald-Leader",
+          "url": "https://www.kentucky.com/sports/college/kentucky-sports/uk-basketball-men/article315335580.html",
+          "notes": "Reports Aberdeen returning to Florida and needing NCAA waiver for fifth year."
+        },
+        {
+          "source": "Kentucky Athletics",
+          "url": "https://ukathletics.com/news/2025/04/22/guard-denzel-aberdeen-commits-to-kentucky-for-2025-26/",
+          "notes": "Background on Aberdeen as winning guard, former Florida sixth man, three-level scorer/defender."
+        }
+      ]
+    },
+    {
+      "sourceRow": 51,
+      "player": "Christian Hammond",
+      "currentTeam": "North Carolina State",
+      "previousTeam": "Santa Clara",
+      "status": "researched_suggestion",
+      "historicalRating": 51.8694,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 60,
+        "offensiveBurden": 70,
+        "opportunityScore": 71,
+        "nbaProjectionScore": 45,
+        "upsideToolsScore": 65,
+        "talentScore": 53,
+        "projectionScore": 62.5,
+        "projectedBbpr": 54.5271,
+        "confidenceScore": 74,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Strong scorer and important early portal addition for a new NC State staff, but not an automatic starter because NC State added a deep transfer group with multiple guards. His Santa Clara production, First-Team All-WCC profile, and NBA-fit comments support meaningful role and upside.",
+      "teamContext": {
+        "projectedLineup": "not confirmed in sourced material",
+        "returningStars": "new staff and transfer-heavy roster creates uncertainty",
+        "incomingStars": "NC State added multiple transfers, including Preston Edmead and Darius Adams in guard spots",
+        "positionCompetition": "high-volume guard competition; Hammond has strong claim but not a lock",
+        "starterEvidence": "first transfer of new staff and strong production; no direct projected-lineup source",
+        "roleCap": "major rotation/possible starter; cap role high-70s"
+      },
+      "evidence": [
+        {
+          "source": "NC State roster bio",
+          "url": "https://gopack.com/sports/mens-basketball/roster/christian-hammond/16879",
+          "notes": "First-Team All-WCC; started 34 of 35 games; led Santa Clara with 15.6 ppg."
+        },
+        {
+          "source": "The Santa Clara",
+          "url": "https://www.thesantaclara.org/blog/6culuu3kcavqh4n7ryn4yavdn4xqt0",
+          "notes": "Hammond says NC State puts him in best position to chase NBA goal; left major void at Santa Clara."
+        },
+        {
+          "source": "NC State roster",
+          "url": "https://gopack.com/sports/mens-basketball/roster",
+          "notes": "Shows NC State's transfer-heavy guard roster context."
+        },
+        {
+          "source": "ACC transfer tracker",
+          "url": "https://syndicatesports.io/2026-acc-mens-basketball-transfer-portal/",
+          "notes": "Lists NC State arrivals and stats, including multiple guard additions."
+        }
+      ]
+    }
+  ]
+}
