@@ -78,6 +78,14 @@ const WORLD_CUP_VALUE_BONUS_BY_ROUND: Record<string, number> = {
   CHIP: 160,
 };
 
+const WORLD_CUP_SCORING_SLOT_LIMIT_BY_ROUND: Record<string, number> = {
+  R32: 16,
+  S16: 8,
+  E8: 4,
+  F4: 2,
+  CHIP: 1,
+};
+
 export function worldCupValuePickBonus(cost: number | null, round: string): number {
   if (cost == null) return 0;
   if (cost <= 5) return WORLD_CUP_LONGSHOT_BONUS_BY_ROUND[round] ?? 0;
@@ -143,6 +151,18 @@ function worldCupTeamCost(teamId: string, options: ScoringOptions): number | nul
   return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
 }
 
+function isWorldCupScoringKnockoutGame(game: ScoringGame, round: string): boolean {
+  const slotLimit = WORLD_CUP_SCORING_SLOT_LIMIT_BY_ROUND[round] ?? 0;
+  if (!slotLimit) return false;
+
+  if (game.slot == null || game.slot === "") return true;
+  const slot = Number(game.slot);
+  if (!Number.isFinite(slot)) return false;
+
+  const wholeSlot = Math.trunc(slot);
+  return wholeSlot === slot && wholeSlot >= 1 && wholeSlot <= slotLimit;
+}
+
 function scoreWorldCupTeamResultsDetailed(
   games: ScoringGame[],
   teamSeedById: Map<string, number | null>,
@@ -201,6 +221,8 @@ function scoreWorldCupTeamResultsDetailed(
       }
       return;
     }
+
+    if (!isWorldCupScoringKnockoutGame(g, round)) return;
 
     if (round === "R32") {
       for (const teamId of [g.team1_id, g.team2_id]) {

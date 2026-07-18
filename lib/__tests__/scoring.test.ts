@@ -287,6 +287,35 @@ describe("scoreTeamWinsDetailed (world-cup)", () => {
     expect(r.teamScoresByTeamId.get("t1")).toBe(152); // 72 + 80
   });
 
+  it("third-place bronze game does not award World Cup points", () => {
+    const r = wc(
+      [
+        {
+          round: "F4",
+          slot: 3,
+          team1_id: "england",
+          team2_id: "france",
+          winner_team_id: "france",
+          status: "Final",
+          team1_score: 1,
+          team2_score: 2,
+        },
+        {
+          round: "THIRD_PLACE",
+          slot: 1,
+          team1_id: "england",
+          team2_id: "france",
+          winner_team_id: "france",
+          status: "Final",
+          team1_score: 1,
+          team2_score: 2,
+        },
+      ],
+      costs(["england", 22], ["france", 22]),
+    );
+    expect(r.teamScoresByTeamId.size).toBe(0);
+  });
+
   it("CHIP win: 100 pts base; cost <= 10 adds 160 pts value bonus", () => {
     const r = wc(
       [{ round: "CHIP", team1_id: "t1", team2_id: "t2", winner_team_id: "t1" }],
@@ -376,6 +405,30 @@ describe("scoreEntries (world-cup)", () => {
       costs(["t1", 22], ["t2", 22]),
     );
     expect(r.totalScoreByEntryId.get("e1")).toBe(30); // GROUP_ADVANCE 12 + R32 win 18
+  });
+
+  it("entry standings ignore the England-France third-place game", () => {
+    const r = wce(
+      [
+        {
+          round: "F4",
+          slot: 3,
+          team1_id: "england",
+          team2_id: "france",
+          winner_team_id: "france",
+          status: "Final",
+          team1_score: 1,
+          team2_score: 2,
+        },
+      ],
+      new Map([
+        ["england-entry", ["england"]],
+        ["france-entry", ["france"]],
+      ]),
+      costs(["england", 22], ["france", 22]),
+    );
+    expect(r.totalScoreByEntryId.get("england-entry")).toBe(0);
+    expect(r.totalScoreByEntryId.get("france-entry")).toBe(0);
   });
 
   it("entry earns 0 for a team that did not win any games", () => {

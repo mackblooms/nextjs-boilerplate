@@ -17,10 +17,15 @@ type CalibrationSuggestion = Pick<
   | "talentScore"
   | "projectionScore"
   | "projectedBbpr"
+  | "confidenceScore"
 >;
 
 function round(value: number, digits = 4) {
   return Number(value.toFixed(digits));
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function numeric(value: number | null | undefined) {
@@ -54,6 +59,43 @@ function newcomerCredibility(suggestion: CalibrationSuggestion) {
   return 0.4;
 }
 
+function newcomerCertainty(suggestion: CalibrationSuggestion) {
+  const role = numeric(suggestion.projectedRole) ?? 0;
+  const opportunity = numeric(suggestion.opportunityScore) ?? 0;
+  const entry = numeric(suggestion.entryTalentGrade) ?? 0;
+  const nba = numeric(suggestion.nbaProjectionScore) ?? 0;
+  const confidence = numeric(suggestion.confidenceScore) ?? 65;
+  const talent = numeric(suggestion.talentScore) ?? 0;
+
+  return clamp(
+    role * 0.0026 +
+      opportunity * 0.0021 +
+      entry * 0.0018 +
+      nba * 0.0015 +
+      confidence * 0.0012 +
+      talent * 0.0008,
+    0,
+    1
+  );
+}
+
+function calibrateNewcomer(player: CalibrationPlayer, suggestion: CalibrationSuggestion) {
+  const projectionScore = numeric(suggestion.projectionScore);
+  if (projectionScore == null) return numeric(suggestion.projectedBbpr);
+
+  const cap = newcomerCap(player, suggestion);
+  const compressed = 75 + (projectionScore - 75) * newcomerCredibility(suggestion);
+  if (compressed <= cap) return round(compressed);
+
+  const role = numeric(suggestion.projectedRole) ?? 0;
+  const certainty = newcomerCertainty(suggestion);
+  const capBand = cap >= 88 ? 2.4 : cap >= 82 ? 2.8 : cap >= 79 ? 5.6 : 3;
+  const roleLift = clamp((role - 85) * 0.2, 0, 1.1);
+  const overflowLift = clamp((compressed - cap) * 0.18, 0, 0.7);
+
+  return round(cap - capBand * (1 - certainty) + roleLift + overflowLift);
+}
+
 function returningHistoricalWeight(player: CalibrationPlayer, suggestion: CalibrationSuggestion) {
   const role = numeric(suggestion.projectedRole) ?? 0;
   const opportunity = numeric(suggestion.opportunityScore) ?? 0;
@@ -84,6 +126,66 @@ function returningHistoricalWeight(player: CalibrationPlayer, suggestion: Calibr
   return 0.6;
 }
 
+function applyReturningStarLift(
+  player: CalibrationPlayer,
+  suggestion: CalibrationSuggestion,
+  blendedScore: number
+) {
+  const historical = numeric(player.historicalRating) ?? numeric(player.historicalBbpr);
+  const role = numeric(suggestion.projectedRole) ?? 0;
+  const opportunity = numeric(suggestion.opportunityScore) ?? 0;
+  const talent = numeric(suggestion.talentScore) ?? 0;
+  const nba = numeric(suggestion.nbaProjectionScore) ?? 0;
+  const confidence = numeric(suggestion.confidenceScore) ?? 0;
+
+  if (
+    historical != null &&
+    historical >= 78 &&
+    role >= 96 &&
+    opportunity >= 88 &&
+    talent >= 88 &&
+    nba >= 85 &&
+    confidence >= 85
+  ) {
+    const provenStarScore =
+      88 +
+      (historical - 78) * 0.45 +
+      (role - 94) * 0.35 +
+      (opportunity - 86) * 0.16 +
+      (talent - 88) * 0.12 +
+      (nba - 80) * 0.05 +
+      (confidence - 85) * 0.06;
+
+    return Math.max(blendedScore, clamp(provenStarScore, 88, 94));
+  }
+
+  return blendedScore;
+}
+
+function applyTransferRoleLift(
+  player: CalibrationPlayer,
+  suggestion: CalibrationSuggestion,
+  blendedScore: number
+) {
+  const historical = numeric(player.historicalRating) ?? numeric(player.historicalBbpr);
+  const role = numeric(suggestion.projectedRole) ?? 0;
+  const opportunity = numeric(suggestion.opportunityScore) ?? 0;
+  const confidence = numeric(suggestion.confidenceScore) ?? 0;
+
+  if (historical != null && historical >= 80 && role >= 95 && opportunity >= 82 && confidence >= 75) {
+    const roleScore =
+      historical +
+      (role - 90) * 0.25 +
+      (opportunity - 80) * 0.1 +
+      (confidence - 75) * 0.05 +
+      1;
+
+    return Math.max(blendedScore, clamp(roleScore, 82, 89));
+  }
+
+  return blendedScore;
+}
+
 export function calibrateProjectedBbpr(
   player: CalibrationPlayer,
   suggestion: CalibrationSuggestion
@@ -92,9 +194,7 @@ export function calibrateProjectedBbpr(
   if (projectionScore == null) return numeric(suggestion.projectedBbpr);
 
   if (isNewcomer(player.playerType)) {
-    const credibility = newcomerCredibility(suggestion);
-    const compressed = 75 + (projectionScore - 75) * credibility;
-    return round(Math.min(compressed, newcomerCap(player, suggestion)));
+    return calibrateNewcomer(player, suggestion);
   }
 
   const historical = numeric(player.historicalRating) ?? numeric(player.historicalBbpr);
@@ -102,8 +202,14 @@ export function calibrateProjectedBbpr(
 
   if (player.playerType === "Returning") {
     const historicalWeight = returningHistoricalWeight(player, suggestion);
-    return round(historical * historicalWeight + projectionScore * (1 - historicalWeight));
+    const blendedScore = historical * historicalWeight + projectionScore * (1 - historicalWeight);
+    return round(applyReturningStarLift(player, suggestion, blendedScore));
   }
 
-  return round(historical * 0.75 + projectionScore * 0.25);
+  const blendedScore = historical * 0.75 + projectionScore * 0.25;
+  if (player.playerType === "Transfer") {
+    return round(applyTransferRoleLift(player, suggestion, blendedScore));
+  }
+
+  return round(blendedScore);
 }
