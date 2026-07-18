@@ -20,10 +20,10 @@ function newcomerCredibility(player) {
   const entry = numeric(player.entryTalentGrade) ?? 0;
   const nba = numeric(player.nbaProjectionScore) ?? 0;
 
-  if (role >= 95 && entry >= 98 && nba >= 95) return 0.72;
-  if (role >= 88 && entry >= 92 && nba >= 85) return 0.62;
-  if (role >= 80 && entry >= 84) return 0.58;
-  return 0.54;
+  if (role >= 98 && entry >= 98 && nba >= 95) return 0.64;
+  if (role >= 88 && entry >= 92 && nba >= 85) return 0.48;
+  if (role >= 80 && entry >= 84) return 0.44;
+  return 0.4;
 }
 
 function newcomerCap(player) {
@@ -31,11 +31,11 @@ function newcomerCap(player) {
   const entry = numeric(player.entryTalentGrade) ?? 0;
   const nba = numeric(player.nbaProjectionScore) ?? 0;
 
-  if (role >= 95 && entry >= 98 && nba >= 95) return player.playerType === "International" ? 89 : 91;
-  if (role >= 90 && entry >= 94 && nba >= 85) return player.playerType === "International" ? 84 : 86;
-  if (role >= 85) return 84;
-  if (role >= 75) return 81;
-  return 78;
+  if (role >= 98 && entry >= 98 && nba >= 95) return player.playerType === "International" ? 88 : 91;
+  if (role >= 90 && entry >= 94 && nba >= 85) return player.playerType === "International" ? 79 : 82;
+  if (role >= 85) return 79;
+  if (role >= 75) return 76;
+  return 73;
 }
 
 function returningHistoricalWeight(player) {
