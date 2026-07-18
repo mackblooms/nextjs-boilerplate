@@ -1,0 +1,849 @@
+{
+  "batchId": "player-research-007",
+  "createdAt": "2026-07-18",
+  "sourceSheet": "player database",
+  "scope": "Mixed next-board batch: proven returners/transfers in the 70+ historical range plus high-upside freshmen who need controlled placement.",
+  "method": [
+    "Prioritize unresearched players with strong historical anchors, projected starter evidence, or clear national recruiting signal.",
+    "Use school roster pages, projected-lineup reporting, signing announcements, award context, and current roster-construction notes.",
+    "Keep transfers tethered to prior production unless the new roster clearly increases role.",
+    "Give returners a higher role score when they are expected starters or offensive/defensive anchors.",
+    "For freshmen, keep talent grades high when justified, but cap role and burden unless projected lineups or roster context show immediate usage.",
+    "Let the site calibration layer mix newcomers into the board instead of allowing identical freshman buckets."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating/proven production blended with projection score, then calibrated by player type",
+    "projectedBbprNewcomer": "projection score compressed through newcomer credibility and soft cap range"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires projected lineup, returning-starter status, or roster-fit evidence. Uncertain is used for elite newcomers without clean starting proof.",
+    "projectedRole": "90+ for lead returners or clean starters, 80-89 for likely starters/high-minute players, 70-79 for talented but crowded freshman roles.",
+    "opportunityChange": "Rewards roster openings and team need; penalizes crowded high-major rosters and unclear rotations.",
+    "offensiveBurden": "Separates high-minute defensive/rebounding roles from true offensive hub roles.",
+    "newcomerPlacement": "Top freshmen can rank well, but most should land among proven players rather than above them in a block."
+  },
+  "players": [
+    {
+      "sourceRow": 116,
+      "player": "Kashie Natt",
+      "currentTeam": "Oklahoma State",
+      "previousTeam": "Sam Houston State",
+      "status": "researched_suggestion",
+      "historicalRating": 76.6905,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 84.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 73.68,
+        "projectedBbpr": 75.938,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Natt is a strong transfer add with proven defense, rebounding, and all-around production. Oklahoma State should use him immediately, but the offensive burden is held below primary-creator range because the new roster has several scoring additions.",
+      "teamContext": {
+        "projectedLineup": "Oklahoma State projected-lineup coverage includes Natt as a starting guard.",
+        "returningStars": "Kayne Clary and other additions share ballhandling and usage.",
+        "incomingStars": "Portal pieces add scoring around him.",
+        "positionCompetition": "Backcourt minutes are available, but his biggest value is two-way versatility rather than huge usage.",
+        "starterEvidence": "school signing profile and projected lineup",
+        "roleCap": "High-80s role due starter path and defensive/rebounding value."
+      },
+      "evidence": [
+        {
+          "source": "Oklahoma State Athletics",
+          "url": "https://okstate.com/news/2026/4/21/cowboy-basketball-adds-defensive-ace-kashie-natt",
+          "notes": "Natt was CUSA Defensive Player of the Year, started all 34 games, and averaged 10.8 points and 8.2 rebounds."
+        },
+        {
+          "source": "Roundtable",
+          "url": "https://roundtable.io/sports/ncaa/oklahoma-state/opinion/oklahoma-state-cowboys-mens-basketball-2026-27-starting-lineup-projection",
+          "notes": "Projects Natt in Oklahoma State's starting lineup."
+        }
+      ]
+    },
+    {
+      "sourceRow": 233,
+      "player": "Nolan Winter",
+      "currentTeam": "Wisconsin",
+      "previousTeam": "Wisconsin",
+      "status": "researched_suggestion",
+      "historicalRating": 75.9376,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 78,
+        "talentScore": 74.4,
+        "projectionScore": 72.87,
+        "projectedBbpr": 74.4038,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Winter is a proven Big Ten starting big with efficient finishing and rebounding. He gets strong role/starter scores, while talent and burden stay moderate because Wisconsin's offense is not expected to run entirely through him.",
+      "teamContext": {
+        "projectedLineup": "Rothstein projects Winter as Wisconsin's starting center.",
+        "returningStars": "Winter is the veteran interior anchor.",
+        "incomingStars": "Wisconsin added multiple guards/wings, spreading offensive responsibility.",
+        "positionCompetition": "Center role is secure; offensive ceiling is the limiting factor.",
+        "starterEvidence": "projected lineup and returning production",
+        "roleCap": "Low-90s role because he is a starter but not a national offensive hub."
+      },
+      "evidence": [
+        {
+          "source": "Wisconsin Athletics",
+          "url": "https://uwbadgers.com/sports/mens-basketball/roster/winter-nolan/15629",
+          "notes": "Winter started 30 games, averaged 13.1 points and 8.5 rebounds, and shot 69.9% on twos."
+        },
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
+          "notes": "Projects Winter in Wisconsin's starting five."
+        }
+      ]
+    },
+    {
+      "sourceRow": 343,
+      "player": "Xavier Edmonds",
+      "currentTeam": "TCU",
+      "previousTeam": "TCU",
+      "status": "researched_suggestion",
+      "historicalRating": 75.619,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 82.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 76,
+        "talentScore": 72.4,
+        "projectionScore": 70.31,
+        "projectedBbpr": 72.9645,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Edmonds has projected-starter evidence for TCU, but the projection is kept below the higher-usage returners because the available evidence points more toward a solid frontcourt starter than a primary option.",
+      "teamContext": {
+        "projectedLineup": "Rothstein projects Edmonds as a starting forward for TCU.",
+        "returningStars": "TCU's roster has multiple new and returning pieces sharing usage.",
+        "incomingStars": "Bamgboye, Harding, Toolson, and other pieces create a balanced lineup.",
+        "positionCompetition": "Starter path is present, but offensive hierarchy is not dominant.",
+        "starterEvidence": "projected lineup and official roster status",
+        "roleCap": "High-80s role with moderate burden."
+      },
+      "evidence": [
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/jon-rothstein-45-2026-offseason-edition-college-basketball-rankings",
+          "notes": "Projects Edmonds in TCU's starting five."
+        },
+        {
+          "source": "TCU Athletics",
+          "url": "https://gofrogs.com/sports/mbball/roster",
+          "notes": "Lists Edmonds as a senior forward on TCU's 2026-27 roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 204,
+      "player": "Matas Vokietaitis",
+      "currentTeam": "Texas",
+      "previousTeam": "Texas",
+      "status": "researched_suggestion",
+      "historicalRating": 75.1892,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 76,
+        "offensiveBurden": 70,
+        "opportunityScore": 79.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 80,
+        "talentScore": 77.6,
+        "projectionScore": 75.07,
+        "projectedBbpr": 75.1296,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Vokietaitis is a productive, efficient big with international and FAU production, but Texas has a crowded rebuilt roster and multiple young frontcourt/wing options. He should be useful, but not treated as a locked high-usage starter yet.",
+      "teamContext": {
+        "projectedLineup": "Texas roster confirms him as a 7-foot junior center, but clear starting-lineup evidence is weaker than for other players in this batch.",
+        "returningStars": "Texas has several returners/transfers and high-end freshmen competing for frontcourt/wing roles.",
+        "incomingStars": "Austin Goosby and Marcus Spears Jr. increase roster talent and usage competition.",
+        "positionCompetition": "Center minutes are available but not fully settled.",
+        "starterEvidence": "production profile more than definitive projected starter evidence",
+        "roleCap": "Mid-80s role until rotation clarity improves."
+      },
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster/MATAS-VOKIETAITIS/17088",
+          "notes": "Lists Vokietaitis as a 7-foot junior with AAC Freshman of the Year and Lithuanian U20 experience."
+        },
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mbball/roster",
+          "notes": "Shows Texas' crowded 2026-27 roster with multiple guards, freshmen, and frontcourt options."
+        }
+      ]
+    },
+    {
+      "sourceRow": 301,
+      "player": "Amani Hansberry",
+      "currentTeam": "Virginia Tech",
+      "previousTeam": "Virginia Tech",
+      "status": "researched_suggestion",
+      "historicalRating": 75.0893,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 90.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 75.43,
+        "projectedBbpr": 75.2597,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Hansberry is a high-confidence returning starter and Virginia Tech's most polished frontcourt piece. His role is high, but NBA/upside and team context keep him below the national star tier.",
+      "teamContext": {
+        "projectedLineup": "Virginia Tech projected-lineup coverage has Hansberry starting at power forward.",
+        "returningStars": "He returns as the team's leading scorer and rebounder.",
+        "incomingStars": "Virginia Tech's additions should not displace his frontcourt role.",
+        "positionCompetition": "Role is secure; offensive burden depends on guard development.",
+        "starterEvidence": "school return announcement and projected lineup",
+        "roleCap": "Mid-90s role, with final score anchored to proven production."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Tech Athletics",
+          "url": "https://hokiesports.com/news/2026/04/6/amani-hansberry-set-to-return-to-virginia-tech-for-senior-season",
+          "notes": "Hansberry returns after starting all 30 appearances, averaging 14.3 points and 7.4 rebounds, and earning All-ACC/All-Region honors."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/virginiatech/basketball/projecting-virginia-tech-men-s-basketball-2026-27-starting-lineup-01k19bh84czf",
+          "notes": "Projects Hansberry as Virginia Tech's starting power forward."
+        }
+      ]
+    },
+    {
+      "sourceRow": 91,
+      "player": "Kyle Evans",
+      "currentTeam": "North Carolina State",
+      "previousTeam": "UC Irvine",
+      "status": "researched_suggestion",
+      "historicalRating": 73.905,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 82,
+        "offensiveBurden": 76,
+        "opportunityScore": 83.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 71.78,
+        "projectedBbpr": 73.3738,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Evans projects as NC State's starting center in a roster that badly needed size. The role is strong, but the final score stays anchored because this is more of a stabilizing transfer profile than a star transfer profile.",
+      "teamContext": {
+        "projectedLineup": "NC State rotation projections list Evans as the starting center.",
+        "returningStars": "NC State is rebuilt heavily through the portal.",
+        "incomingStars": "Multiple transfers compete for shots and touches.",
+        "positionCompetition": "Frontcourt need gives Evans a clear path to minutes.",
+        "starterEvidence": "projected rotation/lineup and official roster",
+        "roleCap": "High-80s role, moderate offensive burden."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/ncstate/projecting-the-nc-state-men-s-basketball-rotation-for-the-2026-27-season",
+          "notes": "Projects Evans as NC State's starting center."
+        },
+        {
+          "source": "NC State Athletics",
+          "url": "https://gopack.com/sports/mens-basketball/roster",
+          "notes": "Lists Evans as a 6-foot-10 transfer forward from UC Irvine."
+        }
+      ]
+    },
+    {
+      "sourceRow": 81,
+      "player": "Tomislav Buljan",
+      "currentTeam": "Maryland",
+      "previousTeam": "New Mexico",
+      "status": "researched_suggestion",
+      "historicalRating": 73.8779,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 81.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 79.54,
+        "projectedBbpr": 75.2934,
+        "confidenceScore": 74,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Buljan's age/class and international production profile create upside, but Maryland's frontcourt has several bodies and the direct starting evidence is not as strong. He gets a solid projection without a transfer-star bump.",
+      "teamContext": {
+        "projectedLineup": "Maryland roster confirms Buljan as a sophomore frontcourt transfer.",
+        "returningStars": "Maryland has multiple veteran frontcourt additions.",
+        "incomingStars": "Pharrel Payne, Robert Jennings, and others share frontcourt minutes.",
+        "positionCompetition": "Rotation path is real, but starter/usage certainty is capped.",
+        "starterEvidence": "roster fit more than clean projected lineup evidence",
+        "roleCap": "Mid-80s role due frontcourt competition."
+      },
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Lists Buljan as a 6-foot-9 sophomore forward transfer from New Mexico."
+        }
+      ]
+    },
+    {
+      "sourceRow": 358,
+      "player": "Chance Mallory",
+      "currentTeam": "Virginia",
+      "previousTeam": "Virginia",
+      "status": "researched_suggestion",
+      "historicalRating": 73.8208,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 82,
+        "opportunityScore": 90.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 82,
+        "talentScore": 79.6,
+        "projectionScore": 84.04,
+        "projectedBbpr": 80.4633,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Mallory is a strong returner-breakout case. Virginia expects him to slide into the starting lineup, and his assist/steal profile plus sophomore development make him more than a historical-anchor player.",
+      "teamContext": {
+        "projectedLineup": "Virginia coverage projects Mallory as the starting point guard.",
+        "returningStars": "He is part of Virginia's returning core with De Ridder, Grunloh, and Sam Lewis.",
+        "incomingStars": "Transfers add depth but do not remove his lead-guard path.",
+        "positionCompetition": "Jan Vide and Jurian Dixon add depth; Mallory still has the cleanest lead-guard continuity.",
+        "starterEvidence": "official Virginia returner coverage and rotation projection",
+        "roleCap": "Mid-90s role, with development boost."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/news/2026/07/1/returning-talent-puts-hoos-in-enviable-position",
+          "notes": "Virginia says Mallory averaged more minutes than two starters and can easily move into the starting lineup."
+        },
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/sports/mbball/roster/player/chance-mallory",
+          "notes": "Mallory averaged 9.3 points, 3.4 assists, 1.6 steals, and ranked second in ACC assist/turnover ratio."
+        },
+        {
+          "source": "Yahoo Sports",
+          "url": "https://sports.yahoo.com/articles/analyzing-uva-basketball-getting-german-171534177.html",
+          "notes": "Projects Mallory in Virginia's 2026-27 starting five."
+        }
+      ]
+    },
+    {
+      "sourceRow": 195,
+      "player": "Joseph Tugler",
+      "currentTeam": "Houston",
+      "previousTeam": "Houston",
+      "status": "researched_suggestion",
+      "historicalRating": 73.331,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 70,
+        "opportunityScore": 81.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 71.23,
+        "projectedBbpr": 72.2805,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Tugler should matter for Houston because he fits the physical frontcourt identity and has returning experience. The score stays moderate because Arafan Diane and other frontcourt pieces create competition and Tugler is not projected as a primary offensive player.",
+      "teamContext": {
+        "projectedLineup": "Houston roster confirms Tugler as a senior returning forward.",
+        "returningStars": "Houston's frontcourt has returning physicality plus new freshman size.",
+        "incomingStars": "Arafan Diane and Djafar Silimana create freshman frontcourt competition.",
+        "positionCompetition": "Minutes should be strong, burden lower.",
+        "starterEvidence": "returning veteran fit and roster need",
+        "roleCap": "High-80s role with low offensive burden."
+      },
+      "evidence": [
+        {
+          "source": "Houston Athletics",
+          "url": "https://uhcougars.com/sports/mens-basketball/roster?path=mbball",
+          "notes": "Lists Tugler as a senior returning forward on Houston's 2026-27 roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 236,
+      "player": "Robert Wright III",
+      "currentTeam": "BYU",
+      "previousTeam": "BYU",
+      "status": "researched_suggestion",
+      "historicalRating": 71.4864,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 96,
+        "opportunityScore": 96.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 85,
+        "upsideToolsScore": 88,
+        "talentScore": 86.2,
+        "projectionScore": 85.27,
+        "projectedBbpr": 79.7566,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Wright is the strongest returning guard profile in this batch. BYU's own staff calls him the best point guard in college basketball, and his 18.1/4.6 line with elite shooting supports a major role boost above the raw historical anchor.",
+      "teamContext": {
+        "projectedLineup": "BYU announced Wright's return and frames him as the floor general.",
+        "returningStars": "He becomes the clear offensive guard anchor after BYU's roster changes.",
+        "incomingStars": "Bruce Branch and others add talent, but Wright's on-ball role is secure.",
+        "positionCompetition": "No direct lead-guard threat.",
+        "starterEvidence": "school return announcement and all-conference production",
+        "roleCap": "Near-primary role; historical anchor still keeps him below the elite 90s."
+      },
+      "evidence": [
+        {
+          "source": "BYU Athletics",
+          "url": "https://byucougars.com/news/2026/4/15/robert-wright-iii-returns-to-byu",
+          "notes": "BYU announced Wright's return after averaging 18.1 points and 4.6 assists with strong efficiency."
+        },
+        {
+          "source": "BYU Athletics",
+          "url": "https://byucougars.com/sports/mens-basketball/roster/player/robert-wright-iii",
+          "notes": "Lists All-Big 12 and NABC district honors plus 35 starts and 34.8 MPG."
+        }
+      ]
+    },
+    {
+      "sourceRow": 114,
+      "player": "Somto Cyril",
+      "currentTeam": "Miami",
+      "previousTeam": "Georgia",
+      "status": "researched_suggestion",
+      "historicalRating": 69.6081,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 82,
+        "offensiveBurden": 72,
+        "opportunityScore": 84,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 84,
+        "talentScore": 78.6,
+        "projectionScore": 77.31,
+        "projectedBbpr": 71.5336,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Cyril gives Miami a true rim-protection starter profile. The final BBPR is held near the historical anchor because his value is defense/finishing, not a major offensive burden.",
+      "teamContext": {
+        "projectedLineup": "Rothstein projects Cyril as Miami's starting center.",
+        "returningStars": "Miami's roster is rebuilt with several new pieces.",
+        "incomingStars": "Acaden Lewis and Caleb Gaskins share newcomer attention and usage.",
+        "positionCompetition": "Cyril has the cleanest center path.",
+        "starterEvidence": "school signing release and projected lineup",
+        "roleCap": "Starter role with capped offensive burden."
+      },
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/news/2026/04/16/hurricanes-add-rim-protector-somto-cyril/",
+          "notes": "Miami describes Cyril as a rim protector after he averaged 9.3 points, 5.4 rebounds, and 2.2 blocks at Georgia."
+        },
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
+          "notes": "Projects Cyril in Miami's starting lineup."
+        }
+      ]
+    },
+    {
+      "sourceRow": 187,
+      "player": "Colben Landrew",
+      "currentTeam": "Connecticut",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 72,
+        "offensiveBurden": 66,
+        "opportunityScore": 72.8,
+        "entryTalentGrade": 92,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 87.5,
+        "projectionScore": 83.335,
+        "projectedBbpr": 75.7864,
+        "confidenceScore": 65,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Landrew is a top-30/top-50 caliber UConn freshman, but UConn's forward spots are competitive. He should be mixed in as a high-upside rotation freshman rather than treated like a guaranteed starter.",
+      "teamContext": {
+        "projectedLineup": "UConn reporting says Landrew is challenging for a forward role, not locked into one.",
+        "returningStars": "UConn's backcourt is led by Braylon Mullins and Silas Demary Jr.",
+        "incomingStars": "Nik Khamenia, Egor Amosov, Jayden Ross, and Landrew all compete at forward.",
+        "positionCompetition": "Crowded forward rotation caps role.",
+        "starterEvidence": "elite recruit and role challenge, not clean starter",
+        "roleCap": "Mid-70s role until forward competition clarifies."
+      },
+      "evidence": [
+        {
+          "source": "UConn Athletics",
+          "url": "https://uconnhuskies.com/news/2025/11/13/mens-basketball-huskies-ink-junior-county-and-colben-landrew",
+          "notes": "UConn describes Landrew as a top-50 prospect expected to make an immediate impact."
+        },
+        {
+          "source": "CT Insider",
+          "url": "https://www.ctinsider.com/sports/uconn-mens-basketball/article/dan-hurley-roster-preview-analysis-espn-nba-22342399.php",
+          "notes": "Frames Landrew as challenging for forward minutes on a talented UConn roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 190,
+      "player": "Quentin Coleman",
+      "currentTeam": "Illinois",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 83.6,
+        "entryTalentGrade": 94,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 88.6,
+        "projectionScore": 88.95,
+        "projectedBbpr": 78.5486,
+        "confidenceScore": 68,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Coleman has a real path to matter immediately for Illinois because the roster needs a new go-to scorer, but Mirkovic and other experienced pieces should remain ahead in the hierarchy. Strong freshman score, not a top-returner score.",
+      "teamContext": {
+        "projectedLineup": "Illinois coverage identifies Coleman as one option to help replace Keaton Wagler's scoring.",
+        "returningStars": "David Mirkovic and Andrej Stojakovic are experienced usage competitors.",
+        "incomingStars": "Illinois has multiple freshmen, but Coleman is the highest-impact scoring guard.",
+        "positionCompetition": "Freshman role is meaningful but not guaranteed as primary option.",
+        "starterEvidence": "fit and opportunity evidence, but not definitive starter reporting",
+        "roleCap": "Mid-80s role due strong scorer profile and team need."
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/news/2026/4/19/mens-basketball-coleman-signs-with-fighting-illini",
+          "notes": "Illinois signed Coleman as a five-star/All-American scorer with elite high school production."
+        },
+        {
+          "source": "The Champaign Room",
+          "url": "https://www.thechampaignroom.com/illinois-fighting-illini-basketball-news/55037/two-biggest-questions-facing-illinois-basketball-before-2026-27-season-fighting-illini-ncaa-big-ten-brad-underwood",
+          "notes": "Mentions Coleman as one option as Illinois identifies a new go-to scorer."
+        }
+      ]
+    },
+    {
+      "sourceRow": 191,
+      "player": "Dylan Mingo",
+      "currentTeam": "Baylor",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 82,
+        "offensiveBurden": 84,
+        "opportunityScore": 85.4,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 94,
+        "talentScore": 95.4,
+        "projectionScore": 91.32,
+        "projectedBbpr": 79.6975,
+        "confidenceScore": 68,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Mingo has one of the strongest newcomer talent profiles left, and Baylor should give him real guard responsibility. Senior-season injury history and freshman volatility keep him below the Stokes/Jordan Smith top-newcomer tier.",
+      "teamContext": {
+        "projectedLineup": "Baylor's roster construction points to Mingo as an immediate lead-guard candidate.",
+        "returningStars": "Baylor has other guard options, including his brother Kayden Mingo.",
+        "incomingStars": "Mingo is the clear headliner of Baylor's freshman additions.",
+        "positionCompetition": "Role should be high, but usage certainty is slightly capped by injury and roster depth.",
+        "starterEvidence": "five-star point guard signing and roster need",
+        "roleCap": "High-80s role, below elite freshman role-lock tier."
+      },
+      "evidence": [
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/news/2026/5/12/mens-basketball-mbb-picks-up-five-star-point-guard-dylan-mingo",
+          "notes": "Baylor signed Mingo as a five-star point guard and consensus top-10/top-five talent."
+        },
+        {
+          "source": "Baylor Athletics",
+          "url": "https://d1nnrx9kca53zl.cloudfront.net/sports/mens-basketball/roster",
+          "notes": "Lists Mingo as a freshman point guard on Baylor's 2026-27 roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 357,
+      "player": "Cameron Holmes",
+      "currentTeam": "Arizona",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 85,
+        "opportunityChange": 80,
+        "offensiveBurden": 74,
+        "opportunityScore": 81.3,
+        "entryTalentGrade": 88,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 83.5,
+        "projectionScore": 85.76,
+        "projectedBbpr": 78.2154,
+        "confidenceScore": 66,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Holmes gets one of the better freshman role scores because Arizona projected-lineup coverage has him starting. The talent grade is below the elite national top-five freshmen, so he slots into the mixed-board pocket.",
+      "teamContext": {
+        "projectedLineup": "Arizona projected-lineup coverage has Holmes at small forward.",
+        "returningStars": "Arizona has Motiejus Krivas and other returning/incoming pieces.",
+        "incomingStars": "Caleb Holt is the higher-upside freshman on the roster.",
+        "positionCompetition": "Starter path exists, but offensive usage likely trails Holt and veteran pieces.",
+        "starterEvidence": "projected starting lineup evidence",
+        "roleCap": "Mid-80s role due projected starter evidence."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/arizona/wildcats-projected-starting-lineup-after-portal-closing",
+          "notes": "Projects Holmes as Arizona's starting small forward."
+        }
+      ]
+    },
+    {
+      "sourceRow": 177,
+      "player": "Christian Collins",
+      "currentTeam": "USC",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 85,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 80.7,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 93,
+        "upsideToolsScore": 94,
+        "talentScore": 95.05,
+        "projectionScore": 89.5825,
+        "projectedBbpr": 78.8066,
+        "confidenceScore": 65,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Collins is an elite top-five recruit and should be one of USC's most talented players, but USC's freshman class is loaded and his exact offensive role is less clean than a one-man freshman centerpiece.",
+      "teamContext": {
+        "projectedLineup": "USC has major frontcourt talent, but direct starter proof is less firm than the talent signal.",
+        "returningStars": "USC is rebuilding with a strong recruiting class and portal pieces.",
+        "incomingStars": "Adonis and Darius Ratliff join Collins as McDonald's All-American frontcourt pieces.",
+        "positionCompetition": "Elite freshman frontcourt competition keeps burden capped.",
+        "starterEvidence": "elite signee; starter still uncertain",
+        "roleCap": "Mid-80s role with elite talent."
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/news/2026/4/19/christian-collins-signs-with-usc-mens-basketball",
+          "notes": "USC signed Collins as a McDonald's All-American and elite athletic forward."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/usc/basketball/usc-trojans-5-star-recruit-christian-collins-recruiting-rankings-eric-musselman",
+          "notes": "Notes Collins as a top-five 2026 recruit in ESPN's final ranking."
+        }
+      ]
+    },
+    {
+      "sourceRow": 171,
+      "player": "Austin Goosby",
+      "currentTeam": "Texas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 75.2,
+        "entryTalentGrade": 94,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 89,
+        "projectionScore": 84.99,
+        "projectedBbpr": 75.9434,
+        "confidenceScore": 65,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Goosby is a top-20ish recruit with real two-way tools, but Texas is crowded and Marcus Spears' reclassification adds another high-end freshman. Treat him as an important rotation/upside freshman, not a guaranteed top-board player.",
+      "teamContext": {
+        "projectedLineup": "Texas roster confirms him, but starting evidence is not yet clean.",
+        "returningStars": "Texas has multiple older guards/wings and frontcourt players.",
+        "incomingStars": "Marcus Spears Jr. and other freshmen raise the talent level and crowd usage.",
+        "positionCompetition": "Guard/wing minutes are competitive.",
+        "starterEvidence": "elite recruit, unclear immediate starting path",
+        "roleCap": "High-70s role until the Texas rotation settles."
+      },
+      "evidence": [
+        {
+          "source": "ESPN",
+          "url": "https://www.espn.com/recruiting/basketball/story/_/id/47002190/crossDomain",
+          "notes": "Goosby committed to Texas as a top-20 recruit and No. 2 shooting guard."
+        },
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mbball/roster",
+          "notes": "Lists Goosby on Texas' 2026-27 roster alongside several other guards and freshmen."
+        }
+      ]
+    },
+    {
+      "sourceRow": 393,
+      "player": "Marcus Spears Jr.",
+      "currentTeam": "Texas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 72,
+        "offensiveBurden": 68,
+        "opportunityScore": 73.2,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.5,
+        "projectionScore": 85.515,
+        "projectedBbpr": 75.9907,
+        "confidenceScore": 64,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Spears has enormous long-term talent as a reclassified No. 1 2027 prospect, but he is very young and Texas' roster is crowded. This is a classic high-talent, role-controlled freshman projection.",
+      "teamContext": {
+        "projectedLineup": "Texas added Spears late through reclassification, making immediate role less certain.",
+        "returningStars": "Texas has experienced transfers and returners around him.",
+        "incomingStars": "Goosby and other freshmen compete for minutes and usage.",
+        "positionCompetition": "Age and roster depth cap role despite elite upside.",
+        "starterEvidence": "elite reclassification news, not starter evidence",
+        "roleCap": "Mid-70s role because he is young and needs two college seasons."
+      },
+      "evidence": [
+        {
+          "source": "ABC11/ESPN",
+          "url": "https://abc11.com/post/boys-high-school-basketball-recruiting-class-rankings-2026/18143044/",
+          "notes": "Reports Spears reclassified from the 2027 class and committed to Texas, giving Texas a top-five class."
+        },
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mbball/roster",
+          "notes": "Shows the crowded Texas 2026-27 roster context."
+        }
+      ]
+    }
+  ]
+}
