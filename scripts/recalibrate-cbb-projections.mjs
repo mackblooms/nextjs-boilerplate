@@ -36,6 +36,9 @@ function newcomerCap(player) {
   const nba = numeric(player.nbaProjectionScore) ?? 0;
 
   if (role >= 98 && entry >= 98 && nba >= 95) return player.playerType === "International" ? 88 : 91;
+  if (role >= 86 && entry >= 99 && nba >= 94) return player.playerType === "International" ? 80 : 84;
+  if (role >= 84 && entry >= 97 && nba >= 92) return player.playerType === "International" ? 79 : 82;
+  if (role >= 80 && entry >= 99 && nba >= 92) return player.playerType === "International" ? 78 : 80;
   if (role >= 90 && entry >= 94 && nba >= 85) return player.playerType === "International" ? 79 : 82;
   if (role >= 85) return 79;
   if (role >= 75) return 76;
