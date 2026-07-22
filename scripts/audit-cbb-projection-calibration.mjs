@@ -99,6 +99,65 @@ function tierFromRank(rank) {
   return "outside top 150";
 }
 
+function countTypes(players, cutoff) {
+  const counts = {};
+  for (const player of players.slice(0, cutoff)) {
+    const type = player.playerType ?? "Unknown";
+    counts[type] = (counts[type] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function buildNewcomerCompositionFindings(rankedPlayers) {
+  const top25 = countTypes(rankedPlayers, 25);
+  const top50 = countTypes(rankedPlayers, 50);
+  const top100 = countTypes(rankedPlayers, 100);
+  const top25Newcomers = (top25.Freshman ?? 0) + (top25.International ?? 0);
+  const top50Newcomers = (top50.Freshman ?? 0) + (top50.International ?? 0);
+  const top100Newcomers = (top100.Freshman ?? 0) + (top100.International ?? 0);
+  const findings = [];
+
+  if (top25Newcomers > 5) {
+    findings.push({
+      code: "newcomer-top25-overload",
+      severity: "high",
+      message: "More than five freshmen/internationals are in the top 25.",
+      count: top25Newcomers,
+      targetMax: 5,
+    });
+  }
+
+  if (top50Newcomers > 10) {
+    findings.push({
+      code: "newcomer-top50-overload",
+      severity: "high",
+      message: "More than ten freshmen/internationals are in the top 50.",
+      count: top50Newcomers,
+      targetMax: 10,
+    });
+  }
+
+  if (top100Newcomers > 18) {
+    findings.push({
+      code: "newcomer-top100-overload",
+      severity: "high",
+      message: "More than 18 freshmen/internationals are in the top 100.",
+      count: top100Newcomers,
+      targetMax: 18,
+    });
+  }
+
+  return {
+    top25,
+    top50,
+    top100,
+    top25Newcomers,
+    top50Newcomers,
+    top100Newcomers,
+    findings,
+  };
+}
+
 function auditPlayer(player, rank, top100Line, source) {
   const projectedBbpr = numeric(player.projectedBbpr);
   const projectedRole = numeric(player.projectedRole);
@@ -271,8 +330,10 @@ const payload = JSON.parse(fs.readFileSync(projectionsPath, "utf8"));
 const completedPlayers = payload.players.filter(
   (player) => numeric(player.projectedBbpr) != null && player.projectionInputCompleteness === 100
 );
+const rankedAllPlayers = [...payload.players].sort(comparePlayers);
 const ranks = rankPlayers(payload.players);
-const top100Line = canonicalScore([...payload.players].sort(comparePlayers)[99]) ?? 0;
+const top100Line = canonicalScore(rankedAllPlayers[99]) ?? 0;
+const newcomerComposition = buildNewcomerCompositionFindings(rankedAllPlayers);
 
 const projectedFindings = completedPlayers
   .map((player) => auditPlayer(player, ranks.get(player.sourceRow), top100Line, "projection"))
@@ -330,6 +391,7 @@ const audit = {
     ).length,
     pendingResearchFindingCount: researchFindings.length,
     duplicateGroupCount: duplicateGroups.length,
+    newcomerCompositionFindingCount: newcomerComposition.findings.length,
   },
   rules: [
     "Flag completed projections with top-100 role/talent profiles that sit below the current top-100 line.",
@@ -338,7 +400,9 @@ const audit = {
     "Flag projected starters with low role/opportunity inputs.",
     "Flag players whose research notes contain high-sentiment markers but whose BBPR remains below the top-100 line.",
     "Flag duplicate normalized player/team records before they pollute the board.",
+    "Flag top-25/top-50/top-100 newcomer overloads so the board does not become a recruiting ranking.",
   ],
+  newcomerComposition,
   projectedFindings,
   pendingResearchFindings: researchFindings,
   duplicateGroups,

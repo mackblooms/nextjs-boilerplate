@@ -24,25 +24,29 @@ function newcomerCredibility(player) {
   const entry = numeric(player.entryTalentGrade) ?? 0;
   const nba = numeric(player.nbaProjectionScore) ?? 0;
 
-  if (role >= 98 && entry >= 98 && nba >= 95) return 0.64;
-  if (role >= 88 && entry >= 92 && nba >= 85) return 0.48;
-  if (role >= 80 && entry >= 84) return 0.44;
-  return 0.4;
+  if (role >= 98 && entry >= 98 && nba >= 95) return 0.65;
+  if (role >= 90 && entry >= 96 && nba >= 90) return 0.25;
+  if (role >= 86 && entry >= 94 && nba >= 88) return 0.18;
+  if (role >= 80 && entry >= 88) return 0.14;
+  return 0.1;
 }
 
 function newcomerCap(player) {
   const role = numeric(player.projectedRole) ?? 0;
   const entry = numeric(player.entryTalentGrade) ?? 0;
   const nba = numeric(player.nbaProjectionScore) ?? 0;
+  const internationalAdjustment = player.playerType === "International" ? -3 : 0;
 
-  if (role >= 98 && entry >= 98 && nba >= 95) return player.playerType === "International" ? 88 : 91;
-  if (role >= 86 && entry >= 99 && nba >= 94) return player.playerType === "International" ? 80 : 84;
-  if (role >= 84 && entry >= 97 && nba >= 92) return player.playerType === "International" ? 79 : 82;
-  if (role >= 80 && entry >= 99 && nba >= 92) return player.playerType === "International" ? 78 : 80;
-  if (role >= 90 && entry >= 94 && nba >= 85) return player.playerType === "International" ? 79 : 82;
-  if (role >= 85) return 79;
-  if (role >= 75) return 76;
-  return 73;
+  if (role >= 98 && entry >= 98 && nba >= 95) return 87 + internationalAdjustment;
+  if (role >= 90 && entry >= 98 && nba >= 94) return 79 + internationalAdjustment;
+  if (role >= 88 && entry >= 96 && nba >= 90) return 75 + internationalAdjustment;
+  if (role >= 90 && entry >= 95 && nba >= 85) return 72.5 + internationalAdjustment;
+  if (role >= 86 && entry >= 94 && nba >= 88) return 72 + internationalAdjustment;
+  if (role >= 84 && entry >= 94 && nba >= 88) return 70.5 + internationalAdjustment;
+  if (role >= 80 && entry >= 90 && nba >= 84) return 67 + internationalAdjustment;
+  if (role >= 85) return 66.5 + internationalAdjustment;
+  if (role >= 75) return 64.5 + internationalAdjustment;
+  return 62 + internationalAdjustment;
 }
 
 function newcomerCertainty(player) {
@@ -54,12 +58,12 @@ function newcomerCertainty(player) {
   const talent = numeric(player.talentScore) ?? 0;
 
   return clamp(
-    role * 0.0026 +
-      opportunity * 0.0021 +
-      entry * 0.0018 +
-      nba * 0.0015 +
-      confidence * 0.0012 +
-      talent * 0.0008,
+    role * 0.0015 +
+      opportunity * 0.0012 +
+      entry * 0.001 +
+      nba * 0.0008 +
+      confidence * 0.0007 +
+      talent * 0.0004,
     0,
     1
   );
@@ -70,14 +74,14 @@ function calibrateNewcomer(player) {
   if (projectionScore == null) return numeric(player.projectedBbpr);
 
   const cap = newcomerCap(player);
-  const compressed = 75 + (projectionScore - 75) * newcomerCredibility(player);
+  const compressed = 66 + (projectionScore - 66) * newcomerCredibility(player);
   if (compressed <= cap) return round(compressed);
 
   const role = numeric(player.projectedRole) ?? 0;
   const certainty = newcomerCertainty(player);
-  const capBand = cap >= 88 ? 2.4 : cap >= 82 ? 2.8 : cap >= 79 ? 5.6 : 3;
-  const roleLift = clamp((role - 85) * 0.2, 0, 1.1);
-  const overflowLift = clamp((compressed - cap) * 0.18, 0, 0.7);
+  const capBand = cap >= 84 ? 4 : cap >= 76 ? 5 : cap >= 70 ? 5.5 : 4.5;
+  const roleLift = clamp((role - 96) * 0.1, 0, 0.5);
+  const overflowLift = clamp((compressed - cap) * 0.06, 0, 0.25);
 
   return round(cap - capBand * (1 - certainty) + roleLift + overflowLift);
 }
