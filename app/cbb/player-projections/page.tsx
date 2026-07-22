@@ -20,6 +20,8 @@ import {
 
 type SortKey = "rank" | "player" | "team" | "projectedBbpr" | "confidence" | "review";
 type LeaderboardSource = "projected" | "historical" | "profile" | "unscored";
+const researchReviewBatchSize = 48;
+
 type RankedCbbPlayer = CbbPlayerProjection & {
   leaderboardRank: number;
   leaderboardScore: number | null;
@@ -207,7 +209,10 @@ export default function CbbPlayerProjectionsPage() {
     () => researchPlayers.filter((player) => !player.applied),
     [researchPlayers]
   );
-  const visibleResearchPlayers = useMemo(() => pendingResearchPlayers.slice(0, 12), [pendingResearchPlayers]);
+  const visibleResearchPlayers = useMemo(
+    () => pendingResearchPlayers.slice(0, researchReviewBatchSize),
+    [pendingResearchPlayers]
+  );
 
   const filteredPlayers = useMemo(() => {
     const needle = query.trim().toLowerCase();

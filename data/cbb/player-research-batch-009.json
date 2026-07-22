@@ -1,0 +1,1436 @@
+{
+  "batchId": "player-research-009",
+  "createdAt": "2026-07-22",
+  "sourceSheet": "player database + all D1 players",
+  "scope": "Larger mixed batch of high-impact unprojected returners, transfers, freshmen, and internationals, prioritized by likely leaderboard movement rather than spreadsheet order.",
+  "method": [
+    "Prioritize unprojected players with strong historical anchors, high-major projected roles, elite recruiting/draft signals, or clear returning-star evidence.",
+    "For returners and transfers, tie projected starter and role scores to roster bios, starting history, production, projected-lineup notes, and team hierarchy.",
+    "For freshmen and internationals, use recruiting rank, national/all-star recognition, mock-draft or scouting sentiment, and roster crowding to separate players within similar talent buckets.",
+    "Cap freshmen/international role credit when their upcoming roster includes established stars or older frontcourt/backcourt competition.",
+    "Leave all rows in review state so the admin board can approve the researched projections in larger groups."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating/proven production blended with projection score, then calibrated by player type"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires projected-lineup, start-history, or clear team-hierarchy evidence; Uncertain means strong minutes without a clean starter signal; No means bench/developmental role.",
+    "projectedRole": "90+ for clear starters or top options, 82-89 for likely starters/major rotation, 72-81 for rotation players with roster crowding.",
+    "opportunityChange": "Rewards clean usage/minutes paths and returning leadership; penalizes crowded high-major rosters and role ambiguity.",
+    "offensiveBurden": "Primary creators/scorers get 86+; rim runners, lower-usage bigs, and crowded-roster freshmen stay lower.",
+    "roleEvidence": "Every player includes a note explaining starter/minutes assumptions from roster, production, or projected-depth context."
+  },
+  "players": [
+    {
+      "sourceRow": 370,
+      "player": "Christian Reeves",
+      "currentTeam": "Kansas",
+      "previousTeam": "Charleston",
+      "status": "researched_suggestion",
+      "historicalRating": 65.8456,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 86,
+        "offensiveBurden": 76,
+        "opportunityScore": 86.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 73.27,
+        "projectedBbpr": 67.7017,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Reeves gets real starter credit because Kansas lineup coverage projected him as the starting five after Flory Bidunga's departure. Score is held below star-returner territory because his value is more rebounding/finishing than high-usage creation.",
+      "teamContext": {
+        "starterEvidence": "Kansas projected-lineup coverage identified Reeves as the projected starter at center.",
+        "roleCap": "Starting center with double-double path, but not a primary offensive hub.",
+        "positionCompetition": "Paul Mbiya can earn matchup starts, so role is strong but not fully locked."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/kansas/basketball/projecting-kansas-2026-27-starting-lineup-after-tyran-stokes-commitment",
+          "notes": "Projects Reeves as Kansas' starting center and notes his offensive rebounding/double-double profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 336,
+      "player": "Tyler Perkins",
+      "currentTeam": "Villanova",
+      "previousTeam": "Villanova",
+      "status": "researched_suggestion",
+      "historicalRating": 65.0932,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 88,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 82,
+        "talentScore": 79.6,
+        "projectionScore": 76.995,
+        "projectedBbpr": 72.2343,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Perkins led Villanova in scoring, started every game, earned Big East honors, and is explicitly returning as a leader. He deserves a high role score even if his NBA/upside inputs remain more good-college-player than lottery-type.",
+      "teamContext": {
+        "starterEvidence": "Villanova says Perkins started all 33 games and returns after leading the team in scoring.",
+        "roleCap": "Clear veteran leader, but Villanova added multiple usage-capable transfers.",
+        "positionCompetition": "Crawford, Evans, Royal, Fiegen, and Oumiddoch spread possessions across the roster."
+      },
+      "evidence": [
+        {
+          "source": "Villanova Athletics",
+          "url": "https://villanova.com/news/2026/4/8/mens-basketball-perkins-to-return-for-senior-season-in-2026-27.aspx",
+          "notes": "Perkins returns after 13.7 PPG, 33 starts, Big East Most Improved, and third-team All-Big East."
+        }
+      ]
+    },
+    {
+      "sourceRow": 55,
+      "player": "Corey Hadnot II",
+      "currentTeam": "Houston",
+      "previousTeam": "Purdue Fort Wayne",
+      "status": "researched_suggestion",
+      "historicalRating": 64.9343,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 80,
+        "offensiveBurden": 82,
+        "opportunityScore": 83.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 80,
+        "talentScore": 76.4,
+        "projectionScore": 72.25,
+        "projectedBbpr": 66.7632,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Hadnot was a huge Horizon League scorer, but Houston's guard room also includes Dedan Thomas and returning guards. He gets major-rotation/bucket-getter credit without assuming a guaranteed starting role.",
+      "teamContext": {
+        "starterEvidence": "Houston praised him as a needed scorer, but public depth context gives Dedan Thomas the cleaner lead-guard role.",
+        "roleCap": "High-major scorer moving into a shared Houston offense.",
+        "positionCompetition": "Dedan Thomas, Mercy Miller, Bryce Jackson, Ikenna Alozie, and other guards reduce starter certainty."
+      },
+      "evidence": [
+        {
+          "source": "Houston Athletics",
+          "url": "https://uhcougars.com/news/2026/4/23/mens-basketball-guard-corey-hadnot-ii-signs-with-mens-basketball",
+          "notes": "Houston signs Hadnot after an award-winning Purdue Fort Wayne career and describes him as a bucket-getter."
+        },
+        {
+          "source": "Purdue Fort Wayne Athletics",
+          "url": "https://gomastodons.com/sports/mens-basketball/roster/hadnot-ii-corey/9730",
+          "notes": "Hadnot started all 32 games and averaged 20.4 PPG with first-team All-Horizon honors."
+        }
+      ]
+    },
+    {
+      "sourceRow": 122,
+      "player": "Delrecco Gillespie",
+      "currentTeam": "Houston",
+      "previousTeam": "Kent State",
+      "status": "researched_suggestion",
+      "historicalRating": 64.4538,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 85.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 73,
+        "upsideToolsScore": 79,
+        "talentScore": 75.4,
+        "projectionScore": 72.13,
+        "projectedBbpr": 66.3729,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Gillespie's rebounding and production fit an obvious Houston frontcourt need, and Houston coverage slots him into a replacement role for J'Wan Roberts. His offense is still capped because Houston has several ball-dominant guards.",
+      "teamContext": {
+        "starterEvidence": "Houston portal coverage frames Gillespie as a power-forward replacement and one of the class headliners.",
+        "roleCap": "Likely frontcourt starter/major-minute rebounder, not the primary creator.",
+        "positionCompetition": "Joseph Tugler and Arafan Diane limit frontcourt usage ceiling."
+      },
+      "evidence": [
+        {
+          "source": "Houston Athletics",
+          "url": "https://uhcougars.com/news/2026/4/23/mens-basketball-forward-delrecco-gillespie-joins-mens-basketball",
+          "notes": "Houston signs Gillespie after a decorated Kent State career with nearly 1,000 points and 741 rebounds."
+        },
+        {
+          "source": "Houston.com",
+          "url": "https://houston.com/university-of-houston/houston-cougars-transfer-portal-targets",
+          "notes": "Frames Gillespie as a power-forward replacement and part of Houston's top portal haul."
+        }
+      ]
+    },
+    {
+      "sourceRow": 144,
+      "player": "Armani Mighty",
+      "currentTeam": "Pittsburgh",
+      "previousTeam": "Mercer",
+      "status": "researched_suggestion",
+      "historicalRating": 63.9326,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 76,
+        "opportunityScore": 87.1,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 73.54,
+        "projectedBbpr": 66.3345,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Mighty brings proven interior production to a Pitt roster that badly needed size, so starter/minutes credit is appropriate. The BBPR stays controlled because his role is paint efficiency, defense, and rebounding more than offensive creation.",
+      "teamContext": {
+        "starterEvidence": "Pitt's release highlights Mighty as a decorated SoCon frontcourt addition with major rebounding/rim-protection production.",
+        "roleCap": "Likely starting or near-starting center, with usage limited by guard-heavy transfer additions.",
+        "positionCompetition": "Pitt added multiple ACC/portal pieces, creating shared scoring burden."
+      },
+      "evidence": [
+        {
+          "source": "Pittsburgh Athletics",
+          "url": "https://pittsburghpanthers.com/news/2026/6/16/mens-basketball-decorated-mercer-center-armani-mighty-commits-to-pitt",
+          "notes": "Mighty averaged 13.2 PPG and 10.6 RPG and earned SoCon Co-Defensive Player of the Year."
+        }
+      ]
+    },
+    {
+      "sourceRow": 374,
+      "player": "Drew Scharnowski",
+      "currentTeam": "Duke",
+      "previousTeam": "Belmont",
+      "status": "researched_suggestion",
+      "historicalRating": 63.6519,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 77.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.44,
+        "projectedBbpr": 66.3489,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Scharnowski is a real Duke rotation piece, but multiple outlets describe a crowded frontcourt and not a locked opening-night starter. He gets upside and rotation value, not automatic blue-blood starter credit.",
+      "teamContext": {
+        "starterEvidence": "CBS notes he likely will not start on opening night but can play 15-20 minutes off the bench.",
+        "roleCap": "High-level rotation forward with NBA-ish tools, but Duke's roster is crowded.",
+        "positionCompetition": "Cameron Williams, Patrick Ngongba II, Dame Sarr, Caleb Foster, Cayden Boozer, and John Blackwell absorb role/usage."
+      },
+      "evidence": [
+        {
+          "source": "CBS Sports",
+          "url": "https://www.cbssports.com/college-basketball/news/duke-basketball-roster-2026-27-season/",
+          "notes": "Projects Scharnowski as a Swiss-army-knife bench piece around 15-20 minutes."
+        },
+        {
+          "source": "Chicago Sun-Times",
+          "url": "https://chicago.suntimes.com/college-sports/2026/04/27/drew-scharnowski-duke-basketball",
+          "notes": "Details first-team MVC production and high-major interest."
+        }
+      ]
+    },
+    {
+      "sourceRow": 223,
+      "player": "Johann Grunloh",
+      "currentTeam": "Virginia",
+      "previousTeam": "Virginia",
+      "status": "researched_suggestion",
+      "historicalRating": 63.0391,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 93,
+        "opportunityChange": 86,
+        "offensiveBurden": 76,
+        "opportunityScore": 87.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 84.895,
+        "projectedBbpr": 77.7454,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Grunloh started all 36 games and has a top-tier shot-blocking profile. As a sophomore returner with production, size, and development runway, he should jump much higher than his historical anchor alone.",
+      "teamContext": {
+        "starterEvidence": "Virginia lists 36 starts and 2.2 blocks per game in 2025-26.",
+        "roleCap": "Defense-first center with growing offense, not a primary scorer.",
+        "positionCompetition": "UVA has used a center split, so minutes ceiling is strong but not extreme."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/sports/mbball/roster/player/johann-grunloh",
+          "notes": "Started all 36 games, averaged 7.1 points, 5.2 rebounds, and 2.2 blocks."
+        },
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/news/2026/03/11/cavalier-centers-spell-double-trouble-for-opponents",
+          "notes": "Describes Grunloh as the starting center in a productive center pairing."
+        }
+      ]
+    },
+    {
+      "sourceRow": 102,
+      "player": "Brandon Benjamin",
+      "currentTeam": "Boston College",
+      "previousTeam": "Fairfield",
+      "status": "researched_suggestion",
+      "historicalRating": 63.0229,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "opportunityScore": 86.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 84,
+        "talentScore": 78.6,
+        "projectionScore": 82.55,
+        "projectedBbpr": 67.9047,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Benjamin's freshman production and offensive rebounding profile are strong enough to project a major Boston College role. Still, the ACC jump keeps this short of star scoring territory.",
+      "teamContext": {
+        "starterEvidence": "Boston College added Benjamin after a 14.6/10.4 freshman season and major rebounding signal.",
+        "roleCap": "Likely frontcourt starter/major-minute rebounder, but moving up substantially in competition.",
+        "positionCompetition": "BC added several transfers, though few match his rebounding profile."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/bostoncollege/basketball/boston-college-men-basketball-lands-fairfield-transfer-forward-out-of-portal",
+          "notes": "Reports 14.6 PPG, 10.4 RPG, 1.6 BPG and top returning offensive-rebounder context."
+        }
+      ]
+    },
+    {
+      "sourceRow": 389,
+      "player": "Andrew McKeever",
+      "currentTeam": "Iowa",
+      "previousTeam": "Saint Mary's",
+      "status": "researched_suggestion",
+      "historicalRating": 62.8626,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 74,
+        "opportunityScore": 85.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 73.12,
+        "projectedBbpr": 65.4269,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "McKeever has strong projected-lineup evidence and elite size/rebounding. His offensive burden is capped because he is more interior finisher/high-post connector than alpha scorer.",
+      "teamContext": {
+        "starterEvidence": "Iowa projected-lineup coverage lists McKeever at center.",
+        "roleCap": "Starting center with rebounding/playmaking value, not primary usage.",
+        "positionCompetition": "Cam Manyawu and other Iowa forwards keep usage shared."
+      },
+      "evidence": [
+        {
+          "source": "Iowa Athletics",
+          "url": "https://hawkeyesports.com/news/2026/04/24/7-foot-3-center-andrew-mckeever-signs-with-iowa-hoops",
+          "notes": "Iowa signs McKeever after 8.2 PPG, 9.2 RPG, 10 starts and elite rebounding at Saint Mary's."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/iowa/basketball/projecting-iowa-starting-lineup-after-andrew-mckeever-commitment",
+          "notes": "Projects McKeever as Iowa's starting center."
+        }
+      ]
+    },
+    {
+      "sourceRow": 150,
+      "player": "Elijah Crawford",
+      "currentTeam": "Villanova",
+      "previousTeam": "UIC",
+      "status": "researched_suggestion",
+      "historicalRating": 62.216,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 80,
+        "offensiveBurden": 84,
+        "opportunityScore": 83.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 82,
+        "talentScore": 78.4,
+        "projectionScore": 77.13,
+        "projectedBbpr": 65.9445,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Crawford profiles as a major guard addition after leading UIC in scoring and assists, but Villanova has enough perimeter/wing options that starter credit should stay uncertain for now.",
+      "teamContext": {
+        "starterEvidence": "Villanova describes Crawford as a dynamic leader and creator, but not as a guaranteed starter.",
+        "roleCap": "Major rotation guard/creator with possible starting path.",
+        "positionCompetition": "Tyler Perkins, Devin Royal, Kwame Evans, Jake Fiegen, and Adam Oumiddoch keep the lineup competitive."
+      },
+      "evidence": [
+        {
+          "source": "Villanova Athletics",
+          "url": "https://villanova.com/news/2026/5/4/mens-basketball-wildcats-add-crawford-to-guard-group-for-2026-27.aspx",
+          "notes": "Crawford joins Villanova after All-MVC production at UIC."
+        },
+        {
+          "source": "Villanova Athletics",
+          "url": "https://villanova.com/sports/mens-basketball/roster/elijah-crawford/16295",
+          "notes": "Roster bio lists 14.1 PPG, 113 assists, 17 starts and All-MVC honors."
+        }
+      ]
+    },
+    {
+      "sourceRow": 288,
+      "player": "John Mobley Jr.",
+      "currentTeam": "Ohio State",
+      "previousTeam": "Ohio State",
+      "status": "researched_suggestion",
+      "historicalRating": 62.0003,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 96,
+        "opportunityChange": 88,
+        "offensiveBurden": 91,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 89,
+        "talentScore": 84.8,
+        "projectionScore": 83.51,
+        "projectedBbpr": 74.9061,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Mobley started every game, scored 15.7 PPG, and is one of the country's premier shooters. He should be treated as a proven high-major lead scorer, especially with Bruce Thornton gone.",
+      "teamContext": {
+        "starterEvidence": "Ohio State lists 31 starts and All-Big Ten honorable mention production.",
+        "roleCap": "Clear starting guard and likely offensive focal point, with freshman Anthony Thompson also demanding touches.",
+        "positionCompetition": "Curtis Givens, Jimmie Williams, Justin Pippen, and Anthony Thompson share creation."
+      },
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster/john-mobley-jr/13469",
+          "notes": "Mobley started 31 games, averaged 15.7 PPG, and shot over 41 percent from three."
+        },
+        {
+          "source": "Land-Grant Holy Land",
+          "url": "https://www.landgrantholyland.com/theme-weeks/118913/the-one-thing-theme-week-ohio-state-buckeyes-mens-basketball-ncaa-tournament-john-mobley-jr-big-ten",
+          "notes": "Frames Mobley as one of Ohio State's key returning players for 2026-27."
+        }
+      ]
+    },
+    {
+      "sourceRow": 151,
+      "player": "Anton Bonke",
+      "currentTeam": "Michigan State",
+      "previousTeam": "Charlotte",
+      "status": "researched_suggestion",
+      "historicalRating": 61.0037,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 70,
+        "opportunityScore": 79.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 71.02,
+        "projectedBbpr": 63.5078,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Bonke gives Michigan State real size and rebounding, but the Spartans list Carson Cooper, Jaxon Kohler, Coen Carr, and young forwards too. Treat him as a high-rotation center with starter upside, not a lock.",
+      "teamContext": {
+        "starterEvidence": "Transfer reports confirm Bonke's 10.6/8.3/1.5 production, but Michigan State's roster has veteran frontcourt competition.",
+        "roleCap": "Center rotation piece with matchup-starter path.",
+        "positionCompetition": "Carson Cooper, Jaxon Kohler, Coen Carr, and Cam Ward reduce certainty."
+      },
+      "evidence": [
+        {
+          "source": "Sporting News",
+          "url": "https://www.sportingnews.com/us/ncaa-basketball/michigan-state/news/michigan-state-spartans-get-7-foot-2-center-transfer-portal-commitment-tom-izzo/531b9390a1c32704d64b2f0f",
+          "notes": "Reports Bonke's commitment and 10.6 PPG, 8.3 RPG, 1.5 BPG at Charlotte."
+        },
+        {
+          "source": "Charlotte Athletics",
+          "url": "https://charlotte49ers.com/sports/mens-basketball/roster/anton-bonke/12687",
+          "notes": "Bio lists 32 starts, 8.3 RPG, and 51 blocks in 2025-26."
+        }
+      ]
+    },
+    {
+      "sourceRow": 137,
+      "player": "Mouhamed Dioubate",
+      "currentTeam": "LSU",
+      "previousTeam": "Kentucky",
+      "status": "researched_suggestion",
+      "historicalRating": 60.563,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 89,
+        "opportunityChange": 86,
+        "offensiveBurden": 78,
+        "opportunityScore": 85.9,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 73,
+        "upsideToolsScore": 80,
+        "talentScore": 75.8,
+        "projectionScore": 73.165,
+        "projectedBbpr": 63.7135,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dioubate is a proven SEC veteran and one of Will Wade's first LSU building blocks. Role is strong because LSU is rebuilding, but offensive burden stays moderate because his best value is physicality, defense, and connective frontcourt play.",
+      "teamContext": {
+        "starterEvidence": "LSU announced him as an SEC veteran addition with 10 starts and over 100 career games.",
+        "roleCap": "Likely starter/closing forward, not primary shot creator.",
+        "positionCompetition": "LSU's new roster build should give minutes, but final usage depends on additional portal guards."
+      },
+      "evidence": [
+        {
+          "source": "LSU Athletics",
+          "url": "https://lsusports.net/news/2026/06/11/sec-veteran-mo-dioubate-is-signed-and-on-campus-for-2026-27-lsu-basketball-season",
+          "notes": "Dioubate signed with LSU after playing 31 games and starting 10 for Kentucky."
+        }
+      ]
+    },
+    {
+      "sourceRow": 373,
+      "player": "Blake Buchanan",
+      "currentTeam": "Iowa State",
+      "previousTeam": "Iowa State",
+      "status": "researched_suggestion",
+      "historicalRating": 60.1665,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 86,
+        "offensiveBurden": 75,
+        "opportunityScore": 86.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 74.315,
+        "projectedBbpr": 67.2408,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Buchanan started 36 games for Iowa State and returns as a senior glue big. The projection rewards his locked role and efficiency while capping scoring burden.",
+      "teamContext": {
+        "starterEvidence": "Iowa State lists 36 starts and 24.5 MPG in 2025-26.",
+        "roleCap": "High-floor returning starter, lower alpha-scoring profile.",
+        "positionCompetition": "Iowa State's offensive usage is likely spread across guards/wings."
+      },
+      "evidence": [
+        {
+          "source": "Iowa State Athletics",
+          "url": "https://cyclones.com/sports/mens-basketball/roster/blake-buchanan/14749",
+          "notes": "Buchanan appeared in all 37 games, started 36, averaged 8.5 PPG and 5.7 RPG."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/iowa-state/basketball/blake-buchanan-on-why-he-s-returning-to-iowa-state-basketball",
+          "notes": "Frames Buchanan's return as important for Iowa State's continuity."
+        }
+      ]
+    },
+    {
+      "sourceRow": 72,
+      "player": "Damarion Dennis",
+      "currentTeam": "Texas Tech",
+      "previousTeam": "Wyoming",
+      "status": "researched_suggestion",
+      "historicalRating": 60.0628,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 75,
+        "opportunityScore": 78.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 73.08,
+        "projectedBbpr": 63.3171,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dennis is a productive guard and defensive competitor, but Texas Tech has a crowded guard group plus JT Toppin as the clear star. He gets rotation/possible starter credit without overrating role.",
+      "teamContext": {
+        "starterEvidence": "Texas Tech lists him on the roster and signed him after 11.2 PPG at Wyoming, but the starting lineup is crowded.",
+        "roleCap": "Rotation guard with starter path if defense translates.",
+        "positionCompetition": "Cruz Davis, Dra Gibbs-Lawhorn, DaKari Spear, and JT Toppin shape the role."
+      },
+      "evidence": [
+        {
+          "source": "Texas Tech Athletics",
+          "url": "https://texastech.com/news/2026/4/21/mens-basketball-officially-signed-damarion-dennis",
+          "notes": "Texas Tech signs Dennis after 11.2 PPG, 3.2 RPG and 1.3 APG at Wyoming."
+        },
+        {
+          "source": "Texas Tech Athletics",
+          "url": "https://texastech.com/news/2026/7/21/mens-basketball-newcomer-q-a-with-damarion-dennis",
+          "notes": "Dennis describes his role value as pace control and defending the other team's best player."
+        }
+      ]
+    },
+    {
+      "sourceRow": 339,
+      "player": "Braden Frager",
+      "currentTeam": "Nebraska",
+      "previousTeam": "Nebraska",
+      "status": "researched_suggestion",
+      "historicalRating": 59.2049,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 87,
+        "opportunityScore": 90.9,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 85.325,
+        "projectedBbpr": 77.664,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Frager was Big Ten Sixth Man of the Year and local coverage says he was set to step into a starting role. Sophomore development and expanded role justify a big lift from his historical anchor.",
+      "teamContext": {
+        "starterEvidence": "Nebraska coverage says Frager was set to step into a starting role after key departures.",
+        "roleCap": "Major returning scorer with increased role, though Pryce Sandfort remains the higher national anchor.",
+        "positionCompetition": "Nebraska added frontcourt help, but Frager's wing/forward scoring role is clean."
+      },
+      "evidence": [
+        {
+          "source": "Nebraska Athletics",
+          "url": "https://huskers.com/sports/mens-basketball/roster/player/braden-frager",
+          "notes": "Frager won Big Ten Sixth Man of the Year and averaged 11.8 PPG as a redshirt freshman."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/nebraska/basketball/braden-frager-is-officially-set-to-return-to-nebrasketball-2026",
+          "notes": "Notes Frager's return and expected move into a starting role."
+        }
+      ]
+    },
+    {
+      "sourceRow": 182,
+      "player": "Amari Allen",
+      "currentTeam": "Alabama",
+      "previousTeam": "Alabama",
+      "status": "researched_suggestion",
+      "historicalRating": 59.0779,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 85,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 84.875,
+        "projectedBbpr": 68.1064,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Allen is a returning SEC All-Freshman forward with a meaningful draft-stock narrative. He should get a sophomore bump, but Alabama's deep frontcourt keeps him below the very top returning-star tier for now.",
+      "teamContext": {
+        "starterEvidence": "Alabama coverage frames Allen as a catalyst for the 2026-27 roster.",
+        "roleCap": "Likely starting/closing forward but on a roster with several frontcourt transfers.",
+        "positionCompetition": "Brandon Garrison, Drew Fielder, London Jemison, Jamarion Davis-Fleming, and Cole Cloer share frontcourt minutes."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/alabama/basketball/what-amari-allen-return-means-alabama-2026-27-season",
+          "notes": "Frames Allen as a needed catalyst and draft-stock returner for Alabama."
+        },
+        {
+          "source": "Alabama Athletics",
+          "url": "https://rolltide.com/sports/mens-basketball/roster/amari-allen/15275",
+          "notes": "Lists SEC All-Freshman Team and three SEC Freshman of the Week honors."
+        }
+      ]
+    },
+    {
+      "sourceRow": 113,
+      "player": "Damon Wilkinson",
+      "currentTeam": "Nebraska",
+      "previousTeam": "South Dakota State",
+      "status": "researched_suggestion",
+      "historicalRating": 59.0544,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 73.46,
+        "projectedBbpr": 62.6558,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Wilkinson was a productive Summit League big, but Nebraska coverage explicitly stops short of calling him a guaranteed starter. He profiles as a rotation frontcourt piece with room to grow.",
+      "teamContext": {
+        "starterEvidence": "Nebraska coverage says he may or may not start, but should factor into the rotation.",
+        "roleCap": "Rotation/possible starter big moving up to the Big Ten.",
+        "positionCompetition": "Leo Curtis and added frontcourt pieces lower starter certainty."
+      },
+      "evidence": [
+        {
+          "source": "Nebraska Athletics",
+          "url": "https://huskers.com/news/2026/05/11/huskers-sign-damon-wilkinson",
+          "notes": "Wilkinson averaged 13.9 PPG and 6.4 RPG at South Dakota State."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/nebraska/south-dakota-state-center-damon-wilkinson-commits-to-nebraska-basketball-2026",
+          "notes": "Notes that even if he does not start, Wilkinson should factor into Nebraska's rotation."
+        }
+      ]
+    },
+    {
+      "sourceRow": 308,
+      "player": "Carey Booth",
+      "currentTeam": "Colorado State",
+      "previousTeam": "Colorado State",
+      "status": "researched_suggestion",
+      "historicalRating": 58.9158,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 84.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 72.21,
+        "projectedBbpr": 65.563,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Booth started 32 games and is one of the better Pac-12 returners. His value is efficient, versatile forward play rather than a high-usage national-star profile.",
+      "teamContext": {
+        "starterEvidence": "Colorado State lists Booth as a 32-game starter in 2025-26.",
+        "roleCap": "Returning starter and top-10 Pac-12 returner, but not clear primary creator.",
+        "positionCompetition": "Colorado State returns/adds multiple rotation pieces, spreading usage."
+      },
+      "evidence": [
+        {
+          "source": "Colorado State Athletics",
+          "url": "https://csurams.com/sports/mens-basketball/roster/carey-booth/14954",
+          "notes": "Booth started 32 games, averaged 10.7 PPG and 5.6 RPG, and shot 40.7 percent from three."
+        },
+        {
+          "source": "106.9 FM / 1390 AM The Fan",
+          "url": "https://1069thefan.com/2026/06/01/ranking-the-top-returning-players-for-pac-12-mens-basketball-sports/",
+          "notes": "Ranks Booth among the top returning Pac-12 players."
+        }
+      ]
+    },
+    {
+      "sourceRow": 337,
+      "player": "Nigel James Jr.",
+      "currentTeam": "Marquette",
+      "previousTeam": "Marquette",
+      "status": "researched_suggestion",
+      "historicalRating": 58.6342,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 97,
+        "opportunityChange": 91,
+        "offensiveBurden": 92,
+        "opportunityScore": 94.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 86,
+        "upsideToolsScore": 88,
+        "talentScore": 86.8,
+        "projectionScore": 88.735,
+        "projectedBbpr": 82.7148,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "James has the strongest breakout-returner signal in this batch: Big East Freshman of the Year, All-Big East, huge league scoring/assist/steal ranks, and explicit national-star language. This should be a top-50 caliber projection.",
+      "teamContext": {
+        "starterEvidence": "Big East summer check-in calls James one of the best players in the country and Marquette's lead returner.",
+        "roleCap": "Clear lead guard/star role, though Marquette added supporting transfers.",
+        "positionCompetition": "Nolan Minessale and Sananda Fru help, but James remains the hierarchy leader."
+      },
+      "evidence": [
+        {
+          "source": "Big East",
+          "url": "https://www.bigeast.com/news/2026/7/16/mens-basketball-2026-big-east-summer-check-in-series-marquette.aspx",
+          "notes": "Calls James one of the best players in the country and notes top returning Big East scoring/assist/steal marks."
+        },
+        {
+          "source": "Marquette Athletics",
+          "url": "https://gomarquette.com/sports/mens-basketball/roster",
+          "notes": "Lists James on the 2026-27 Marquette roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 138,
+      "player": "Jimmie Williams",
+      "currentTeam": "Ohio State",
+      "previousTeam": "Duquesne",
+      "status": "researched_suggestion",
+      "historicalRating": 58.0987,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 83,
+        "opportunityChange": 76,
+        "offensiveBurden": 77,
+        "opportunityScore": 79.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 69.485,
+        "projectedBbpr": 60.9453,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Williams was an All-A-10 producer, but Ohio State's backcourt/wing rotation is crowded. Good rotation score, but no free starter bump.",
+      "teamContext": {
+        "starterEvidence": "Ohio State added Williams after third-team All-A-10 production, but no clean projected-starter signal surfaced.",
+        "roleCap": "Veteran scoring/defensive guard in a crowded high-major rotation.",
+        "positionCompetition": "John Mobley Jr., Curtis Givens, Anthony Thompson, Justin Pippen, and young guards compete for minutes."
+      },
+      "evidence": [
+        {
+          "source": "Eleven Warriors",
+          "url": "https://www.elevenwarriors.com/ohio-state-basketball-recruiting/2026/04/162185/duquesne-transfer-guard-jimmie-williams-commits-to-ohio-state",
+          "notes": "Reports Williams' commitment and 15.1 PPG, 4.5 RPG, 2.6 APG with third-team All-A-10 honors."
+        },
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Lists Williams on the 2026-27 Ohio State roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 97,
+      "player": "Mikey Lewis",
+      "currentTeam": "Texas",
+      "previousTeam": "Saint Mary's",
+      "status": "researched_suggestion",
+      "historicalRating": 58.0522,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 80,
+        "offensiveBurden": 82,
+        "opportunityScore": 83.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 76.21,
+        "projectedBbpr": 62.5917,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Lewis is a first-team All-WCC shooter/scorer joining a high-end Texas transfer class. He should be a major rotation guard, but a crowded roster keeps starter certainty below yes.",
+      "teamContext": {
+        "starterEvidence": "Texas signs him after starting all 33 games at Saint Mary's, but the Longhorns have multiple portal guards/wings.",
+        "roleCap": "High-major scoring guard with real shooting value, uncertain starting spot.",
+        "positionCompetition": "Texas also added David Punch, Amari Evans, Elyjah Freeman, Isaiah Johnson, and other rotation players."
+      },
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/news/2026/5/2/mens-basketball-mens-basketball-signs-mikey-lewis",
+          "notes": "Lewis earned first-team All-WCC, started all 33 games, and averaged 13.9 PPG."
+        }
+      ]
+    },
+    {
+      "sourceRow": 327,
+      "player": "Barrington Hargress",
+      "currentTeam": "Colorado",
+      "previousTeam": "Colorado",
+      "status": "researched_suggestion",
+      "historicalRating": 57.9237,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 90,
+        "offensiveBurden": 91,
+        "opportunityScore": 92.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 79,
+        "talentScore": 74.8,
+        "projectionScore": 75.235,
+        "projectedBbpr": 66.5794,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Hargress is a proven high-usage lead guard returning after strong scoring, elite efficiency, and assist-to-turnover production. The final score is limited by lower NBA/upside inputs, not role.",
+      "teamContext": {
+        "starterEvidence": "Colorado announced Hargress' return as a leader and build-around point guard.",
+        "roleCap": "Clear lead-guard role, but not a major NBA projection.",
+        "positionCompetition": "Colorado's roster adds guards, but Hargress owns the clearest creation role."
+      },
+      "evidence": [
+        {
+          "source": "Colorado Athletics",
+          "url": "https://cubuffs.com/news/2026/3/28/mens-basketball-barrington-hargress-to-return-to-colorado-for-2026-27",
+          "notes": "Hargress returns after 14.2 PPG, 4.5 APG, elite three-point shooting, and top-tier assist-to-turnover production."
+        }
+      ]
+    },
+    {
+      "sourceRow": 209,
+      "player": "Abdou Toure",
+      "currentTeam": "Arkansas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.9,
+        "projectionScore": 90.38,
+        "projectedBbpr": 80,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Toure has clear top-15/top-20 recruiting signal and major all-star recognition. Arkansas is loaded with other elite freshmen and returners, so he gets top-newcomer talent credit but not automatic starter/alpha usage.",
+      "teamContext": {
+        "starterEvidence": "Arkansas lists Toure as a five-star freshman with top-15 rankings across major services, but the roster is freshman-heavy and competitive.",
+        "roleCap": "High-impact freshman wing; starter possible, usage shared.",
+        "positionCompetition": "Jordan Smith Jr., JJ Andrews, Billy Richmond III, and additional freshmen/returners crowd wing touches."
+      },
+      "evidence": [
+        {
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/roster/abdou-toure/",
+          "notes": "Lists Toure as a five-star with national ranks between No. 9 and No. 15 and strong senior/FIBA production."
+        }
+      ]
+    },
+    {
+      "sourceRow": 178,
+      "player": "Babatunde Oladotun",
+      "currentTeam": "Maryland",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 88.7,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.5,
+        "projectionScore": 93.49,
+        "projectedBbpr": 83,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Oladotun is the rare freshman who should sit near the top tier: consensus elite recruit, top draft signal, plus a plausible major Maryland role. He is still capped below the most proven stars until college usage is real.",
+      "teamContext": {
+        "starterEvidence": "Recruiting/draft sources frame him as an elite top-10 type prospect; Maryland role still needs lineup confirmation.",
+        "roleCap": "Freshman star path, but not enough college evidence to pass the top proven returners.",
+        "positionCompetition": "Maryland's final veteran roster context should be checked before applying a maximum role."
+      },
+      "evidence": [
+        {
+          "source": "PrepRanks",
+          "url": "https://www.prepranks.com/basketball/recruits/baba-oladotun-2026/",
+          "notes": "Shows Oladotun as a consensus top-10 level Maryland commit."
+        },
+        {
+          "source": "NBA Draft Room",
+          "url": "https://nbadraftroom.com/baba-oladotun/",
+          "notes": "Projects Oladotun as a future first-round candidate with elite size/shooting tools."
+        }
+      ]
+    },
+    {
+      "sourceRow": 255,
+      "player": "Boyuan Zhang",
+      "currentTeam": "Louisville",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 76,
+        "opportunityChange": 72,
+        "offensiveBurden": 75,
+        "opportunityScore": 74.6,
+        "entryTalentGrade": 93,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 87.9,
+        "projectionScore": 84.305,
+        "projectedBbpr": 75.7,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Zhang is a strong international/freshman scoring prospect, but Louisville's roster is loaded with older transfers and top-end frontcourt talent. His ranking should reflect future upside more than guaranteed year-one usage.",
+      "teamContext": {
+        "starterEvidence": "Louisville praises his scoring profile, but the roster includes multiple veteran transfer starters.",
+        "roleCap": "Bench/rotation freshman scorer with upside.",
+        "positionCompetition": "Flory Bidunga, Alvaro Folgueiras, Karter Knox, Jackson Shelstad, Adrian Wooley, London Johnson, and De'Shayne Montgomery crowd usage."
+      },
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/news/2026/6/2/mens-basketball-boyuan-zhang-signs-to-cardinals",
+          "notes": "Louisville signs Zhang after strong EYBL Scholastic and FIBA production."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/louisville/basketball/boyuan-zhang-commits",
+          "notes": "Lists Zhang as a consensus four-star and top-50 level recruit by some services."
+        }
+      ]
+    },
+    {
+      "sourceRow": 216,
+      "player": "JJ Andrews",
+      "currentTeam": "Arkansas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 85,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.1,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 90,
+        "upsideToolsScore": 92,
+        "talentScore": 93.3,
+        "projectionScore": 89.6,
+        "projectedBbpr": 79,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Andrews is a McDonald's All-American/top-20-ish recruit with monster prep production. He should not be buried, but Arkansas has enough elite wings/freshmen that he should be mixed into the rankings instead of stacked with identical newcomer scores.",
+      "teamContext": {
+        "starterEvidence": "Arkansas lists top-12 to top-22 national rankings and elite all-star/prep production, but no guaranteed-starter signal.",
+        "roleCap": "High-impact freshman wing in a crowded Calipari roster.",
+        "positionCompetition": "Jordan Smith Jr., Abdou Toure, Billy Richmond III, and additional freshmen limit certainty."
+      },
+      "evidence": [
+        {
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/roster/jj-andrews/",
+          "notes": "Lists Andrews as a five-star by 247/ESPN and a 2026 McDonald's All-American."
+        }
+      ]
+    },
+    {
+      "sourceRow": 284,
+      "player": "Kayden Allen",
+      "currentTeam": "Georgia Tech",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 79,
+        "opportunityChange": 76,
+        "offensiveBurden": 76,
+        "opportunityScore": 77.5,
+        "entryTalentGrade": 91,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 86,
+        "talentScore": 86.6,
+        "projectionScore": 85.205,
+        "projectedBbpr": 75.8,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Allen has clear four-star/top-50 recruiting evidence and a strong EYBL scoring summer. Georgia Tech should have a pathway for him, but starter/usage still needs more lineup evidence.",
+      "teamContext": {
+        "starterEvidence": "Georgia Tech announced him as a four-star top-50 recruit, but not as a projected starter.",
+        "roleCap": "Freshman rotation guard/wing with scoring upside.",
+        "positionCompetition": "Georgia Tech also signed multiple guards and has returning perimeter options."
+      },
+      "evidence": [
+        {
+          "source": "Georgia Tech Athletics",
+          "url": "https://ramblinwreck.com/mens-basketball-adds-kayden-allen/",
+          "notes": "Allen signed with Georgia Tech as a four-star guard ranked No. 47 by 247Sports."
+        }
+      ]
+    },
+    {
+      "sourceRow": 222,
+      "player": "Lucas Morillo",
+      "currentTeam": "Illinois",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 76,
+        "offensiveBurden": 77,
+        "opportunityScore": 78.2,
+        "entryTalentGrade": 92,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 87,
+        "talentScore": 88,
+        "projectionScore": 85.99,
+        "projectedBbpr": 76.2,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Morillo gets separated above ordinary freshmen because of top-50/top-75 recruiting signal, size, playmaking, and FIBA production. Illinois depth keeps him below the freshman stars with clearer immediate alpha paths.",
+      "teamContext": {
+        "starterEvidence": "Illinois announced Morillo as a top-20 Rivals/top-50 composite prospect, but not a projected starter.",
+        "roleCap": "Rotation guard/wing with multi-positional upside.",
+        "positionCompetition": "Quentin Coleman and Illinois' veteran guard/wing mix cap freshman certainty."
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/news/2025/11/20/mens-basketball-morillo-signs-with-illinois",
+          "notes": "Morillo signs as a four-star with top-50/top-75 service rankings and strong junior/FIBA production."
+        },
+        {
+          "source": "The Champaign Room",
+          "url": "https://www.thechampaignroom.com/illinois-fighting-illini-basketball-news/54087/2026-recruiting-class-will-they-or-wont-they-fighting-illini-big-ten-college-basketball-recruits-brad-underwood",
+          "notes": "Frames Morillo as an important but not necessarily lead piece in Illinois' freshman class."
+        }
+      ]
+    },
+    {
+      "sourceRow": 277,
+      "player": "Maikcol Perez",
+      "currentTeam": "Baylor",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 74,
+        "opportunityChange": 70,
+        "offensiveBurden": 72,
+        "opportunityScore": 72.4,
+        "entryTalentGrade": 87,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 83.6,
+        "projectionScore": 81.84,
+        "projectedBbpr": 73.6,
+        "confidenceScore": 72,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Perez has strong international skill indicators, but Baylor notes a preseason injury and a roster with many transfers/freshmen. That makes him more of a developmental upside projection for now.",
+      "teamContext": {
+        "starterEvidence": "Baylor highlighted his FIBA profile, while later Baylor context noted preseason injury and a backup path.",
+        "roleCap": "International freshman rotation/developmental role.",
+        "positionCompetition": "Baylor added nine transfers and multiple freshmen; Justin Bodo Bodo and other frontcourt players affect minutes."
+      },
+      "evidence": [
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/news/2025/5/21/mens-basketball-mbb-adds-italian-forward-perez",
+          "notes": "Perez averaged 14.6 points, 8.6 rebounds, and 4.6 assists for Italy at the 2024 U17 FIBA World Cup."
+        },
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/news/2026/3/9/mens-basketball-my-baylor-story-my-baylor-connection",
+          "notes": "Baylor context mentions preseason injuries and a crowded roster including freshman Perez."
+        }
+      ]
+    },
+    {
+      "sourceRow": 188,
+      "player": "Obinna Ekezie Jr.",
+      "currentTeam": "Louisville",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 79.2,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 95,
+        "talentScore": 96.25,
+        "projectionScore": 89.325,
+        "projectedBbpr": 79,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Ekezie has elite prospect signal, including reclassifying from No. 1 center status, but Louisville's roster has Flory Bidunga and veteran transfers. Talent is premium; role is intentionally capped.",
+      "teamContext": {
+        "starterEvidence": "Louisville calls him one of the nation's premier prospects, but the current frontcourt is loaded.",
+        "roleCap": "High-upside freshman center, not a guaranteed starter because of Flory/transfer depth.",
+        "positionCompetition": "Flory Bidunga, Alvaro Folgueiras, Gabe Dynes, Karter Knox, and Boyuan Zhang compete for frontcourt minutes."
+      },
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/news/2026/6/2/mens-basketball-cardinals-add-incoming-freshman-obinna-ekezie",
+          "notes": "Louisville signs Ekezie after he reclassified from the 2027 class and ranked No. 8 in SC Next 100 for 2026."
+        },
+        {
+          "source": "Field Level Media",
+          "url": "https://fieldlevelmedia.com/ncaab/5-star-c-obinna-ekezie-jr-picks-louisville-reclassifies-to-26/",
+          "notes": "Reports Ekezie was the No. 4 overall prospect in 2027 before reclassifying."
+        }
+      ]
+    },
+    {
+      "sourceRow": 367,
+      "player": "Toni Bryant",
+      "currentTeam": "Missouri",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 85.6,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.1,
+        "projectionScore": 91.455,
+        "projectedBbpr": 81.5,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Bryant has five-star/top-20 evidence, McDonald's All-American performance, and a strong fit with Missouri's system. He belongs high among freshmen, but with Jason Crowe also driving the class, his offensive burden is shared.",
+      "teamContext": {
+        "starterEvidence": "Missouri calls Bryant a five-star top-20 signee in a top-ranked class; starter still needs lineup confirmation.",
+        "roleCap": "Likely major freshman forward with starter upside.",
+        "positionCompetition": "Jason Crowe Jr. and Missouri's older returning/transfer pieces share shots."
+      },
+      "evidence": [
+        {
+          "source": "Missouri Athletics",
+          "url": "https://mutigers.com/news/2025/11/12/mens-basketball-toni-bryant-leads-off-no-1-signing-class-for-mens-basketball",
+          "notes": "Bryant signs as a five-star top-20 recruit and highly versatile frontcourt prospect."
+        },
+        {
+          "source": "Missouri Athletics",
+          "url": "https://mutigers.com/news/2026/04/01/crowe-and-bryant-shine-in-mcdonalds-all-american-game",
+          "notes": "Bryant scored 14 points with five rebounds and two blocks in the McDonald's All-American Game."
+        }
+      ]
+    },
+    {
+      "sourceRow": 417,
+      "player": "Maximo Adams",
+      "currentTeam": "North Carolina",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 77,
+        "offensiveBurden": 77,
+        "opportunityScore": 79.5,
+        "entryTalentGrade": 96,
+        "nbaProjectionScore": 89,
+        "upsideToolsScore": 91,
+        "talentScore": 92.3,
+        "projectionScore": 88.085,
+        "projectedBbpr": 77.3,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Adams is a top-25 recruit by ESPN with legitimate tools, but North Carolina role context needs more confirmation. He gets strong freshman talent credit while staying behind the elite-newcomer and proven-star tiers.",
+      "teamContext": {
+        "starterEvidence": "ESPN lists Adams as a signed North Carolina recruit with top-25 national positioning.",
+        "roleCap": "High-upside freshman forward, uncertain year-one starting path.",
+        "positionCompetition": "North Carolina's veteran roster and other frontcourt additions need final depth-chart verification."
+      },
+      "evidence": [
+        {
+          "source": "ESPN",
+          "url": "https://www.espn.com/college-sports/basketball/recruiting/player/_/id/255090/maximo-adams",
+          "notes": "Lists Adams as a signed North Carolina recruit with an 89 scout grade and No. 21 national rank."
+        }
+      ]
+    },
+    {
+      "sourceRow": 533,
+      "player": "Tajh Ariza",
+      "currentTeam": "Oregon",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": null,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 80,
+        "offensiveBurden": 77,
+        "opportunityScore": 81.4,
+        "entryTalentGrade": 95,
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 92,
+        "talentScore": 91.8,
+        "projectionScore": 88.75,
+        "projectedBbpr": 78,
+        "confidenceScore": 80,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Ariza has five-star and top-30-ish service signals with immediate-impact language from Oregon. He is above ordinary freshmen, but not given starter certainty without a full Oregon depth-chart signal.",
+      "teamContext": {
+        "starterEvidence": "Oregon says Ariza can make an immediate impact, but does not define him as a starter.",
+        "roleCap": "Immediate-impact freshman wing with shared usage.",
+        "positionCompetition": "Oregon's veteran transfer/returning mix should be checked before moving him higher."
+      },
+      "evidence": [
+        {
+          "source": "Oregon Athletics",
+          "url": "https://goducks.com/news/2025/11/13/mens-basketball-ducks-sign-tajh-ariza",
+          "notes": "Oregon signs Ariza as a five-star recruit ranked No. 14 by 247Sports and No. 24 by ESPN at signing."
+        },
+        {
+          "source": "Oregon Athletics",
+          "url": "https://goducks.com/sports/mens-basketball/roster/tajh-ariza/18455",
+          "notes": "Roster bio lists Ariza as a five-star prospect and Nike Hoop Summit/Jordan Brand/Iverson Classic participant."
+        }
+      ]
+    }
+  ]
+}
