@@ -69,21 +69,63 @@ function newcomerCertainty(player) {
   );
 }
 
+function newcomerTierSpread(player, cap, isCapLimited) {
+  const role = numeric(player.projectedRole) ?? 0;
+  const opportunity = numeric(player.opportunityScore) ?? 0;
+  const entry = numeric(player.entryTalentGrade) ?? 0;
+  const nba = numeric(player.nbaProjectionScore) ?? 0;
+  const confidence = numeric(player.confidenceScore) ?? 65;
+  const projectionScore = numeric(player.projectionScore) ?? 0;
+  const spreadLimit = isCapLimited
+    ? cap >= 84
+      ? 1.1
+      : cap >= 76
+        ? 1.7
+        : cap >= 70
+          ? 1.9
+          : 1.55
+    : cap >= 84
+      ? 0.45
+      : cap >= 76
+        ? 1.35
+        : cap >= 70
+          ? 1.55
+          : 1.25;
+  const profileSignal =
+    (role - 87) * 0.14 +
+    (opportunity - 83) * 0.07 +
+    (entry - 96) * 0.04 +
+    (nba - 90) * 0.04 +
+    (confidence - 78) * 0.05 +
+    (projectionScore - 89) * 0.025;
+  const uncertaintyDrag =
+    clamp((82 - role) * 0.08, 0, 0.65) +
+    clamp((78 - opportunity) * 0.05, 0, 0.5) +
+    clamp((75 - confidence) * 0.06, 0, 0.9) +
+    (role >= 98 ? 0 : clamp((70 - confidence) * 0.12, 0, 0.6));
+
+  return clamp(profileSignal, -spreadLimit, spreadLimit) - uncertaintyDrag;
+}
+
 function calibrateNewcomer(player) {
   const projectionScore = numeric(player.projectionScore);
   if (projectionScore == null) return numeric(player.projectedBbpr);
 
   const cap = newcomerCap(player);
   const compressed = 66 + (projectionScore - 66) * newcomerCredibility(player);
-  if (compressed <= cap) return round(compressed);
 
   const role = numeric(player.projectedRole) ?? 0;
   const certainty = newcomerCertainty(player);
   const capBand = cap >= 84 ? 4 : cap >= 76 ? 5 : cap >= 70 ? 5.5 : 4.5;
   const roleLift = clamp((role - 96) * 0.1, 0, 0.5);
   const overflowLift = clamp((compressed - cap) * 0.06, 0, 0.25);
+  const isCapLimited = compressed > cap;
+  const baseScore = isCapLimited
+    ? cap - capBand * (1 - certainty) + roleLift + overflowLift
+    : compressed;
+  const tierSpread = newcomerTierSpread(player, cap, isCapLimited);
 
-  return round(cap - capBand * (1 - certainty) + roleLift + overflowLift);
+  return round(baseScore + tierSpread);
 }
 
 function returningHistoricalWeight(player) {
