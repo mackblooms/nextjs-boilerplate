@@ -19,6 +19,7 @@
     "sim:balance": "node scripts/scoring-balance-sim.js",
     "sim:world-cup-pricing": "node scripts/world-cup-pricing-audit.js",
     "import:cbb-projections": "node scripts/import-cbb-projections.mjs",
+    "import:cbb-national-roster": "node scripts/import-cbb-national-roster.mjs",
     "audit:cbb-gold-standards": "node scripts/audit-cbb-gold-standards.mjs",
     "recalibrate:cbb-projections": "node scripts/recalibrate-cbb-projections.mjs",
     "suggest:cbb-transfers": "node scripts/suggest-cbb-transfer-projections.mjs",
