@@ -1,0 +1,1471 @@
+{
+  "generatedAt": "2026-07-22T23:35:12.742Z",
+  "source": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\player-projections.json",
+  "output": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\projection-calibration-audit.json",
+  "summary": {
+    "playerCount": 4002,
+    "completedProjectionCount": 215,
+    "top100Line": 73.014,
+    "projectedFindingCount": 47,
+    "highSeverityProjectedFindingCount": 14,
+    "pendingResearchFindingCount": 0,
+    "duplicateGroupCount": 3
+  },
+  "rules": [
+    "Flag completed projections with top-100 role/talent profiles that sit below the current top-100 line.",
+    "Flag transfers whose projection inputs are much stronger than the final BBPR because the historical anchor may be stale.",
+    "Flag returning breakout candidates whose sophomore/junior role and talent inputs are not translating into a plausible leaderboard tier.",
+    "Flag projected starters with low role/opportunity inputs.",
+    "Flag players whose research notes contain high-sentiment markers but whose BBPR remains below the top-100 line.",
+    "Flag duplicate normalized player/team records before they pollute the board."
+  ],
+  "projectedFindings": [
+    {
+      "source": "projection",
+      "sourceRow": 236,
+      "player": "Robert Wright III",
+      "currentTeam": "BYU",
+      "previousTeam": "BYU",
+      "playerType": "Returning",
+      "classYear": "Jr",
+      "rank": 33,
+      "rankTier": "top 50",
+      "projectedBbpr": 79.7566,
+      "top100Line": 73.014,
+      "historicalRating": 71.4864,
+      "projectedRole": 98,
+      "opportunityChange": 94,
+      "offensiveBurden": 96,
+      "opportunityScore": 96.4,
+      "talentScore": 86.2,
+      "projectionScore": 85.27,
+      "confidenceScore": 92,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 164,
+      "player": "Braylon Mullins",
+      "currentTeam": "Connecticut",
+      "previousTeam": "Connecticut",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 34,
+      "rankTier": "top 50",
+      "projectedBbpr": 79.7523,
+      "top100Line": 73.014,
+      "historicalRating": 42.4417,
+      "projectedRole": 96,
+      "opportunityChange": 90,
+      "offensiveBurden": 87,
+      "opportunityScore": 92.4,
+      "talentScore": 90,
+      "projectionScore": 89.08,
+      "confidenceScore": 95,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 288,
+      "player": "John Mobley Jr.",
+      "currentTeam": "Ohio State",
+      "previousTeam": "Ohio State",
+      "playerType": "Returning",
+      "classYear": "Jr",
+      "rank": 92,
+      "rankTier": "top 100",
+      "projectedBbpr": 74.9061,
+      "top100Line": 73.014,
+      "historicalRating": 62.0003,
+      "projectedRole": 96,
+      "opportunityChange": 88,
+      "offensiveBurden": 91,
+      "opportunityScore": 92.6,
+      "talentScore": 84.8,
+      "projectionScore": 83.51,
+      "confidenceScore": 92,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 128,
+      "player": "Alvaro Folgueiras",
+      "currentTeam": "Louisville",
+      "previousTeam": "Iowa",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 109,
+      "rankTier": "top 150",
+      "projectedBbpr": 71.7189,
+      "top100Line": 73.014,
+      "historicalRating": 70.4386,
+      "projectedRole": 90,
+      "opportunityChange": 86,
+      "offensiveBurden": 84,
+      "opportunityScore": 87.6,
+      "talentScore": 80.4,
+      "projectionScore": 75.56,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 244,
+      "player": "Boogie Fland",
+      "currentTeam": "Florida",
+      "previousTeam": "Florida",
+      "playerType": "Returning",
+      "classYear": "Jr",
+      "rank": 110,
+      "rankTier": "top 150",
+      "projectedBbpr": 71.6492,
+      "top100Line": 73.014,
+      "historicalRating": 51.3155,
+      "projectedRole": 96,
+      "opportunityChange": 91,
+      "offensiveBurden": 94,
+      "opportunityScore": 94.1,
+      "talentScore": 89.6,
+      "projectionScore": 85.205,
+      "confidenceScore": 88,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        },
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 205,
+      "player": "Andrej Stojakovic",
+      "currentTeam": "Illinois",
+      "previousTeam": "Illinois",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 114,
+      "rankTier": "top 150",
+      "projectedBbpr": 70.8314,
+      "top100Line": 73.014,
+      "historicalRating": 54.3186,
+      "projectedRole": 96,
+      "opportunityChange": 92,
+      "offensiveBurden": 94,
+      "opportunityScore": 94.4,
+      "talentScore": 89.6,
+      "projectionScore": 81.84,
+      "confidenceScore": 88,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 316,
+      "player": "Josh Hubbard",
+      "currentTeam": "Mississippi State",
+      "previousTeam": "Mississippi State",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 115,
+      "rankTier": "top 150",
+      "projectedBbpr": 69.975,
+      "top100Line": 73.014,
+      "historicalRating": 52.6576,
+      "projectedRole": 98,
+      "opportunityChange": 94,
+      "offensiveBurden": 98,
+      "opportunityScore": 96.8,
+      "talentScore": 85.6,
+      "projectionScore": 81.52,
+      "confidenceScore": 94,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 217,
+      "player": "Tomislav Ivisic",
+      "currentTeam": "Illinois",
+      "previousTeam": "Illinois",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 119,
+      "rankTier": "top 150",
+      "projectedBbpr": 69.0876,
+      "top100Line": 73.014,
+      "historicalRating": 53.0491,
+      "projectedRole": 95,
+      "opportunityChange": 91,
+      "offensiveBurden": 88,
+      "opportunityScore": 92.4,
+      "talentScore": 86.4,
+      "projectionScore": 79.78,
+      "confidenceScore": 90,
+      "flags": [
+        {
+          "code": "elite-role-below-top-tier",
+          "severity": "high",
+          "message": "Elite role/talent inputs are producing a BBPR below the expected top-tier floor."
+        },
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 102,
+      "player": "Brandon Benjamin",
+      "currentTeam": "Boston College",
+      "previousTeam": "Fairfield",
+      "playerType": "Transfer",
+      "classYear": "So",
+      "rank": 125,
+      "rankTier": "top 150",
+      "projectedBbpr": 67.9047,
+      "top100Line": 73.014,
+      "historicalRating": 63.0229,
+      "projectedRole": 90,
+      "opportunityChange": 86,
+      "offensiveBurden": 80,
+      "opportunityScore": 86.8,
+      "talentScore": 78.6,
+      "projectionScore": 82.55,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "transfer-anchor-drag",
+          "severity": "high",
+          "message": "Transfer formula may be over-weighting a stale/low historical anchor against current role research."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 338,
+      "player": "Rodney Rice",
+      "currentTeam": "USC",
+      "previousTeam": "USC",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 130,
+      "rankTier": "top 150",
+      "projectedBbpr": 67.4592,
+      "top100Line": 73.014,
+      "historicalRating": 54.168,
+      "projectedRole": 92,
+      "opportunityChange": 88,
+      "offensiveBurden": 90,
+      "opportunityScore": 90.4,
+      "talentScore": 80.4,
+      "projectionScore": 76.32,
+      "confidenceScore": 86,
+      "flags": [
+        {
+          "code": "top-100-profile-outside-top-100",
+          "severity": "high",
+          "message": "Starter/high-role profile with good talent and confidence sits below the current top-100 line."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 68,
+      "player": "Kwame Evans Jr.",
+      "currentTeam": "Villanova",
+      "previousTeam": "Oregon",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 169,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 61.353,
+      "top100Line": 73.014,
+      "historicalRating": 56.5023,
+      "projectedRole": 89,
+      "opportunityChange": 84,
+      "offensiveBurden": 78,
+      "opportunityScore": 85.3,
+      "talentScore": 84.4,
+      "projectionScore": 75.905,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "transfer-anchor-drag",
+          "severity": "high",
+          "message": "Transfer formula may be over-weighting a stale/low historical anchor against current role research."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 274,
+      "player": "KJ Lewis",
+      "currentTeam": "USC",
+      "previousTeam": "Georgetown",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 172,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 61.1976,
+      "top100Line": 73.014,
+      "historicalRating": 56.5351,
+      "projectedRole": 91,
+      "opportunityChange": 86,
+      "offensiveBurden": 82,
+      "opportunityScore": 87.7,
+      "talentScore": 79.2,
+      "projectionScore": 75.185,
+      "confidenceScore": 84,
+      "flags": [
+        {
+          "code": "transfer-anchor-drag",
+          "severity": "high",
+          "message": "Transfer formula may be over-weighting a stale/low historical anchor against current role research."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 388,
+      "player": "Arrinten Page",
+      "currentTeam": "Providence",
+      "previousTeam": "Northwestern",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 187,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 58.7752,
+      "top100Line": 73.014,
+      "historicalRating": 53.8003,
+      "projectedRole": 88,
+      "opportunityChange": 84,
+      "offensiveBurden": 76,
+      "opportunityScore": 84.4,
+      "talentScore": 79.2,
+      "projectionScore": 73.7,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "transfer-anchor-drag",
+          "severity": "high",
+          "message": "Transfer formula may be over-weighting a stale/low historical anchor against current role research."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 271,
+      "player": "Owen Freeman",
+      "currentTeam": "Auburn",
+      "previousTeam": "Creighton",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 189,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 58.1631,
+      "top100Line": 73.014,
+      "historicalRating": 52.6842,
+      "projectedRole": 90,
+      "opportunityChange": 86,
+      "offensiveBurden": 78,
+      "opportunityScore": 86.4,
+      "talentScore": 79.2,
+      "projectionScore": 74.6,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "transfer-anchor-drag",
+          "severity": "high",
+          "message": "Transfer formula may be over-weighting a stale/low historical anchor against current role research."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 12,
+      "player": "Flory Bidunga",
+      "currentTeam": "Louisville",
+      "previousTeam": "Kansas",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 8,
+      "rankTier": "top 10",
+      "projectedBbpr": 86.7838,
+      "top100Line": 73.014,
+      "historicalRating": 82.5338,
+      "projectedRole": 100,
+      "opportunityChange": 70,
+      "offensiveBurden": 70,
+      "opportunityScore": 85,
+      "talentScore": 65,
+      "projectionScore": 73,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 337,
+      "player": "Nigel James Jr.",
+      "currentTeam": "Marquette",
+      "previousTeam": "Marquette",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 16,
+      "rankTier": "top 25",
+      "projectedBbpr": 82.7148,
+      "top100Line": 73.014,
+      "historicalRating": 58.6342,
+      "projectedRole": 97,
+      "opportunityChange": 91,
+      "offensiveBurden": 92,
+      "opportunityScore": 94.2,
+      "talentScore": 86.8,
+      "projectionScore": 88.735,
+      "confidenceScore": 92,
+      "flags": [
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 8,
+      "player": "Paulius Murauskas",
+      "currentTeam": "Arizona State",
+      "previousTeam": "Saint Mary's",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 30,
+      "rankTier": "top 50",
+      "projectedBbpr": 80.9471,
+      "top100Line": 73.014,
+      "historicalRating": 86.3978,
+      "projectedRole": 90,
+      "opportunityChange": 65,
+      "offensiveBurden": 73,
+      "opportunityScore": 79.1,
+      "talentScore": 60,
+      "projectionScore": 64.595,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 6,
+      "player": "Juke Harris",
+      "currentTeam": "Tennessee",
+      "previousTeam": "Wake Forest",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 41,
+      "rankTier": "top 50",
+      "projectedBbpr": 78.7858,
+      "top100Line": 73.014,
+      "historicalRating": 81.1311,
+      "projectedRole": 90,
+      "opportunityChange": 50,
+      "offensiveBurden": 80,
+      "opportunityScore": 76,
+      "talentScore": 73,
+      "projectionScore": 71.75,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 223,
+      "player": "Johann Grunloh",
+      "currentTeam": "Virginia",
+      "previousTeam": "Virginia",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 47,
+      "rankTier": "top 50",
+      "projectedBbpr": 78.3382,
+      "top100Line": 73.014,
+      "historicalRating": 63.0391,
+      "projectedRole": 93,
+      "opportunityChange": 86,
+      "offensiveBurden": 76,
+      "opportunityScore": 87.5,
+      "talentScore": 84.4,
+      "projectionScore": 84.895,
+      "confidenceScore": 90,
+      "flags": [
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 39,
+      "player": "Nolan Minessale",
+      "currentTeam": "Marquette",
+      "previousTeam": "St. Thomas (MN)",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 49,
+      "rankTier": "top 50",
+      "projectedBbpr": 78.1256,
+      "top100Line": 73.014,
+      "historicalRating": 84.0241,
+      "projectedRole": 80,
+      "opportunityChange": 38,
+      "offensiveBurden": 75,
+      "opportunityScore": 66.4,
+      "talentScore": 53,
+      "projectionScore": 60.43,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 5,
+      "player": "Milan Momcilovic",
+      "currentTeam": "Kentucky",
+      "previousTeam": "Iowa State",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 55,
+      "rankTier": "top 100",
+      "projectedBbpr": 77.247,
+      "top100Line": 73.014,
+      "historicalRating": 80.721,
+      "projectedRole": 80,
+      "opportunityChange": 65,
+      "offensiveBurden": 80,
+      "opportunityScore": 75.5,
+      "talentScore": 71,
+      "projectionScore": 66.825,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 24,
+      "player": "DeSean Goode",
+      "currentTeam": "Miami",
+      "previousTeam": "Robert Morris",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 61,
+      "rankTier": "top 100",
+      "projectedBbpr": 76.6683,
+      "top100Line": 73.014,
+      "historicalRating": 80.6578,
+      "projectedRole": 80,
+      "opportunityChange": 40,
+      "offensiveBurden": 65,
+      "opportunityScore": 65,
+      "talentScore": 67,
+      "projectionScore": 64.7,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 189,
+      "player": "Trey McKenney Jr.",
+      "currentTeam": "Michigan",
+      "previousTeam": "Michigan",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 64,
+      "rankTier": "top 100",
+      "projectedBbpr": 76.4193,
+      "top100Line": 73.014,
+      "historicalRating": 50.7045,
+      "projectedRole": 92,
+      "opportunityChange": 88,
+      "offensiveBurden": 88,
+      "opportunityScore": 90,
+      "talentScore": 88.4,
+      "projectionScore": 87.44,
+      "confidenceScore": 84,
+      "flags": [
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 26,
+      "player": "Terrence Hill Jr.",
+      "currentTeam": "Tennessee",
+      "previousTeam": "VCU",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 77,
+      "rankTier": "top 100",
+      "projectedBbpr": 75.9264,
+      "top100Line": 73.014,
+      "historicalRating": 80.8685,
+      "projectedRole": 75,
+      "opportunityChange": 37,
+      "offensiveBurden": 70,
+      "opportunityScore": 62.6,
+      "talentScore": 59.8,
+      "projectionScore": 61.1,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 182,
+      "player": "Amari Allen",
+      "currentTeam": "Alabama",
+      "previousTeam": "Alabama",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 79,
+      "rankTier": "top 100",
+      "projectedBbpr": 75.846,
+      "top100Line": 73.014,
+      "historicalRating": 59.0779,
+      "projectedRole": 91,
+      "opportunityChange": 85,
+      "offensiveBurden": 82,
+      "opportunityScore": 87.4,
+      "talentScore": 84.4,
+      "projectionScore": 84.875,
+      "confidenceScore": 84,
+      "flags": [
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 36,
+      "player": "Jaquan Johnson",
+      "currentTeam": "Iowa State",
+      "previousTeam": "Bradley",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 80,
+      "rankTier": "top 100",
+      "projectedBbpr": 75.8218,
+      "top100Line": 73.014,
+      "historicalRating": 82.9374,
+      "projectedRole": 75,
+      "opportunityChange": 40,
+      "offensiveBurden": 65,
+      "opportunityScore": 62.5,
+      "talentScore": 41,
+      "projectionScore": 54.475,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 196,
+      "player": "Shelton Henderson",
+      "currentTeam": "Miami",
+      "previousTeam": "Miami",
+      "playerType": "Returning",
+      "classYear": "So",
+      "rank": 98,
+      "rankTier": "top 100",
+      "projectedBbpr": 73.8261,
+      "top100Line": 73.014,
+      "historicalRating": 51.1154,
+      "projectedRole": 91,
+      "opportunityChange": 88,
+      "offensiveBurden": 84,
+      "opportunityScore": 88.7,
+      "talentScore": 86.4,
+      "projectionScore": 86.055,
+      "confidenceScore": 82,
+      "flags": [
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
+        },
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 362,
+      "player": "Ousmane N'Diaye",
+      "currentTeam": "Kentucky",
+      "previousTeam": null,
+      "playerType": "International",
+      "classYear": "Fr",
+      "rank": 103,
+      "rankTier": "top 150",
+      "projectedBbpr": 72.587,
+      "top100Line": 73.014,
+      "historicalRating": null,
+      "projectedRole": 60,
+      "opportunityChange": 60,
+      "offensiveBurden": 55,
+      "opportunityScore": 59,
+      "talentScore": 64.05,
+      "projectionScore": 68.9675,
+      "confidenceScore": 55,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 336,
+      "player": "Tyler Perkins",
+      "currentTeam": "Villanova",
+      "previousTeam": "Villanova",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 105,
+      "rankTier": "top 150",
+      "projectedBbpr": 72.2343,
+      "top100Line": 73.014,
+      "historicalRating": 65.0932,
+      "projectedRole": 95,
+      "opportunityChange": 88,
+      "offensiveBurden": 88,
+      "opportunityScore": 91.5,
+      "talentScore": 79.6,
+      "projectionScore": 76.995,
+      "confidenceScore": 92,
+      "flags": [
+        {
+          "code": "sentiment-role-mismatch",
+          "severity": "medium",
+          "message": "Research notes contain high-sentiment markers, but the player remains below the top-100 line."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 352,
+      "player": "Quinn Ellis",
+      "currentTeam": "St. John's",
+      "previousTeam": null,
+      "playerType": "International",
+      "classYear": "Fr",
+      "rank": 108,
+      "rankTier": "top 150",
+      "projectedBbpr": 71.86,
+      "top100Line": 73.014,
+      "historicalRating": null,
+      "projectedRole": 60,
+      "opportunityChange": 65,
+      "offensiveBurden": 55,
+      "opportunityScore": 60.5,
+      "talentScore": 65.55,
+      "projectionScore": 70.1675,
+      "confidenceScore": 55,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 10,
+      "player": "Jack Karasinski",
+      "currentTeam": "Northwestern",
+      "previousTeam": "Bellarmine",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 111,
+      "rankTier": "top 150",
+      "projectedBbpr": 71.6018,
+      "top100Line": 73.014,
+      "historicalRating": 74.5691,
+      "projectedRole": 90,
+      "opportunityChange": 50,
+      "offensiveBurden": 90,
+      "opportunityScore": 78,
+      "talentScore": 56,
+      "projectionScore": 62.7,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 9,
+      "player": "Isaiah Johnson",
+      "currentTeam": "Texas",
+      "previousTeam": "Colorado",
+      "playerType": "Transfer",
+      "classYear": "So",
+      "rank": 113,
+      "rankTier": "top 150",
+      "projectedBbpr": 71.3564,
+      "top100Line": 73.014,
+      "historicalRating": 73.3819,
+      "projectedRole": 80,
+      "opportunityChange": 40,
+      "offensiveBurden": 62,
+      "opportunityScore": 64.4,
+      "talentScore": 58,
+      "projectionScore": 65.28,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 19,
+      "player": "Isaac Celiscar",
+      "currentTeam": "Baylor",
+      "previousTeam": "Yale",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 118,
+      "rankTier": "top 150",
+      "projectedBbpr": 69.2428,
+      "top100Line": 73.014,
+      "historicalRating": 72.2454,
+      "projectedRole": 75,
+      "opportunityChange": 50,
+      "offensiveBurden": 72,
+      "opportunityScore": 66.9,
+      "talentScore": 51.8,
+      "projectionScore": 60.235,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 23,
+      "player": "Logan Duncomb",
+      "currentTeam": "Notre Dame",
+      "previousTeam": "Winthrop",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 120,
+      "rankTier": "top 150",
+      "projectedBbpr": 68.8046,
+      "top100Line": 73.014,
+      "historicalRating": 76.1144,
+      "projectedRole": 70,
+      "opportunityChange": 25,
+      "offensiveBurden": 60,
+      "opportunityScore": 54.5,
+      "talentScore": 41,
+      "projectionScore": 46.875,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 317,
+      "player": "Miro Little",
+      "currentTeam": "UCSB",
+      "previousTeam": "UCSB",
+      "playerType": "Returning",
+      "classYear": "Sr",
+      "rank": 121,
+      "rankTier": "top 150",
+      "projectedBbpr": 68.767,
+      "top100Line": 73.014,
+      "historicalRating": 56.5076,
+      "projectedRole": 94,
+      "opportunityChange": 90,
+      "offensiveBurden": 88,
+      "opportunityScore": 91.6,
+      "talentScore": 79.2,
+      "projectionScore": 76.94,
+      "confidenceScore": 86,
+      "flags": [
+        {
+          "code": "sentiment-role-mismatch",
+          "severity": "medium",
+          "message": "Research notes contain high-sentiment markers, but the player remains below the top-100 line."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 18,
+      "player": "Daniel Freitag",
+      "currentTeam": "Oregon State",
+      "previousTeam": "Buffalo",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 126,
+      "rankTier": "top 150",
+      "projectedBbpr": 67.7741,
+      "top100Line": 73.014,
+      "historicalRating": 69.8521,
+      "projectedRole": 90,
+      "opportunityChange": 48,
+      "offensiveBurden": 80,
+      "opportunityScore": 75.4,
+      "talentScore": 44.6,
+      "projectionScore": 61.54,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 13,
+      "player": "Dedan Thomas Jr.",
+      "currentTeam": "Houston",
+      "previousTeam": "LSU",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 144,
+      "rankTier": "top 150",
+      "projectedBbpr": 65.6274,
+      "top100Line": 73.014,
+      "historicalRating": 67.4265,
+      "projectedRole": 80,
+      "opportunityChange": 70,
+      "offensiveBurden": 70,
+      "opportunityScore": 75,
+      "talentScore": 52.8,
+      "projectionScore": 60.23,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 3,
+      "player": "Colby Garland",
+      "currentTeam": "Georgia Tech",
+      "previousTeam": "San Jose State",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 157,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 62.8793,
+      "top100Line": 73.014,
+      "historicalRating": 65.2657,
+      "projectedRole": 90,
+      "opportunityChange": 60,
+      "offensiveBurden": 90,
+      "opportunityScore": 81,
+      "talentScore": 32.2,
+      "projectionScore": 55.72,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 11,
+      "player": "Cruz Davis",
+      "currentTeam": "Texas Tech",
+      "previousTeam": "Hofstra",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 158,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 62.8021,
+      "top100Line": 73.014,
+      "historicalRating": 66.9279,
+      "projectedRole": 75,
+      "opportunityChange": 30,
+      "offensiveBurden": 60,
+      "opportunityScore": 58.5,
+      "talentScore": 46,
+      "projectionScore": 50.425,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 17,
+      "player": "Markus Burton",
+      "currentTeam": "Indiana",
+      "previousTeam": "Notre Dame",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 162,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 62.2356,
+      "top100Line": 73.014,
+      "historicalRating": 63.4392,
+      "projectedRole": 85,
+      "opportunityChange": 60,
+      "offensiveBurden": 85,
+      "opportunityScore": 77.5,
+      "talentScore": 45,
+      "projectionScore": 58.625,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 16,
+      "player": "Dra Gibbs-Lawhorn",
+      "currentTeam": "Texas Tech",
+      "previousTeam": "UNLV",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 163,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 62.1931,
+      "top100Line": 73.014,
+      "historicalRating": 64.0859,
+      "projectedRole": 85,
+      "opportunityChange": 50,
+      "offensiveBurden": 75,
+      "opportunityScore": 72.5,
+      "talentScore": 45.4,
+      "projectionScore": 56.515,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 29,
+      "player": "Preston Edmead",
+      "currentTeam": "North Carolina State",
+      "previousTeam": "Hofstra",
+      "playerType": "Transfer",
+      "classYear": "So",
+      "rank": 167,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 61.7201,
+      "top100Line": 73.014,
+      "historicalRating": 63.2601,
+      "projectedRole": 72,
+      "opportunityChange": 40,
+      "offensiveBurden": 65,
+      "opportunityScore": 61,
+      "talentScore": 39,
+      "projectionScore": 57.1,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 45,
+      "player": "Hamad Mousa",
+      "currentTeam": "Cal Poly",
+      "previousTeam": "Cal Poly",
+      "playerType": "Transfer",
+      "classYear": "Jr",
+      "rank": 180,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 60.339,
+      "top100Line": 73.014,
+      "historicalRating": 57.4603,
+      "projectedRole": 95,
+      "opportunityChange": 50,
+      "offensiveBurden": 95,
+      "opportunityScore": 81.5,
+      "talentScore": 58,
+      "projectionScore": 68.975,
+      "confidenceScore": 88,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 28,
+      "player": "Lewis Walker",
+      "currentTeam": "UCF",
+      "previousTeam": "North Carolina A&T",
+      "playerType": "Transfer",
+      "classYear": "So",
+      "rank": 185,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 59.3207,
+      "top100Line": 73.014,
+      "historicalRating": 56.5692,
+      "projectedRole": 80,
+      "opportunityChange": 45,
+      "offensiveBurden": 80,
+      "opportunityScore": 69.5,
+      "talentScore": 58,
+      "projectionScore": 67.575,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 31,
+      "player": "Baraka Okojie",
+      "currentTeam": "George Mason",
+      "previousTeam": "Mercer",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 191,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 57.852,
+      "top100Line": 73.014,
+      "historicalRating": 58.111,
+      "projectedRole": 85,
+      "opportunityChange": 70,
+      "offensiveBurden": 80,
+      "opportunityScore": 79.5,
+      "talentScore": 38,
+      "projectionScore": 57.075,
+      "confidenceScore": 76,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 42,
+      "player": "Christian Bliss",
+      "currentTeam": "Stanford",
+      "previousTeam": "Delaware",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 194,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 55.2425,
+      "top100Line": 73.014,
+      "historicalRating": 53.4816,
+      "projectedRole": 82,
+      "opportunityChange": 65,
+      "offensiveBurden": 75,
+      "opportunityScore": 75.5,
+      "talentScore": 53,
+      "projectionScore": 60.525,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 21,
+      "player": "Terrence Brown",
+      "currentTeam": "North Carolina",
+      "previousTeam": "Utah",
+      "playerType": "Transfer",
+      "classYear": "Sr",
+      "rank": 200,
+      "rankTier": "outside top 150",
+      "projectedBbpr": 52.3507,
+      "top100Line": 73.014,
+      "historicalRating": 51.1409,
+      "projectedRole": 85,
+      "opportunityChange": 45,
+      "offensiveBurden": 75,
+      "opportunityScore": 71,
+      "talentScore": 45.8,
+      "projectionScore": 55.98,
+      "confidenceScore": 80,
+      "flags": [
+        {
+          "code": "starter-input-conflict",
+          "severity": "medium",
+          "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
+        }
+      ]
+    }
+  ],
+  "pendingResearchFindings": [],
+  "duplicateGroups": [
+    [
+      {
+        "sourceRow": 315,
+        "player": "Jizzle James",
+        "currentTeam": "Charlotte",
+        "projectedBbpr": null,
+        "needsReview": true
+      },
+      {
+        "sourceRow": 1966,
+        "player": "Jizzle James, Jr.",
+        "currentTeam": "Charlotte",
+        "projectedBbpr": null,
+        "needsReview": true
+      }
+    ],
+    [
+      {
+        "sourceRow": 238,
+        "player": "Sadiq White",
+        "currentTeam": "Syracuse",
+        "projectedBbpr": null,
+        "needsReview": true
+      },
+      {
+        "sourceRow": 3864,
+        "player": "Sadiq White, Jr.",
+        "currentTeam": "Syracuse",
+        "projectedBbpr": null,
+        "needsReview": true
+      }
+    ],
+    [
+      {
+        "sourceRow": 666,
+        "player": "Desmond Bellot, Jr.",
+        "currentTeam": "Fordham",
+        "projectedBbpr": null,
+        "needsReview": true
+      },
+      {
+        "sourceRow": 667,
+        "player": "Desmond Bellot, Jr.",
+        "currentTeam": "Fordham",
+        "projectedBbpr": null,
+        "needsReview": true
+      }
+    ]
+  ]
+}

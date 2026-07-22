@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "audit:bracket": "node scripts/bracket-audit.mjs",
     "audit:world-cup-leaderboard": "node scripts/world-cup-leaderboard-audit.mjs",
+    "audit:cbb-projection-calibration": "node scripts/audit-cbb-projection-calibration.mjs",
     "repair:world-cup-costs": "node scripts/repair-world-cup-team-costs.mjs",
     "repair:world-cup-penalties": "node scripts/repair-world-cup-penalty-winners.mjs",
     "backup:run": "powershell -ExecutionPolicy Bypass -File ./scripts/progress-backup.ps1",
