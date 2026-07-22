@@ -1,0 +1,662 @@
+{
+  "batchId": "player-research-008",
+  "createdAt": "2026-07-22",
+  "sourceSheet": "player database",
+  "scope": "Next highest unprojected returners/transfers by historical anchor, with role scores gated by projected-lineup or roster-role evidence.",
+  "method": [
+    "Prioritize the top unprojected players by historical rating and likely leaderboard impact.",
+    "Only assign projected starter credit when a projected lineup, school roster/starter history, or explicit role context supports it.",
+    "Keep high historical anchors from falling too far when role is safe, but do not inflate transfers entering crowded high-major rosters.",
+    "Use production and awards for talent/context, but keep projectedRole tied to minutes and team hierarchy.",
+    "Leave players in review state so the admin board can apply or reject the researched projection."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating/proven production blended with projection score, then calibrated by player type"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires lineup/start-history evidence; Uncertain means likely minutes without a clean starter signal; No means bench/rotation projection.",
+    "projectedRole": "90+ for clear starters/primary options, 82-89 for likely starters or strong rotation players, 72-81 for rotation players with moderate/crowded roles.",
+    "opportunityChange": "Rewards clean depth-chart openings and returning usage; penalizes crowded rotations.",
+    "offensiveBurden": "Primary creator/scorer roles get 86+; rim runners, defensive bigs, and connective guards are lower.",
+    "roleEvidence": "Every player includes a note explaining whether starter credit comes from projected lineups, starter history, or roster inference."
+  },
+  "players": [
+    {
+      "sourceRow": 77,
+      "player": "Ben Defty",
+      "currentTeam": "Arizona State",
+      "previousTeam": "Boston",
+      "status": "researched_suggestion",
+      "historicalRating": 76.5233,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 86,
+        "offensiveBurden": 72,
+        "opportunityScore": 86.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 73.61,
+        "projectedBbpr": 75.795,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Defty has one of the strongest remaining historical anchors and current Arizona State coverage expects him to start at center. Role is high because of rim protection/frontcourt need, while offensive burden is capped.",
+      "teamContext": {
+        "starterEvidence": "Arizona State coverage says it is difficult to believe Defty will not be the starting center.",
+        "roleCap": "Starter center, not primary offensive option.",
+        "positionCompetition": "Frontcourt partner Paulius Murauskas raises lineup quality but shares usage."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/arizonastate/sun-devils-three-star-center-transfer-graded",
+          "notes": "Projects Defty as the likely starting center and a defensive rim-protection fit."
+        }
+      ]
+    },
+    {
+      "sourceRow": 297,
+      "player": "Aden Holloway",
+      "currentTeam": "Alabama",
+      "previousTeam": "Alabama",
+      "status": "researched_suggestion",
+      "historicalRating": 74.3789,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 86,
+        "offensiveBurden": 88,
+        "opportunityScore": 90.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 86,
+        "talentScore": 83.6,
+        "projectionScore": 78.46,
+        "projectedBbpr": 76.0113,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Holloway has clean projected-starter evidence for Alabama and should be one of the Tide's lead guards. His BBPR is lifted by role and shot creation, but remains anchored below the elite returners.",
+      "teamContext": {
+        "starterEvidence": "Rothstein projects Holloway in Alabama's starting five.",
+        "roleCap": "High-major starting guard with real usage, but shared offense with Allen, Jemison, Fielder, and Garrison.",
+        "positionCompetition": "Alabama has freshman and transfer depth behind him."
+      },
+      "evidence": [
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
+          "notes": "Projects Holloway as an Alabama starting guard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 331,
+      "player": "Tariq Francis",
+      "currentTeam": "Rutgers",
+      "previousTeam": "Rutgers",
+      "status": "researched_suggestion",
+      "historicalRating": 71.8999,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 96,
+        "opportunityChange": 90,
+        "offensiveBurden": 94,
+        "opportunityScore": 93.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 82,
+        "talentScore": 77.8,
+        "projectionScore": 77.65,
+        "projectedBbpr": 75.35,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Francis is Rutgers' proven lead scorer and returns with All-Big Ten honorable mention production. Starter/role are high from production and team hierarchy, but NBA/upside stays moderate.",
+      "teamContext": {
+        "starterEvidence": "Rutgers roster bio frames Francis as a returning dynamic scorer after leading the team at 17.0 PPG.",
+        "roleCap": "Primary college guard, not elite NBA prospect.",
+        "positionCompetition": "Rutgers has guards around him, but Francis owns the clearest scoring role."
+      },
+      "evidence": [
+        {
+          "source": "Rutgers Athletics",
+          "url": "https://scarletknights.com/sports/mens-basketball/roster/francis-tariq/16690",
+          "notes": "Francis returns after leading Rutgers with 17.0 PPG and earning All-Big Ten honorable mention."
+        }
+      ]
+    },
+    {
+      "sourceRow": 335,
+      "player": "Blue Cain",
+      "currentTeam": "Georgia",
+      "previousTeam": "Georgia",
+      "status": "researched_suggestion",
+      "historicalRating": 71.5434,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 74.22,
+        "projectedBbpr": 72.8826,
+        "confidenceScore": 92,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Cain has strong starter evidence: 74 straight starts, returning starter context, and top-two team production. He gets major role credit, but the final score stays in a proven-starter tier rather than a star/upside tier.",
+      "teamContext": {
+        "starterEvidence": "Georgia says Cain has started 74 consecutive games and returns for 2026-27.",
+        "roleCap": "High-minute starter and secondary scorer.",
+        "positionCompetition": "Georgia returns multiple starters, so burden is shared."
+      },
+      "evidence": [
+        {
+          "source": "Georgia Athletics",
+          "url": "https://georgiadogs.com/news/2026/4/9/mens-basketball-blue-cain-to-be-back-with-bulldogs",
+          "notes": "Cain returns after ranking second on Georgia in points, rebounds, assists, and steals."
+        },
+        {
+          "source": "Atlanta Journal-Constitution",
+          "url": "https://www.ajc.com/sports/2026/07/offseason-reset-mike-white-breaks-down-georgias-roster-for-2026-27-season/",
+          "notes": "Georgia is returning four starters including Cain."
+        }
+      ]
+    },
+    {
+      "sourceRow": 105,
+      "player": "David Punch",
+      "currentTeam": "Texas",
+      "previousTeam": "TCU",
+      "status": "researched_suggestion",
+      "historicalRating": 69.4952,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 85.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 73.21,
+        "projectedBbpr": 70.4239,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Punch has projected-starter context for Texas, which matters more than raw historical rating. His score is still conservative because Texas has multiple veteran/freshman options and no single forward projects as a usage monster.",
+      "teamContext": {
+        "starterEvidence": "Texas projected-lineup context places Punch in the starting group.",
+        "roleCap": "Starting forward with shared usage.",
+        "positionCompetition": "Texas frontcourt/wing depth lowers offensive burden."
+      },
+      "evidence": [
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
+          "notes": "Rothstein's Texas projected lineup includes Punch."
+        }
+      ]
+    },
+    {
+      "sourceRow": 107,
+      "player": "Jason Rivera-Torres",
+      "currentTeam": "High Point",
+      "previousTeam": "Monmouth",
+      "status": "researched_suggestion",
+      "historicalRating": 69.2859,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 73.52,
+        "projectedBbpr": 70.3444,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Rivera-Torres should have a large college role after transferring to High Point, but the score is tethered to history because this is a usage/fit bet more than a national-upside profile.",
+      "teamContext": {
+        "starterEvidence": "Starter inferred from transfer production and High Point roster need, not from a definitive projected lineup.",
+        "roleCap": "Large mid-major role with modest NBA/upside.",
+        "positionCompetition": "High Point's transfer-heavy roster adds uncertainty."
+      },
+      "evidence": [
+        {
+          "source": "High Point Athletics",
+          "url": "https://highpointpanthers.com/sports/mens-basketball/roster",
+          "notes": "Confirms Rivera-Torres on the High Point roster."
+        },
+        {
+          "source": "Sports-Reference",
+          "url": "https://www.sports-reference.com/cbb/players/jason-rivera-torres-1.html",
+          "notes": "Historical production anchor from Monmouth."
+        }
+      ]
+    },
+    {
+      "sourceRow": 78,
+      "player": "Sananda Fru",
+      "currentTeam": "Marquette",
+      "previousTeam": "Louisville",
+      "status": "researched_suggestion",
+      "historicalRating": 68.8565,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 70,
+        "offensiveBurden": 64,
+        "opportunityScore": 72.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 65,
+        "upsideToolsScore": 75,
+        "talentScore": 69,
+        "projectionScore": 72.88,
+        "projectedBbpr": 69.8624,
+        "confidenceScore": 70,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Fru has a useful developmental profile, but Marquette frontcourt starter evidence is not strong enough to give him a big role score. He should be treated as a rotation frontcourt player unless lineup reporting improves.",
+      "teamContext": {
+        "starterEvidence": "Roster placement/fit, not clean starter evidence.",
+        "roleCap": "Rotation big with development upside.",
+        "positionCompetition": "Marquette's frontcourt additions cap early opportunity."
+      },
+      "evidence": [
+        {
+          "source": "Marquette Athletics",
+          "url": "https://gomarquette.com/sports/mens-basketball/roster",
+          "notes": "Confirms Fru on Marquette's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 264,
+      "player": "Zvonimir Ivisic",
+      "currentTeam": "illinois",
+      "previousTeam": "illinois",
+      "status": "researched_suggestion",
+      "historicalRating": 68.7712,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 81.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 80,
+        "talentScore": 77,
+        "projectionScore": 70.76,
+        "projectedBbpr": 69.7656,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Ivisic has frontcourt skill and size, but Illinois' hierarchy is Mirkovic-forward and role competition exists. Starter credit is plausible; offensive burden stays capped.",
+      "teamContext": {
+        "starterEvidence": "Illinois roster/projection context supports frontcourt minutes, but Mirkovic is the higher-usage piece.",
+        "roleCap": "Likely frontcourt starter/major rotation, not primary option.",
+        "positionCompetition": "Illinois has multiple frontcourt and wing pieces."
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster",
+          "notes": "Confirms Ivisic on Illinois' roster."
+        },
+        {
+          "source": "The Champaign Room",
+          "url": "https://www.thechampaignroom.com/illinois-fighting-illini-basketball-news/55037/two-biggest-questions-facing-illinois-basketball-before-2026-27-season-fighting-illini-ncaa-big-ten-brad-underwood",
+          "notes": "Illinois usage context centers on replacing Keaton Wagler and identifying lead options."
+        }
+      ]
+    },
+    {
+      "sourceRow": 333,
+      "player": "Jake Hall",
+      "currentTeam": "New Mexico",
+      "previousTeam": "New Mexico",
+      "status": "researched_suggestion",
+      "historicalRating": 68.3737,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 88,
+        "opportunityScore": 90.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 85,
+        "talentScore": 79,
+        "projectionScore": 84.24,
+        "projectedBbpr": 78.6868,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Hall receives a development/role bump as a sophomore returning creator with a strong star-score profile. Starter/usage are strong by roster inference, but confidence is below A because projected-lineup evidence is lighter.",
+      "teamContext": {
+        "starterEvidence": "Returning production and roster role inference, not a definitive projected lineup.",
+        "roleCap": "Featured sophomore guard/wing role.",
+        "positionCompetition": "New Mexico roster turnover supports opportunity."
+      },
+      "evidence": [
+        {
+          "source": "New Mexico Athletics",
+          "url": "https://golobos.com/sports/mbball/roster/",
+          "notes": "Confirms Hall on New Mexico's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 342,
+      "player": "Roman Domon",
+      "currentTeam": "Murray State",
+      "previousTeam": "Murray State",
+      "status": "researched_suggestion",
+      "historicalRating": 68.299,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 82.02,
+        "projectedBbpr": 77.2177,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Domon gets a meaningful sophomore development bump and likely major Murray State role. The final score stays below the stronger high-major returners due competition level and limited national upside signal.",
+      "teamContext": {
+        "starterEvidence": "Returning roster role inference.",
+        "roleCap": "Likely featured mid-major returner.",
+        "positionCompetition": "Opportunity appears clean but national evidence is limited."
+      },
+      "evidence": [
+        {
+          "source": "Murray State Athletics",
+          "url": "https://goracers.com/sports/mens-basketball/roster",
+          "notes": "Confirms Domon on Murray State's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 142,
+      "player": "BJ Davis",
+      "currentTeam": "Creighton",
+      "previousTeam": "San Diego State",
+      "status": "researched_suggestion",
+      "historicalRating": 68.0972,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 69.47,
+        "projectedBbpr": 68.4404,
+        "confidenceScore": 74,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Davis should be in Creighton's guard mix, but starter credit is not clean enough yet. The projection gives transfer-rotation credit without pushing him into the proven-starter band.",
+      "teamContext": {
+        "starterEvidence": "Roster/rotation fit, not confirmed starter.",
+        "roleCap": "Strong guard rotation.",
+        "positionCompetition": "Creighton guard depth caps role."
+      },
+      "evidence": [
+        {
+          "source": "Creighton Athletics",
+          "url": "https://gocreighton.com/sports/mens-basketball/roster",
+          "notes": "Confirms Davis on Creighton's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 332,
+      "player": "Joshua Dent",
+      "currentTeam": "Saint Mary's",
+      "previousTeam": "Saint Mary's",
+      "status": "researched_suggestion",
+      "historicalRating": 67.4011,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 76.87,
+        "projectedBbpr": 72.1356,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dent projects as a key Saint Mary's guard with returning continuity. Role is strong, while final score is kept anchored because national upside evidence is moderate.",
+      "teamContext": {
+        "starterEvidence": "Saint Mary's roster continuity and guard role inference.",
+        "roleCap": "Likely starter/key guard.",
+        "positionCompetition": "Gaels guard rotation creates shared burden."
+      },
+      "evidence": [
+        {
+          "source": "Saint Mary's Athletics",
+          "url": "https://smcgaels.com/sports/mens-basketball/roster",
+          "notes": "Confirms Dent on Saint Mary's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 132,
+      "player": "Tyshawn Archie",
+      "currentTeam": "Texas A&M",
+      "previousTeam": "McNeese State",
+      "status": "researched_suggestion",
+      "historicalRating": 67.0823,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "opportunityScore": 78.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 68.57,
+        "projectedBbpr": 67.4542,
+        "confidenceScore": 72,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Archie has transfer-rotation upside, but Texas A&M starter evidence is not firm enough to give him a major role bump. Keep him near his historical anchor pending clearer lineup reports.",
+      "teamContext": {
+        "starterEvidence": "Roster addition and production fit, not confirmed starter.",
+        "roleCap": "Rotation guard/possible starter.",
+        "positionCompetition": "Texas A&M has a crowded transfer guard group."
+      },
+      "evidence": [
+        {
+          "source": "Texas A&M Athletics",
+          "url": "https://12thman.com/sports/mens-basketball/roster",
+          "notes": "Confirms Archie on Texas A&M's roster."
+        }
+      ]
+    },
+    {
+      "sourceRow": 197,
+      "player": "Davis Fogle",
+      "currentTeam": "Gonzaga",
+      "previousTeam": "Gonzaga",
+      "status": "researched_suggestion",
+      "historicalRating": 66.5025,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 82.87,
+        "projectedBbpr": 74.6863,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Fogle gets a sophomore development bump and Gonzaga rotation upside, but starter credit is not clean in a roster still sorting guard/wing minutes.",
+      "teamContext": {
+        "starterEvidence": "Returning Gonzaga role/roster inference, not confirmed starter.",
+        "roleCap": "Strong rotation or possible starter.",
+        "positionCompetition": "Gonzaga's updated lineup has unsettled perimeter roles."
+      },
+      "evidence": [
+        {
+          "source": "Gonzaga Athletics",
+          "url": "https://gozags.com/sports/mens-basketball/roster",
+          "notes": "Confirms Fogle on Gonzaga's roster."
+        },
+        {
+          "source": "Yahoo Sports",
+          "url": "https://sports.yahoo.com/articles/projected-gonzaga-starting-lineup-mario-184950341.html",
+          "notes": "Gonzaga projected-lineup context shows unresolved guard/wing hierarchy."
+        }
+      ]
+    },
+    {
+      "sourceRow": 251,
+      "player": "De\u2019Shayne Montgomery",
+      "currentTeam": "Louisville",
+      "previousTeam": "Dayton",
+      "status": "researched_suggestion",
+      "historicalRating": 65.8942,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 80,
+        "opportunityChange": 72,
+        "offensiveBurden": 70,
+        "opportunityScore": 75.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 65,
+        "upsideToolsScore": 75,
+        "talentScore": 69,
+        "projectionScore": 66.17,
+        "projectedBbpr": 65.9632,
+        "confidenceScore": 72,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Montgomery has useful transfer guard depth, but Louisville's projected lineup and bench are crowded. He should not receive starter credit unless later lineup reporting changes.",
+      "teamContext": {
+        "starterEvidence": "No projected starter evidence in Louisville's Rothstein lineup.",
+        "roleCap": "Bench/rotation guard.",
+        "positionCompetition": "Shelstad, Wooley, Knox, and other pieces absorb major usage."
+      },
+      "evidence": [
+        {
+          "source": "FanDuel Research",
+          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
+          "notes": "Louisville projected lineup/bench context shows a crowded rotation."
+        }
+      ]
+    },
+    {
+      "sourceRow": 214,
+      "player": "Paul McNeil Jr.",
+      "currentTeam": "North Carolina State",
+      "previousTeam": "North Carolina State",
+      "status": "researched_suggestion",
+      "historicalRating": 65.8709,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 78,
+        "opportunityScore": 81,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 74.35,
+        "projectedBbpr": 70.1105,
+        "confidenceScore": 74,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "McNeil has returning scoring upside but NC State's portal rebuild makes starter status less certain. He gets a moderate role/development bump without being pushed into the top returner tier.",
+      "teamContext": {
+        "starterEvidence": "Returning role and rotation projection, not a locked starter.",
+        "roleCap": "Strong rotation/possible starter.",
+        "positionCompetition": "NC State added multiple transfers at guard/wing."
+      },
+      "evidence": [
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/ncstate/projecting-the-nc-state-men-s-basketball-rotation-for-the-2026-27-season",
+          "notes": "NC State rotation context shows a rebuilt roster and contested guard/wing roles."
+        },
+        {
+          "source": "NC State Athletics",
+          "url": "https://gopack.com/sports/mens-basketball/roster",
+          "notes": "Confirms McNeil on NC State's roster."
+        }
+      ]
+    }
+  ]
+}
