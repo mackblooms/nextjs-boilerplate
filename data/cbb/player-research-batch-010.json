@@ -1,0 +1,1103 @@
+{
+  "batchId": "player-research-010",
+  "createdAt": "2026-07-22",
+  "sourceSheet": "player database + all D1 players",
+  "scope": "Next larger board-impact batch, focusing on unprojected players with strong production anchors, high-major role evidence, or clear returning-star upside.",
+  "method": [
+    "Skip transfer rows without a confirmed current team until destination data can be resolved.",
+    "Prioritize proven returners/transfers with enough role evidence to affect the leaderboard.",
+    "Use projected-lineup, school roster, official bio, award, usage, and transfer-context evidence to score projected starter and role.",
+    "Keep high-major bench or crowded-roster transfers below proven starters even when historical rating is strong.",
+    "Leave every row pending admin approval so the larger review queue can apply the batch in one pass."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating/proven production blended with projection score, then calibrated by player type"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires projected-lineup, start-history, or strong returning hierarchy; Uncertain means strong minutes without a locked starting signal; No means bench/developmental role.",
+    "projectedRole": "90+ for clear starters/top options, 82-89 for likely starters or sixth-man/major rotation, 72-81 for useful but crowded roles.",
+    "opportunityChange": "Rewards teams with open usage/minutes or returning focal points; penalizes crowded high-major rotations.",
+    "offensiveBurden": "Primary scorers/creators get 86+; lower-usage bigs/connective pieces stay lower.",
+    "roleEvidence": "Every row includes why starter credit was assigned or capped."
+  },
+  "players": [
+    {
+      "sourceRow": 349,
+      "player": "Najai Hines",
+      "currentTeam": "Connecticut",
+      "previousTeam": "Seton Hall",
+      "status": "researched_suggestion",
+      "historicalRating": 64.4031,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 70,
+        "opportunityScore": 77.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 78.73,
+        "projectedBbpr": 67.9848,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Hines is young, productive, and physical enough to matter for UConn, but the Huskies' frontcourt is crowded and his path looks more like major rotation/possible starter than automatic high-usage starter.",
+      "teamContext": {
+        "starterEvidence": "UConn added Hines after he started 31 games as a freshman, but roster context includes multiple older bigs and forwards.",
+        "roleCap": "High-major frontcourt rotation with starter upside, not a clear offensive focal point.",
+        "positionCompetition": "Tarris Reed Jr., Eric Reibe, Nils Machowski, and other UConn pieces cap minutes certainty."
+      },
+      "evidence": [
+        {
+          "source": "UConn Athletics",
+          "url": "https://uconnhuskies.com/sports/mens-basketball/roster/najai-hines/14353",
+          "notes": "Roster bio lists Hines after a freshman season with 31 starts and 8.4 PPG at Seton Hall."
+        }
+      ]
+    },
+    {
+      "sourceRow": 53,
+      "player": "Javan Buchanan",
+      "currentTeam": "West Virginia",
+      "previousTeam": "Boise State",
+      "status": "researched_suggestion",
+      "historicalRating": 57.6764,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 74.43,
+        "projectedBbpr": 61.8648,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Buchanan's scoring transfer profile and West Virginia's need for frontcourt offense give him a clear role bump. His final score stays in a good-starter range because the NBA/upside signal is modest.",
+      "teamContext": {
+        "starterEvidence": "West Virginia signed Buchanan after double-figure scoring and transfer-market attention, creating a plausible starting forward path.",
+        "roleCap": "Likely starting or closing forward with scoring value, but not an elite national anchor.",
+        "positionCompetition": "West Virginia added multiple new pieces, so final burden depends on how the transfer class settles."
+      },
+      "evidence": [
+        {
+          "source": "West Virginia Athletics",
+          "url": "https://wvusports.com/news/2026/4/15/mens-basketball-buchanan-signs-with-mountaineers",
+          "notes": "Reports Buchanan signing with West Virginia after productive transfer seasons."
+        }
+      ]
+    },
+    {
+      "sourceRow": 368,
+      "player": "Trevan Leonhardt",
+      "currentTeam": "Nebraska",
+      "previousTeam": "Utah Valley",
+      "status": "researched_suggestion",
+      "historicalRating": 56.5457,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 81.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 74.34,
+        "projectedBbpr": 61.9943,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Leonhardt was a productive creator at Utah Valley, but Nebraska has returning high-end pieces and transfer guard competition. He gets meaningful rotation/secondary-creator credit without a starter lock.",
+      "teamContext": {
+        "starterEvidence": "Nebraska signed Leonhardt after strong WAC guard production, but public lineup certainty is not strong.",
+        "roleCap": "Secondary ball handler/rotation guard moving up in competition.",
+        "positionCompetition": "Pryce Sandfort, Braden Frager, and Nebraska's guard additions keep usage shared."
+      },
+      "evidence": [
+        {
+          "source": "Nebraska Athletics",
+          "url": "https://huskers.com/news/2026/05/02/huskers-sign-trevan-leonhardt",
+          "notes": "Nebraska announced Leonhardt after a productive Utah Valley career."
+        }
+      ]
+    },
+    {
+      "sourceRow": 274,
+      "player": "KJ Lewis",
+      "currentTeam": "USC",
+      "previousTeam": "Georgetown",
+      "status": "researched_suggestion",
+      "historicalRating": 56.5351,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.185,
+        "projectedBbpr": 61.1976,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Lewis has a strong high-major body of work and USC needed veteran toughness on the wing. He gets starter/closing-lineup credit, but USC's many portal pieces keep him below top-option scorers.",
+      "teamContext": {
+        "starterEvidence": "USC announced Lewis as a veteran Big East/Big 12 transfer with immediate defensive and slashing value.",
+        "roleCap": "Likely starting wing or sixth starter, not a primary offensive creator.",
+        "positionCompetition": "Rodney Rice, Eric Reibe, Jadis Jones, and other USC additions distribute touches."
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/news/2026/5/5/mens-basketball-kj-lewis-signs-with-usc.aspx",
+          "notes": "USC signs Lewis after high-major experience at Arizona and Georgetown."
+        }
+      ]
+    },
+    {
+      "sourceRow": 317,
+      "player": "Miro Little",
+      "currentTeam": "UCSB",
+      "previousTeam": "UCSB",
+      "status": "researched_suggestion",
+      "historicalRating": 56.5076,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 76.94,
+        "projectedBbpr": 61.6157,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Little should be treated as a clear mid-major lead guard: high-assist role, starter profile, and one of UCSB's best proven pieces. NBA/upside prevents a massive jump, not opportunity.",
+      "teamContext": {
+        "starterEvidence": "UCSB roster context lists Little as an experienced returning guard after a high-minute season.",
+        "roleCap": "Lead-guard role at UCSB with strong assist burden.",
+        "positionCompetition": "UCSB has other guards, but Little's experience gives him the cleanest creation case."
+      },
+      "evidence": [
+        {
+          "source": "UCSB Athletics",
+          "url": "https://ucsbgauchos.com/sports/mens-basketball/roster/miro-little/7174",
+          "notes": "Roster bio documents Little's guard role and prior production."
+        }
+      ]
+    },
+    {
+      "sourceRow": 68,
+      "player": "Kwame Evans Jr.",
+      "currentTeam": "Villanova",
+      "previousTeam": "Oregon",
+      "status": "researched_suggestion",
+      "historicalRating": 56.5023,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 89,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 85.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 75.905,
+        "projectedBbpr": 61.353,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Evans brings former five-star tools and defensive versatility to Villanova, but his college production has not yet matched the pedigree. Starter/role credit is real, while offensive burden is capped.",
+      "teamContext": {
+        "starterEvidence": "Villanova added Evans as a major transfer forward, but Tyler Perkins and other additions keep the offense shared.",
+        "roleCap": "Likely starting/closing forward with upside but uneven proven scoring.",
+        "positionCompetition": "Perkins, Crawford, Royal, Fiegen, and Oumiddoch spread frontcourt/wing usage."
+      },
+      "evidence": [
+        {
+          "source": "Villanova Athletics",
+          "url": "https://villanova.com/news/2026/5/9/mens-basketball-wildcats-add-oregon-transfer-kwame-evans-jr.aspx",
+          "notes": "Villanova announced Evans after two seasons at Oregon and former five-star recruiting status."
+        }
+      ]
+    },
+    {
+      "sourceRow": 145,
+      "player": "Paul Djobet",
+      "currentTeam": "Texas State",
+      "previousTeam": "Nebraska Omaha",
+      "status": "researched_suggestion",
+      "historicalRating": 56.4988,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 92,
+        "offensiveBurden": 91,
+        "opportunityScore": 93.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 75.605,
+        "projectedBbpr": 61.2754,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Djobet projects as one of Texas State's best offensive players after star-level Omaha usage. Role is very high, but final BBPR is restrained by lower draft/upside inputs.",
+      "teamContext": {
+        "starterEvidence": "Texas State signed him after major scoring production and should give him a featured role.",
+        "roleCap": "Primary or co-primary Sun Belt scorer, modest NBA signal.",
+        "positionCompetition": "Texas State has several transfers, but Djobet's prior usage gives him a clean path."
+      },
+      "evidence": [
+        {
+          "source": "Texas State Athletics",
+          "url": "https://txst.com/news/2026/4/18/mens-basketball-bobcats-sign-paul-djobet.aspx",
+          "notes": "Texas State announced Djobet after standout production at Omaha."
+        }
+      ]
+    },
+    {
+      "sourceRow": 103,
+      "player": "A'lahn Sumler",
+      "currentTeam": "Pittsburgh",
+      "previousTeam": "Charleston Southern",
+      "status": "researched_suggestion",
+      "historicalRating": 56.4541,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 82,
+        "opportunityScore": 81.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 71.13,
+        "projectedBbpr": 60.1231,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Sumler's scoring is real, but Pitt's guard room is crowded and the jump from Charleston Southern to ACC play is meaningful. Good rotation scorer, not a locked starter.",
+      "teamContext": {
+        "starterEvidence": "Pitt added Sumler after strong scoring, but public roster context does not guarantee a starting spot.",
+        "roleCap": "Microwave/secondary scorer with starter path if efficiency translates.",
+        "positionCompetition": "Pitt's transfer-heavy backcourt and returning wings create role competition."
+      },
+      "evidence": [
+        {
+          "source": "Pittsburgh Athletics",
+          "url": "https://pittsburghpanthers.com/news/2026/4/23/mens-basketball-pitt-signs-charleston-southern-transfer-a-lahn-sumler",
+          "notes": "Pitt announced Sumler after productive scoring seasons at Charleston Southern."
+        }
+      ]
+    },
+    {
+      "sourceRow": 390,
+      "player": "Eian Elmer",
+      "currentTeam": "Wisconsin",
+      "previousTeam": "Miami (OH)",
+      "status": "researched_suggestion",
+      "historicalRating": 56.3205,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 70.92,
+        "projectedBbpr": 59.9704,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Elmer gives Wisconsin athletic frontcourt depth and MAC production, but his role is not as clear as a returning starter's. Keep him in a rotation-forward tier.",
+      "teamContext": {
+        "starterEvidence": "Wisconsin added Elmer after a productive Miami (OH) season, but starter signal is not firm.",
+        "roleCap": "Rotation forward with size/athletic upside.",
+        "positionCompetition": "Wisconsin's returning frontcourt and portal pieces limit immediate role certainty."
+      },
+      "evidence": [
+        {
+          "source": "Wisconsin Athletics",
+          "url": "https://uwbadgers.com/news/2026/5/1/mens-basketball-badgers-sign-transfer-forward-eian-elmer",
+          "notes": "Wisconsin announced Elmer as a transfer forward from Miami (OH)."
+        }
+      ]
+    },
+    {
+      "sourceRow": 131,
+      "player": "Jadis Jones",
+      "currentTeam": "USC",
+      "previousTeam": "Lindenwood",
+      "status": "researched_suggestion",
+      "historicalRating": 56.1603,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 83,
+        "opportunityChange": 78,
+        "offensiveBurden": 80,
+        "opportunityScore": 80.9,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 75.005,
+        "projectedBbpr": 60.8715,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jones was a productive scorer moving up several levels. USC's backcourt/wing competition keeps him more in the rotation-scoring tier than the projected-starter tier.",
+      "teamContext": {
+        "starterEvidence": "USC signed Jones after strong Lindenwood scoring, but no clean projected-starter evidence surfaced.",
+        "roleCap": "Scoring guard/wing with translation risk.",
+        "positionCompetition": "Rodney Rice, KJ Lewis, Eric Reibe, and other USC additions reduce role certainty."
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/news/2026/4/16/mens-basketball-jadis-jones-signs-with-usc.aspx",
+          "notes": "USC announced Jones after standout production at Lindenwood."
+        }
+      ]
+    },
+    {
+      "sourceRow": 231,
+      "player": "Amael L'Etang",
+      "currentTeam": "Dayton",
+      "previousTeam": "Dayton",
+      "status": "researched_suggestion",
+      "historicalRating": 55.8219,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 89,
+        "opportunityChange": 86,
+        "offensiveBurden": 76,
+        "opportunityScore": 85.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 77.775,
+        "projectedBbpr": 62.2842,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "L'Etang has a returning-starter frontcourt path and enough size/tools to pop, but Dayton's offense should not run through him every possession. Starter role, moderate offensive burden.",
+      "teamContext": {
+        "starterEvidence": "Dayton roster context keeps L'Etang as an important returning big.",
+        "roleCap": "Starting/major-minute center with development upside.",
+        "positionCompetition": "Dayton's guard creation and transfer additions keep scoring burden shared."
+      },
+      "evidence": [
+        {
+          "source": "Dayton Athletics",
+          "url": "https://daytonflyers.com/sports/mens-basketball/roster/amael-l-etang/16080",
+          "notes": "Roster bio lists L'Etang as a returning Dayton frontcourt player."
+        }
+      ]
+    },
+    {
+      "sourceRow": 183,
+      "player": "Ivan Kharchenkov",
+      "currentTeam": "Arizona",
+      "previousTeam": "Arizona",
+      "status": "researched_suggestion",
+      "historicalRating": 55.2701,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 81.34,
+        "projectedBbpr": 64.3946,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Kharchenkov has strong international pedigree and sophomore development upside, but Arizona's roster is too talented to hand him a major starter score yet.",
+      "teamContext": {
+        "starterEvidence": "Arizona lists him as a returning guard/wing with international background; no clear starter evidence.",
+        "roleCap": "Developmental rotation piece with real tools.",
+        "positionCompetition": "Arizona's high-end returning and incoming talent makes minutes competitive."
+      },
+      "evidence": [
+        {
+          "source": "Arizona Athletics",
+          "url": "https://arizonawildcats.com/sports/mens-basketball/roster/ivan-kharchenkov/17924",
+          "notes": "Roster bio lists Kharchenkov's Arizona return and international profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 281,
+      "player": "TJ Power",
+      "currentTeam": "Pennsylvania",
+      "previousTeam": "Pennsylvania",
+      "status": "researched_suggestion",
+      "historicalRating": 55.1197,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 90,
+        "opportunityScore": 91.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 76.895,
+        "projectedBbpr": 60.5635,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Power should carry a big Ivy League scoring role after transferring down from high-major basketball. The projection rewards role/opportunity more than recent historical anchor.",
+      "teamContext": {
+        "starterEvidence": "Penn roster/transfer context gives Power a clear featured-forward path.",
+        "roleCap": "Primary or co-primary Ivy scorer, but recent production has not matched recruiting pedigree.",
+        "positionCompetition": "Penn has other returning pieces, but Power owns the cleanest size/skill scoring upside."
+      },
+      "evidence": [
+        {
+          "source": "Penn Athletics",
+          "url": "https://pennathletics.com/sports/mens-basketball/roster/tj-power/24842",
+          "notes": "Roster bio lists Power at Penn after prior high-major stops."
+        }
+      ]
+    },
+    {
+      "sourceRow": 285,
+      "player": "Trent Perry",
+      "currentTeam": "UCLA",
+      "previousTeam": "UCLA",
+      "status": "researched_suggestion",
+      "historicalRating": 54.4314,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 83,
+        "opportunityChange": 78,
+        "offensiveBurden": 78,
+        "opportunityScore": 80.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 76.365,
+        "projectedBbpr": 59.9148,
+        "confidenceScore": 78,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Perry has guard skill and prior prospect pedigree, but UCLA's guard/wing competition keeps him from a full starter projection. Treat as a key rotation guard with upside.",
+      "teamContext": {
+        "starterEvidence": "UCLA lists Perry as a returning guard, but projected lineup certainty is limited.",
+        "roleCap": "Rotation/possible starter guard in a crowded Big Ten roster.",
+        "positionCompetition": "UCLA's transfer and returning guards distribute ball-handling."
+      },
+      "evidence": [
+        {
+          "source": "UCLA Athletics",
+          "url": "https://uclabruins.com/sports/mens-basketball/roster/trent-perry/15802",
+          "notes": "Roster bio lists Perry as a returning UCLA guard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 205,
+      "player": "Andrej Stojakovic",
+      "currentTeam": "Illinois",
+      "previousTeam": "Illinois",
+      "status": "researched_suggestion",
+      "historicalRating": 54.3186,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 96,
+        "opportunityChange": 92,
+        "offensiveBurden": 94,
+        "opportunityScore": 94.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 92,
+        "talentScore": 89.6,
+        "projectionScore": 81.84,
+        "projectedBbpr": 75.0,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Stojakovic should be lifted well above his historical anchor because Illinois acquired him to be a featured scorer and NBA-facing wing. This is a role/talent projection more than a pure past-production projection.",
+      "teamContext": {
+        "starterEvidence": "Illinois roster and transfer coverage frame Stojakovic as a marquee scoring wing addition/returning listed player.",
+        "roleCap": "Featured wing scorer with NBA tools, though Illinois has other usage-capable guards/bigs.",
+        "positionCompetition": "Tomislav Ivisic, Kylan Boswell, Quentin Coleman, and Lucas Morillo keep usage from being one-man."
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/andrej-stojakovic/15562",
+          "notes": "Roster bio lists Stojakovic at Illinois with prior high-major scoring profile."
+        },
+        {
+          "source": "Sports Illustrated",
+          "url": "https://www.si.com/college/illinois/basketball/andrej-stojakovic-illinois-basketball-impact-2026",
+          "notes": "Frames Stojakovic as a high-impact Illinois scoring addition."
+        }
+      ]
+    },
+    {
+      "sourceRow": 338,
+      "player": "Rodney Rice",
+      "currentTeam": "USC",
+      "previousTeam": "USC",
+      "status": "researched_suggestion",
+      "historicalRating": 54.168,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 90,
+        "opportunityScore": 90.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 76.32,
+        "projectedBbpr": 59.706,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Rice has a clean veteran scoring role for USC and should be one of the roster's primary perimeter options. The final score stays outside the elite range because the historical anchor is moderate.",
+      "teamContext": {
+        "starterEvidence": "USC roster/coverage points to Rice as a central veteran guard.",
+        "roleCap": "Lead or co-lead scorer, with several transfer scorers around him.",
+        "positionCompetition": "KJ Lewis, Jadis Jones, and USC's young bigs/guards share possessions."
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/sports/mens-basketball/roster/rodney-rice/17678",
+          "notes": "Roster bio lists Rice as a returning USC guard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 353,
+      "player": "Ruben Prey",
+      "currentTeam": "St. John's",
+      "previousTeam": "St. John's",
+      "status": "researched_suggestion",
+      "historicalRating": 53.9381,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 81,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 77.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 74.965,
+        "projectedBbpr": 58.7528,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Prey has real international/frontcourt tools but the St. John's role is not clean enough yet for major starter credit. He belongs in the upside rotation tier.",
+      "teamContext": {
+        "starterEvidence": "St. John's roster lists Prey, but public context does not clearly lock him into a starting job.",
+        "roleCap": "Toolsy big/forward with rotation path.",
+        "positionCompetition": "St. John's roster remains deep and frontcourt minutes are not settled."
+      },
+      "evidence": [
+        {
+          "source": "St. John's Athletics",
+          "url": "https://redstormsports.com/sports/mens-basketball/roster/ruben-prey/5875",
+          "notes": "Roster bio lists Prey at St. John's."
+        }
+      ]
+    },
+    {
+      "sourceRow": 388,
+      "player": "Arrinten Page",
+      "currentTeam": "Providence",
+      "previousTeam": "Northwestern",
+      "status": "researched_suggestion",
+      "historicalRating": 53.8003,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 76,
+        "opportunityScore": 84.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 73.7,
+        "projectedBbpr": 58.7752,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Page has size, high-major pedigree, and a plausible Providence frontcourt starting path. Scoring burden stays capped because his best role is interior finishing/defense.",
+      "teamContext": {
+        "starterEvidence": "Providence added Page as a frontcourt transfer with high-major experience.",
+        "roleCap": "Likely starting/major-minute big, lower offensive burden.",
+        "positionCompetition": "Providence has multiple new frontcourt pieces and guards to distribute usage."
+      },
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/news/2026/4/22/mens-basketball-arrinten-page-transfers-to-providence-college",
+          "notes": "Providence announced Page as a transfer addition from Northwestern."
+        }
+      ]
+    },
+    {
+      "sourceRow": 192,
+      "player": "Moustapha Thiam",
+      "currentTeam": "Michigan",
+      "previousTeam": "Cincinnati",
+      "status": "researched_suggestion",
+      "historicalRating": 53.105,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 74,
+        "opportunityScore": 84,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 88,
+        "talentScore": 82,
+        "projectionScore": 78.5,
+        "projectedBbpr": 59.4538,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Thiam's size and rim protection give him a strong Michigan role case, but Michigan also has Elliott Cadeau and other usage options. Value is defense/finishing more than offensive volume.",
+      "teamContext": {
+        "starterEvidence": "Michigan added Thiam as a center transfer with major size and shot-blocking appeal.",
+        "roleCap": "Starting/major-minute center with low-to-moderate offensive burden.",
+        "positionCompetition": "Michigan's guard and wing additions should lead the offense."
+      },
+      "evidence": [
+        {
+          "source": "Michigan Athletics",
+          "url": "https://mgoblue.com/news/2026/4/28/mens-basketball-wolverines-add-center-moustapha-thiam",
+          "notes": "Michigan announced Thiam as a transfer center from Cincinnati."
+        }
+      ]
+    },
+    {
+      "sourceRow": 217,
+      "player": "Tomislav Ivisic",
+      "currentTeam": "Illinois",
+      "previousTeam": "Illinois",
+      "status": "researched_suggestion",
+      "historicalRating": 53.0491,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 95,
+        "opportunityChange": 91,
+        "offensiveBurden": 88,
+        "opportunityScore": 92.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 86.4,
+        "projectionScore": 79.78,
+        "projectedBbpr": 70.0,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
+        "needsReview": true
+      },
+      "researchSummary": "Ivisic is a proven starting-caliber Big Ten big with production, size, and NBA-ish skill. He should be well above generic returning-player territory even if Stojakovic has more scoring upside.",
+      "teamContext": {
+        "starterEvidence": "Illinois roster and prior role make Ivisic a central returning big.",
+        "roleCap": "Starting center/forward with scoring, rebounding, and spacing value.",
+        "positionCompetition": "Stojakovic and perimeter pieces share offensive hierarchy."
+      },
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/tomislav-ivisic/15566",
+          "notes": "Roster bio lists Ivisic as a returning Illinois frontcourt player."
+        }
+      ]
+    },
+    {
+      "sourceRow": 117,
+      "player": "Nick Janowski",
+      "currentTeam": "Davidson",
+      "previousTeam": "St. Thomas (MN)",
+      "status": "researched_suggestion",
+      "historicalRating": 52.8521,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 90.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 83.09,
+        "projectedBbpr": 60.4116,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Janowski has the right profile for a big Davidson role: young transfer guard with proven scoring/creation. His score is role-driven rather than NBA-driven.",
+      "teamContext": {
+        "starterEvidence": "Davidson announced Janowski as a transfer guard with prior starting-level production.",
+        "roleCap": "Likely lead/secondary creator at Davidson, but modest national upside signal.",
+        "positionCompetition": "Davidson's returning guard mix creates some shared usage, though Janowski's scoring should travel."
+      },
+      "evidence": [
+        {
+          "source": "Davidson Athletics",
+          "url": "https://davidsonwildcats.com/news/2026/4/23/mens-basketball-davidson-adds-transfer-guard-nick-janowski",
+          "notes": "Davidson announced Janowski as a transfer guard from St. Thomas."
+        }
+      ]
+    },
+    {
+      "sourceRow": 359,
+      "player": "Jurian Dixon",
+      "currentTeam": "Virginia",
+      "previousTeam": "UC Irvine",
+      "status": "researched_suggestion",
+      "historicalRating": 52.7484,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 78,
+        "opportunityScore": 80,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 78,
+        "talentScore": 73.2,
+        "projectionScore": 73.62,
+        "projectedBbpr": 57.9663,
+        "confidenceScore": 76,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dixon provides experienced guard/wing depth for Virginia, but the roster has multiple guards and no clear evidence of a locked starting spot. Keep him in a useful rotation tier.",
+      "teamContext": {
+        "starterEvidence": "Virginia added Dixon after UC Irvine production, but projected-lineup signal is uncertain.",
+        "roleCap": "Rotation guard/wing with defensive and connective value.",
+        "positionCompetition": "Virginia's guard transfers and returning pieces create a crowded minutes picture."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/news/2026/04/17/dixon-joins-virginia-mens-basketball-program",
+          "notes": "Virginia announced Dixon as a transfer from UC Irvine."
+        }
+      ]
+    },
+    {
+      "sourceRow": 271,
+      "player": "Owen Freeman",
+      "currentTeam": "Auburn",
+      "previousTeam": "Creighton",
+      "status": "researched_suggestion",
+      "historicalRating": 52.6842,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.6,
+        "projectedBbpr": 58.1632,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Freeman has the strongest Auburn frontcourt role case among this batch's transfers. He gets starter credit, but Auburn's perimeter talent and frontcourt depth keep offensive burden moderate.",
+      "teamContext": {
+        "starterEvidence": "Auburn signed Freeman as a major frontcourt transfer from Creighton/Iowa.",
+        "roleCap": "Likely starting big with efficient scoring/rebounding rather than alpha usage.",
+        "positionCompetition": "Kevin Overton, Tahaad Pettiford, and other Auburn pieces share offense."
+      },
+      "evidence": [
+        {
+          "source": "Auburn Athletics",
+          "url": "https://auburntigers.com/news/2026/4/22/mens-basketball-auburn-adds-owen-freeman",
+          "notes": "Auburn announced Freeman as a transfer frontcourt addition."
+        }
+      ]
+    },
+    {
+      "sourceRow": 316,
+      "player": "Josh Hubbard",
+      "currentTeam": "Mississippi State",
+      "previousTeam": "Mississippi State",
+      "status": "researched_suggestion",
+      "historicalRating": 52.6576,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 98,
+        "opportunityScore": 96.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "projectionScore": 81.52,
+        "projectedBbpr": 72.0,
+        "confidenceScore": 94,
+        "confidenceGrade": "A+",
+        "needsReview": true
+      },
+      "researchSummary": "Hubbard should be treated as an elite proven college guard despite a lower historical anchor in this file. His role, shot volume, awards profile, and national recognition justify a major leaderboard lift.",
+      "teamContext": {
+        "starterEvidence": "Mississippi State roster/history establishes Hubbard as the team's lead guard and high-usage scorer.",
+        "roleCap": "Primary scorer and offensive engine, with NBA signal good but not top-lottery level.",
+        "positionCompetition": "Mississippi State will add pieces around him, but Hubbard remains the clear offensive hierarchy leader."
+      },
+      "evidence": [
+        {
+          "source": "Mississippi State Athletics",
+          "url": "https://hailstate.com/sports/mens-basketball/roster/josh-hubbard/11562",
+          "notes": "Roster bio documents Hubbard's lead-guard production and Mississippi State career accolades."
+        },
+        {
+          "source": "The Field of 68",
+          "url": "https://fieldof68.beehiiv.com/p/top-100-returning-players-college-basketball-2026-27",
+          "notes": "Includes Hubbard among notable returning-player names for 2026-27."
+        }
+      ]
+    },
+    {
+      "sourceRow": 234,
+      "player": "Elliott Cadeau",
+      "currentTeam": "Michigan",
+      "previousTeam": "Michigan",
+      "status": "researched_suggestion",
+      "historicalRating": 52.582,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 93,
+        "opportunityChange": 88,
+        "offensiveBurden": 90,
+        "opportunityScore": 90.9,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 82.45,
+        "projectedBbpr": 67.5208,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Cadeau's creation role at Michigan should be strong, especially as a veteran high-major point guard. His scoring limitations keep him below the most explosive guards, but the role is very real.",
+      "teamContext": {
+        "starterEvidence": "Michigan lists Cadeau as a returning guard after prior high-major starting experience.",
+        "roleCap": "Lead guard/playmaker with shared scoring load.",
+        "positionCompetition": "Stojakovic-type wings/frontcourt additions and Michigan's other guards share shots."
+      },
+      "evidence": [
+        {
+          "source": "Michigan Athletics",
+          "url": "https://mgoblue.com/sports/mens-basketball/roster/elliot-cadeau/26233",
+          "notes": "Roster bio lists Cadeau at Michigan after prior UNC production."
+        }
+      ]
+    },
+    {
+      "sourceRow": 244,
+      "player": "Boogie Fland",
+      "currentTeam": "Florida",
+      "previousTeam": "Florida",
+      "status": "researched_suggestion",
+      "historicalRating": 51.3155,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 96,
+        "opportunityChange": 91,
+        "offensiveBurden": 94,
+        "opportunityScore": 94.1,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 92,
+        "talentScore": 89.6,
+        "projectionScore": 85.205,
+        "projectedBbpr": 75.0,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Fland has the right blend of former five-star pedigree, high-major guard creation, and Florida lead-guard opportunity to jump well above his historical anchor. He should mix near the top returner/transfer guards, not be treated as a generic returner.",
+      "teamContext": {
+        "starterEvidence": "Florida roster context places Fland in line for a major guard role.",
+        "roleCap": "High-usage lead guard, though Florida's title-level roster culture spreads offense.",
+        "positionCompetition": "Florida has multiple guards/wings, but Fland's shot creation is the clearest ceiling swing."
+      },
+      "evidence": [
+        {
+          "source": "Florida Athletics",
+          "url": "https://floridagators.com/sports/mens-basketball/roster/boogie-fland/17351",
+          "notes": "Roster bio lists Fland at Florida with prior high-major guard profile."
+        }
+      ]
+    },
+    {
+      "sourceRow": 196,
+      "player": "Shelton Henderson",
+      "currentTeam": "Miami",
+      "previousTeam": "Miami",
+      "status": "researched_suggestion",
+      "historicalRating": 51.1154,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 88.7,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 86.4,
+        "projectionScore": 86.055,
+        "projectedBbpr": 68.3852,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Henderson is a strong sophomore leap candidate with high recruiting pedigree and an opening for Miami to feature young talent. He gets a real development/role lift, but not enough evidence yet for the elite proven tier.",
+      "teamContext": {
+        "starterEvidence": "Miami roster lists Henderson as a returning forward with major prospect pedigree.",
+        "roleCap": "Likely starter/major-minute forward with breakout upside.",
+        "positionCompetition": "Miami's transfer guards and frontcourt additions share usage."
+      },
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/shelton-henderson/",
+          "notes": "Roster bio lists Henderson as a returning Miami forward."
+        }
+      ]
+    },
+    {
+      "sourceRow": 189,
+      "player": "Trey McKenney Jr.",
+      "currentTeam": "Michigan",
+      "previousTeam": "Michigan",
+      "status": "researched_suggestion",
+      "historicalRating": 50.7045,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 88,
+        "opportunityScore": 90,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 86,
+        "upsideToolsScore": 92,
+        "talentScore": 88.4,
+        "projectionScore": 87.44,
+        "projectedBbpr": 70.5225,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "McKenney should receive a major sophomore/new-star bump because his pedigree and Michigan role give him a higher ceiling than the historical rating implies. The score still respects that he has to prove top-option college efficiency.",
+      "teamContext": {
+        "starterEvidence": "Michigan lists McKenney as a returning guard/wing with major recruit profile and projected role opportunity.",
+        "roleCap": "Breakout wing/guard scorer with shared creation.",
+        "positionCompetition": "Elliott Cadeau, Moustapha Thiam, and other Michigan additions keep the hierarchy competitive."
+      },
+      "evidence": [
+        {
+          "source": "Michigan Athletics",
+          "url": "https://mgoblue.com/sports/mens-basketball/roster/trey-mckenney-jr/26238",
+          "notes": "Roster bio lists McKenney as a returning Michigan guard/wing."
+        }
+      ]
+    }
+  ]
+}
