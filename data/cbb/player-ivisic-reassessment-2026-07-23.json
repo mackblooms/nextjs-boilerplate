@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-07-23T21:05:00.000Z",
+  "scope": "Ivisic twins reassessment: place both inside the top 100 with Zvonimir slightly ahead of Tomislav.",
+  "method": [
+    "Used the returning-player historical anchor plus projection-score formula.",
+    "Re-anchored both players from the same Illinois context so historical BBPR/team-impact and current role are treated consistently.",
+    "Recalculated stored ranks after the BBPR changes."
+  ],
+  "players": [
+    {
+      "sourceRow": 264,
+      "player": "Zvonimir Ivisic",
+      "currentTeam": "Illinois",
+      "old": {
+        "rank": 173,
+        "historicalRating": 68.7712,
+        "projectedBbpr": 69.7656,
+        "projectedRole": 88,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 81.8,
+        "nbaProjectionScore": 75,
+        "upsideToolsScore": 80,
+        "talentScore": 77,
+        "projectionScore": 70.76,
+        "confidenceScore": 78
+      },
+      "new": {
+        "rank": 71,
+        "historicalRating": 78,
+        "projectedBbpr": 76.41,
+        "projectedRole": 92,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.2,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 84,
+        "talentScore": 81.6,
+        "projectionScore": 75.35,
+        "confidenceScore": 88
+      },
+      "reason": "Reassessed against Tomislav: Zvonimir's counting stats trail, but the original model/team-impact read is stronger because of rim protection, block rate, floor-spacing flashes, and Illinois' ability to use him as a higher-impact two-way frontcourt piece.",
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/zvonimir-ivisic/15977",
+          "notes": "Lists Zvonimir on the 2026-27 Illinois roster and documents 6.6 PPG, 4.6 RPG, 2.0 BPG, fourth nationally in block rate, and made threes in 16 games in 2025-26."
+        }
+      ]
+    },
+    {
+      "sourceRow": 217,
+      "player": "Tomislav Ivisic",
+      "currentTeam": "Illinois",
+      "old": {
+        "rank": 34,
+        "historicalRating": 84,
+        "projectedBbpr": 80.586,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.6,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 78.31,
+        "confidenceScore": 88
+      },
+      "new": {
+        "rank": 74,
+        "historicalRating": 78,
+        "projectedBbpr": 76.158,
+        "projectedRole": 92,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.2,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 74.93,
+        "confidenceScore": 88
+      },
+      "reason": "Reassessed against Zvonimir: Tomislav keeps strong top-100 treatment because of the better traditional production and starting history, but his anchor is pulled down from the prior top-35 score so the twins sit close with Zvonimir slightly ahead.",
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/ivisic-tomislav/15976",
+          "notes": "Lists Tomislav on the 2026-27 Illinois roster and documents 10.2 PPG, 5.6 RPG, 1.6 APG, 32 starts, and postseason production in 2025-26."
+        }
+      ]
+    }
+  ],
+  "targetRanks": [
+    {
+      "rank": 71,
+      "player": "Zvonimir Ivisic",
+      "currentTeam": "Illinois",
+      "projectedBbpr": 76.41
+    },
+    {
+      "rank": 74,
+      "player": "Tomislav Ivisic",
+      "currentTeam": "Illinois",
+      "projectedBbpr": 76.158
+    }
+  ],
+  "top100Line": 74.5739
+}

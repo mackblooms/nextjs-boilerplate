@@ -645,25 +645,27 @@
       "currentTeam": "Illinois",
       "previousTeam": "Illinois",
       "status": "researched_suggestion",
-      "historicalRating": 84,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 90.6,
+        "projectedRole": 92,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 78.31,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 74.93,
         "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true,
-        "projectedBbpr": 80.586
+        "confidenceGrade": "A",
+        "needsReview": false,
+        "projectedBbpr": 76.158,
+        "historicalRating": 78,
+        "developmentScore": 40
       },
-      "researchSummary": "Ivisic was low for a proven Illinois frontcourt piece with production, size, and NBA-facing tools. The update moves him back into the likely top-100 range.",
+      "researchSummary": "Reassessed against Zvonimir: Tomislav keeps strong top-100 treatment because of the better traditional production and starting history, but his anchor is pulled down from the prior top-35 score so the twins sit close with Zvonimir slightly ahead.",
       "teamContext": {
         "starterEvidence": "Ivisic was low for a proven Illinois frontcourt piece with production, size, and NBA-facing tools. The update moves him back into the likely top-100 range.",
         "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
@@ -673,8 +675,8 @@
       "evidence": [
         {
           "source": "Illinois Athletics",
-          "url": "https://fightingillini.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Ivisic with Illinois."
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/ivisic-tomislav/15976",
+          "notes": "Lists Tomislav on the 2026-27 Illinois roster and documents 10.2 PPG, 5.6 RPG, 1.6 APG, 32 starts, and postseason production in 2025-26."
         }
       ]
     },

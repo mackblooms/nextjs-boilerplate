@@ -307,28 +307,30 @@
     {
       "sourceRow": 264,
       "player": "Zvonimir Ivisic",
-      "currentTeam": "illinois",
-      "previousTeam": "illinois",
+      "currentTeam": "Illinois",
+      "previousTeam": "Illinois",
       "status": "researched_suggestion",
-      "historicalRating": 68.7712,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 78,
-        "offensiveBurden": 72,
-        "opportunityScore": 81.8,
+        "projectedRole": 92,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 86.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 75,
-        "upsideToolsScore": 80,
-        "talentScore": 77,
-        "projectionScore": 70.76,
-        "projectedBbpr": 69.7656,
-        "confidenceScore": 78,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 84,
+        "talentScore": 81.6,
+        "projectionScore": 75.35,
+        "projectedBbpr": 76.41,
+        "confidenceScore": 88,
+        "confidenceGrade": "A",
+        "needsReview": false,
+        "historicalRating": 78,
+        "developmentScore": 40
       },
-      "researchSummary": "Ivisic has frontcourt skill and size, but Illinois' hierarchy is Mirkovic-forward and role competition exists. Starter credit is plausible; offensive burden stays capped.",
+      "researchSummary": "Reassessed against Tomislav: Zvonimir's counting stats trail, but the original model/team-impact read is stronger because of rim protection, block rate, floor-spacing flashes, and Illinois' ability to use him as a higher-impact two-way frontcourt piece.",
       "teamContext": {
         "starterEvidence": "Illinois roster/projection context supports frontcourt minutes, but Mirkovic is the higher-usage piece.",
         "roleCap": "Likely frontcourt starter/major rotation, not primary option.",
@@ -337,13 +339,8 @@
       "evidence": [
         {
           "source": "Illinois Athletics",
-          "url": "https://fightingillini.com/sports/mens-basketball/roster",
-          "notes": "Confirms Ivisic on Illinois' roster."
-        },
-        {
-          "source": "The Champaign Room",
-          "url": "https://www.thechampaignroom.com/illinois-fighting-illini-basketball-news/55037/two-biggest-questions-facing-illinois-basketball-before-2026-27-season-fighting-illini-ncaa-big-ten-brad-underwood",
-          "notes": "Illinois usage context centers on replacing Keaton Wagler and identifying lead options."
+          "url": "https://fightingillini.com/sports/mens-basketball/roster/zvonimir-ivisic/15977",
+          "notes": "Lists Zvonimir on the 2026-27 Illinois roster and documents 6.6 PPG, 4.6 RPG, 2.0 BPG, fourth nationally in block rate, and made threes in 16 games in 2025-26."
         }
       ]
     },
