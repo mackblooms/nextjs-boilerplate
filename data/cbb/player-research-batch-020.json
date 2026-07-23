@@ -1,0 +1,1261 @@
+{
+  "batchId": "player-research-020",
+  "createdAt": "2026-07-23",
+  "sourceSheet": "player database + all D1 players",
+  "scope": "Priority screen of the next 500 pending no-anchor players after batch 019, covering source rows 1997-2496. Includes only researched candidates whose shared calibrated projected BBPR clears 60.",
+  "method": [
+    "Start from pending players after source row 1996 with current-team values and no completed projection.",
+    "Screen the first 500 remaining pending rows, source rows 1997 through 2496.",
+    "Skip players who do not clear 60 BBPR under the shared calibration after a scored historical anchor is assigned.",
+    "For every selected no-anchor row, assign a researched historicalRating from official roster, production, recruiting, and current sentiment context.",
+    "Use official team pages first, then reputable stat or team/local coverage when historical production or current role sentiment is needed.",
+    "Calculate opportunity, talent, projection score, and projected BBPR with the same calibration formulas used by the admin apply path.",
+    "Leave every row pending admin approval so source context can be reviewed before application."
+  ],
+  "formulas": {
+    "syntheticHistoricalAnchor": "No-imported-anchor players receive a researched historicalRating estimate from production, level, recruiting pedigree, physical tools, health, and role sentiment.",
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "shared calibrateProjectedBbpr(anchoredPlayer, suggested) logic used by admin apply path"
+  },
+  "screeningSummary": {
+    "previouslyScreenedPriorityRows": 1500,
+    "screenedPendingRows": 500,
+    "sourceRowRange": "1997-2496",
+    "selectedAbove60": 25,
+    "minProjectedBbpr": 60.74,
+    "maxProjectedBbpr": 73.4115,
+    "remainingPendingRowsAfterWindow": 1509,
+    "nextUnscannedSourceRow": 2497,
+    "excludedReason": "Remaining screened rows either lacked enough sourced role/production signal, were crowded low-minute freshmen/internationals, had health/redshirt concerns, or calibrated at 60 BBPR or below. Casey Jones was specifically left out because the current Washington State context pointed to a redshirt/availability issue."
+  },
+  "players": [
+    {
+      "sourceRow": 2009,
+      "player": "Jasper Johnson",
+      "currentTeam": "Oregon",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 54,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 84.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 82.31,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 72.4015
+      },
+      "researchSummary": "Jasper Johnson receives a 54 anchor from a Kentucky freshman season plus top-recruit context before moving to Oregon. The scoring pedigree, high-major transfer path, and sophomore development score push him well above 60 without treating the limited freshman role as a permanent discount.",
+      "teamContext": {
+        "starterEvidence": "Oregon context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 54. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Oregon's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oregon Athletics",
+          "url": "https://goducks.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Johnson on Oregon's current men's basketball roster."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/jasper-johnson-1.html",
+          "notes": "Stat page captures his Kentucky freshman sample, which is used as context rather than a hard cap."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2009 has no imported historical BBPR, so this batch assigns a scored anchor of 54 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2019,
+      "player": "Koren Johnson",
+      "currentTeam": "Portland State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 69.73,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 62.865
+      },
+      "researchSummary": "Koren Johnson receives a 56 anchor after Washington, Louisville, and Ole Miss context showed high-major guard experience with a larger Portland State opportunity. The senior projection clears 60 on role and usage translation, while the talent inputs remain measured.",
+      "teamContext": {
+        "starterEvidence": "Portland State context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Portland State's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Portland State Athletics",
+          "url": "https://goviks.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Johnson's current Portland State placement."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/koren-johnson-1.html",
+          "notes": "Career stat page provides the high-major production sample used for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2019 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2021,
+      "player": "London Johnson",
+      "currentTeam": "Louisville",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 82,
+        "talentScore": 74.8,
+        "projectionScore": 71.35,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 63.675
+      },
+      "researchSummary": "London Johnson receives a 56 anchor from G League Ignite and Louisville context. The professional background and athletic upside keep him above 60, but the role score stays short of a lock because Louisville guard usage still needs depth-chart review.",
+      "teamContext": {
+        "starterEvidence": "Louisville context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Louisville's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Johnson with Louisville."
+        },
+        {
+          "source": "NBA G League",
+          "url": "https://gleague.nba.com/player/1631220/london-johnson",
+          "notes": "G League profile provides the professional sample and tools context for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2021 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2035,
+      "player": "Deuce Jones II",
+      "currentTeam": "UAB",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 88,
+        "opportunityScore": 87.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 76,
+        "talentScore": 66.4,
+        "projectionScore": 74.57,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 66.285
+      },
+      "researchSummary": "Deuce Jones II receives a 58 anchor from prior guard production and a UAB role path. The projection is usage-driven, with junior development and ball-handling responsibility lifting him above 60 under the same calibration.",
+      "teamContext": {
+        "starterEvidence": "UAB context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "UAB's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UAB Athletics",
+          "url": "https://uabsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Jones on UAB's current roster."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/deuce-jones-1.html",
+          "notes": "Stat page provides prior production context for the scored historical anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2035 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2046,
+      "player": "Drayton Jones",
+      "currentTeam": "Butler",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 54,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 67.48,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 60.74
+      },
+      "researchSummary": "Drayton Jones receives a 54 anchor after researching his Butler roster context and prior frontcourt production. He clears 60 narrowly because the senior opportunity is useful, so the starter label and confidence stay conservative.",
+      "teamContext": {
+        "starterEvidence": "Butler context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 54. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Butler's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Butler Athletics",
+          "url": "https://butlersports.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Jones in Butler's current frontcourt group."
+        },
+        {
+          "source": "Local source review",
+          "url": "data/cbb/player-projections.json",
+          "notes": "No imported BBPR was present, so prior production and role evidence were translated into a modest anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2046 has no imported historical BBPR, so this batch assigns a scored anchor of 54 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2047,
+      "player": "Elijah Jones",
+      "currentTeam": "George Mason",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 83.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 69.37,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 63.685
+      },
+      "researchSummary": "Elijah Jones receives a 58 anchor from prior center production and George Mason roster context. Size, rebounding, and a senior frontcourt path support an above-60 projection, with offensive burden kept below the guard candidates.",
+      "teamContext": {
+        "starterEvidence": "George Mason context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "George Mason's C minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "George Mason Athletics",
+          "url": "https://gomason.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Jones on George Mason's current roster."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/elijah-jones-1.html",
+          "notes": "Career stat page provides prior production context for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2047 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2062,
+      "player": "Quentin Jones",
+      "currentTeam": "Saint Louis",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 60,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 84,
+        "opportunityScore": 85,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 64,
+        "upsideToolsScore": 78,
+        "talentScore": 69.6,
+        "projectionScore": 70.61,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 65.305
+      },
+      "researchSummary": "Quentin Jones receives a 60 anchor after Northern Kentucky scoring production and Saint Louis transfer context. The senior guard role and shooting/scoring history make him a clean above-60 selection without inflating the talent tier.",
+      "teamContext": {
+        "starterEvidence": "Saint Louis context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 60. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Saint Louis's SG minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Saint Louis Athletics",
+          "url": "https://slubillikens.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Jones with Saint Louis."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/quentin-jones-1.html",
+          "notes": "Career page supplies the Northern Kentucky production sample used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2062 has no imported historical BBPR, so this batch assigns a scored anchor of 60 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2066,
+      "player": "Sean Jones",
+      "currentTeam": "Toledo",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 54,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "opportunityScore": 84.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 69.82,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 61.91
+      },
+      "researchSummary": "Sean Jones receives a 54 anchor from Marquette experience and Toledo roster context. The smaller guard profile keeps the anchor modest, but the senior opportunity after transfer is enough to clear 60.",
+      "teamContext": {
+        "starterEvidence": "Toledo context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 54. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Toledo's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Toledo Athletics",
+          "url": "https://utrockets.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Jones with Toledo."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/sean-jones-2.html",
+          "notes": "Career stat page captures the Marquette sample used in the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2066 has no imported historical BBPR, so this batch assigns a scored anchor of 54 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2073,
+      "player": "Tylis Jordan",
+      "currentTeam": "Georgia Tech",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 80.2,
+        "entryTalentGrade": 93,
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 88,
+        "talentScore": 90,
+        "projectionScore": 87.59,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 63.9132
+      },
+      "researchSummary": "Tylis Jordan receives a 58 freshman anchor from Georgia Tech's signing context and consensus high-major recruiting profile. The newcomer formula clears 60 because of talent and development, while the role score reflects a freshman frontcourt competition.",
+      "teamContext": {
+        "starterEvidence": "Georgia Tech context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Georgia Tech's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Georgia Tech Athletics",
+          "url": "https://ramblinwreck.com/sports/m-baskbl/roster",
+          "notes": "Official roster verifies Jordan on Georgia Tech's current roster."
+        },
+        {
+          "source": "Georgia Tech Athletics",
+          "url": "https://ramblinwreck.com/jackets-sign-top-50-forward-tylis-jordan/",
+          "notes": "Signing release provides recruiting profile and physical/tools context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2073 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2090,
+      "player": "Jamie Kaiser, Jr.",
+      "currentTeam": "Richmond",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 84.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 74.67,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 65.335
+      },
+      "researchSummary": "Jamie Kaiser Jr. receives a 56 anchor from Maryland/Butler experience and Richmond transfer context. His wing size, shooting background, and junior development path push him above 60 with no extra premium beyond the shared formula.",
+      "teamContext": {
+        "starterEvidence": "Richmond context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Richmond's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Richmond Athletics",
+          "url": "https://richmondspiders.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Kaiser with Richmond."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/jamie-kaiserjr-1.html",
+          "notes": "Career page supplies the Maryland and Butler production context used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2090 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2139,
+      "player": "Nik Khamenia",
+      "currentTeam": "UConn",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 83.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 81.71,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 73.4115
+      },
+      "researchSummary": "Nik Khamenia receives a 58 anchor from UConn roster and recruiting context. The sophomore development boost, skilled forward profile, and NBA-tools signal put him safely above 60, but the role inputs remain short of a featured veteran tier.",
+      "teamContext": {
+        "starterEvidence": "UConn context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "UConn's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UConn Athletics",
+          "url": "https://uconnhuskies.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Khamenia with UConn."
+        },
+        {
+          "source": "UConn Athletics",
+          "url": "https://uconnhuskies.com/news/2025/11/13/mens-basketball-uconn-signs-five-for-2026-27",
+          "notes": "Signing context supports the recruiting and skill evaluation used in the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2139 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2155,
+      "player": "Taylen Kinney",
+      "currentTeam": "Kansas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 60,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 81.6,
+        "entryTalentGrade": 96,
+        "nbaProjectionScore": 90,
+        "upsideToolsScore": 90,
+        "talentScore": 92.4,
+        "projectionScore": 89.06,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 68.9119
+      },
+      "researchSummary": "Taylen Kinney receives a 60 freshman anchor from Kansas signing context and national recruiting evaluation. The guard clears 60 through the newcomer formula, with opportunity held below veteran lead-usage levels until the Kansas rotation is clearer.",
+      "teamContext": {
+        "starterEvidence": "Kansas context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 60. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Kansas's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Kansas Athletics",
+          "url": "https://kuathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Kinney with Kansas."
+        },
+        {
+          "source": "Kansas Athletics",
+          "url": "https://kuathletics.com/news/2025/11/19/mens-basketball-kansas-signs-guard-taylen-kinney",
+          "notes": "Signing release supplies recruiting profile and current Kansas fit."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2155 has no imported historical BBPR, so this batch assigns a scored anchor of 60 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2156,
+      "player": "John Kinziger",
+      "currentTeam": "Illinois State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 64,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 88,
+        "opportunityScore": 87.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 74,
+        "talentScore": 64.4,
+        "projectionScore": 69.87,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 66.935
+      },
+      "researchSummary": "John Kinziger receives a 64 anchor from DePaul and Illinois State context after a productive guard transfer profile. The projection is driven by senior ball-screen usage and efficiency history, while NBA/tools inputs remain conservative.",
+      "teamContext": {
+        "starterEvidence": "Illinois State context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 64. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Illinois State's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Illinois State Athletics",
+          "url": "https://goredbirds.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Kinziger with Illinois State."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/john-kinziger-1.html",
+          "notes": "Career stat page provides prior production context for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2156 has no imported historical BBPR, so this batch assigns a scored anchor of 64 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2169,
+      "player": "Eduardo Klafke",
+      "currentTeam": "Butler",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 76.67,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 66.335
+      },
+      "researchSummary": "Eduardo Klafke receives a 56 anchor from Butler roster context plus international and Ole Miss background. The junior wing/guard profile clears 60 because of shooting tools and a larger opportunity path, with confidence kept moderate.",
+      "teamContext": {
+        "starterEvidence": "Butler context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Butler's GF minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Butler Athletics",
+          "url": "https://butlersports.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Klafke with Butler."
+        },
+        {
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/en/players/296593-eduardo-klafke",
+          "notes": "FIBA profile supplies international production and physical/tools context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2169 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2183,
+      "player": "Cooper Koch",
+      "currentTeam": "Iowa",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "opportunityScore": 85.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 81.63,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 73.3595
+      },
+      "researchSummary": "Cooper Koch receives a 58 anchor from Iowa roster/stat context and prior recruiting profile. Sophomore development, size/skill, and an expanded frontcourt role put him above 70 BBPR while still using the same historical-weighted formula.",
+      "teamContext": {
+        "starterEvidence": "Iowa context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Iowa's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Iowa Athletics",
+          "url": "https://hawkeyesports.com/sports/mbball/roster",
+          "notes": "Official roster verifies Koch with Iowa."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/cooper-koch-1.html",
+          "notes": "Career page supplies the Iowa production sample used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2183 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2239,
+      "player": "Carter Lang",
+      "currentTeam": "Virginia",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 52,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 76,
+        "opportunityScore": 81.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 80,
+        "talentScore": 71.6,
+        "projectionScore": 73.87,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 62.935
+      },
+      "researchSummary": "Carter Lang receives a 52 anchor from Virginia roster context and prior frontcourt experience. He clears 60 on junior development and role availability, but the projection stays close to the cutoff pending rotation confirmation.",
+      "teamContext": {
+        "starterEvidence": "Virginia context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 52. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Virginia's PF minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/sports/mbball/roster",
+          "notes": "Official roster verifies Lang with Virginia."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/carter-lang-1.html",
+          "notes": "Career page provides prior frontcourt production context for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2239 has no imported historical BBPR, so this batch assigns a scored anchor of 52 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2255,
+      "player": "Cedric Lath",
+      "currentTeam": "Nevada",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 70.19,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 63.095
+      },
+      "researchSummary": "Cedric Lath receives a 56 anchor from Houston Christian production and Nevada roster/transfer context. Interior size and a senior frontcourt opportunity clear 60, with offensive burden held below perimeter creators.",
+      "teamContext": {
+        "starterEvidence": "Nevada context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Nevada's C minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Nevada Athletics",
+          "url": "https://nevadawolfpack.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Lath with Nevada."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/cedric-lath-1.html",
+          "notes": "Career page supplies the Houston Christian production sample used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2255 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2296,
+      "player": "K.J. Lewis",
+      "currentTeam": "USC",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 66,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 82,
+        "talentScore": 74.8,
+        "projectionScore": 73.15,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 69.575
+      },
+      "researchSummary": "K.J. Lewis receives a 66 anchor from Arizona production and USC transfer context. His physical guard profile, multi-year high-major role, and defensive/playmaking value place him near the top-100 line without needing a special adjustment.",
+      "teamContext": {
+        "starterEvidence": "USC context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 66. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "USC's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Lewis with USC."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/kj-lewis-1.html",
+          "notes": "Career stat page provides the Arizona production sample used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2296 has no imported historical BBPR, so this batch assigns a scored anchor of 66 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2299,
+      "player": "Nyk Lewis",
+      "currentTeam": "VCU",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 54,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 82,
+        "talentScore": 73.6,
+        "projectionScore": 79.83,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 70.7895
+      },
+      "researchSummary": "Nyk Lewis receives a 54 anchor after Xavier freshman minutes and VCU transfer context. The sophomore development score and larger role path lift him above 70 BBPR, while the historical anchor still reflects a limited first-year sample.",
+      "teamContext": {
+        "starterEvidence": "VCU context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 54. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "VCU's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "VCU Athletics",
+          "url": "https://vcuathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Lewis with VCU."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/nyk-lewis-1.html",
+          "notes": "Career page supplies the Xavier freshman sample used for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2299 has no imported historical BBPR, so this batch assigns a scored anchor of 54 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2353,
+      "player": "Zaide Lowery",
+      "currentTeam": "Dayton",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 54,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 73.77,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 63.885
+      },
+      "researchSummary": "Zaide Lowery receives a 54 anchor from Marquette usage and Dayton transfer context. He was added after a redshirt-risk candidate was excluded, and his junior wing profile clears 60 through role growth plus development.",
+      "teamContext": {
+        "starterEvidence": "Dayton context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 54. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Dayton's SG minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Dayton Athletics",
+          "url": "https://daytonflyers.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Lowery with Dayton."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/zaide-lowery-1.html",
+          "notes": "Career page supplies the Marquette production sample used for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2353 has no imported historical BBPR, so this batch assigns a scored anchor of 54 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2374,
+      "player": "Sebastian Mack",
+      "currentTeam": "UNLV",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 66,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 90,
+        "opportunityScore": 89.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 80,
+        "talentScore": 72.8,
+        "projectionScore": 73.71,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 69.855
+      },
+      "researchSummary": "Sebastian Mack receives a 66 anchor from UCLA and UNLV scoring context. His senior guard usage and creation history make him one of the stronger above-60 candidates in this window, with a final BBPR around the top-100 border.",
+      "teamContext": {
+        "starterEvidence": "UNLV context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 66. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "UNLV's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UNLV Athletics",
+          "url": "https://unlvrebels.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Mack with UNLV."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/sebastian-mack-1.html",
+          "notes": "Career stat page provides the UCLA and UNLV production context used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2374 has no imported historical BBPR, so this batch assigns a scored anchor of 66 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2384,
+      "player": "Kaden Magwood",
+      "currentTeam": "Murray State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 50,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 86,
+        "talentScore": 77.6,
+        "projectionScore": 82.13,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 70.8845
+      },
+      "researchSummary": "Kaden Magwood receives a 50 anchor from Auburn freshman context and Murray State transfer opportunity. The low anchor is not ignored, but sophomore development, scoring tools, and a larger shot-creation role push him above 70.",
+      "teamContext": {
+        "starterEvidence": "Murray State context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 50. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Murray State's SG minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Murray State Athletics",
+          "url": "https://goracers.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Magwood with Murray State."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/kaden-magwood-1.html",
+          "notes": "Career page supplies the Auburn freshman sample used for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2384 has no imported historical BBPR, so this batch assigns a scored anchor of 50 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2405,
+      "player": "Alier Maluk",
+      "currentTeam": "McNeese State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 50,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 74,
+        "opportunityScore": 81.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 86,
+        "talentScore": 78.8,
+        "projectionScore": 76.21,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 63.105
+      },
+      "researchSummary": "Alier Maluk receives a 50 anchor from Florida State/Kentucky context and McNeese frontcourt opportunity. The projection clears 60 mainly through tools, size, and development, while his offensive burden remains conservative.",
+      "teamContext": {
+        "starterEvidence": "McNeese State context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 50. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "McNeese State's C minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "McNeese Athletics",
+          "url": "https://mcneesesports.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Maluk with McNeese State."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/alier-maluk-1.html",
+          "notes": "Career page supplies prior high-major production context for the scored anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2405 has no imported historical BBPR, so this batch assigns a scored anchor of 50 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2417,
+      "player": "Cam Manyawu",
+      "currentTeam": "Iowa",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 69.77,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 62.885
+      },
+      "researchSummary": "Cam Manyawu receives a 56 anchor from Wyoming production and Iowa transfer context. Rebounding, physicality, and senior frontcourt minutes push him above 60, but the projection avoids overpricing him as a high-usage scorer.",
+      "teamContext": {
+        "starterEvidence": "Iowa context and sourced roster/production evidence support a uncertain starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Iowa's F minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Iowa Athletics",
+          "url": "https://hawkeyesports.com/sports/mbball/roster",
+          "notes": "Official roster verifies Manyawu with Iowa."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/cam-manyawu-1.html",
+          "notes": "Career page supplies the Wyoming and Iowa production context used for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2417 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2429,
+      "player": "Jordan Marsh",
+      "currentTeam": "Temple",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 60,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 88,
+        "opportunityScore": 87.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 76,
+        "talentScore": 66.4,
+        "projectionScore": 70.57,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 65.285
+      },
+      "researchSummary": "Jordan Marsh receives a 60 anchor from UNC Asheville/USC context and Temple transfer opportunity. The senior guard profile clears 60 on creation role and prior scoring usage, while the talent score stays in a grounded tier.",
+      "teamContext": {
+        "starterEvidence": "Temple context and sourced roster/production evidence support a yes starter label for this screening pass.",
+        "scoredAnchor": "Synthetic historical anchor: 60. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "positionCompetition": "Temple's G minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Temple Athletics",
+          "url": "https://owlsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster verifies Marsh with Temple."
+        },
+        {
+          "source": "Sports Reference CBB",
+          "url": "https://www.sports-reference.com/cbb/players/jordan-marsh-1.html",
+          "notes": "Career stat page provides prior scoring and transfer context for the anchor."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 2429 has no imported historical BBPR, so this batch assigns a scored anchor of 60 before projection."
+        }
+      ]
+    }
+  ]
+}
