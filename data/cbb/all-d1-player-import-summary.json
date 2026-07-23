@@ -5,13 +5,13 @@
   "rosterCount": 3874,
   "existingProjectionCountBefore": 394,
   "existingMatchedCount": 265,
-  "addedCount": 3609,
+  "addedCount": 3608,
   "projectedMatchesSkipped": 101,
   "researchedMatchesSkipped": 101,
-  "projectionCountAfter": 4003,
+  "projectionCountAfter": 4002,
   "byAddedType": {
     "International": 132,
-    "Returning": 2564,
+    "Returning": 2563,
     "Freshman": 913
   },
   "added": [
@@ -10084,14 +10084,6 @@
       "sourceRow": 1655,
       "player": "Nolan Groves",
       "currentTeam": "Minnesota",
-      "classYear": "So",
-      "playerType": "Returning"
-    },
-    {
-      "nationalRow": 1367,
-      "sourceRow": 1656,
-      "player": "Johann Gruenloh",
-      "currentTeam": "Virginia",
       "classYear": "So",
       "playerType": "Returning"
     },

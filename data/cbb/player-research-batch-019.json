@@ -24,7 +24,7 @@
     "previouslyScreenedPriorityRows": 1000,
     "screenedPendingRows": 500,
     "sourceRowRange": "1496-1996",
-    "selectedAbove60": 26,
+    "selectedAbove60": 25,
     "remainingPendingRowsAfterWindow": 2009,
     "excludedReason": "Remaining screened rows either lacked enough sourced role/production signal, were crowded low-minute freshmen/internationals, had health/redshirt concerns, or calibrated at 60 BBPR or below."
   },
@@ -305,55 +305,6 @@
           "source": "Local player projection export",
           "url": "data/cbb/player-projections.json",
           "notes": "Source row 1643 has no imported historical BBPR, so this batch assigns a scored anchor of 64 before projection."
-        }
-      ]
-    },
-    {
-      "sourceRow": 1656,
-      "player": "Johann Gruenloh",
-      "currentTeam": "Virginia",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": 72,
-      "developmentScore": 80,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 84,
-        "offensiveBurden": 74,
-        "opportunityScore": 84,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 82.22,
-        "confidenceScore": 86,
-        "projectedBbpr": 78.643,
-        "confidenceGrade": "A-",
-        "needsReview": true
-      },
-      "researchSummary": "Johann Gruenloh receives a 72 anchor from Virginia's official bio and current returning-core coverage. He started all 36 games, averaged 7.1 points, 5.2 rebounds and 2.2 blocks, ranked third in the ACC in blocks, and is one of Virginia's returning starters.",
-      "teamContext": {
-        "starterEvidence": "Virginia context and sourced roster/production evidence support a yes starter label for this screening pass.",
-        "scoredAnchor": "Synthetic historical anchor: 72. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
-        "positionCompetition": "Virginia's C minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Virginia Athletics",
-          "url": "https://virginiasports.com/sports/mbball/roster/season/2025-26/player/johann-grunloh",
-          "notes": "Official bio lists 36 starts, 7.1 ppg, 5.2 rpg, 2.2 bpg, and ACC/national block rankings."
-        },
-        {
-          "source": "Virginia Athletics",
-          "url": "https://virginiasports.com/news/2026/07/1/returning-talent-puts-hoos-in-enviable-position",
-          "notes": "Current coverage says Virginia returns starters including Gruenloh."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 1656 has no imported historical BBPR, so this batch assigns a scored anchor of 72 before projection."
         }
       ]
     },

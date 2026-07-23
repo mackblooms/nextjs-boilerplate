@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-07-23T13:48:14.523Z",
   "sourceWorkbook": "all d1 players.xlsx",
-  "sheetPlayerCount": 3875,
+  "sheetPlayerCount": 3874,
   "players": [
     {
       "nationalRow": 1,
@@ -25955,25 +25955,6 @@
         "name": "nolan groves",
         "nameTeam": "nolan groves::minnesota",
         "nameTeamClass": "nolan groves::minnesota::so"
-      }
-    },
-    {
-      "nationalRow": 1367,
-      "player": "Johann Gruenloh",
-      "position": "C",
-      "height": "7-0",
-      "heightInches": 84,
-      "weight": 238,
-      "currentTeam": "Virginia",
-      "classYear": "So",
-      "sourcePlayerCode": "38578",
-      "hometown": "Loningen",
-      "highSchool": "N/A",
-      "playerType": "Returning",
-      "matchKeys": {
-        "name": "johann gruenloh",
-        "nameTeam": "johann gruenloh::virginia",
-        "nameTeamClass": "johann gruenloh::virginia::so"
       }
     },
     {
