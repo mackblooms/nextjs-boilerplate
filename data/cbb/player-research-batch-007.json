@@ -615,30 +615,29 @@
       "historicalRating": 76,
       "developmentScore": 100,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
+        "projectedStarter": "Maybe",
+        "projectedRole": 89,
         "opportunityChange": 86,
         "offensiveBurden": 84,
-        "opportunityScore": 87.6,
+        "opportunityScore": 87.1,
         "entryTalentGrade": 98,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 96,
         "talentScore": 96.1,
-        "projectionScore": 93.055,
-        "confidenceScore": 80,
-        "confidenceGrade": "B",
-        "needsReview": true,
-        "projectedBbpr": 73.9471
+        "projectionScore": 92.83,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "projectedBbpr": 72.0321
       },
-      "researchSummary": "Dylan Mingo was under the top-100 line despite Baylor freshman profile and two-way tools.",
+      "researchSummary": "Dylan Mingo gets a smaller but real Baylor freshman lift because the talent profile is top-100 caliber even if the role is less certain.",
       "teamContext": {
         "projectedLineup": "Baylor's roster construction points to Mingo as an immediate lead-guard candidate.",
         "returningStars": "Baylor has other guard options, including his brother Kayden Mingo.",
         "incomingStars": "Mingo is the clear headliner of Baylor's freshman additions.",
         "positionCompetition": "Role should be high, but usage certainty is slightly capped by injury and roster depth.",
-        "starterEvidence": "Dylan Mingo was under the top-100 line despite Baylor freshman profile and two-way tools.",
-        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
-        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 newcomer calibration pass."
+        "starterEvidence": "Dylan Mingo gets a smaller but real Baylor freshman lift because the talent profile is top-100 caliber even if the role is less certain.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 final calibration tweak."
       },
       "evidence": [
         {

@@ -227,7 +227,7 @@
       "currentTeam": "Georgia",
       "previousTeam": "Georgia",
       "status": "researched_suggestion",
-      "historicalRating": 68,
+      "historicalRating": 69,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
@@ -242,15 +242,14 @@
         "projectionScore": 80.78,
         "confidenceScore": 84,
         "confidenceGrade": "B+",
-        "needsReview": true,
-        "projectedBbpr": 74.39
+        "projectedBbpr": 74.89
       },
-      "researchSummary": "Catchings was low for a former high-profile wing with a Georgia opportunity path. The correction lifts the anchor while leaving him behind more proven top-100 locks.",
+      "researchSummary": "Kanon Catchings stays in the top-100 bubble after the newcomer line moved, reflecting former high-profile wing status without pushing him into a proven tier.",
       "teamContext": {
-        "starterEvidence": "Catchings was low for a former high-profile wing with a Georgia opportunity path. The correction lifts the anchor while leaving him behind more proven top-100 locks.",
-        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "starterEvidence": "Kanon Catchings stays in the top-100 bubble after the newcomer line moved, reflecting former high-profile wing status without pushing him into a proven tier.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
         "positionCompetition": "Georgia has multiple guards/transfers, though Catchings owns one of the cleanest returning forward paths.",
-        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 top-100 calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 69. Updated in the July 23 final calibration tweak."
       },
       "evidence": [
         {

@@ -16487,20 +16487,19 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 89.6,
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 80,
-        "upsideToolsScore": 86,
-        "talentScore": 82.4,
-        "projectionScore": 77.16,
-        "confidenceScore": 86,
-        "confidenceGrade": "A-",
-        "needsReview": true,
-        "projectedBbpr": 77.79
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 75.11,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "projectedBbpr": 74.2775
       },
       "nearestGoldExamples": [
         {
@@ -16571,9 +16570,9 @@
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
       ],
-      "historicalRating": 78,
+      "historicalRating": 74,
       "developmentScore": 40,
-      "researchSummary": "D.J. Wagner was too high after the last pass. This keeps a top-100 Maryland guard profile but pulls him out of the top-25 range.",
+      "researchSummary": "D.J. Wagner is moved to the top-100 bubble because the Maryland role/upside is real but the prior top-50 correction was too aggressive.",
       "evidence": [
         {
           "source": "Maryland Athletics",

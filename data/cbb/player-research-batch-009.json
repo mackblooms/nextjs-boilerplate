@@ -982,31 +982,37 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 93,
-        "opportunityChange": 90,
-        "offensiveBurden": 86,
-        "opportunityScore": 90.7,
+        "projectedRole": 91,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 93.1,
         "entryTalentGrade": 98,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 96,
         "talentScore": 96.1,
-        "projectionScore": 94.45,
-        "confidenceScore": 90,
+        "projectionScore": 95.53,
+        "confidenceScore": 88,
         "confidenceGrade": "A",
-        "needsReview": true,
-        "projectedBbpr": 74.4625
+        "projectedBbpr": 76.7996,
+        "historicalRating": 72,
+        "developmentScore": 100,
+        "needsReview": false
       },
-      "researchSummary": "Abdou Toure was low for a top recruit with Arkansas freshman hype. Arkansas remains crowded, so he gets back-end top-100 treatment rather than elite freshman treatment.",
+      "researchSummary": "User-directed rank-target calibration around #65, scored through the shared newcomer projection formula.",
       "teamContext": {
-        "starterEvidence": "Abdou Toure was low for a top recruit with Arkansas freshman hype. Arkansas remains crowded, so he gets back-end top-100 treatment rather than elite freshman treatment.",
-        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "starterEvidence": "Abdou Toure gets a more meaningful freshman lift while remaining behind Arkansas' cleanest freshman/international bets.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
         "positionCompetition": "Jordan Smith Jr., JJ Andrews, Billy Richmond III, and additional freshmen/returners crowd wing touches.",
-        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 newcomer calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 final calibration tweak."
       },
       "evidence": [
         {
-          "source": "On3",
+          "source": "On3 player profile",
           "url": "https://www.on3.com/db/abdou-toure-236713/"
+        },
+        {
+          "source": "Arkansas roster",
+          "url": "https://arkansasrazorbacks.com/sport/m-baskbl/roster/"
         }
       ]
     },
@@ -1020,34 +1026,30 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 93,
-        "opportunityChange": 90,
-        "offensiveBurden": 86,
-        "opportunityScore": 90.7,
-        "entryTalentGrade": 99,
-        "nbaProjectionScore": 94,
-        "upsideToolsScore": 96,
-        "talentScore": 96.5,
-        "projectionScore": 94.59,
-        "confidenceScore": 86,
-        "confidenceGrade": "A-",
-        "needsReview": true,
-        "projectedBbpr": 74.4975
+        "projectedRole": 90,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 93,
+        "upsideToolsScore": 95,
+        "talentScore": 95.5,
+        "projectionScore": 95.095,
+        "confidenceScore": 88,
+        "confidenceGrade": "A",
+        "projectedBbpr": 76.0785,
+        "historicalRating": 80,
+        "developmentScore": 100,
+        "needsReview": false
       },
-      "researchSummary": "Babatunde Oladotun remains a protected top-100 freshman row after the newcomer expansion because he is the kept Maryland elite-recruit profile.",
+      "researchSummary": "User-directed rank-target calibration around #72, scored through the shared newcomer projection formula.",
       "teamContext": {
-        "starterEvidence": "Babatunde Oladotun remains a protected top-100 freshman row after the newcomer expansion because he is the kept Maryland elite-recruit profile.",
-        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "starterEvidence": "Babatunde Oladotun is spaced above the cutoff as the kept elite Maryland freshman profile.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
         "positionCompetition": "Maryland's final veteran roster context should be checked before applying a maximum role.",
-        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 newcomer calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 final calibration tweak."
       },
-      "evidence": [
-        {
-          "source": "Maryland Athletics",
-          "url": "https://umterps.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Oladotun with Maryland."
-        }
-      ]
+      "evidence": []
     },
     {
       "sourceRow": 255,
@@ -1226,37 +1228,30 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Maybe",
-        "projectedRole": 88,
-        "opportunityChange": 84,
-        "offensiveBurden": 80,
-        "opportunityScore": 85.2,
+        "projectedRole": 89,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.1,
         "entryTalentGrade": 99,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 96,
         "talentScore": 96.5,
-        "projectionScore": 92.115,
+        "projectionScore": 92.97,
         "confidenceScore": 84,
         "confidenceGrade": "B+",
-        "needsReview": true,
-        "projectedBbpr": 71.6526
+        "projectedBbpr": 72.1009
       },
-      "researchSummary": "Obinna Ekezie Jr. was too low for a top-end Louisville freshman big, even with role uncertainty.",
+      "researchSummary": "Obinna Ekezie Jr. gets lifted as an elite center recruit, but role uncertainty keeps him below the clearest top-100 newcomers.",
       "teamContext": {
-        "starterEvidence": "Obinna Ekezie Jr. was too low for a top-end Louisville freshman big, even with role uncertainty.",
-        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "starterEvidence": "Obinna Ekezie Jr. gets lifted as an elite center recruit, but role uncertainty keeps him below the clearest top-100 newcomers.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
         "positionCompetition": "Flory Bidunga, Alvaro Folgueiras, Gabe Dynes, Karter Knox, and Boyuan Zhang compete for frontcourt minutes.",
-        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 newcomer calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 final calibration tweak."
       },
       "evidence": [
         {
-          "source": "Louisville Athletics",
-          "url": "https://gocards.com/news/2026/6/2/mens-basketball-cardinals-add-incoming-freshman-obinna-ekezie",
-          "notes": "Louisville signs Ekezie after he reclassified from the 2027 class and ranked No. 8 in SC Next 100 for 2026."
-        },
-        {
-          "source": "Field Level Media",
-          "url": "https://fieldlevelmedia.com/ncaab/5-star-c-obinna-ekezie-jr-picks-louisville-reclassifies-to-26/",
-          "notes": "Reports Ekezie was the No. 4 overall prospect in 2027 before reclassifying."
+          "source": "On3 2026 center rankings",
+          "url": "https://www.on3.com/db/rankings/industry-player/basketball/2026/?position=c&sort-by=on3consensus&state="
         }
       ]
     },

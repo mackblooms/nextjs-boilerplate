@@ -42,7 +42,15 @@ function newcomerCap(player: CalibrationPlayer, suggestion: CalibrationSuggestio
   const nba = numeric(suggestion.nbaProjectionScore) ?? 0;
   const internationalAdjustment = player.playerType === "International" ? -3 : 0;
 
-  if (role >= 98 && entry >= 98 && nba >= 95) return 87 + internationalAdjustment;
+  if (role >= 99 && entry >= 99 && nba >= 98) return 87 + internationalAdjustment;
+  if (role >= 98 && entry >= 98 && nba >= 95) return 86 + internationalAdjustment;
+  if (role >= 97 && entry >= 98 && nba >= 95) return 84.5 + internationalAdjustment;
+  if (role >= 96 && entry >= 98 && nba >= 94) return 83.6 + internationalAdjustment;
+  if (role >= 95 && entry >= 98 && nba >= 94) return 82.5 + internationalAdjustment;
+  if (role >= 93 && entry >= 98 && nba >= 94) return 79 + internationalAdjustment;
+  if (role >= 92 && entry >= 97 && nba >= 92) return 78.5 + internationalAdjustment;
+  if (role >= 91 && entry >= 97 && nba >= 92) return 77.5 + internationalAdjustment;
+  if (role >= 90 && entry >= 95 && nba >= 90) return 77 + internationalAdjustment;
   if (role >= 90 && entry >= 98 && nba >= 94) return 79 + internationalAdjustment;
   if (role >= 88 && entry >= 96 && nba >= 90) return 75 + internationalAdjustment;
   if (role >= 90 && entry >= 95 && nba >= 85) return 72.5 + internationalAdjustment;
@@ -59,7 +67,15 @@ function newcomerCredibility(suggestion: CalibrationSuggestion) {
   const entry = numeric(suggestion.entryTalentGrade) ?? 0;
   const nba = numeric(suggestion.nbaProjectionScore) ?? 0;
 
-  if (role >= 98 && entry >= 98 && nba >= 95) return 0.65;
+  if (role >= 99 && entry >= 99 && nba >= 98) return 0.65;
+  if (role >= 98 && entry >= 98 && nba >= 95) return 0.62;
+  if (role >= 97 && entry >= 98 && nba >= 95) return 0.58;
+  if (role >= 96 && entry >= 98 && nba >= 94) return 0.54;
+  if (role >= 95 && entry >= 98 && nba >= 94) return 0.48;
+  if (role >= 93 && entry >= 98 && nba >= 94) return 0.38;
+  if (role >= 92 && entry >= 97 && nba >= 92) return 0.34;
+  if (role >= 91 && entry >= 97 && nba >= 92) return 0.32;
+  if (role >= 90 && entry >= 95 && nba >= 90) return 0.3;
   if (role >= 90 && entry >= 96 && nba >= 90) return 0.25;
   if (role >= 86 && entry >= 94 && nba >= 88) return 0.18;
   if (role >= 80 && entry >= 88) return 0.14;

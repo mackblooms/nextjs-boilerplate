@@ -221,20 +221,21 @@
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
-        "opportunityChange": 80,
-        "offensiveBurden": 85,
-        "opportunityScore": 86,
-        "entryTalentGrade": 95,
-        "nbaProjectionScore": 85,
-        "upsideToolsScore": 90,
-        "talentScore": 90.25,
-        "projectionScore": 90.2875,
-        "projectedBbpr": 90.2875,
-        "confidenceScore": 68,
-        "confidenceGrade": "B",
-        "needsReview": true
+        "opportunityChange": 95,
+        "offensiveBurden": 93,
+        "opportunityScore": 92.1,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.5,
+        "projectionScore": 94.52,
+        "projectedBbpr": 75.906,
+        "confidenceScore": 88,
+        "confidenceGrade": "A",
+        "needsReview": false,
+        "developmentScore": 100
       },
-      "researchSummary": "Crowe is a five-star/elite-scoring freshman with a clear immediate role at Missouri. The role is high, but not 100, because freshman guard efficiency and Missouri's veteran context create some translation risk.",
+      "researchSummary": "User-directed rank-target calibration around #78, scored through the shared newcomer projection formula.",
       "teamContext": {
         "projectedLineup": "Missouri roster context suggests an immediate lead-guard or featured-guard role.",
         "returningStars": "Missouri has veterans, but Crowe's scoring/recruiting profile should command minutes.",
@@ -404,38 +405,40 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 84,
-        "opportunityScore": 89.2,
+        "projectedRole": 96,
+        "opportunityChange": 95,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.7,
         "entryTalentGrade": 99,
         "nbaProjectionScore": 96,
         "upsideToolsScore": 96,
         "talentScore": 97.2,
-        "projectionScore": 94.16,
-        "confidenceScore": 86,
-        "confidenceGrade": "A-",
-        "needsReview": true,
-        "projectedBbpr": 74.39
+        "projectionScore": 96.635,
+        "confidenceScore": 95,
+        "confidenceGrade": "A+",
+        "projectedBbpr": 80.1107,
+        "historicalRating": 76,
+        "developmentScore": 100,
+        "needsReview": false
       },
-      "researchSummary": "Miikka Muurinen was far too low for a high-profile Arkansas international recruit. The update keeps freshman/international compression but treats him like a real top-100 candidate.",
+      "researchSummary": "User-directed rank-target calibration around #41, scored through the shared newcomer projection formula.",
       "teamContext": {
         "projectedLineup": "Arkansas projected-lineup context is crowded and does not clearly lock him into a starting spot.",
         "returningStars": "Billy Richmond and other Arkansas returners compete for forward minutes.",
         "incomingStars": "Jordan Smith Jr., Jeremiah Wilkinson, Cooper Bowser and Abdou Toure all affect the role map.",
         "positionCompetition": "Elite talent, but heavy competition.",
-        "starterEvidence": "Miikka Muurinen was far too low for a high-profile Arkansas international recruit. The update keeps freshman/international compression but treats him like a real top-100 candidate.",
-        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
-        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 newcomer calibration pass."
+        "starterEvidence": "Miikka Muurinen is lifted above the cutoff cluster while still respecting Arkansas' crowded young frontcourt.",
+        "roleCap": "Final spacing adjustment: same formula, stronger role/confidence only where talent plus opportunity support it.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 final calibration tweak."
       },
       "evidence": [
         {
-          "source": "Arkansas Athletics",
-          "url": "https://arkansasrazorbacks.com/sport/m-baskbl/roster/"
+          "source": "On3 player profile",
+          "url": "https://www.on3.com/db/miikka-muurinen-236715/"
         },
         {
-          "source": "On3",
-          "url": "https://www.on3.com/db/miikka-muurinen-236715/"
+          "source": "Arkansas roster",
+          "url": "https://arkansasrazorbacks.com/sport/m-baskbl/roster/"
         }
       ]
     },

@@ -1,0 +1,602 @@
+{
+  "generatedAt": "2026-07-23T20:45:00.000Z",
+  "scope": "User-directed rank-target calibration for high-profile freshmen and internationals.",
+  "method": [
+    "Smoothed the shared newcomer cap/credibility tiers to remove the prior 74-75 vs mid-80s cliff.",
+    "Scored all named players through the shared newcomer formula.",
+    "Recalculated stored ranks after the BBPR changes."
+  ],
+  "players": [
+    {
+      "sourceRow": 161,
+      "player": "Jordan Smith Jr.",
+      "currentTeam": "Arkansas",
+      "targetRank": 7,
+      "old": {
+        "rank": 6,
+        "projectedBbpr": 86.9494,
+        "projectedRole": 100,
+        "opportunityChange": 93,
+        "offensiveBurden": 88,
+        "opportunityScore": 95.5,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 100,
+        "upsideToolsScore": 95,
+        "talentScore": 98.75,
+        "projectionScore": 97.5375,
+        "confidenceScore": 94
+      },
+      "new": {
+        "rank": 6,
+        "projectedBbpr": 86.9494,
+        "projectedRole": 100,
+        "opportunityChange": 93,
+        "offensiveBurden": 88,
+        "opportunityScore": 95.5,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 100,
+        "upsideToolsScore": 95,
+        "talentScore": 98.75,
+        "projectionScore": 97.5375,
+        "confidenceScore": 94
+      },
+      "reason": "User-directed rank-target calibration around #7, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 160,
+      "player": "Tyran Stokes",
+      "currentTeam": "Kansas",
+      "targetRank": 10,
+      "old": {
+        "rank": 10,
+        "projectedBbpr": 86.6488,
+        "projectedRole": 99,
+        "opportunityChange": 90,
+        "offensiveBurden": 85,
+        "opportunityScore": 93.5,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 100,
+        "upsideToolsScore": 100,
+        "talentScore": 100,
+        "projectionScore": 97.075,
+        "confidenceScore": 84
+      },
+      "new": {
+        "rank": 10,
+        "projectedBbpr": 86.6488,
+        "projectedRole": 99,
+        "opportunityChange": 90,
+        "offensiveBurden": 85,
+        "opportunityScore": 93.5,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 100,
+        "upsideToolsScore": 100,
+        "talentScore": 100,
+        "projectionScore": 97.075,
+        "confidenceScore": 84
+      },
+      "reason": "User-directed rank-target calibration around #10, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 162,
+      "player": "Caleb Holt",
+      "currentTeam": "Arizona",
+      "targetRank": 17,
+      "old": {
+        "rank": 14,
+        "projectedBbpr": 84.2831,
+        "projectedRole": 96,
+        "opportunityChange": 94,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.4,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 99,
+        "upsideToolsScore": 100,
+        "talentScore": 99.65,
+        "projectionScore": 97.3575,
+        "confidenceScore": 92
+      },
+      "new": {
+        "rank": 14,
+        "projectedBbpr": 84.2831,
+        "projectedRole": 96,
+        "opportunityChange": 94,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.4,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 99,
+        "upsideToolsScore": 100,
+        "talentScore": 99.65,
+        "projectionScore": 97.3575,
+        "confidenceScore": 92
+      },
+      "reason": "User-directed rank-target calibration around #17, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 4006,
+      "player": "Joaquim Boumtje Boumtje",
+      "currentTeam": "Duke",
+      "targetRank": 50,
+      "old": {
+        "rank": 50,
+        "projectedBbpr": 78.6227,
+        "projectedRole": 93,
+        "opportunityChange": 95,
+        "offensiveBurden": 92,
+        "opportunityScore": 93.4,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.665,
+        "confidenceScore": 88
+      },
+      "new": {
+        "rank": 50,
+        "projectedBbpr": 78.6227,
+        "projectedRole": 93,
+        "opportunityChange": 95,
+        "offensiveBurden": 92,
+        "opportunityScore": 93.4,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.665,
+        "confidenceScore": 88
+      },
+      "reason": "User-directed rank-target calibration around #50, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 170,
+      "player": "Miikka Muurinen",
+      "currentTeam": "Arkansas",
+      "targetRank": 41,
+      "old": {
+        "rank": 41,
+        "projectedBbpr": 79.9227,
+        "projectedRole": 96,
+        "opportunityChange": 95,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.7,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 96,
+        "upsideToolsScore": 96,
+        "talentScore": 97.2,
+        "projectionScore": 96.635,
+        "confidenceScore": 95
+      },
+      "new": {
+        "rank": 41,
+        "projectedBbpr": 80.1107,
+        "projectedRole": 96,
+        "opportunityChange": 95,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.7,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 96,
+        "upsideToolsScore": 96,
+        "talentScore": 97.2,
+        "projectionScore": 96.635,
+        "confidenceScore": 95
+      },
+      "reason": "User-directed rank-target calibration around #41, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 178,
+      "player": "Babatunde Oladotun",
+      "currentTeam": "Maryland",
+      "targetRank": 72,
+      "old": {
+        "rank": 74,
+        "projectedBbpr": 76.0785,
+        "projectedRole": 90,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 93,
+        "upsideToolsScore": 95,
+        "talentScore": 95.5,
+        "projectionScore": 95.095,
+        "confidenceScore": 88
+      },
+      "new": {
+        "rank": 74,
+        "projectedBbpr": 76.0785,
+        "projectedRole": 90,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 93,
+        "upsideToolsScore": 95,
+        "talentScore": 95.5,
+        "projectionScore": 95.095,
+        "confidenceScore": 88
+      },
+      "reason": "User-directed rank-target calibration around #72, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 2902,
+      "player": "Dink Pate",
+      "currentTeam": "Providence",
+      "targetRank": 59,
+      "old": {
+        "rank": 60,
+        "projectedBbpr": 77.3137,
+        "projectedRole": 92,
+        "opportunityChange": 94,
+        "offensiveBurden": 92,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.305,
+        "confidenceScore": 87
+      },
+      "new": {
+        "rank": 60,
+        "projectedBbpr": 77.3137,
+        "projectedRole": 92,
+        "opportunityChange": 94,
+        "offensiveBurden": 92,
+        "opportunityScore": 92.6,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.305,
+        "confidenceScore": 87
+      },
+      "reason": "User-directed rank-target calibration around #59, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 2743,
+      "player": "Saliou Niang",
+      "currentTeam": "LSU",
+      "targetRank": 98,
+      "old": {
+        "rank": 97,
+        "projectedBbpr": 74.7176,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.2,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 95,
+        "talentScore": 95.85,
+        "projectionScore": 94.1375,
+        "confidenceScore": 84
+      },
+      "new": {
+        "rank": 97,
+        "projectedBbpr": 74.7176,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.2,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 95,
+        "talentScore": 95.85,
+        "projectionScore": 94.1375,
+        "confidenceScore": 84
+      },
+      "reason": "User-directed rank-target calibration around #98, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 209,
+      "player": "Abdou Toure",
+      "currentTeam": "Arkansas",
+      "targetRank": 65,
+      "old": {
+        "rank": 65,
+        "projectedBbpr": 76.7996,
+        "projectedRole": 91,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 93.1,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.53,
+        "confidenceScore": 88
+      },
+      "new": {
+        "rank": 65,
+        "projectedBbpr": 76.7996,
+        "projectedRole": 91,
+        "opportunityChange": 96,
+        "offensiveBurden": 94,
+        "opportunityScore": 93.1,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.53,
+        "confidenceScore": 88
+      },
+      "reason": "User-directed rank-target calibration around #65, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 2864,
+      "player": "Mark Padjen",
+      "currentTeam": "Murray State",
+      "targetRank": 100,
+      "old": {
+        "rank": 99,
+        "projectedBbpr": 74.5739,
+        "projectedRole": 93,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 87.7,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 94,
+        "talentScore": 95.6,
+        "projectionScore": 92.925,
+        "confidenceScore": 72
+      },
+      "new": {
+        "rank": 99,
+        "projectedBbpr": 74.5739,
+        "projectedRole": 93,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 87.7,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 94,
+        "talentScore": 95.6,
+        "projectionScore": 92.925,
+        "confidenceScore": 72
+      },
+      "reason": "User-directed rank-target calibration around #100, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 4007,
+      "player": "Marcio Santos",
+      "currentTeam": "LSU",
+      "targetRank": 92,
+      "old": {
+        "rank": 95,
+        "projectedBbpr": 74.8023,
+        "projectedRole": 92,
+        "opportunityChange": 95,
+        "offensiveBurden": 90,
+        "opportunityScore": 92.5,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 94,
+        "talentScore": 95.6,
+        "projectionScore": 95.085,
+        "confidenceScore": 90
+      },
+      "new": {
+        "rank": 95,
+        "projectedBbpr": 74.8023,
+        "projectedRole": 92,
+        "opportunityChange": 95,
+        "offensiveBurden": 90,
+        "opportunityScore": 92.5,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 94,
+        "talentScore": 95.6,
+        "projectionScore": 95.085,
+        "confidenceScore": 90
+      },
+      "reason": "User-directed rank-target calibration around #92, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 163,
+      "player": "Bruce Branch III",
+      "currentTeam": "BYU",
+      "targetRank": 67,
+      "old": {
+        "rank": 67,
+        "projectedBbpr": 76.6988,
+        "projectedRole": 91,
+        "opportunityChange": 95,
+        "offensiveBurden": 92,
+        "opportunityScore": 92.4,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.215,
+        "confidenceScore": 87
+      },
+      "new": {
+        "rank": 67,
+        "projectedBbpr": 76.6988,
+        "projectedRole": 91,
+        "opportunityChange": 95,
+        "offensiveBurden": 92,
+        "opportunityScore": 92.4,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.215,
+        "confidenceScore": 87
+      },
+      "reason": "User-directed rank-target calibration around #67, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 168,
+      "player": "Cameron Williams",
+      "currentTeam": "Duke",
+      "targetRank": 25,
+      "old": {
+        "rank": 25,
+        "projectedBbpr": 81.438,
+        "projectedRole": 95,
+        "opportunityChange": 92,
+        "offensiveBurden": 88,
+        "opportunityScore": 92.7,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.35,
+        "confidenceScore": 86
+      },
+      "new": {
+        "rank": 25,
+        "projectedBbpr": 81.438,
+        "projectedRole": 95,
+        "opportunityChange": 92,
+        "offensiveBurden": 88,
+        "opportunityScore": 92.7,
+        "entryTalentGrade": 98,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 95.35,
+        "confidenceScore": 86
+      },
+      "reason": "User-directed rank-target calibration around #25, scored through the shared newcomer projection formula."
+    },
+    {
+      "sourceRow": 166,
+      "player": "Jason Crowe Jr.",
+      "currentTeam": "Missouri",
+      "targetRank": 78,
+      "old": {
+        "rank": 79,
+        "projectedBbpr": 75.906,
+        "projectedRole": 90,
+        "opportunityChange": 95,
+        "offensiveBurden": 93,
+        "opportunityScore": 92.1,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.5,
+        "projectionScore": 94.52,
+        "confidenceScore": 88
+      },
+      "new": {
+        "rank": 79,
+        "projectedBbpr": 75.906,
+        "projectedRole": 90,
+        "opportunityChange": 95,
+        "offensiveBurden": 93,
+        "opportunityScore": 92.1,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 92,
+        "upsideToolsScore": 94,
+        "talentScore": 94.5,
+        "projectionScore": 94.52,
+        "confidenceScore": 88
+      },
+      "reason": "User-directed rank-target calibration around #78, scored through the shared newcomer projection formula."
+    }
+  ],
+  "targetRanks": [
+    {
+      "rank": 6,
+      "player": "Jordan Smith Jr.",
+      "currentTeam": "Arkansas",
+      "playerType": "Freshman",
+      "projectedBbpr": 86.9494
+    },
+    {
+      "rank": 10,
+      "player": "Tyran Stokes",
+      "currentTeam": "Kansas",
+      "playerType": "Freshman",
+      "projectedBbpr": 86.6488
+    },
+    {
+      "rank": 14,
+      "player": "Caleb Holt",
+      "currentTeam": "Arizona",
+      "playerType": "Freshman",
+      "projectedBbpr": 84.2831
+    },
+    {
+      "rank": 25,
+      "player": "Cameron Williams",
+      "currentTeam": "Duke",
+      "playerType": "Freshman",
+      "projectedBbpr": 81.438
+    },
+    {
+      "rank": 41,
+      "player": "Miikka Muurinen",
+      "currentTeam": "Arkansas",
+      "playerType": "International",
+      "projectedBbpr": 80.1107
+    },
+    {
+      "rank": 50,
+      "player": "Joaquim Boumtje Boumtje",
+      "currentTeam": "Duke",
+      "playerType": "Freshman",
+      "projectedBbpr": 78.6227
+    },
+    {
+      "rank": 60,
+      "player": "Dink Pate",
+      "currentTeam": "Providence",
+      "playerType": "Freshman",
+      "projectedBbpr": 77.3137
+    },
+    {
+      "rank": 65,
+      "player": "Abdou Toure",
+      "currentTeam": "Arkansas",
+      "playerType": "Freshman",
+      "projectedBbpr": 76.7996
+    },
+    {
+      "rank": 67,
+      "player": "Bruce Branch III",
+      "currentTeam": "BYU",
+      "playerType": "Freshman",
+      "projectedBbpr": 76.6988
+    },
+    {
+      "rank": 74,
+      "player": "Babatunde Oladotun",
+      "currentTeam": "Maryland",
+      "playerType": "Freshman",
+      "projectedBbpr": 76.0785
+    },
+    {
+      "rank": 79,
+      "player": "Jason Crowe Jr.",
+      "currentTeam": "Missouri",
+      "playerType": "Freshman",
+      "projectedBbpr": 75.906
+    },
+    {
+      "rank": 95,
+      "player": "Marcio Santos",
+      "currentTeam": "LSU",
+      "playerType": "International",
+      "projectedBbpr": 74.8023
+    },
+    {
+      "rank": 97,
+      "player": "Saliou Niang",
+      "currentTeam": "LSU",
+      "playerType": "International",
+      "projectedBbpr": 74.7176
+    },
+    {
+      "rank": 99,
+      "player": "Mark Padjen",
+      "currentTeam": "Murray State",
+      "playerType": "International",
+      "projectedBbpr": 74.5739
+    }
+  ],
+  "top100Line": 74.5705
+}
