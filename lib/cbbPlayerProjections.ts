@@ -117,6 +117,7 @@ export type CbbResearchPlayerWithState = CbbResearchPlayer & {
   applied: boolean;
   currentProjection: Pick<
     CbbPlayerProjection,
+    | "historicalRating"
     | "projectedStarter"
     | "projectedRole"
     | "opportunityChange"

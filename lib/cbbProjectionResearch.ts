@@ -20,12 +20,21 @@ function nearlyEqual(a: number | null | undefined, b: number | null | undefined)
   return Math.abs(a - b) < 0.001;
 }
 
+function withResearchAnchor(player: CbbPlayerProjection, suggestion: CbbResearchPlayer) {
+  return {
+    ...player,
+    historicalRating: player.historicalRating ?? suggestion.historicalRating,
+  };
+}
+
 function isSuggestionApplied(player: CbbPlayerProjection | undefined, suggestion: CbbResearchPlayer) {
   if (!player) return false;
-  const calibratedProjectedBbpr = calibrateProjectedBbpr(player, suggestion.suggested);
+  const anchoredPlayer = withResearchAnchor(player, suggestion);
+  const calibratedProjectedBbpr = calibrateProjectedBbpr(anchoredPlayer, suggestion.suggested);
   return (
     !player.needsReview &&
     player.projectionInputCompleteness === 100 &&
+    nearlyEqual(player.historicalRating, anchoredPlayer.historicalRating) &&
     player.projectedStarter === suggestion.suggested.projectedStarter &&
     nearlyEqual(player.projectedRole, suggestion.suggested.projectedRole) &&
     nearlyEqual(player.opportunityChange, suggestion.suggested.opportunityChange) &&
@@ -88,10 +97,11 @@ export function buildCbbResearchPayload(
   const players: CbbResearchPlayerWithState[] = batches.flatMap((batch) =>
     batch.players.map((player) => {
       const current = playerByRow.get(player.sourceRow);
+      const anchoredCurrent = current ? withResearchAnchor(current, player) : null;
       const suggested = current
         ? {
             ...player.suggested,
-            projectedBbpr: calibrateProjectedBbpr(current, player.suggested),
+            projectedBbpr: calibrateProjectedBbpr(anchoredCurrent!, player.suggested),
           }
         : player.suggested;
       return {
@@ -102,6 +112,7 @@ export function buildCbbResearchPayload(
         currentProjection: current
           ? {
               projectedStarter: current.projectedStarter,
+              historicalRating: current.historicalRating,
               projectedRole: current.projectedRole,
               opportunityChange: current.opportunityChange,
               offensiveBurden: current.offensiveBurden,
@@ -166,8 +177,10 @@ export async function applyCbbResearchRows(sourceRows: number[]) {
     }
 
     appliedRows.push(player.sourceRow);
+    const anchoredPlayer = withResearchAnchor(player, suggestion);
     return {
       ...player,
+      historicalRating: anchoredPlayer.historicalRating,
       projectedStarter: suggestion.suggested.projectedStarter,
       projectedRole: suggestion.suggested.projectedRole,
       opportunityChange: suggestion.suggested.opportunityChange,
@@ -178,7 +191,7 @@ export async function applyCbbResearchRows(sourceRows: number[]) {
       upsideToolsScore: suggestion.suggested.upsideToolsScore,
       talentScore: suggestion.suggested.talentScore,
       projectionScore: suggestion.suggested.projectionScore,
-      projectedBbpr: calibrateProjectedBbpr(player, suggestion.suggested),
+      projectedBbpr: calibrateProjectedBbpr(anchoredPlayer, suggestion.suggested),
       projectionInputCompleteness: 100,
       confidenceScore: suggestion.suggested.confidenceScore,
       confidenceGrade: suggestion.suggested.confidenceGrade,
