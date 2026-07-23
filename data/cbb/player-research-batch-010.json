@@ -26,45 +26,6 @@
   },
   "players": [
     {
-      "sourceRow": 349,
-      "player": "Najai Hines",
-      "currentTeam": "Connecticut",
-      "previousTeam": "Seton Hall",
-      "status": "researched_suggestion",
-      "historicalRating": 76,
-      "developmentScore": 80,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 90,
-        "offensiveBurden": 78,
-        "opportunityScore": 87.6,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 84.96,
-        "projectedBbpr": 78.24,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
-      },
-      "researchSummary": "projected UConn starting center; elite offensive rebounding/block rates at Seton Hall, top portal-center reputation, and Hurley system/development context warrant a top-100 floor.",
-      "teamContext": {
-        "starterEvidence": "UConn added Hines after he started 31 games as a freshman, but roster context includes multiple older bigs and forwards.",
-        "roleCap": "High-major frontcourt rotation with starter upside, not a clear offensive focal point.",
-        "positionCompetition": "Tarris Reed Jr., Eric Reibe, Nils Machowski, and other UConn pieces cap minutes certainty.",
-        "reassessment": "July 22 reassessment lifted this row after player-specific role/production research showed the prior historical/role anchor was too conservative."
-      },
-      "evidence": [
-        {
-          "source": "UConn Athletics",
-          "url": "https://uconnhuskies.com/sports/mens-basketball/roster/najai-hines/14353",
-          "notes": "Roster bio lists Hines after a freshman season with 31 starts and 8.4 PPG at Seton Hall."
-        }
-      ]
-    },
-    {
       "sourceRow": 53,
       "player": "Javan Buchanan",
       "currentTeam": "West Virginia",
@@ -213,44 +174,6 @@
           "source": "UCSB Athletics",
           "url": "https://ucsbgauchos.com/sports/mens-basketball/roster/miro-little/7174",
           "notes": "Roster bio documents Little's guard role and prior production."
-        }
-      ]
-    },
-    {
-      "sourceRow": 68,
-      "player": "Kwame Evans Jr.",
-      "currentTeam": "Villanova",
-      "previousTeam": "Oregon",
-      "status": "researched_suggestion",
-      "historicalRating": 56.5023,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 89,
-        "opportunityChange": 84,
-        "offensiveBurden": 78,
-        "opportunityScore": 85.3,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 75.905,
-        "projectedBbpr": 61.353,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Evans brings former five-star tools and defensive versatility to Villanova, but his college production has not yet matched the pedigree. Starter/role credit is real, while offensive burden is capped.",
-      "teamContext": {
-        "starterEvidence": "Villanova added Evans as a major transfer forward, but Tyler Perkins and other additions keep the offense shared.",
-        "roleCap": "Likely starting/closing forward with upside but uneven proven scoring.",
-        "positionCompetition": "Perkins, Crawford, Royal, Fiegen, and Oumiddoch spread frontcourt/wing usage."
-      },
-      "evidence": [
-        {
-          "source": "Villanova Athletics",
-          "url": "https://villanova.com/news/2026/5/9/mens-basketball-wildcats-add-oregon-transfer-kwame-evans-jr.aspx",
-          "notes": "Villanova announced Evans after two seasons at Oregon and former five-star recruiting status."
         }
       ]
     },

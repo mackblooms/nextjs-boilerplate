@@ -542,49 +542,6 @@
       ]
     },
     {
-      "sourceRow": 344,
-      "player": "Amare Bynum",
-      "currentTeam": "Ohio State",
-      "previousTeam": "Ohio State",
-      "status": "researched_suggestion",
-      "historicalRating": 35.6247,
-      "developmentScore": 80,
-      "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 80,
-        "opportunityChange": 78,
-        "offensiveBurden": 74,
-        "opportunityScore": 78.2,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 74,
-        "upsideToolsScore": 84,
-        "talentScore": 78,
-        "projectionScore": 78.49,
-        "projectedBbpr": 52.7708,
-        "confidenceScore": 78,
-        "confidenceGrade": "B",
-        "needsReview": true
-      },
-      "researchSummary": "Amare Bynum carries a 35.6247 historical anchor into a major-rotation projection for Ohio State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
-      "teamContext": {
-        "starterEvidence": "Ohio State returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
-        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
-        "positionCompetition": "Ohio State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Ohio State Athletics",
-          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Amare Bynum's Ohio State status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 344 lists Amare Bynum as a Returning So F with historical rating 35.6247."
-        }
-      ]
-    },
-    {
       "sourceRow": 174,
       "player": "Matt Able",
       "currentTeam": "North Carolina",
@@ -1570,49 +1527,6 @@
           "source": "Local player projection export",
           "url": "data/cbb/player-projections.json",
           "notes": "Source row 381 lists Myles Colvin as a Transfer Sr G with historical rating 30.7397."
-        }
-      ]
-    },
-    {
-      "sourceRow": 256,
-      "player": "Taylor Bol Bowen",
-      "currentTeam": "Oregon",
-      "previousTeam": "Alabama",
-      "status": "researched_suggestion",
-      "historicalRating": 29.5472,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 78,
-        "opportunityChange": 76,
-        "offensiveBurden": 70,
-        "opportunityScore": 75.8,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 72,
-        "upsideToolsScore": 84,
-        "talentScore": 76.8,
-        "projectionScore": 68.99,
-        "projectedBbpr": 39.4079,
-        "confidenceScore": 76,
-        "confidenceGrade": "B",
-        "needsReview": true
-      },
-      "researchSummary": "Taylor Bol Bowen carries a 29.5472 historical anchor into a major-rotation projection for Oregon. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
-      "teamContext": {
-        "starterEvidence": "Oregon is listed as the current team after Alabama, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
-        "positionCompetition": "Oregon's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Oregon Athletics",
-          "url": "https://goducks.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Taylor Bol Bowen's Oregon status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 256 lists Taylor Bol Bowen as a Transfer Sr F with historical rating 29.5472."
         }
       ]
     },

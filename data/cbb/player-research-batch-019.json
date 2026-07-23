@@ -1048,50 +1048,6 @@
       ]
     },
     {
-      "sourceRow": 1977,
-      "player": "Andrej Jelavic",
-      "currentTeam": "Ohio State",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": 56,
-      "developmentScore": 60,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 86,
-        "opportunityChange": 84,
-        "offensiveBurden": 78,
-        "opportunityScore": 83.8,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 72,
-        "upsideToolsScore": 82,
-        "talentScore": 76,
-        "projectionScore": 76.31,
-        "confidenceScore": 82,
-        "projectedBbpr": 66.155,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Andrija Jelavic receives a 56 anchor from Ohio State's signing release after Kentucky starts and prior Adriatic League production. His size, skill, and frontcourt opportunity push him above 60 with Big Ten role translation still priced in.",
-      "teamContext": {
-        "starterEvidence": "Ohio State context and sourced roster/production evidence support a yes starter label for this screening pass.",
-        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
-        "positionCompetition": "Ohio State's C minutes should be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Ohio State Athletics",
-          "url": "https://ohiostatebuckeyes.com/news/2026/4/20/mens-basketball-buckeyes-welcome-transfer-andrija-jelavi-to-the-program",
-          "notes": "Signing release lists Kentucky starts, 5.5 ppg/4.0 rpg, Mega Superbet production, and Ohio State fit."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 1977 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
-        }
-      ]
-    },
-    {
       "sourceRow": 1982,
       "player": "Robert Jennings II",
       "currentTeam": "Maryland",

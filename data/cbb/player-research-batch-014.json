@@ -543,49 +543,6 @@
       ]
     },
     {
-      "sourceRow": 315,
-      "player": "Jizzle James",
-      "currentTeam": "Charlotte",
-      "previousTeam": "Cincinnati",
-      "status": "researched_suggestion",
-      "historicalRating": 20.913,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 86,
-        "opportunityChange": 86,
-        "offensiveBurden": 84,
-        "opportunityScore": 85.6,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 70,
-        "upsideToolsScore": 80,
-        "talentScore": 74,
-        "projectionScore": 72.42,
-        "confidenceScore": 82,
-        "projectedBbpr": 33.7897,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Jizzle James carries a 20.913 anchor into a starter or closing-lineup projection for Charlotte. The batch uses the same projection inputs and shared BBPR calibration as applied rows, while keeping the row pending for official role, health, and depth-chart review.",
-      "teamContext": {
-        "starterEvidence": "Charlotte is listed as the current team after Cincinnati, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "Charlotte's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Charlotte Athletics",
-          "url": "https://charlotte49ers.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Jizzle James's Charlotte status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 315 lists Jizzle James as a Transfer Sr G with historical rating 20.913."
-        }
-      ]
-    },
-    {
       "sourceRow": 304,
       "player": "Simeon Wilcher",
       "currentTeam": "Seton Hall",
@@ -797,49 +754,6 @@
           "source": "Local player projection export",
           "url": "data/cbb/player-projections.json",
           "notes": "Source row 272 lists Andrija Jelavic as a Transfer So F with historical rating 19.7557."
-        }
-      ]
-    },
-    {
-      "sourceRow": 238,
-      "player": "Sadiq White",
-      "currentTeam": "Syracuse",
-      "previousTeam": "Syracuse",
-      "status": "researched_suggestion",
-      "historicalRating": 19.6127,
-      "developmentScore": 80,
-      "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 84,
-        "opportunityChange": 82,
-        "offensiveBurden": 78,
-        "opportunityScore": 82.2,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 74,
-        "upsideToolsScore": 84,
-        "talentScore": 78,
-        "projectionScore": 80.29,
-        "confidenceScore": 78,
-        "projectedBbpr": 49.9514,
-        "confidenceGrade": "B",
-        "needsReview": true
-      },
-      "researchSummary": "Sadiq White carries a 19.6127 anchor into a major-rotation projection for Syracuse. The batch uses the same projection inputs and shared BBPR calibration as applied rows, while keeping the row pending for official role, health, and depth-chart review.",
-      "teamContext": {
-        "starterEvidence": "Syracuse returner profile in the local projection export gives him a retained-program context, with exact lineup standing still pending roster/depth review.",
-        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
-        "positionCompetition": "Syracuse's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Syracuse Athletics",
-          "url": "https://cuse.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Sadiq White's Syracuse status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 238 lists Sadiq White as a Returning So F with historical rating 19.6127."
         }
       ]
     },

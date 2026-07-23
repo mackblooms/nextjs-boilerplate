@@ -1104,44 +1104,6 @@
       ]
     },
     {
-      "sourceRow": 216,
-      "player": "JJ Andrews",
-      "currentTeam": "Arkansas",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": null,
-      "developmentScore": 100,
-      "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 85,
-        "opportunityChange": 80,
-        "offensiveBurden": 78,
-        "opportunityScore": 82.1,
-        "entryTalentGrade": 97,
-        "nbaProjectionScore": 90,
-        "upsideToolsScore": 92,
-        "talentScore": 93.3,
-        "projectionScore": 89.6,
-        "projectedBbpr": 79,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Andrews is a McDonald's All-American/top-20-ish recruit with monster prep production. He should not be buried, but Arkansas has enough elite wings/freshmen that he should be mixed into the rankings instead of stacked with identical newcomer scores.",
-      "teamContext": {
-        "starterEvidence": "Arkansas lists top-12 to top-22 national rankings and elite all-star/prep production, but no guaranteed-starter signal.",
-        "roleCap": "High-impact freshman wing in a crowded Calipari roster.",
-        "positionCompetition": "Jordan Smith Jr., Abdou Toure, Billy Richmond III, and additional freshmen limit certainty."
-      },
-      "evidence": [
-        {
-          "source": "Arkansas Athletics",
-          "url": "https://arkansasrazorbacks.com/roster/jj-andrews/",
-          "notes": "Lists Andrews as a five-star by 247/ESPN and a 2026 McDonald's All-American."
-        }
-      ]
-    },
-    {
       "sourceRow": 284,
       "player": "Kayden Allen",
       "currentTeam": "Georgia Tech",

@@ -801,44 +801,6 @@
       ]
     },
     {
-      "sourceRow": 345,
-      "player": "CJ Cox",
-      "currentTeam": "Purdue",
-      "previousTeam": "Purdue",
-      "status": "researched_suggestion",
-      "historicalRating": 45.3003,
-      "developmentScore": 60,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 89,
-        "opportunityChange": 86,
-        "offensiveBurden": 82,
-        "opportunityScore": 86.7,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 78.735,
-        "projectedBbpr": 62,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
-      },
-      "researchSummary": "Cox started every game as a sophomore and gives Purdue elite low-mistake shooting/defensive guard play. With Purdue replacing high-end pieces, he should be projected as a steady starter.",
-      "teamContext": {
-        "starterEvidence": "Purdue bio lists 39 starts, efficient shooting, and elite turnover avoidance.",
-        "roleCap": "Starter/connector with some scoring growth, not a ball-dominant guard.",
-        "positionCompetition": "Mayer, Harris, West, and Benter share perimeter duties."
-      },
-      "evidence": [
-        {
-          "source": "Purdue Athletics",
-          "url": "https://purduesports.com/sports/mens-basketball/roster/player/cj-cox",
-          "notes": "Official bio cites 39 starts, shooting splits, and defensive assignment value."
-        }
-      ]
-    },
-    {
       "sourceRow": 213,
       "player": "Coen Carr",
       "currentTeam": "Michigan State",
