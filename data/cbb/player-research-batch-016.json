@@ -1,0 +1,2332 @@
+{
+  "batchId": "player-research-016",
+  "createdAt": "2026-07-23",
+  "sourceSheet": "player database + all D1 players",
+  "scope": "No-imported-anchor batch covering the next 50 pending players after batch 015. Every row receives a scored historical anchor from online roster, production, recruiting, and sentiment context before projection.",
+  "method": [
+    "Skip rows already present in earlier player research batches.",
+    "Skip rows whose current-team field is blank in the projection export.",
+    "Prioritize remaining pending rows from the local projection state after batches 013 and 014 were applied.",
+    "For rows without imported historical BBPR, assign a scored historical anchor from online roster/bio/signing/recruiting context.",
+    "Use official roster/signing pages first, then reputable local/team coverage for role and sentiment context.",
+    "Calculate opportunity, talent, projection score, and projected BBPR with the same shared calibration used by the admin apply path.",
+    "Keep every row pending admin approval so official roster, signing, and role evidence can be reviewed before application."
+  ],
+  "formulas": {
+    "syntheticHistoricalAnchor": "No-imported-anchor players receive a researched historicalRating estimate from production, level, recruiting pedigree, physical tools, and role sentiment.",
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "shared calibrateProjectedBbpr(anchoredPlayer, suggested) logic used by admin apply path"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires sourced prior production, staff language, or clear open-role context; Uncertain means rotation value without locked starting signal; No means depth/bench role.",
+    "historicalAnchor": "50+ for proven efficient D-I starters/all-conference production or elite recruiting, 38-49 for credible rotation/star-lower-level profiles, 26-37 for low-minute/development/newcomer profiles.",
+    "projectedRole": "86-88 for plausible featured/starter cases in this lower-anchor range, 76-85 for rotation players, 68-75 for depth/newcomer profiles with role caps.",
+    "opportunityChange": "Rewards open usage, transfer fit, or retained-program opportunity; penalizes crowded high-major rotations and uncertain immediate translation.",
+    "offensiveBurden": "Primary/secondary scorers and creators get 80+; defensive bigs, connectors, and low-usage wings stay lower."
+  },
+  "players": [
+    {
+      "sourceRow": 445,
+      "player": "Yabi Aklog",
+      "currentTeam": "Oregon State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 72,
+        "talentScore": 66.3,
+        "projectionScore": 73.175,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6997,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Yabi Aklog had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Oregon State.",
+      "teamContext": {
+        "starterEvidence": "Oregon State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Oregon State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oregon State Athletics",
+          "url": "https://osubeavers.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Yabi Aklog's Oregon State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 445 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 446,
+      "player": "Ben Akoro",
+      "currentTeam": "Milwaukee",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 38,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "opportunityScore": 76.6,
+        "entryTalentGrade": 80,
+        "nbaProjectionScore": 64,
+        "upsideToolsScore": 78,
+        "talentScore": 73.9,
+        "projectionScore": 80.335,
+        "confidenceScore": 78,
+        "projectedBbpr": 60.1453,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Ben Akoro had no imported historical BBPR, so this batch assigns a scored anchor of 38 from online role/production/sentiment context before running the same shared projection calibration. Milwaukee's signing release lists Akoro as a 6-8 forward, top-five Illinois prospect by PrepHoops, top-10 in the class by the Chicago Sun-Times, and a 10.6-point/9.1-rebound junior on a state runner-up. The resulting profile is a rotation projection for Milwaukee.",
+      "teamContext": {
+        "starterEvidence": "Milwaukee is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 38. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Milwaukee's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://mkepanthers.com/news/2025/11/19/mens-basketball-milwaukee-mens-basketball-signs-five-in-new-class.aspx",
+          "notes": "Milwaukee's signing release lists Akoro as a 6-8 forward, top-five Illinois prospect by PrepHoops, top-10 in the class by the Chicago Sun-Times, and a 10.6-point/9.1-rebound junior on a state runner-up."
+        },
+        {
+          "source": "Milwaukee Athletics",
+          "url": "https://mkepanthers.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Ben Akoro's Milwaukee status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 446 has no imported historical BBPR, so this batch assigns a scored anchor of 38 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 447,
+      "player": "Totu Akuentok",
+      "currentTeam": "Texas Tech",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 69.63,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.652,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Totu Akuentok had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Texas Tech.",
+      "teamContext": {
+        "starterEvidence": "Texas Tech roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Texas Tech's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Texas Tech Athletics",
+          "url": "https://texastech.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Totu Akuentok's Texas Tech status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 447 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 448,
+      "player": "Ralph Akuta",
+      "currentTeam": "Drexel",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 72,
+        "opportunityChange": 70,
+        "offensiveBurden": 66,
+        "opportunityScore": 70.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 67.25,
+        "confidenceScore": 72,
+        "projectedBbpr": 44.9,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Ralph Akuta had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Drexel bio shows Akuta as a 7-1 interior reserve who played 15 freshman games, with efficient finishing, rebounds, and blocks but no starter-level role yet. The resulting profile is a depth/bench projection for Drexel.",
+      "teamContext": {
+        "starterEvidence": "Drexel roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Drexel's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://drexeldragons.com/sports/mens-basketball/roster/ralph-akuta/10548",
+          "notes": "Drexel bio shows Akuta as a 7-1 interior reserve who played 15 freshman games, with efficient finishing, rebounds, and blocks but no starter-level role yet."
+        },
+        {
+          "source": "Drexel Athletics",
+          "url": "https://drexeldragons.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Ralph Akuta's Drexel status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 448 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 449,
+      "player": "Cody Al-Naziat",
+      "currentTeam": "Southeastern Louisiana",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 69.55,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.62,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Cody Al-Naziat had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Southeastern Louisiana.",
+      "teamContext": {
+        "starterEvidence": "Southeastern Louisiana roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Southeastern Louisiana's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Southeastern Louisiana Athletics",
+          "url": "https://lionsports.net/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Cody Al-Naziat's Southeastern Louisiana status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 449 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 450,
+      "player": "Xander Alarie",
+      "currentTeam": "Bradley",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 70.25,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.9,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Xander Alarie had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Bradley.",
+      "teamContext": {
+        "starterEvidence": "Bradley roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Bradley's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Bradley Athletics",
+          "url": "https://bradleybraves.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Xander Alarie's Bradley status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 450 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 451,
+      "player": "Keaton Aldridge, Jr.",
+      "currentTeam": "Detroit-Mercy",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 70,
+        "talentScore": 65.8,
+        "projectionScore": 73,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6988,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Keaton Aldridge, Jr. had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Detroit-Mercy.",
+      "teamContext": {
+        "starterEvidence": "Detroit-Mercy is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Detroit-Mercy's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Detroit-Mercy Athletics",
+          "url": "https://detroittitans.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Keaton Aldridge, Jr.'s Detroit-Mercy status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 451 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 452,
+      "player": "Andrew Alekseyenko",
+      "currentTeam": "Colgate",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 70.25,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.9,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Andrew Alekseyenko had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Colgate.",
+      "teamContext": {
+        "starterEvidence": "Colgate roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Colgate's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Colgate Athletics",
+          "url": "https://colgateathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Andrew Alekseyenko's Colgate status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 452 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 453,
+      "player": "Mathias Alessanco",
+      "currentTeam": "South Carolina",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 64,
+        "opportunityScore": 68.2,
+        "entryTalentGrade": 72,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 74,
+        "talentScore": 68.3,
+        "projectionScore": 74.595,
+        "confidenceScore": 66,
+        "projectedBbpr": 52.7516,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Mathias Alessanco had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for South Carolina.",
+      "teamContext": {
+        "starterEvidence": "South Carolina is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "South Carolina's FC minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "South Carolina Athletics",
+          "url": "https://gamecocksonline.com/sports/mbball/roster/",
+          "notes": "Official roster or athletics site is the primary verification target for Mathias Alessanco's South Carolina status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 453 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 454,
+      "player": "Samson Aletan",
+      "currentTeam": "Providence",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 32,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 74,
+        "opportunityChange": 72,
+        "offensiveBurden": 68,
+        "opportunityScore": 72.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 64,
+        "upsideToolsScore": 78,
+        "talentScore": 69.6,
+        "projectionScore": 64.85,
+        "confidenceScore": 70,
+        "projectedBbpr": 45.14,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Samson Aletan had no imported historical BBPR, so this batch assigns a scored anchor of 32 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Providence.",
+      "teamContext": {
+        "starterEvidence": "Providence roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 32. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Providence's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Samson Aletan's Providence status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 454 has no imported historical BBPR, so this batch assigns a scored anchor of 32 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 455,
+      "player": "Aeneas Alexander",
+      "currentTeam": "North Texas",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 38,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "opportunityScore": 76.6,
+        "entryTalentGrade": 80,
+        "nbaProjectionScore": 64,
+        "upsideToolsScore": 80,
+        "talentScore": 74.4,
+        "projectionScore": 80.51,
+        "confidenceScore": 78,
+        "projectedBbpr": 60.1472,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Aeneas Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 38 from online role/production/sentiment context before running the same shared projection calibration. North Texas bio calls Alexander a consensus three-star recruit with Nike ProSkills Peach Jam context and offers from Tulsa, Louisiana Tech, UNLV, East Carolina, and San Jose State. The resulting profile is a rotation projection for North Texas.",
+      "teamContext": {
+        "starterEvidence": "North Texas is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 38. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "North Texas's SF minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://meangreensports.com/sports/mens-basketball/roster/aeneas-alexander/7837",
+          "notes": "North Texas bio calls Alexander a consensus three-star recruit with Nike ProSkills Peach Jam context and offers from Tulsa, Louisiana Tech, UNLV, East Carolina, and San Jose State."
+        },
+        {
+          "source": "North Texas Athletics",
+          "url": "https://meangreensports.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Aeneas Alexander's North Texas status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 455 has no imported historical BBPR, so this batch assigns a scored anchor of 38 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 456,
+      "player": "Dalman Alexander",
+      "currentTeam": "Morehead State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 42,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 84,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 82.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 64,
+        "upsideToolsScore": 78,
+        "talentScore": 69.6,
+        "projectionScore": 69.62,
+        "confidenceScore": 82,
+        "projectedBbpr": 55.81,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dalman Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 42 from online role/production/sentiment context before running the same shared projection calibration. Morehead State announced Alexander after a D-II season of 10.7 points, 5.7 rebounds, 60 percent shooting, PSAC defensive honors, and staff praise for winning/defensive impact. The resulting profile is a starter or featured rotation projection for Morehead State.",
+      "teamContext": {
+        "starterEvidence": "Morehead State roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 42. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Starter/featured credit is supported by sourced production or staff language, but final BBPR still runs through the same calibration.",
+        "positionCompetition": "Morehead State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://msueagles.com/news/2026/5/7/transfer-dalman-alexander-inks-with-mens-basketball-eagles.aspx",
+          "notes": "Morehead State announced Alexander after a D-II season of 10.7 points, 5.7 rebounds, 60 percent shooting, PSAC defensive honors, and staff praise for winning/defensive impact."
+        },
+        {
+          "source": "Morehead State Athletics",
+          "url": "https://msueagles.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Dalman Alexander's Morehead State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 456 has no imported historical BBPR, so this batch assigns a scored anchor of 42 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 457,
+      "player": "Harrison Alexander",
+      "currentTeam": "SIU-Edwardsville",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 65.55,
+        "confidenceScore": 68,
+        "projectedBbpr": 43.02,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Harrison Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for SIU-Edwardsville.",
+      "teamContext": {
+        "starterEvidence": "SIU-Edwardsville roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "SIU-Edwardsville's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "SIU-Edwardsville Athletics",
+          "url": "https://siuecougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Harrison Alexander's SIU-Edwardsville status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 457 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 458,
+      "player": "Jaden Alexander",
+      "currentTeam": "Cal State Bakersfield",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 72,
+        "opportunityScore": 74.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 64.95,
+        "confidenceScore": 70,
+        "projectedBbpr": 43.98,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Jaden Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Cal State Bakersfield.",
+      "teamContext": {
+        "starterEvidence": "Cal State Bakersfield roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Cal State Bakersfield's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Cal State Bakersfield Athletics",
+          "url": "https://gorunners.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Jaden Alexander's Cal State Bakersfield status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 458 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 459,
+      "player": "Jaylen Alexander",
+      "currentTeam": "Kansas State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": 72,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 74,
+        "talentScore": 68.3,
+        "projectionScore": 74.775,
+        "confidenceScore": 68,
+        "projectedBbpr": 56.1401,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Jaylen Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Kansas State.",
+      "teamContext": {
+        "starterEvidence": "Kansas State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Kansas State's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Kansas State Athletics",
+          "url": "https://www.kstatesports.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Jaylen Alexander's Kansas State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 459 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 460,
+      "player": "Kyrone Alexander",
+      "currentTeam": "Boston University",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 55,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 72.17,
+        "confidenceScore": 86,
+        "projectedBbpr": 63.585,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Kyrone Alexander had no imported historical BBPR, so this batch assigns a scored anchor of 55 from online role/production/sentiment context before running the same shared projection calibration. Boston U bio lists Alexander as a 2025 Second Team All-Patriot League guard after starting 30 games with team-high scoring and rebounding before a 2025-26 season-ending injury. The resulting profile is a starter or featured rotation projection for Boston University.",
+      "teamContext": {
+        "starterEvidence": "Boston University roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 55. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Starter/featured credit is supported by sourced production or staff language, but final BBPR still runs through the same calibration.",
+        "positionCompetition": "Boston University's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://goterriers.com/sports/mens-basketball/roster/kyrone-alexander/26600",
+          "notes": "Boston U bio lists Alexander as a 2025 Second Team All-Patriot League guard after starting 30 games with team-high scoring and rebounding before a 2025-26 season-ending injury."
+        },
+        {
+          "source": "Boston University Athletics",
+          "url": "https://goterriers.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Kyrone Alexander's Boston University status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 460 has no imported historical BBPR, so this batch assigns a scored anchor of 55 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 461,
+      "player": "Amier Ali",
+      "currentTeam": "California",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 34,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 82,
+        "talentScore": 74.8,
+        "projectionScore": 71.57,
+        "confidenceScore": 76,
+        "projectedBbpr": 49.028,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Amier Ali had no imported historical BBPR, so this batch assigns a scored anchor of 34 from online role/production/sentiment context before running the same shared projection calibration. Cal roster lists Ali as a 6-8 Arizona State/Mississippi State transfer, supporting a high-major tools profile but not a proven usage profile. The resulting profile is a rotation projection for California.",
+      "teamContext": {
+        "starterEvidence": "California roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 34. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "California's SF minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://calbears.com/sports/mens-basketball/roster",
+          "notes": "Cal roster lists Ali as a 6-8 Arizona State/Mississippi State transfer, supporting a high-major tools profile but not a proven usage profile."
+        },
+        {
+          "source": "California Athletics",
+          "url": "https://calbears.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Amier Ali's California status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 461 has no imported historical BBPR, so this batch assigns a scored anchor of 34 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 462,
+      "player": "Andrew Alia",
+      "currentTeam": "Drake",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 72,
+        "opportunityScore": 74.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 64.95,
+        "confidenceScore": 70,
+        "projectedBbpr": 43.98,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Andrew Alia had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Drake.",
+      "teamContext": {
+        "starterEvidence": "Drake roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Drake's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Drake Athletics",
+          "url": "https://godrakebulldogs.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Andrew Alia's Drake status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 462 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 463,
+      "player": "Harrison Aligbe",
+      "currentTeam": "Xavier",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 42,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "opportunityScore": 76.6,
+        "entryTalentGrade": 82,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 80,
+        "talentScore": 76.6,
+        "projectionScore": 81.28,
+        "confidenceScore": 80,
+        "projectedBbpr": 60.1855,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Harrison Aligbe had no imported historical BBPR, so this batch assigns a scored anchor of 42 from online role/production/sentiment context before running the same shared projection calibration. Xavier bio cites Harrison Aligbe as a 17-point, 9-rebound All-NEPSAC first-team forward with staff praise for future upside. The resulting profile is a rotation projection for Xavier.",
+      "teamContext": {
+        "starterEvidence": "Xavier is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 42. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Xavier's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://goxavier.com/sports/mens-basketball/roster/harrison-aligbe/12884",
+          "notes": "Xavier bio cites Harrison Aligbe as a 17-point, 9-rebound All-NEPSAC first-team forward with staff praise for future upside."
+        },
+        {
+          "source": "Xavier Athletics",
+          "url": "https://goxavier.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Harrison Aligbe's Xavier status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 463 has no imported historical BBPR, so this batch assigns a scored anchor of 42 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 464,
+      "player": "Rolyns Aligbe",
+      "currentTeam": "Xavier",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 44,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 78.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 72.57,
+        "confidenceScore": 80,
+        "projectedBbpr": 55.428,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Rolyns Aligbe had no imported historical BBPR, so this batch assigns a scored anchor of 44 from online role/production/sentiment context before running the same shared projection calibration. Xavier coverage notes Rolyns Aligbe averaged 9.5 points and 7.4 rebounds before joining Xavier with his brother Harrison. The resulting profile is a rotation projection for Xavier.",
+      "teamContext": {
+        "starterEvidence": "Xavier roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 44. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Xavier's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://xaviernewswire.com/2026/04/21/with-the-portal-open-next-years-basketball-roster-takes-shape/",
+          "notes": "Xavier coverage notes Rolyns Aligbe averaged 9.5 points and 7.4 rebounds before joining Xavier with his brother Harrison."
+        },
+        {
+          "source": "Xavier Athletics",
+          "url": "https://goxavier.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Rolyns Aligbe's Xavier status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 464 has no imported historical BBPR, so this batch assigns a scored anchor of 44 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 465,
+      "player": "Arius Alijosius",
+      "currentTeam": "Holy Cross",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 65.55,
+        "confidenceScore": 68,
+        "projectedBbpr": 43.02,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Arius Alijosius had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Holy Cross.",
+      "teamContext": {
+        "starterEvidence": "Holy Cross roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Holy Cross's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Holy Cross Athletics",
+          "url": "https://goholycross.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Arius Alijosius's Holy Cross status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 465 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 466,
+      "player": "Gediminas Alisas",
+      "currentTeam": "Stephen F. Austin",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 68,
+        "opportunityScore": 73.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 68.87,
+        "confidenceScore": 70,
+        "projectedBbpr": 45.548,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Gediminas Alisas had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Stephen F. Austin.",
+      "teamContext": {
+        "starterEvidence": "Stephen F. Austin roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Stephen F. Austin's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Stephen F. Austin Athletics",
+          "url": "https://sfajacks.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Gediminas Alisas's Stephen F. Austin status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 466 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 467,
+      "player": "Thomas Allard",
+      "currentTeam": "Penn State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 64,
+        "opportunityScore": 68.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 61.37,
+        "confidenceScore": 68,
+        "projectedBbpr": 41.348,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Thomas Allard had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Penn State.",
+      "teamContext": {
+        "starterEvidence": "Penn State roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Penn State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Penn State Athletics",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Official roster or athletics site is the primary verification target for Thomas Allard's Penn State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 467 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 468,
+      "player": "Amare Allen",
+      "currentTeam": "Stonehill",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 68.77,
+        "confidenceScore": 70,
+        "projectedBbpr": 45.508,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Amare Allen had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Stonehill.",
+      "teamContext": {
+        "starterEvidence": "Stonehill roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Stonehill's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Stonehill Athletics",
+          "url": "https://stonehillskyhawks.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Amare Allen's Stonehill status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 468 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 469,
+      "player": "Baylor Allen",
+      "currentTeam": "Vanderbilt",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 32,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": 76,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 71.1,
+        "projectionScore": 75.755,
+        "confidenceScore": 72,
+        "projectedBbpr": 56.6629,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Baylor Allen had no imported historical BBPR, so this batch assigns a scored anchor of 32 from online role/production/sentiment context before running the same shared projection calibration. Vanderbilt bio lists Baylor Allen as an IMG Academy guard who helped Providence Christian to state-title success, but ESPN lists him as unranked. The resulting profile is a depth/bench projection for Vanderbilt.",
+      "teamContext": {
+        "starterEvidence": "Vanderbilt is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 32. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Vanderbilt's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://vucommodores.com/sports/mbball/roster/player/baylor-allen",
+          "notes": "Vanderbilt bio lists Baylor Allen as an IMG Academy guard who helped Providence Christian to state-title success, but ESPN lists him as unranked."
+        },
+        {
+          "source": "Vanderbilt Athletics",
+          "url": "https://vucommodores.com/sports/mbball/roster/",
+          "notes": "Official roster or athletics site is the primary verification target for Baylor Allen's Vanderbilt status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 469 has no imported historical BBPR, so this batch assigns a scored anchor of 32 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 470,
+      "player": "Corbin Allen",
+      "currentTeam": "Appalachian State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 70,
+        "talentScore": 65.8,
+        "projectionScore": 73,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6988,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Corbin Allen had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Appalachian State.",
+      "teamContext": {
+        "starterEvidence": "Appalachian State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Appalachian State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Appalachian State Athletics",
+          "url": "https://appstatesports.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Corbin Allen's Appalachian State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 470 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 471,
+      "player": "Jax Allen",
+      "currentTeam": "Utah State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": 72,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 67.8,
+        "projectionScore": 74.6,
+        "confidenceScore": 68,
+        "projectedBbpr": 56.1392,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Jax Allen had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Utah State.",
+      "teamContext": {
+        "starterEvidence": "Utah State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Utah State's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Utah State Athletics",
+          "url": "https://utahstateaggies.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Jax Allen's Utah State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 471 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 472,
+      "player": "Jaylohn Allen",
+      "currentTeam": "Toledo",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 70,
+        "talentScore": 65.8,
+        "projectionScore": 73,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6988,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Jaylohn Allen had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Toledo.",
+      "teamContext": {
+        "starterEvidence": "Toledo is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Toledo's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Toledo Athletics",
+          "url": "https://utrockets.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Jaylohn Allen's Toledo status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 472 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 473,
+      "player": "Marcus Allen",
+      "currentTeam": "Miami (FL)",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 38,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 75.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 84,
+        "talentScore": 76.8,
+        "projectionScore": 72.72,
+        "confidenceScore": 76,
+        "projectedBbpr": 51.888,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Marcus Allen had no imported historical BBPR, so this batch assigns a scored anchor of 38 from online role/production/sentiment context before running the same shared projection calibration. Miami bio notes Marcus Allen's lymphoma-shortened season, prior Missouri minutes, ESPN100 No. 74 recruit status, and elite high-school production. The resulting profile is a rotation projection for Miami (FL).",
+      "teamContext": {
+        "starterEvidence": "Miami (FL) roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 38. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Miami (FL)'s F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/season/2025-26/player/marcus-allen/",
+          "notes": "Miami bio notes Marcus Allen's lymphoma-shortened season, prior Missouri minutes, ESPN100 No. 74 recruit status, and elite high-school production."
+        },
+        {
+          "source": "Miami (FL) Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/season/2025-26/player/marcus-allen/",
+          "notes": "Official roster or athletics site is the primary verification target for Marcus Allen's Miami (FL) status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 473 has no imported historical BBPR, so this batch assigns a scored anchor of 38 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 474,
+      "player": "Nick Allen",
+      "currentTeam": "Illinois State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 64,
+        "opportunityScore": 68.2,
+        "entryTalentGrade": 72,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 74,
+        "talentScore": 68.3,
+        "projectionScore": 74.595,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.7516,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Nick Allen had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Illinois State.",
+      "teamContext": {
+        "starterEvidence": "Illinois State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Illinois State's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Illinois State Athletics",
+          "url": "https://goredbirds.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Nick Allen's Illinois State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 474 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 475,
+      "player": "Quincy Allen",
+      "currentTeam": "Southeastern Louisiana",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 45,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 84,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 83.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 80,
+        "talentScore": 71.6,
+        "projectionScore": 70.5,
+        "confidenceScore": 82,
+        "projectedBbpr": 57.75,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Quincy Allen had no imported historical BBPR, so this batch assigns a scored anchor of 45 from online role/production/sentiment context before running the same shared projection calibration. Southeastern Louisiana bio says Quincy Allen started nine of 16 injury-limited Bryant games and averaged 9.8 points, 4.3 rebounds, 1.56 blocks, and 1.5 steals. The resulting profile is a starter or featured rotation projection for Southeastern Louisiana.",
+      "teamContext": {
+        "starterEvidence": "Southeastern Louisiana roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 45. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Starter/featured credit is supported by sourced production or staff language, but final BBPR still runs through the same calibration.",
+        "positionCompetition": "Southeastern Louisiana's GF minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://lionsports.net/sports/mens-basketball/roster/quincy-allen/11827",
+          "notes": "Southeastern Louisiana bio says Quincy Allen started nine of 16 injury-limited Bryant games and averaged 9.8 points, 4.3 rebounds, 1.56 blocks, and 1.5 steals."
+        },
+        {
+          "source": "Southeastern Louisiana Athletics",
+          "url": "https://lionsports.net/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Quincy Allen's Southeastern Louisiana status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 475 has no imported historical BBPR, so this batch assigns a scored anchor of 45 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 476,
+      "player": "Luke Allison",
+      "currentTeam": "Presbyterian",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 65.55,
+        "confidenceScore": 68,
+        "projectedBbpr": 43.02,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Luke Allison had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Presbyterian.",
+      "teamContext": {
+        "starterEvidence": "Presbyterian roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Presbyterian's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Presbyterian Athletics",
+          "url": "https://gobluehose.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Luke Allison's Presbyterian status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 476 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 477,
+      "player": "Latrell Allmond",
+      "currentTeam": "Oklahoma State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": 94,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 89.5,
+        "projectionScore": 89.395,
+        "confidenceScore": 88,
+        "projectedBbpr": 64.9994,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Latrell Allmond had no imported historical BBPR, so this batch assigns a scored anchor of 58 from online role/production/sentiment context before running the same shared projection calibration. Oklahoma State announced Allmond as a consensus top-40, as-high-as No. 28 ESPN recruit after 21.9 points, 7.8 rebounds, and 2.4 blocks with major-program offers. The resulting profile is a rotation projection for Oklahoma State.",
+      "teamContext": {
+        "starterEvidence": "Oklahoma State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Oklahoma State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://okstate.com/news/2025/11/12/highly-touted-forward-completes-cowboy-basketball-fall-signing-class?path=mbball",
+          "notes": "Oklahoma State announced Allmond as a consensus top-40, as-high-as No. 28 ESPN recruit after 21.9 points, 7.8 rebounds, and 2.4 blocks with major-program offers."
+        },
+        {
+          "source": "Oklahoma State Athletics",
+          "url": "https://okstate.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Latrell Allmond's Oklahoma State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 477 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 478,
+      "player": "Luke Almodovar",
+      "currentTeam": "Memphis",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 52,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 82,
+        "opportunityScore": 83,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 78,
+        "talentScore": 72,
+        "projectionScore": 70.55,
+        "confidenceScore": 84,
+        "projectedBbpr": 61.275,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Luke Almodovar had no imported historical BBPR, so this batch assigns a scored anchor of 52 from online role/production/sentiment context before running the same shared projection calibration. Memphis announced Almodovar as a First Team All-OVC and All-Newcomer guard after 14.1 points per game at Southeast Missouri State, plus NAIA scoring background. The resulting profile is a rotation projection for Memphis.",
+      "teamContext": {
+        "starterEvidence": "Memphis roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 52. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Memphis's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://gotigersgo.com/news/2026/4/28/mens-basketball-hardaway-adds-all-ovc-guard-luke-almodovar-to-2026-27-roster",
+          "notes": "Memphis announced Almodovar as a First Team All-OVC and All-Newcomer guard after 14.1 points per game at Southeast Missouri State, plus NAIA scoring background."
+        },
+        {
+          "source": "Memphis Athletics",
+          "url": "https://gotigersgo.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Luke Almodovar's Memphis status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 478 has no imported historical BBPR, so this batch assigns a scored anchor of 52 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 479,
+      "player": "Antoine Almuttar",
+      "currentTeam": "Northwestern State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 70,
+        "talentScore": 65.8,
+        "projectionScore": 73,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6988,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Antoine Almuttar had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Northwestern State.",
+      "teamContext": {
+        "starterEvidence": "Northwestern State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Northwestern State's GF minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Northwestern State Athletics",
+          "url": "https://nsudemons.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Antoine Almuttar's Northwestern State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 479 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 480,
+      "player": "Armon Almuttar",
+      "currentTeam": "Northwestern State",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": 70,
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 70,
+        "talentScore": 65.8,
+        "projectionScore": 73,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.6988,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Armon Almuttar had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Northwestern State.",
+      "teamContext": {
+        "starterEvidence": "Northwestern State is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Northwestern State's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Northwestern State Athletics",
+          "url": "https://nsudemons.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Armon Almuttar's Northwestern State status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 480 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 481,
+      "player": "Bruno Alocen",
+      "currentTeam": "Valparaiso",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 36,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 82,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 72.69,
+        "confidenceScore": 80,
+        "projectedBbpr": 50.676,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Bruno Alocen had no imported historical BBPR, so this batch assigns a scored anchor of 36 from online role/production/sentiment context before running the same shared projection calibration. Valpo release says Alocen saw a big opportunity after two MVC seasons at Indiana State and a roster opening from graduated wings. The resulting profile is a rotation projection for Valparaiso.",
+      "teamContext": {
+        "starterEvidence": "Valparaiso roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 36. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Valparaiso's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://valpoathletics.com/news/2026/5/8/mens-basketball-bruno-alocen-to-join-valpo-mens-basketball-program.aspx",
+          "notes": "Valpo release says Alocen saw a big opportunity after two MVC seasons at Indiana State and a roster opening from graduated wings."
+        },
+        {
+          "source": "Valparaiso Athletics",
+          "url": "https://valpoathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Bruno Alocen's Valparaiso status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 481 has no imported historical BBPR, so this batch assigns a scored anchor of 36 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 482,
+      "player": "Ikenna Alozie",
+      "currentTeam": "Houston",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 58,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
+        "entryTalentGrade": 94,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 89.5,
+        "projectionScore": 88.495,
+        "confidenceScore": 88,
+        "projectedBbpr": 64.5251,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Ikenna Alozie had no imported historical BBPR, so this batch assigns a scored anchor of 58 from online role/production/sentiment context before running the same shared projection calibration. Houston announced Alozie as a top-45 national recruit, top-10 point guard across recruiting services, ESPN100 No. 27, with Kansas/Alabama/Arizona/Louisville/Washington/Gonzaga recruitment. The resulting profile is a rotation projection for Houston.",
+      "teamContext": {
+        "starterEvidence": "Houston is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Houston's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://uhcougars.com/news/2025/11/21/mens-basketball-ikenna-alozie-joins-mens-basketball-on-friday",
+          "notes": "Houston announced Alozie as a top-45 national recruit, top-10 point guard across recruiting services, ESPN100 No. 27, with Kansas/Alabama/Arizona/Louisville/Washington/Gonzaga recruitment."
+        },
+        {
+          "source": "Houston Athletics",
+          "url": "https://uhcougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Ikenna Alozie's Houston status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 482 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 483,
+      "player": "Aleks Alston",
+      "currentTeam": "UAB",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 64,
+        "opportunityScore": 68.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 70.35,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.94,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Aleks Alston had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for UAB.",
+      "teamContext": {
+        "starterEvidence": "UAB roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "UAB's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UAB Athletics",
+          "url": "https://uabsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Aleks Alston's UAB status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 483 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 484,
+      "player": "Jaevian Alston",
+      "currentTeam": "Coastal Carolina",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 70.25,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.9,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Jaevian Alston had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Coastal Carolina.",
+      "teamContext": {
+        "starterEvidence": "Coastal Carolina roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Coastal Carolina's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Coastal Carolina Athletics",
+          "url": "https://goccusports.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Jaevian Alston's Coastal Carolina status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 484 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 485,
+      "player": "Torey Alston",
+      "currentTeam": "VCU",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 56,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 84,
+        "talentScore": 75.6,
+        "projectionScore": 77.43,
+        "confidenceScore": 88,
+        "projectedBbpr": 66.715,
+        "confidenceGrade": "A-",
+        "needsReview": true
+      },
+      "researchSummary": "Torey Alston had no imported historical BBPR, so this batch assigns a scored anchor of 56 from online role/production/sentiment context before running the same shared projection calibration. VCU bio says Alston was Third Team All-C-USA after 13.1 points, 7.1 rebounds, 55.5 percent shooting, nine double-doubles, and 37 blocks at MTSU. The resulting profile is a starter or featured rotation projection for VCU.",
+      "teamContext": {
+        "starterEvidence": "VCU roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 56. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Starter/featured credit is supported by sourced production or staff language, but final BBPR still runs through the same calibration.",
+        "positionCompetition": "VCU's FC minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://vcuathletics.com/sports/mens-basketball/roster/torey-alston/6977",
+          "notes": "VCU bio says Alston was Third Team All-C-USA after 13.1 points, 7.1 rebounds, 55.5 percent shooting, nine double-doubles, and 37 blocks at MTSU."
+        },
+        {
+          "source": "VCU Athletics",
+          "url": "https://vcuathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Torey Alston's VCU status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 485 has no imported historical BBPR, so this batch assigns a scored anchor of 56 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 486,
+      "player": "Ryan Altman",
+      "currentTeam": "Pennsylvania",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 69.55,
+        "confidenceScore": 68,
+        "projectedBbpr": 44.62,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Ryan Altman had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Pennsylvania.",
+      "teamContext": {
+        "starterEvidence": "Pennsylvania roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Pennsylvania's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Pennsylvania Athletics",
+          "url": "https://pennathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Ryan Altman's Pennsylvania status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 486 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 487,
+      "player": "A.J. Altobelli",
+      "currentTeam": "N.J.I.T.",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 64.8,
+        "projectionScore": 68.65,
+        "confidenceScore": 66,
+        "projectedBbpr": 43.06,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "A.J. Altobelli had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for N.J.I.T..",
+      "teamContext": {
+        "starterEvidence": "N.J.I.T. roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "N.J.I.T.'s G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "N.J.I.T. Athletics",
+          "url": "https://njithighlanders.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for A.J. Altobelli's N.J.I.T. status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 487 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 488,
+      "player": "Salih Altuntas",
+      "currentTeam": "Saint Mary's",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 48,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 82,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 84,
+        "talentScore": 76.8,
+        "projectionScore": 79.24,
+        "confidenceScore": 84,
+        "projectedBbpr": 63.62,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Salih Altuntas had no imported historical BBPR, so this batch assigns a scored anchor of 48 from online role/production/sentiment context before running the same shared projection calibration. FIBA U20 page lists Altuntas with Turkey at 13.6 points, 8.1 rebounds, 66.1 percent two-point shooting, and 1.6 blocks in EuroBasket play. The resulting profile is a rotation projection for Saint Mary's.",
+      "teamContext": {
+        "starterEvidence": "Saint Mary's roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 48. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Saint Mary's's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://www.fiba.basketball/en/events/fiba-u20-eurobasket-2026/teams/turkiye/322268-salih-altuntas",
+          "notes": "FIBA U20 page lists Altuntas with Turkey at 13.6 points, 8.1 rebounds, 66.1 percent two-point shooting, and 1.6 blocks in EuroBasket play."
+        },
+        {
+          "source": "Saint Mary's Athletics",
+          "url": "https://smcgaels.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Salih Altuntas's Saint Mary's status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 488 has no imported historical BBPR, so this batch assigns a scored anchor of 48 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 489,
+      "player": "Diogo Alves",
+      "currentTeam": "Radford",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 28,
+      "developmentScore": 100,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 70,
+        "opportunityChange": 68,
+        "offensiveBurden": 66,
+        "opportunityScore": 68.6,
+        "entryTalentGrade": 72,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 72,
+        "talentScore": 67.8,
+        "projectionScore": 74.6,
+        "confidenceScore": 66,
+        "projectedBbpr": 55.7729,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Diogo Alves had no imported historical BBPR, so this batch assigns a scored anchor of 28 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a depth/bench projection for Radford.",
+      "teamContext": {
+        "starterEvidence": "Radford is listed as the current team for this newcomer row; role is scored from online roster/signing sentiment and kept pending for official 2026-27 depth-chart confirmation.",
+        "scoredAnchor": "Synthetic historical anchor: 28. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Radford's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Radford Athletics",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Official roster or athletics site is the primary verification target for Diogo Alves's Radford status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 489 has no imported historical BBPR, so this batch assigns a scored anchor of 28 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 490,
+      "player": "Hank Alvey",
+      "currentTeam": "Lehigh",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 68,
+        "opportunityScore": 73.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 68.87,
+        "confidenceScore": 70,
+        "projectedBbpr": 45.548,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Hank Alvey had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Lehigh.",
+      "teamContext": {
+        "starterEvidence": "Lehigh roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Lehigh's FC minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Lehigh Athletics",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Official roster or athletics site is the primary verification target for Hank Alvey's Lehigh status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 490 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 491,
+      "player": "Eugene Alvin",
+      "currentTeam": "Delaware",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 30,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 74,
+        "talentScore": 66.8,
+        "projectionScore": 64.77,
+        "confidenceScore": 70,
+        "projectedBbpr": 43.908,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Eugene Alvin had no imported historical BBPR, so this batch assigns a scored anchor of 30 from online role/production/sentiment context before running the same shared projection calibration. Available online sentiment is thin, so role and talent inputs stay conservative. The resulting profile is a rotation projection for Delaware.",
+      "teamContext": {
+        "starterEvidence": "Delaware roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 30. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Delaware's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Delaware Athletics",
+          "url": "https://bluehens.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Eugene Alvin's Delaware status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 491 has no imported historical BBPR, so this batch assigns a scored anchor of 30 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 492,
+      "player": "Papa Amadou Kante",
+      "currentTeam": "Little Rock",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 34,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 70,
+        "opportunityScore": 75.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 82,
+        "talentScore": 72.4,
+        "projectionScore": 71.45,
+        "confidenceScore": 76,
+        "projectedBbpr": 48.98,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Papa Amadou Kante had no imported historical BBPR, so this batch assigns a scored anchor of 34 from online role/production/sentiment context before running the same shared projection calibration. Little Rock roster lists Kante as a 6-10 Pittsburgh transfer; Pitt bio shows limited career production but high-major size and prior South Kent background. The resulting profile is a rotation projection for Little Rock.",
+      "teamContext": {
+        "starterEvidence": "Little Rock roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 34. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Little Rock's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://lrtrojans.com/sports/mens-basketball/roster",
+          "notes": "Little Rock roster lists Kante as a 6-10 Pittsburgh transfer; Pitt bio shows limited career production but high-major size and prior South Kent background."
+        },
+        {
+          "source": "Little Rock Athletics",
+          "url": "https://lrtrojans.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Papa Amadou Kante's Little Rock status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 492 has no imported historical BBPR, so this batch assigns a scored anchor of 34 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 493,
+      "player": "Al Amadou",
+      "currentTeam": "Milwaukee",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 38,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 80,
+        "offensiveBurden": 74,
+        "opportunityScore": 78.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 84,
+        "talentScore": 75.6,
+        "projectionScore": 73.92,
+        "confidenceScore": 82,
+        "projectedBbpr": 52.368,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Al Amadou had no imported historical BBPR, so this batch assigns a scored anchor of 38 from online role/production/sentiment context before running the same shared projection calibration. Milwaukee announced Amadou as a former four-star Marquette/Saint Joseph's transfer with staff praise for elite athleticism, inside-out skill, switchability, and rim protection. The resulting profile is a rotation projection for Milwaukee.",
+      "teamContext": {
+        "starterEvidence": "Milwaukee roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 38. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Milwaukee's PF minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://mkepanthers.com/news/2026/5/1/mens-basketball-mke-mens-basketball-welcomes-al-amadou-to-roster.aspx",
+          "notes": "Milwaukee announced Amadou as a former four-star Marquette/Saint Joseph's transfer with staff praise for elite athleticism, inside-out skill, switchability, and rim protection."
+        },
+        {
+          "source": "Milwaukee Athletics",
+          "url": "https://mkepanthers.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Al Amadou's Milwaukee status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 493 has no imported historical BBPR, so this batch assigns a scored anchor of 38 before projection."
+        }
+      ]
+    },
+    {
+      "sourceRow": 494,
+      "player": "Travis Ambrose",
+      "currentTeam": "Central Michigan",
+      "previousTeam": null,
+      "status": "researched_suggestion",
+      "historicalRating": 26,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 68,
+        "opportunityChange": 66,
+        "offensiveBurden": 64,
+        "opportunityScore": 66.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 60,
+        "upsideToolsScore": 78,
+        "talentScore": 67.2,
+        "projectionScore": 69.49,
+        "confidenceScore": 68,
+        "projectedBbpr": 43.396,
+        "confidenceGrade": "C+",
+        "needsReview": true
+      },
+      "researchSummary": "Travis Ambrose had no imported historical BBPR, so this batch assigns a scored anchor of 26 from online role/production/sentiment context before running the same shared projection calibration. Central Michigan bio says Ambrose is converting from football tight end to basketball after 12 football appearances; role should be treated as developmental. The resulting profile is a depth/bench projection for Central Michigan.",
+      "teamContext": {
+        "starterEvidence": "Central Michigan roster/bio context was used to estimate a scored historical anchor because the imported projection export has no historical BBPR for this row.",
+        "scoredAnchor": "Synthetic historical anchor: 26. This is used only because the projection export had no historical BBPR for the row.",
+        "roleCap": "Score keeps him in a depth role because available online sentiment does not show clear immediate usage.",
+        "positionCompetition": "Central Michigan's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Online roster/signing/sentiment source",
+          "url": "https://cmuchippewas.com/sports/mens-basketball/roster/travis-ambrose/7553",
+          "notes": "Central Michigan bio says Ambrose is converting from football tight end to basketball after 12 football appearances; role should be treated as developmental."
+        },
+        {
+          "source": "Central Michigan Athletics",
+          "url": "https://cmuchippewas.com/sports/mens-basketball/roster",
+          "notes": "Official roster or athletics site is the primary verification target for Travis Ambrose's Central Michigan status."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 494 has no imported historical BBPR, so this batch assigns a scored anchor of 26 before projection."
+        }
+      ]
+    }
+  ]
+}
