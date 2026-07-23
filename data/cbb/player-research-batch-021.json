@@ -24,7 +24,7 @@
     "previouslyScreenedPriorityRows": 2000,
     "screenedPendingRows": 500,
     "sourceRowRange": "2497-2996",
-    "selectedAbove60": 31,
+    "selectedAbove60": 30,
     "minProjectedBbpr": 60.1135,
     "maxProjectedBbpr": 75.39,
     "remainingPendingRowsAfterWindow": 1009,
@@ -870,50 +870,6 @@
           "source": "Local player projection export",
           "url": "data/cbb/player-projections.json",
           "notes": "Source row 2810 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
-        }
-      ]
-    },
-    {
-      "sourceRow": 2818,
-      "player": "Baba Oladotun",
-      "currentTeam": "Maryland",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": 60,
-      "developmentScore": 100,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 84,
-        "opportunityChange": 78,
-        "offensiveBurden": 74,
-        "opportunityScore": 80.2,
-        "entryTalentGrade": 97,
-        "nbaProjectionScore": 92,
-        "upsideToolsScore": 92,
-        "talentScore": 94,
-        "projectionScore": 88.99,
-        "confidenceScore": 78,
-        "confidenceGrade": "B",
-        "needsReview": true,
-        "projectedBbpr": 68.7223
-      },
-      "researchSummary": "Baba Oladotun gets a 60 freshman anchor from premium prep pedigree, wing size, and Maryland roster context. The newcomer cap is still active, but the talent inputs place him clearly above 60.",
-      "teamContext": {
-        "starterEvidence": "Maryland signing and roster context support immediate forward minutes with length and scoring upside.",
-        "scoredAnchor": "Synthetic historical anchor: 60. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
-        "positionCompetition": "Freshman variance and Big Ten role competition keep the projection below proven-veteran levels."
-      },
-      "evidence": [
-        {
-          "source": "Maryland Athletics",
-          "url": "https://umterps.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Baba Oladotun in the current Maryland player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 2818 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
         }
       ]
     },
