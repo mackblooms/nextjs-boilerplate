@@ -1,4 +1,6 @@
 import { promises as fs } from "fs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import path from "path";
 import type {
   CbbPlayerProjection,
@@ -14,8 +16,10 @@ import { calibrateProjectedBbpr } from "@/lib/cbbProjectionCalibration";
 const dataDir = path.join(process.cwd(), "data", "cbb");
 const projectionsPath = path.join(dataDir, "player-projections.json");
 const auditPath = path.join(dataDir, "projection-calibration-audit.json");
+const transferSuggestionsPath = path.join(dataDir, "transfer-projection-suggestions.json");
 const researchBatchPattern =
   /^(?:player|transfer|freshman|returning|returner|international)-research-batch-\d+\.json$/;
+const execFileAsync = promisify(execFile);
 
 function nearlyEqual(a: number | null | undefined, b: number | null | undefined) {
   if (a == null || b == null) return a == null && b == null;
@@ -68,6 +72,24 @@ function summarize(players: CbbPlayerProjection[]) {
   };
 }
 
+function numeric(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function rankPlayers(players: CbbPlayerProjection[]) {
+  const ranked = [...players]
+    .filter((player) => numeric(player.projectedBbpr) != null)
+    .sort((left, right) => {
+      const scoreDiff = (right.projectedBbpr ?? -1) - (left.projectedBbpr ?? -1);
+      if (scoreDiff !== 0) return scoreDiff;
+      const confidenceDiff = (numeric(right.confidenceScore) ?? -1) - (numeric(left.confidenceScore) ?? -1);
+      if (confidenceDiff !== 0) return confidenceDiff;
+      return left.player.localeCompare(right.player);
+    });
+
+  return new Map(ranked.map((player, index) => [player.id, index + 1]));
+}
+
 export async function readCbbProjections() {
   const raw = await fs.readFile(projectionsPath, "utf8");
   return JSON.parse(raw) as CbbProjectionPayload;
@@ -93,6 +115,44 @@ export async function readCbbResearchBatches() {
   );
 
   return batches;
+}
+
+async function writeCbbResearchBatch(fileName: string, batch: CbbResearchBatch) {
+  await fs.writeFile(path.join(dataDir, fileName), `${JSON.stringify(batch, null, 2)}\n`, "utf8");
+}
+
+async function removeTransferSuggestion(sourceRow: number) {
+  const raw = await fs.readFile(transferSuggestionsPath, "utf8").catch(() => null);
+  if (!raw) return 0;
+
+  const payload = JSON.parse(raw) as {
+    summary?: Record<string, unknown>;
+    suggestions?: Array<{ sourceRow?: number }>;
+  };
+  if (!Array.isArray(payload.suggestions)) return 0;
+
+  const before = payload.suggestions.length;
+  payload.suggestions = payload.suggestions.filter((suggestion) => suggestion.sourceRow !== sourceRow);
+  const removed = before - payload.suggestions.length;
+
+  if (removed > 0) {
+    if (payload.summary && typeof payload.summary === "object") {
+      for (const key of ["suggestionCount", "count", "totalSuggestions"]) {
+        if (typeof payload.summary[key] === "number") {
+          payload.summary[key] = payload.suggestions.length;
+        }
+      }
+    }
+    await fs.writeFile(transferSuggestionsPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  }
+
+  return removed;
+}
+
+async function refreshCbbProjectionAudit() {
+  const scriptPath = path.join(process.cwd(), "scripts", "audit-cbb-projection-calibration.mjs");
+  await execFileAsync(process.execPath, [scriptPath], { cwd: process.cwd() });
+  return readCbbProjectionAudit();
 }
 
 export function buildCbbResearchPayload(
@@ -222,5 +282,82 @@ export async function applyCbbResearchRows(sourceRows: number[]) {
     missingRows,
     projections: nextPayload,
     research: buildCbbResearchPayload(batches, nextPayload),
+  };
+}
+
+export async function removeCbbDuplicatePlayerRow(sourceRow: number) {
+  const projections = await readCbbProjections();
+  const batchFiles = (await fs.readdir(dataDir)).filter((entry) => researchBatchPattern.test(entry)).sort();
+  const batches = await Promise.all(
+    batchFiles.map(async (fileName) => {
+      const raw = await fs.readFile(path.join(dataDir, fileName), "utf8");
+      return {
+        fileName,
+        batch: JSON.parse(raw) as CbbResearchBatch,
+      };
+    })
+  );
+  const removedPlayer = projections.players.find((player) => player.sourceRow === sourceRow);
+
+  if (!removedPlayer) {
+    const researchBatches = batches.map((entry) => entry.batch);
+    return {
+      removedPlayer: null,
+      removedBatchRows: [],
+      removedTransferSuggestions: 0,
+      projections,
+      research: buildCbbResearchPayload(researchBatches, projections),
+      audit: await readCbbProjectionAudit(),
+    };
+  }
+
+  const now = new Date().toISOString();
+  const playersWithoutRow = projections.players.filter((player) => player.sourceRow !== sourceRow);
+  const rankById = rankPlayers(playersWithoutRow);
+  const players = playersWithoutRow.map((player) => ({
+    ...player,
+    rank: rankById.get(player.id) ?? null,
+  }));
+  const nextPayload: CbbProjectionPayload = {
+    ...projections,
+    generatedAt: now,
+    summary: summarize(players),
+    players,
+  };
+
+  await writeCbbProjections(nextPayload);
+
+  const removedBatchRows: Array<{ batchId: string; fileName: string; removed: number; remaining: number }> = [];
+  const nextBatches = await Promise.all(
+    batches.map(async ({ fileName, batch }) => {
+      const before = batch.players.length;
+      const nextBatch = {
+        ...batch,
+        players: batch.players.filter((player) => player.sourceRow !== sourceRow),
+      };
+      const removed = before - nextBatch.players.length;
+      if (removed > 0) {
+        await writeCbbResearchBatch(fileName, nextBatch);
+        removedBatchRows.push({
+          batchId: batch.batchId,
+          fileName,
+          removed,
+          remaining: nextBatch.players.length,
+        });
+      }
+      return nextBatch;
+    })
+  );
+
+  const removedTransferSuggestions = await removeTransferSuggestion(sourceRow);
+  const audit = await refreshCbbProjectionAudit();
+
+  return {
+    removedPlayer,
+    removedBatchRows,
+    removedTransferSuggestions,
+    projections: nextPayload,
+    research: buildCbbResearchPayload(nextBatches, nextPayload),
+    audit,
   };
 }

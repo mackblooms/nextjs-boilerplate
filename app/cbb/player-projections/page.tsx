@@ -131,6 +131,9 @@ export default function CbbPlayerProjectionsPage() {
   const [applyError, setApplyError] = useState("");
   const [applyMessage, setApplyMessage] = useState("");
   const [applying, setApplying] = useState(false);
+  const [duplicateError, setDuplicateError] = useState("");
+  const [duplicateMessage, setDuplicateMessage] = useState("");
+  const [removingDuplicateRow, setRemovingDuplicateRow] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -307,6 +310,75 @@ export default function CbbPlayerProjectionsPage() {
     setApplying(false);
   }
 
+  async function removeDuplicateRow(player: Pick<CbbSameLastNamePlayer, "sourceRow" | "player" | "currentTeam">) {
+    const confirmed = window.confirm(
+      `Remove ${player.player} from ${player.currentTeam ?? "unknown team"}? This removes source row ${player.sourceRow} from the projection board and research queues.`
+    );
+    if (!confirmed) return;
+
+    setRemovingDuplicateRow(player.sourceRow);
+    setDuplicateError("");
+    setDuplicateMessage("");
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setDuplicateError("Please log in with a site admin account to remove duplicate rows.");
+      setRemovingDuplicateRow(null);
+      return;
+    }
+
+    const res = await fetch("/api/admin/cbb-player-projection-duplicates/remove", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ sourceRow: player.sourceRow }),
+    }).catch(() => null);
+
+    if (!res) {
+      setDuplicateError("Could not remove duplicate row.");
+      setRemovingDuplicateRow(null);
+      return;
+    }
+
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      removedPlayer?: CbbPlayerProjection;
+      removedBatchRows?: Array<{ batchId: string; removed: number }>;
+      removedTransferSuggestions?: number;
+      projections?: CbbProjectionPayload;
+      research?: CbbResearchPayload;
+      audit?: CbbProjectionAuditPayload;
+    };
+
+    if (!res.ok || !json.projections || !json.research || !json.audit || !json.removedPlayer) {
+      setDuplicateError(json.error ?? "Could not remove duplicate row.");
+      setRemovingDuplicateRow(null);
+      return;
+    }
+
+    setPayload(json.projections);
+    setResearchPayload(json.research);
+    setAuditPayload(json.audit);
+    setSelectedRows((current) => {
+      const next = new Set(current);
+      next.delete(player.sourceRow);
+      return next;
+    });
+    setQuery("");
+    setTeamFilter(player.currentTeam ?? "all");
+    setReviewFilter("all");
+    setSortKey("rank");
+    setDuplicateMessage(
+      `removed ${json.removedPlayer.player} row ${json.removedPlayer.sourceRow}; cleaned ${
+        json.removedBatchRows?.length ?? 0
+      } research batches`
+    );
+    setRemovingDuplicateRow(null);
+  }
+
   function toggleResearchRow(sourceRow: number) {
     setSelectedRows((current) => {
       const next = new Set(current);
@@ -480,9 +552,20 @@ export default function CbbPlayerProjectionsPage() {
             <h2>{auditPayload?.summary.sameLastNameGroupCount ?? 0} same-last-name groups</h2>
           </div>
           <span>
-            {auditPayload?.summary.duplicateGroupCount ?? 0} exact groups Â· top {visibleSameLastNameGroups.length} shown
+            {auditPayload?.summary.duplicateGroupCount ?? 0} exact groups / top {visibleSameLastNameGroups.length} shown
           </span>
         </div>
+
+        {duplicateError ? (
+          <UiStatus tone="error" className="cbb-research-review-status">
+            {duplicateError}
+          </UiStatus>
+        ) : null}
+        {duplicateMessage ? (
+          <UiStatus tone="success" className="cbb-research-review-status">
+            {duplicateMessage}
+          </UiStatus>
+        ) : null}
 
         {exactDuplicateGroups.length > 0 ? (
           <div className="cbb-duplicate-exact">
@@ -496,21 +579,31 @@ export default function CbbPlayerProjectionsPage() {
                   </div>
                   <div className="cbb-duplicate-candidates">
                     {group.map((player) => (
-                      <button
-                        className="cbb-duplicate-player"
-                        type="button"
-                        key={player.sourceRow}
-                        onClick={() => focusDuplicateCandidate(player)}
-                      >
-                        <span>
-                          <strong>{player.player}</strong>
-                          <small>row {player.sourceRow}</small>
-                        </span>
-                        <span>
-                          <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
-                          <small>{player.needsReview ? "review" : "ready"}</small>
-                        </span>
-                      </button>
+                      <div className="cbb-duplicate-player" key={player.sourceRow}>
+                        <button
+                          className="cbb-duplicate-player-main"
+                          type="button"
+                          onClick={() => focusDuplicateCandidate(player)}
+                        >
+                          <span>
+                            <strong>{player.player}</strong>
+                            <small>row {player.sourceRow}</small>
+                          </span>
+                          <span>
+                            <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
+                            <small>{player.needsReview ? "review" : "ready"}</small>
+                          </span>
+                        </button>
+                        <UiButton
+                          type="button"
+                          size="sm"
+                          variant="danger"
+                          onClick={() => void removeDuplicateRow(player)}
+                          disabled={removingDuplicateRow === player.sourceRow}
+                        >
+                          {removingDuplicateRow === player.sourceRow ? "removing" : "remove"}
+                        </UiButton>
+                      </div>
                     ))}
                   </div>
                 </article>
@@ -543,23 +636,33 @@ export default function CbbPlayerProjectionsPage() {
                   </div>
                   <div className="cbb-duplicate-candidates">
                     {group.map((player) => (
-                      <button
-                        className="cbb-duplicate-player"
-                        type="button"
-                        key={player.sourceRow}
-                        onClick={() => focusDuplicateCandidate(player)}
-                      >
-                        <span>
-                          <strong>{player.player}</strong>
-                          <small>
-                            row {player.sourceRow} {player.rank ? `#${player.rank}` : "unranked"}
-                          </small>
-                        </span>
-                        <span>
-                          <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
-                          <small>{player.needsReview ? "review" : "ready"}</small>
-                        </span>
-                      </button>
+                      <div className="cbb-duplicate-player" key={player.sourceRow}>
+                        <button
+                          className="cbb-duplicate-player-main"
+                          type="button"
+                          onClick={() => focusDuplicateCandidate(player)}
+                        >
+                          <span>
+                            <strong>{player.player}</strong>
+                            <small>
+                              row {player.sourceRow} {player.rank ? `#${player.rank}` : "unranked"}
+                            </small>
+                          </span>
+                          <span>
+                            <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
+                            <small>{player.needsReview ? "review" : "ready"}</small>
+                          </span>
+                        </button>
+                        <UiButton
+                          type="button"
+                          size="sm"
+                          variant="danger"
+                          onClick={() => void removeDuplicateRow(player)}
+                          disabled={removingDuplicateRow === player.sourceRow}
+                        >
+                          {removingDuplicateRow === player.sourceRow ? "removing" : "remove"}
+                        </UiButton>
+                      </div>
                     ))}
                   </div>
                 </article>

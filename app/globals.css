@@ -921,32 +921,46 @@ textarea::placeholder {
 }
 
 .cbb-duplicate-player {
-  appearance: none;
   border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
   border-radius: 8px;
   background: var(--surface);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px;
+}
+
+.cbb-duplicate-player-main {
+  appearance: none;
+  border: 0;
+  background: transparent;
   color: inherit;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   gap: 10px;
   min-width: 0;
-  padding: 8px;
+  padding: 0;
   text-align: left;
 }
 
-.cbb-duplicate-player:hover,
-.cbb-duplicate-player:focus-visible {
+.cbb-duplicate-player:has(.cbb-duplicate-player-main:hover),
+.cbb-duplicate-player:has(.cbb-duplicate-player-main:focus-visible) {
   border-color: var(--highlight-border);
   box-shadow: var(--elevation-sm);
+}
+
+.cbb-duplicate-player-main:focus-visible {
   outline: none;
 }
 
-.cbb-duplicate-player > span {
+.cbb-duplicate-player-main > span {
   min-width: 0;
 }
 
-.cbb-duplicate-player > span:last-child {
+.cbb-duplicate-player-main > span:last-child {
   flex: 0 0 auto;
   text-align: right;
 }
