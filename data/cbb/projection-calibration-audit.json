@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T23:57:00.223Z",
+  "generatedAt": "2026-07-23T00:57:22.625Z",
   "source": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\player-projections.json",
   "output": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\projection-calibration-audit.json",
   "summary": {
@@ -8,7 +8,7 @@
     "top100Line": 67.8709,
     "projectedFindingCount": 44,
     "highSeverityProjectedFindingCount": 13,
-    "pendingResearchFindingCount": 0,
+    "pendingResearchFindingCount": 1,
     "duplicateGroupCount": 3,
     "newcomerCompositionFindingCount": 0
   },
@@ -1336,7 +1336,36 @@
       ]
     }
   ],
-  "pendingResearchFindings": [],
+  "pendingResearchFindings": [
+    {
+      "source": "player-research-batch-011.json",
+      "sourceRow": 329,
+      "player": "Kevin Overton",
+      "currentTeam": "Auburn",
+      "previousTeam": "Auburn",
+      "playerType": null,
+      "classYear": null,
+      "rank": null,
+      "rankTier": "unranked",
+      "projectedBbpr": 69.5432,
+      "top100Line": 67.8709,
+      "historicalRating": 50.408,
+      "projectedRole": 94,
+      "opportunityChange": 90,
+      "offensiveBurden": 86,
+      "opportunityScore": 91.2,
+      "talentScore": 83.6,
+      "projectionScore": 82.3,
+      "confidenceScore": 90,
+      "flags": [
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    }
+  ],
   "duplicateGroups": [
     [
       {

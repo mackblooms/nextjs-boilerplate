@@ -184,6 +184,8 @@ function applyTransferRoleLift(player, blendedScore) {
   const historical = numeric(player.historicalRating) ?? numeric(player.historicalBbpr);
   const role = numeric(player.projectedRole) ?? 0;
   const opportunity = numeric(player.opportunityScore) ?? 0;
+  const talent = numeric(player.talentScore) ?? 0;
+  const projectionScore = numeric(player.projectionScore) ?? 0;
   const confidence = numeric(player.confidenceScore) ?? 0;
 
   if (historical != null && historical >= 80 && role >= 95 && opportunity >= 82 && confidence >= 75) {
@@ -195,6 +197,46 @@ function applyTransferRoleLift(player, blendedScore) {
       1;
 
     return Math.max(blendedScore, clamp(roleScore, 82, 89));
+  }
+
+  if (
+    historical != null &&
+    role >= 92 &&
+    opportunity >= 88 &&
+    talent >= 80 &&
+    projectionScore >= 76 &&
+    confidence >= 88
+  ) {
+    const provenTransferScore =
+      68 +
+      (role - 90) * 0.35 +
+      (opportunity - 86) * 0.18 +
+      (talent - 78) * 0.16 +
+      (projectionScore - 76) * 0.12 +
+      (confidence - 85) * 0.08 +
+      clamp((historical - 40) * 0.08, -1, 2);
+
+    return Math.max(blendedScore, clamp(provenTransferScore, 68, 78));
+  }
+
+  if (
+    historical != null &&
+    role >= 90 &&
+    opportunity >= 86 &&
+    talent >= 78 &&
+    projectionScore >= 75 &&
+    confidence >= 86
+  ) {
+    const startingTransferScore =
+      65 +
+      (role - 90) * 0.25 +
+      (opportunity - 86) * 0.15 +
+      (talent - 78) * 0.12 +
+      (projectionScore - 75) * 0.1 +
+      (confidence - 85) * 0.06 +
+      clamp((historical - 40) * 0.05, -0.75, 1.5);
+
+    return Math.max(blendedScore, clamp(startingTransferScore, 65, 73));
   }
 
   return blendedScore;
