@@ -4,11 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type {
   CbbPlayerProjection,
-  CbbProjectionAuditPayload,
   CbbProjectionPayload,
   CbbResearchPayload,
   CbbResearchPlayerWithState,
-  CbbSameLastNamePlayer,
 } from "@/lib/cbbPlayerProjections";
 import {
   UiButton,
@@ -23,7 +21,6 @@ import {
 type SortKey = "rank" | "player" | "team" | "projectedBbpr" | "confidence" | "review";
 type LeaderboardSource = "projected" | "historical" | "profile" | "unscored";
 const researchReviewBatchSize = 48;
-const duplicateReviewGroupSize = 24;
 
 type RankedCbbPlayer = CbbPlayerProjection & {
   leaderboardRank: number;
@@ -125,15 +122,11 @@ function sortPlayers(players: RankedCbbPlayer[], sortKey: SortKey) {
 export default function CbbPlayerProjectionsPage() {
   const [payload, setPayload] = useState<CbbProjectionPayload | null>(null);
   const [researchPayload, setResearchPayload] = useState<CbbResearchPayload | null>(null);
-  const [auditPayload, setAuditPayload] = useState<CbbProjectionAuditPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [applyError, setApplyError] = useState("");
   const [applyMessage, setApplyMessage] = useState("");
   const [applying, setApplying] = useState(false);
-  const [duplicateError, setDuplicateError] = useState("");
-  const [duplicateMessage, setDuplicateMessage] = useState("");
-  const [removingDuplicateRow, setRemovingDuplicateRow] = useState<number | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -163,13 +156,12 @@ export default function CbbPlayerProjectionsPage() {
       const signedInUserId = userData.user?.id ?? null;
 
       const headers = { authorization: `Bearer ${token}` };
-      const [res, researchRes, auditRes] = await Promise.all([
+      const [res, researchRes] = await Promise.all([
         fetch("/api/admin/cbb-player-projections", { headers }).catch(() => null),
         fetch("/api/admin/cbb-player-projection-research", { headers }).catch(() => null),
-        fetch("/api/admin/cbb-player-projection-audit", { headers }).catch(() => null),
       ]);
 
-      if (!res || !researchRes || !auditRes) {
+      if (!res || !researchRes) {
         if (!canceled) {
           setError("Could not load player projections.");
           setLoading(false);
@@ -177,9 +169,9 @@ export default function CbbPlayerProjectionsPage() {
         return;
       }
 
-      if (!res.ok || !researchRes.ok || !auditRes.ok) {
+      if (!res.ok || !researchRes.ok) {
         const message =
-          res.status === 403 || researchRes.status === 403 || auditRes.status === 403
+          res.status === 403 || researchRes.status === 403
             ? signedInUserId
               ? `Not authorized. Add this user id to POOL_SITE_ADMIN_USER_IDS in .env.local: ${signedInUserId}`
               : "Not authorized. Only site admins can view this workspace."
@@ -193,11 +185,9 @@ export default function CbbPlayerProjectionsPage() {
 
       const json = (await res.json()) as CbbProjectionPayload;
       const researchJson = (await researchRes.json()) as CbbResearchPayload;
-      const auditJson = (await auditRes.json()) as CbbProjectionAuditPayload;
       if (!canceled) {
         setPayload(json);
         setResearchPayload(researchJson);
-        setAuditPayload(auditJson);
         setLoading(false);
       }
     }
@@ -212,18 +202,6 @@ export default function CbbPlayerProjectionsPage() {
   const players = useMemo(() => payload?.players ?? [], [payload]);
   const rankedPlayers = useMemo(() => buildRankedPlayers(players), [players]);
   const researchPlayers = useMemo(() => researchPayload?.players ?? [], [researchPayload]);
-  const sameLastNameGroups = useMemo(
-    () => auditPayload?.sameLastNameGroups ?? [],
-    [auditPayload]
-  );
-  const exactDuplicateGroups = useMemo(
-    () => auditPayload?.duplicateGroups ?? [],
-    [auditPayload]
-  );
-  const visibleSameLastNameGroups = useMemo(
-    () => sameLastNameGroups.slice(0, duplicateReviewGroupSize),
-    [sameLastNameGroups]
-  );
   const typeOptions = useMemo(() => uniqueOptions(players, "playerType"), [players]);
   const classOptions = useMemo(() => uniqueOptions(players, "classYear"), [players]);
   const teamOptions = useMemo(() => uniqueOptions(players, "currentTeam"), [players]);
@@ -310,75 +288,6 @@ export default function CbbPlayerProjectionsPage() {
     setApplying(false);
   }
 
-  async function removeDuplicateRow(player: Pick<CbbSameLastNamePlayer, "sourceRow" | "player" | "currentTeam">) {
-    const confirmed = window.confirm(
-      `Remove ${player.player} from ${player.currentTeam ?? "unknown team"}? This removes source row ${player.sourceRow} from the projection board and research queues.`
-    );
-    if (!confirmed) return;
-
-    setRemovingDuplicateRow(player.sourceRow);
-    setDuplicateError("");
-    setDuplicateMessage("");
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
-    if (!token) {
-      setDuplicateError("Please log in with a site admin account to remove duplicate rows.");
-      setRemovingDuplicateRow(null);
-      return;
-    }
-
-    const res = await fetch("/api/admin/cbb-player-projection-duplicates/remove", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ sourceRow: player.sourceRow }),
-    }).catch(() => null);
-
-    if (!res) {
-      setDuplicateError("Could not remove duplicate row.");
-      setRemovingDuplicateRow(null);
-      return;
-    }
-
-    const json = (await res.json().catch(() => ({}))) as {
-      error?: string;
-      removedPlayer?: CbbPlayerProjection;
-      removedBatchRows?: Array<{ batchId: string; removed: number }>;
-      removedTransferSuggestions?: number;
-      projections?: CbbProjectionPayload;
-      research?: CbbResearchPayload;
-      audit?: CbbProjectionAuditPayload;
-    };
-
-    if (!res.ok || !json.projections || !json.research || !json.audit || !json.removedPlayer) {
-      setDuplicateError(json.error ?? "Could not remove duplicate row.");
-      setRemovingDuplicateRow(null);
-      return;
-    }
-
-    setPayload(json.projections);
-    setResearchPayload(json.research);
-    setAuditPayload(json.audit);
-    setSelectedRows((current) => {
-      const next = new Set(current);
-      next.delete(player.sourceRow);
-      return next;
-    });
-    setQuery("");
-    setTeamFilter(player.currentTeam ?? "all");
-    setReviewFilter("all");
-    setSortKey("rank");
-    setDuplicateMessage(
-      `removed ${json.removedPlayer.player} row ${json.removedPlayer.sourceRow}; cleaned ${
-        json.removedBatchRows?.length ?? 0
-      } research batches`
-    );
-    setRemovingDuplicateRow(null);
-  }
-
   function toggleResearchRow(sourceRow: number) {
     setSelectedRows((current) => {
       const next = new Set(current);
@@ -399,20 +308,6 @@ export default function CbbPlayerProjectionsPage() {
       }
       return next;
     });
-  }
-
-  function focusDuplicateCandidate(player: Pick<CbbSameLastNamePlayer, "player" | "currentTeam">) {
-    setQuery(player.player);
-    setTeamFilter(player.currentTeam ?? "all");
-    setReviewFilter("all");
-    setSortKey("rank");
-  }
-
-  function focusDuplicateTeam(team: string | null) {
-    setQuery("");
-    setTeamFilter(team ?? "all");
-    setReviewFilter("all");
-    setSortKey("rank");
   }
 
   if (loading) {
@@ -544,133 +439,6 @@ export default function CbbPlayerProjectionsPage() {
       <UiStatus tone="info" className="cbb-projections-note">
         {payload.model.historicalPlayerBlend} · {payload.model.newcomerBlend}
       </UiStatus>
-
-      <section className="cbb-duplicate-review" aria-label="Duplicate review queue">
-        <div className="cbb-projections-board-head cbb-duplicate-review-head">
-          <div>
-            <span className="cbb-projections-kicker">duplicate review</span>
-            <h2>{auditPayload?.summary.sameLastNameGroupCount ?? 0} same-last-name groups</h2>
-          </div>
-          <span>
-            {auditPayload?.summary.duplicateGroupCount ?? 0} exact groups / top {visibleSameLastNameGroups.length} shown
-          </span>
-        </div>
-
-        {duplicateError ? (
-          <UiStatus tone="error" className="cbb-research-review-status">
-            {duplicateError}
-          </UiStatus>
-        ) : null}
-        {duplicateMessage ? (
-          <UiStatus tone="success" className="cbb-research-review-status">
-            {duplicateMessage}
-          </UiStatus>
-        ) : null}
-
-        {exactDuplicateGroups.length > 0 ? (
-          <div className="cbb-duplicate-exact">
-            <span className="cbb-duplicate-section-label">exact normalized matches</span>
-            <div className="cbb-duplicate-grid">
-              {exactDuplicateGroups.map((group) => (
-                <article className="cbb-duplicate-card" key={`exact-${group.map((player) => player.sourceRow).join("-")}`}>
-                  <div className="cbb-duplicate-card-head">
-                    <strong>{group[0]?.currentTeam ?? "-"}</strong>
-                    <span>{group.length} rows</span>
-                  </div>
-                  <div className="cbb-duplicate-candidates">
-                    {group.map((player) => (
-                      <div className="cbb-duplicate-player" key={player.sourceRow}>
-                        <button
-                          className="cbb-duplicate-player-main"
-                          type="button"
-                          onClick={() => focusDuplicateCandidate(player)}
-                        >
-                          <span>
-                            <strong>{player.player}</strong>
-                            <small>row {player.sourceRow}</small>
-                          </span>
-                          <span>
-                            <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
-                            <small>{player.needsReview ? "review" : "ready"}</small>
-                          </span>
-                        </button>
-                        <UiButton
-                          type="button"
-                          size="sm"
-                          variant="danger"
-                          onClick={() => void removeDuplicateRow(player)}
-                          disabled={removingDuplicateRow === player.sourceRow}
-                        >
-                          {removingDuplicateRow === player.sourceRow ? "removing" : "remove"}
-                        </UiButton>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {visibleSameLastNameGroups.length === 0 ? (
-          <UiEmptyState
-            as="div"
-            title="no same-last-name groups"
-            description="run the calibration audit after projection changes to refresh this panel."
-          />
-        ) : (
-          <div className="cbb-duplicate-grid">
-            {visibleSameLastNameGroups.map((group) => {
-              const team = group[0]?.currentTeam ?? null;
-              const lastName = group[0]?.player.split(/\s+/).at(-1) ?? "group";
-              return (
-                <article className="cbb-duplicate-card" key={`last-${group.map((player) => player.sourceRow).join("-")}`}>
-                  <div className="cbb-duplicate-card-head">
-                    <div>
-                      <strong>{lastName}</strong>
-                      <span>{team ?? "-"}</span>
-                    </div>
-                    <UiButton type="button" size="sm" variant="ghost" onClick={() => focusDuplicateTeam(team)}>
-                      view team
-                    </UiButton>
-                  </div>
-                  <div className="cbb-duplicate-candidates">
-                    {group.map((player) => (
-                      <div className="cbb-duplicate-player" key={player.sourceRow}>
-                        <button
-                          className="cbb-duplicate-player-main"
-                          type="button"
-                          onClick={() => focusDuplicateCandidate(player)}
-                        >
-                          <span>
-                            <strong>{player.player}</strong>
-                            <small>
-                              row {player.sourceRow} {player.rank ? `#${player.rank}` : "unranked"}
-                            </small>
-                          </span>
-                          <span>
-                            <strong>{formatNumber(player.projectedBbpr, 2)}</strong>
-                            <small>{player.needsReview ? "review" : "ready"}</small>
-                          </span>
-                        </button>
-                        <UiButton
-                          type="button"
-                          size="sm"
-                          variant="danger"
-                          onClick={() => void removeDuplicateRow(player)}
-                          disabled={removingDuplicateRow === player.sourceRow}
-                        >
-                          {removingDuplicateRow === player.sourceRow ? "removing" : "remove"}
-                        </UiButton>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
 
       <section className="cbb-research-review" aria-label="Research review queue">
         <div className="cbb-projections-board-head cbb-research-review-head">
