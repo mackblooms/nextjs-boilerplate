@@ -147,3 +147,40 @@ export type CbbResearchPayload = {
   batches: Array<Pick<CbbResearchBatch, "batchId" | "createdAt" | "scope"> & { playerCount: number }>;
   players: CbbResearchPlayerWithState[];
 };
+
+export type CbbSameLastNamePlayer = {
+  sourceRow: number;
+  player: string;
+  currentTeam: string | null;
+  normalizedTeam: string;
+  projectedBbpr: number | null;
+  rank: number | null;
+  needsReview: boolean;
+};
+
+export type CbbProjectionAuditPayload = {
+  generatedAt: string;
+  source: string;
+  output: string;
+  summary: {
+    playerCount: number;
+    completedProjectionCount: number;
+    top100Line: number;
+    projectedFindingCount: number;
+    highSeverityProjectedFindingCount: number;
+    pendingResearchFindingCount: number;
+    duplicateGroupCount: number;
+    sameLastNameGroupCount?: number;
+    newcomerCompositionFindingCount: number;
+  };
+  duplicateGroups: Array<
+    Array<{
+      sourceRow: number;
+      player: string;
+      currentTeam: string | null;
+      projectedBbpr: number | null;
+      needsReview: boolean;
+    }>
+  >;
+  sameLastNameGroups?: CbbSameLastNamePlayer[][];
+};

@@ -840,6 +840,117 @@ textarea::placeholder {
   overflow: hidden;
 }
 
+.cbb-duplicate-review {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cbb-duplicate-review-head {
+  background: var(--surface);
+}
+
+.cbb-duplicate-exact {
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px;
+}
+
+.cbb-duplicate-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 950;
+  margin-bottom: 8px;
+  opacity: 0.72;
+  text-transform: lowercase;
+}
+
+.cbb-duplicate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.cbb-duplicate-exact .cbb-duplicate-grid {
+  padding: 0;
+}
+
+.cbb-duplicate-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.cbb-duplicate-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.cbb-duplicate-card-head > div {
+  min-width: 0;
+}
+
+.cbb-duplicate-card-head strong,
+.cbb-duplicate-player strong {
+  display: block;
+  font-weight: 950;
+  line-height: 1.12;
+}
+
+.cbb-duplicate-card-head span,
+.cbb-duplicate-player small {
+  display: block;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.25;
+  opacity: 0.68;
+}
+
+.cbb-duplicate-candidates {
+  display: grid;
+  gap: 6px;
+}
+
+.cbb-duplicate-player {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--border-color) 84%, transparent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  text-align: left;
+}
+
+.cbb-duplicate-player:hover,
+.cbb-duplicate-player:focus-visible {
+  border-color: var(--highlight-border);
+  box-shadow: var(--elevation-sm);
+  outline: none;
+}
+
+.cbb-duplicate-player > span {
+  min-width: 0;
+}
+
+.cbb-duplicate-player > span:last-child {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
 .cbb-research-review-head {
   background: var(--surface);
 }
@@ -1020,6 +1131,10 @@ textarea::placeholder {
   }
 
   .cbb-research-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cbb-duplicate-grid {
     grid-template-columns: 1fr;
   }
 }

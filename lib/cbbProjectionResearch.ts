@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type {
   CbbPlayerProjection,
+  CbbProjectionAuditPayload,
   CbbProjectionPayload,
   CbbResearchBatch,
   CbbResearchPayload,
@@ -12,6 +13,7 @@ import { calibrateProjectedBbpr } from "@/lib/cbbProjectionCalibration";
 
 const dataDir = path.join(process.cwd(), "data", "cbb");
 const projectionsPath = path.join(dataDir, "player-projections.json");
+const auditPath = path.join(dataDir, "projection-calibration-audit.json");
 const researchBatchPattern =
   /^(?:player|transfer|freshman|returning|returner|international)-research-batch-\d+\.json$/;
 
@@ -69,6 +71,11 @@ function summarize(players: CbbPlayerProjection[]) {
 export async function readCbbProjections() {
   const raw = await fs.readFile(projectionsPath, "utf8");
   return JSON.parse(raw) as CbbProjectionPayload;
+}
+
+export async function readCbbProjectionAudit() {
+  const raw = await fs.readFile(auditPath, "utf8");
+  return JSON.parse(raw) as CbbProjectionAuditPayload;
 }
 
 export async function writeCbbProjections(payload: CbbProjectionPayload) {
