@@ -886,49 +886,6 @@
       ]
     },
     {
-      "sourceRow": 228,
-      "player": "Nikolas Khamenia",
-      "currentTeam": "Connecticut",
-      "previousTeam": "Duke",
-      "status": "researched_suggestion",
-      "historicalRating": 35.0243,
-      "developmentScore": 80,
-      "suggested": {
-        "projectedStarter": "No",
-        "projectedRole": 76,
-        "opportunityChange": 74,
-        "offensiveBurden": 70,
-        "opportunityScore": 74.2,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 74,
-        "upsideToolsScore": 84,
-        "talentScore": 78,
-        "projectionScore": 76.69,
-        "projectedBbpr": 45.4407,
-        "confidenceScore": 74,
-        "confidenceGrade": "B-",
-        "needsReview": true
-      },
-      "researchSummary": "Nikolas Khamenia carries a 35.0243 historical anchor into a bench/rotation projection for Connecticut. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
-      "teamContext": {
-        "starterEvidence": "Connecticut is listed as the current team after Duke, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score keeps him in a depth role because roster competition and immediate usage remain uncertain.",
-        "positionCompetition": "Connecticut's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
-      },
-      "evidence": [
-        {
-          "source": "Connecticut Athletics",
-          "url": "https://uconnhuskies.com/sports/mbball/roster/",
-          "notes": "Official roster/signing page is the primary verification target for Nikolas Khamenia's Connecticut status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 228 lists Nikolas Khamenia as a Transfer So G with historical rating 35.0243."
-        }
-      ]
-    },
-    {
       "sourceRow": 319,
       "player": "Kanaan Carlyle",
       "currentTeam": "Florida Atlantic",

@@ -6,7 +6,7 @@
     "goldStandardCount": 26,
     "transferCount": 246,
     "targetCount": 218,
-    "suggestionCount": 218,
+    "suggestionCount": 217,
     "formulas": {
       "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
       "talentScore": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
@@ -13915,109 +13915,6 @@
           "opportunityScore": 65,
           "talentScore": 67,
           "distance": 0.364
-        }
-      ],
-      "reasoning": [
-        "draft suggestion generated from nearest completed transfer gold-standard examples",
-        "nearest trusted transfers lean starter/major-minute profile",
-        "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
-        "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
-        "manual spreadsheet inputs should override this suggestion"
-      ]
-    },
-    {
-      "sourceRow": 228,
-      "player": "Nikolas Khamenia",
-      "currentTeam": "Connecticut",
-      "previousTeam": "Duke",
-      "position": "G",
-      "classYear": "So",
-      "current": {
-        "historicalRating": 35.0243,
-        "historicalBbpr": 37.6825,
-        "starScore": 17.7018,
-        "difficulty": 4.5,
-        "developmentScore": 80,
-        "projectedBbpr": null,
-        "needsReview": true
-      },
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 65,
-        "offensiveBurden": 75,
-        "opportunityScore": 79.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 80,
-        "projectionScore": 72.425,
-        "projectedBbpr": 44.3745,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
-        "needsReview": true,
-        "suggestionStatus": "draft"
-      },
-      "nearestGoldExamples": [
-        {
-          "sourceRow": 19,
-          "player": "Isaac Celiscar",
-          "currentTeam": "Baylor",
-          "previousTeam": "Yale",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 69.2428,
-          "projectionScore": 60.235,
-          "opportunityScore": 66.9,
-          "talentScore": 51.8,
-          "distance": 0.4359
-        },
-        {
-          "sourceRow": 27,
-          "player": "Tounde Yessoufou",
-          "currentTeam": "St. John's",
-          "previousTeam": "Baylor",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.6916,
-          "projectionScore": 84.105,
-          "opportunityScore": 89.9,
-          "talentScore": 79,
-          "distance": 0.4706
-        },
-        {
-          "sourceRow": 13,
-          "player": "Dedan Thomas Jr.",
-          "currentTeam": "Houston",
-          "previousTeam": "LSU",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 65.6274,
-          "projectionScore": 60.23,
-          "opportunityScore": 75,
-          "talentScore": 52.8,
-          "distance": 0.4795
-        },
-        {
-          "sourceRow": 17,
-          "player": "Markus Burton",
-          "currentTeam": "Indiana",
-          "previousTeam": "Notre Dame",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.2356,
-          "projectionScore": 58.625,
-          "opportunityScore": 77.5,
-          "talentScore": 45,
-          "distance": 0.4886
-        },
-        {
-          "sourceRow": 12,
-          "player": "Flory Bidunga",
-          "currentTeam": "Louisville",
-          "previousTeam": "Kansas",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 80.1503,
-          "projectionScore": 73,
-          "opportunityScore": 85,
-          "talentScore": 65,
-          "distance": 0.4951
         }
       ],
       "reasoning": [

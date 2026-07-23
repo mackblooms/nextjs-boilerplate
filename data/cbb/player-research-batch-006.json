@@ -534,52 +534,6 @@
       ]
     },
     {
-      "sourceRow": 229,
-      "player": "Tay Kinney",
-      "currentTeam": "Kansas",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": null,
-      "developmentScore": 100,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 82,
-        "offensiveBurden": 78,
-        "opportunityScore": 84.2,
-        "entryTalentGrade": 95,
-        "nbaProjectionScore": 88,
-        "upsideToolsScore": 92,
-        "talentScore": 91.8,
-        "projectionScore": 90.02,
-        "projectedBbpr": 79.4132,
-        "confidenceScore": 72,
-        "confidenceGrade": "B",
-        "needsReview": true
-      },
-      "researchSummary": "Kinney is a five-star freshman with credible Kansas starting-lineup evidence. He should be above most newcomer projects, but the score is kept below proven star returners because Kansas has Blyden/Stokes and other usage competitors.",
-      "teamContext": {
-        "projectedLineup": "Kansas projected-lineup pieces include Kinney/Taylen Kinney in a two-guard starting group.",
-        "returningStars": "Kansas' core is rebuilt, increasing opportunity.",
-        "incomingStars": "Tyran Stokes is the clear freshman headliner and offensive centerpiece.",
-        "positionCompetition": "Blyden, Stokes, and other guards limit primary-burden certainty.",
-        "starterEvidence": "projected starting lineup evidence",
-        "roleCap": "High-80s role despite five-star talent because usage is not as clean as Stokes."
-      },
-      "evidence": [
-        {
-          "source": "Sports Illustrated",
-          "url": "https://www.si.com/college/kansas/basketball/3-potential-starting-lineup-combinations-for-2026-27-kansas-basketball-team",
-          "notes": "Lists Kinney in Kansas' most likely starting lineup combinations."
-        },
-        {
-          "source": "Yahoo Sports",
-          "url": "https://sports.yahoo.com/articles/projecting-kansas-2026-27-starting-231353681.html",
-          "notes": "Projects Kinney in Kansas' starting backcourt with Leroy Blyden Jr."
-        }
-      ]
-    },
-    {
       "sourceRow": 168,
       "player": "Cameron Williams",
       "currentTeam": "Duke",

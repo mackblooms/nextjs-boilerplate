@@ -27,6 +27,21 @@ function normalizeName(value) {
     .replace(/\s+/g, " ");
 }
 
+function normalizedLastName(value) {
+  const tokens = normalizeName(value).split(" ").filter(Boolean);
+  return tokens.at(-1) ?? "";
+}
+
+function normalizeDuplicateTeam(value) {
+  const normalized = normalizeName(value);
+  const aliases = {
+    connecticut: "uconn",
+    "u conn": "uconn",
+    storrs: "uconn",
+  };
+  return aliases[normalized] ?? normalized;
+}
+
 function canonicalScore(player) {
   return (
     numeric(player.projectedBbpr) ??
@@ -377,6 +392,32 @@ const duplicateGroups = Object.values(
   }, {})
 ).filter((group) => group.length > 1);
 
+const sameLastNameGroups = Object.values(
+  payload.players.reduce((groups, player) => {
+    const lastName = normalizedLastName(player.player);
+    const team = normalizeDuplicateTeam(player.currentTeam);
+    if (!lastName || !team) return groups;
+    const key = `${lastName}::${team}`;
+    groups[key] ??= [];
+    groups[key].push({
+      sourceRow: player.sourceRow,
+      player: player.player,
+      currentTeam: player.currentTeam,
+      normalizedTeam: team,
+      projectedBbpr: player.projectedBbpr,
+      rank: player.rank,
+      needsReview: player.needsReview,
+    });
+    return groups;
+  }, {})
+)
+  .filter((group) => group.length > 1)
+  .sort((left, right) => {
+    const lastNameCompare = normalizedLastName(left[0]?.player).localeCompare(normalizedLastName(right[0]?.player));
+    if (lastNameCompare !== 0) return lastNameCompare;
+    return String(left[0]?.normalizedTeam ?? "").localeCompare(String(right[0]?.normalizedTeam ?? ""));
+  });
+
 const audit = {
   generatedAt: new Date().toISOString(),
   source: projectionsPath,
@@ -391,6 +432,7 @@ const audit = {
     ).length,
     pendingResearchFindingCount: researchFindings.length,
     duplicateGroupCount: duplicateGroups.length,
+    sameLastNameGroupCount: sameLastNameGroups.length,
     newcomerCompositionFindingCount: newcomerComposition.findings.length,
   },
   rules: [
@@ -400,12 +442,14 @@ const audit = {
     "Flag projected starters with low role/opportunity inputs.",
     "Flag players whose research notes contain high-sentiment markers but whose BBPR remains below the top-100 line.",
     "Flag duplicate normalized player/team records before they pollute the board.",
+    "Flag same-last-name/current-team clusters so partial-name duplicates can be reviewed before they pollute the board.",
     "Flag top-25/top-50/top-100 newcomer overloads so the board does not become a recruiting ranking.",
   ],
   newcomerComposition,
   projectedFindings,
   pendingResearchFindings: researchFindings,
   duplicateGroups,
+  sameLastNameGroups,
 };
 
 fs.writeFileSync(outputPath, `${JSON.stringify(audit, null, 2)}\n`);
@@ -417,4 +461,5 @@ console.log(`Projected findings: ${audit.summary.projectedFindingCount}`);
 console.log(`High-severity projected findings: ${audit.summary.highSeverityProjectedFindingCount}`);
 console.log(`Pending research findings: ${audit.summary.pendingResearchFindingCount}`);
 console.log(`Duplicate groups: ${audit.summary.duplicateGroupCount}`);
+console.log(`Same-last-name groups: ${audit.summary.sameLastNameGroupCount}`);
 console.log(`Output: ${outputPath}`);
