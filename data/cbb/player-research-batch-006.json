@@ -125,52 +125,6 @@
       ]
     },
     {
-      "sourceRow": 218,
-      "player": "JT Toppin",
-      "currentTeam": "Texas Tech",
-      "previousTeam": "Texas Tech",
-      "status": "researched_suggestion",
-      "historicalRating": 82.9325,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 86,
-        "offensiveBurden": 90,
-        "opportunityScore": 90.8,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 95,
-        "upsideToolsScore": 95,
-        "talentScore": 95,
-        "projectionScore": 82.11,
-        "projectedBbpr": 82.439,
-        "confidenceScore": 78,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Toppin has an All-America/NPOY-level profile when healthy, but injury uncertainty keeps the role and confidence below the top returners. The talent score remains elite while final BBPR stays near his historical anchor.",
-      "teamContext": {
-        "projectedLineup": "Texas Tech expects Toppin back, but injury timing creates early-season availability risk.",
-        "returningStars": "When available, Toppin is the clear frontcourt star and national-caliber player.",
-        "incomingStars": "Roster additions should not threaten his role if healthy.",
-        "positionCompetition": "Main constraint is health, not depth-chart competition.",
-        "starterEvidence": "returning All-America profile with injury caveat",
-        "roleCap": "Cap mid-90s until availability is clearer."
-      },
-      "evidence": [
-        {
-          "source": "Texas Tech Athletics",
-          "url": "https://texastech.com/news/2026/3/31/mens-basketball-toppin-earns-wooden-award-all-america-honors",
-          "notes": "Toppin earned Wooden Award All-America honors after averaging 21.8 points and 10.8 rebounds."
-        },
-        {
-          "source": "Card Chronicle",
-          "url": "https://www.cardchronicle.com/basketball/102998/tip-times-set-for-first-round-of-players-era-festival",
-          "notes": "Notes Toppin's return and ACL-related availability concern."
-        }
-      ]
-    },
-    {
       "sourceRow": 328,
       "player": "Teagan Moore",
       "currentTeam": "Western Kentucky",
@@ -498,38 +452,39 @@
       "currentTeam": "Louisville",
       "previousTeam": "Iowa",
       "status": "researched_suggestion",
-      "historicalRating": 70.4386,
+      "historicalRating": 74,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 86,
+        "projectedRole": 92,
+        "opportunityChange": 88,
         "offensiveBurden": 84,
-        "opportunityScore": 87.6,
+        "opportunityScore": 89.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
+        "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 75.56,
-        "projectedBbpr": 71.7189,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "talentScore": 79.2,
+        "projectionScore": 75.86,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 74.465
       },
-      "researchSummary": "Folgueiras is a strong transfer starter candidate for Louisville, but the score stays anchored to prior production because Louisville has several high-usage pieces and Flory Bidunga is the more obvious frontcourt star.",
+      "researchSummary": "Folgueiras was just below the top-100 line despite a productive forward profile and Louisville frontcourt opportunity. The corrected anchor keeps him in the high-major starter band.",
       "teamContext": {
         "projectedLineup": "Rothstein projects Folgueiras in Louisville's starting five.",
         "returningStars": "Louisville has multiple perimeter and frontcourt options.",
         "incomingStars": "Bidunga, Shelstad, Wooley, and Knox all create usage competition.",
         "positionCompetition": "Likely starter, but not a guaranteed primary offensive option.",
-        "starterEvidence": "projected lineup evidence",
-        "roleCap": "Low-90s role, with burden capped by roster strength."
+        "starterEvidence": "Folgueiras was just below the top-100 line despite a productive forward profile and Louisville frontcourt opportunity. The corrected anchor keeps him in the high-major starter band.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "FanDuel Research",
-          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
-          "notes": "Rothstein projects Folgueiras in Louisville's starting five alongside Flory Bidunga."
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Folgueiras with Louisville."
         }
       ]
     },

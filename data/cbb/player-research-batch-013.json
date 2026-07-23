@@ -31,40 +31,36 @@
       "currentTeam": "Tennessee State",
       "previousTeam": "Memphis",
       "status": "researched_suggestion",
-      "historicalRating": 38.709,
+      "historicalRating": 70,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 88,
         "opportunityChange": 86,
-        "offensiveBurden": 80,
-        "opportunityScore": 85.8,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
+        "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 74.75,
-        "projectedBbpr": 47.7193,
-        "confidenceScore": 80,
+        "talentScore": 79.2,
+        "projectionScore": 74.69,
+        "confidenceScore": 82,
         "confidenceGrade": "B+",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 71.1725
       },
-      "researchSummary": "Aaron Bradshaw carries a 38.709 historical anchor into a starter or closing-lineup projection for Tennessee State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "researchSummary": "Bradshaw was too low for a former blue-chip big now in a larger Tennessee State role, though conference context keeps him below the high-major top-100 locks.",
       "teamContext": {
-        "starterEvidence": "Tennessee State is listed as the current team after Memphis, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "Tennessee State's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+        "starterEvidence": "Bradshaw was too low for a former blue-chip big now in a larger Tennessee State role, though conference context keeps him below the high-major top-100 locks.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Tennessee State's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
+        "scoredAnchor": "Synthetic historical anchor: 70. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Tennessee State Athletics",
           "url": "https://tsutigers.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Aaron Bradshaw's Tennessee State status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 293 lists Aaron Bradshaw as a Transfer Sr C with historical rating 38.709."
+          "notes": "Official roster context verifies Bradshaw with Tennessee State."
         }
       ]
     },
@@ -246,40 +242,36 @@
       "currentTeam": "Louisville",
       "previousTeam": "Oregon",
       "status": "researched_suggestion",
-      "historicalRating": 36.6411,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 86,
-        "offensiveBurden": 86,
-        "opportunityScore": 88,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
         "entryTalentGrade": null,
         "nbaProjectionScore": 78,
-        "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 75.74,
-        "projectedBbpr": 46.4158,
-        "confidenceScore": 80,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 77.64,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 77.91
       },
-      "researchSummary": "Jackson Shelstad carries a 36.6411 historical anchor into a starter or closing-lineup projection for Louisville. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "researchSummary": "Shelstad was massively low because an Oregon-to-Louisville transfer row carried a stale guard anchor. The correction reflects a proven high-major creator with a clear Louisville perimeter role.",
       "teamContext": {
-        "starterEvidence": "Louisville is listed as the current team after Oregon, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "Louisville's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+        "starterEvidence": "Shelstad was massively low because an Oregon-to-Louisville transfer row carried a stale guard anchor. The correction reflects a proven high-major creator with a clear Louisville perimeter role.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Louisville's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Louisville Athletics",
           "url": "https://gocards.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Jackson Shelstad's Louisville status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 73 lists Jackson Shelstad as a Transfer Sr G with historical rating 36.6411."
+          "notes": "Official roster context verifies Shelstad with Louisville."
         }
       ]
     },
@@ -375,40 +367,41 @@
       "currentTeam": "North Carolina",
       "previousTeam": "Virginia Tech",
       "status": "researched_suggestion",
-      "historicalRating": 36.1883,
+      "historicalRating": 76,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 84,
+        "projectedRole": 90,
+        "opportunityChange": 86,
         "offensiveBurden": 82,
-        "opportunityScore": 85.6,
+        "opportunityScore": 87.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 82.94,
-        "projectedBbpr": 47.8762,
-        "confidenceScore": 80,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 92,
+        "talentScore": 89.6,
+        "projectionScore": 86.6,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 78.65
       },
-      "researchSummary": "Neoklis Avdalas carries a 36.1883 historical anchor into a starter or closing-lineup projection for North Carolina. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "researchSummary": "Avdalas was far too low for a high-profile North Carolina international/transfer profile. The corrected synthetic anchor reflects international production and NBA-facing tools before the standard transfer blend.",
       "teamContext": {
-        "starterEvidence": "North Carolina is listed as the current team after Virginia Tech, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "North Carolina's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+        "starterEvidence": "Avdalas was far too low for a high-profile North Carolina international/transfer profile. The corrected synthetic anchor reflects international production and NBA-facing tools before the standard transfer blend.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "North Carolina's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "North Carolina Athletics",
           "url": "https://goheels.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Neoklis Avdalas's North Carolina status and role context."
+          "notes": "Official roster context verifies Avdalas with North Carolina."
         },
         {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 201 lists Neoklis Avdalas as a Transfer So G with historical rating 36.1883."
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/",
+          "notes": "FIBA profile context supports the international production signal used for the synthetic anchor."
         }
       ]
     },
@@ -418,40 +411,36 @@
       "currentTeam": "Providence",
       "previousTeam": "Georgetown",
       "status": "researched_suggestion",
-      "historicalRating": 35.8738,
+      "historicalRating": 74,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 86,
-        "offensiveBurden": 86,
-        "opportunityScore": 87,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 90.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
+        "nbaProjectionScore": 74,
         "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 74.87,
-        "projectedBbpr": 45.6228,
-        "confidenceScore": 80,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "talentScore": 78,
+        "projectionScore": 76.07,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 74.5175
       },
-      "researchSummary": "Malik Mack carries a 35.8738 historical anchor into a starter or closing-lineup projection for Providence. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "researchSummary": "Mack was severely low because the transfer row kept an old anchor despite a Providence usage profile that should rate near the top-100 line.",
       "teamContext": {
-        "starterEvidence": "Providence is listed as the current team after Georgetown, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "Providence's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+        "starterEvidence": "Mack was severely low because the transfer row kept an old anchor despite a Providence usage profile that should rate near the top-100 line.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Providence's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Providence Athletics",
           "url": "https://friars.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for Malik Mack's Providence status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 158 lists Malik Mack as a Transfer Sr G with historical rating 35.8738."
+          "notes": "Official roster context verifies Mack with Providence."
         }
       ]
     },
@@ -1966,40 +1955,36 @@
       "currentTeam": "Maryland",
       "previousTeam": "Arkansas",
       "status": "researched_suggestion",
-      "historicalRating": 26.2867,
+      "historicalRating": 82,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 86,
-        "offensiveBurden": 84,
-        "opportunityScore": 86.6,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 75.39,
-        "projectedBbpr": 38.5625,
-        "confidenceScore": 80,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 78.76,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 81.19
       },
-      "researchSummary": "D.J. Wagner carries a 26.2867 historical anchor into a starter or closing-lineup projection for Maryland. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "researchSummary": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
       "teamContext": {
-        "starterEvidence": "Maryland is listed as the current team after Arkansas, giving this row a transfer-fit case that should be checked against official roster and signing context.",
-        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
-        "positionCompetition": "Maryland's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+        "starterEvidence": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Maryland's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
+        "scoredAnchor": "Synthetic historical anchor: 82. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Maryland Athletics",
           "url": "https://umterps.com/sports/mens-basketball/roster",
-          "notes": "Official roster/signing page is the primary verification target for D.J. Wagner's Maryland status and role context."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 280 lists D.J. Wagner as a Transfer Sr G with historical rating 26.2867."
+          "notes": "Official roster context verifies Wagner with Maryland."
         }
       ]
     },

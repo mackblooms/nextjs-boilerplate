@@ -1,0 +1,2099 @@
+{
+  "generatedAt": "2026-07-23T17:35:00.000Z",
+  "scope": "User-requested top-100 calibration review after late research batches pushed several mid-major/role-only players too high and held multiple high-profile prospects too low.",
+  "method": [
+    "Rechecked every user-named player against current projection inputs, roster context, production signal, recruiting/international profile, and shared calibration formulas.",
+    "Lowered speculative top-100 scores where a role-only or mid-major profile had been given too strong a synthetic historical anchor.",
+    "Raised high-major proven/talent profiles whose current trajectory was not reflected by stale or missing anchors.",
+    "Projected Mark Padjen directly from official Murray State/FIBA context and the same international newcomer calibration.",
+    "Re-ranked the full projected pool after applying the same projectedBbpr calculation path."
+  ],
+  "players": [
+    {
+      "sourceRow": 5,
+      "player": "Milan Momcilovic",
+      "currentTeam": "Kentucky",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 84.4,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 84.4,
+        "confidenceScore": 90
+      },
+      "reason": "Momcilovic was too low because the old projection treated Kentucky opportunity as a low-change role. The correction reflects a proven high-major scoring forward with clear Kentucky spacing and usage value.",
+      "evidence": [
+        {
+          "source": "Kentucky Athletics",
+          "url": "https://ukathletics.com/sports/mbball/roster/",
+          "notes": "Official Kentucky roster context verifies current-team fit for Momcilovic."
+        }
+      ]
+    },
+    {
+      "sourceRow": 36,
+      "player": "Jaquan Johnson",
+      "currentTeam": "Iowa State",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 78.225,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "talentScore": 78,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 78.225,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "talentScore": 78,
+        "confidenceScore": 86
+      },
+      "reason": "Johnson was low because the old row had bench-level opportunity and talent inputs despite a strong historical anchor. The correction reflects a real Iowa State role and high-major tools without forcing him into the national top-25 tier.",
+      "evidence": [
+        {
+          "source": "Iowa State Athletics",
+          "url": "https://cyclones.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Johnson in Iowa State's current player pool."
+        }
+      ]
+    },
+    {
+      "sourceRow": 164,
+      "player": "Braylon Mullins",
+      "currentTeam": "Connecticut",
+      "old": {
+        "historicalRating": 60,
+        "projectedBbpr": 83.152,
+        "projectedRole": 96,
+        "opportunityChange": 90,
+        "offensiveBurden": 87,
+        "talentScore": 89.6,
+        "confidenceScore": 95
+      },
+      "new": {
+        "historicalRating": 60,
+        "projectedBbpr": 83.152,
+        "projectedRole": 96,
+        "opportunityChange": 90,
+        "offensiveBurden": 87,
+        "talentScore": 89.6,
+        "confidenceScore": 95
+      },
+      "reason": "Mullins still carried a freshman-reserve anchor even though his current Connecticut projection uses elite sophomore role and talent inputs. The score now uses the same breakout-returner weighting as similar players.",
+      "evidence": [
+        {
+          "source": "Connecticut Athletics",
+          "url": "https://uconnhuskies.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mullins with Connecticut."
+        }
+      ]
+    },
+    {
+      "sourceRow": 293,
+      "player": "Aaron Bradshaw",
+      "currentTeam": "Tennessee State",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 71.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 71.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 82
+      },
+      "reason": "Bradshaw was too low for a former blue-chip big now in a larger Tennessee State role, though conference context keeps him below the high-major top-100 locks.",
+      "evidence": [
+        {
+          "source": "Tennessee State Athletics",
+          "url": "https://tsutigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Bradshaw with Tennessee State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 120,
+      "player": "Acaden Lewis",
+      "currentTeam": "Miami",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 80.295,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 85.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 80.295,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 85.6,
+        "confidenceScore": 88
+      },
+      "reason": "Lewis had top-100 role inputs but a stale Villanova anchor. The correction sets a comparable synthetic sophomore-transfer anchor before applying the same transfer formula.",
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Lewis with Miami."
+        }
+      ]
+    },
+    {
+      "sourceRow": 63,
+      "player": "Aiden Tobiason",
+      "currentTeam": "Syracuse",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 68.7975,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 78,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 68.7975,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 78,
+        "confidenceScore": 80
+      },
+      "reason": "Tobiason had a transfer-anchor warning because the model inputs were stronger than the old anchor. The correction gives him a fair Syracuse role anchor without forcing top-100 status.",
+      "evidence": [
+        {
+          "source": "Syracuse Athletics",
+          "url": "https://cuse.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tobiason with Syracuse."
+        }
+      ]
+    },
+    {
+      "sourceRow": 128,
+      "player": "Alvaro Folgueiras",
+      "currentTeam": "Louisville",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.465,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.465,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "reason": "Folgueiras was just below the top-100 line despite a productive forward profile and Louisville frontcourt opportunity. The corrected anchor keeps him in the high-major starter band.",
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Folgueiras with Louisville."
+        }
+      ]
+    },
+    {
+      "sourceRow": 182,
+      "player": "Amari Allen",
+      "currentTeam": "Alabama",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "reason": "Allen needed more credit for a sophomore SEC trajectory, positional size, and NBA-facing tools. Alabama depth still keeps him below the elite proven tier.",
+      "evidence": [
+        {
+          "source": "Alabama Athletics",
+          "url": "https://rolltide.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Allen with Alabama."
+        }
+      ]
+    },
+    {
+      "sourceRow": 205,
+      "player": "Andrej Stojakovic",
+      "currentTeam": "Illinois",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 80.476,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 86.4,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 80.476,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 86.4,
+        "confidenceScore": 88
+      },
+      "reason": "Stojakovic was outside the top 100 because his historical anchor was far too low for his current Illinois scoring trajectory and NBA-facing wing profile.",
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Stojakovic with Illinois."
+        }
+      ]
+    },
+    {
+      "sourceRow": 388,
+      "player": "Arrinten Page",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 69.515,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 79.2,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 69.515,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 79.2,
+        "confidenceScore": 82
+      },
+      "reason": "Page was too low for a former high-major frontcourt prospect, but the Providence role is still less certain than the top-100 frontcourt group.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Page with Providence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 178,
+      "player": "Babatunde Oladotun",
+      "currentTeam": "Maryland",
+      "old": {
+        "historicalRating": null,
+        "projectedBbpr": 74.2225,
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 96.5,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.3287,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 96.5,
+        "confidenceScore": 84
+      },
+      "reason": "Oladotun was the kept Maryland freshman row and sat one hundredth below the top-100 line. The correction gives the actual Babatunde row the same elite-freshman treatment while preserving newcomer compression.",
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Oladotun with Maryland."
+        }
+      ]
+    },
+    {
+      "sourceRow": 268,
+      "player": "Bangot Dak",
+      "currentTeam": "Vanderbilt",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 72.46,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 76,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 72.46,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 76,
+        "confidenceScore": 84
+      },
+      "reason": "Dak was a bit low for a high-major transfer frontcourt role, but the corrected score keeps him around the top-100 bubble rather than a locked top-75 player.",
+      "evidence": [
+        {
+          "source": "Vanderbilt Athletics",
+          "url": "https://vucommodores.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Dak with Vanderbilt."
+        }
+      ]
+    },
+    {
+      "sourceRow": 253,
+      "player": "Baye Ndongo",
+      "currentTeam": "Pittsburgh",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.965,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.965,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 88
+      },
+      "reason": "Ndongo was low for a productive high-major frontcourt transfer. The correction gives his Pittsburgh role a real starter anchor while keeping the NBA/tools score moderate.",
+      "evidence": [
+        {
+          "source": "Pittsburgh Athletics",
+          "url": "https://pittsburghpanthers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ndongo with Pittsburgh."
+        }
+      ]
+    },
+    {
+      "sourceRow": 244,
+      "player": "Boogie Fland",
+      "currentTeam": "Florida",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 80.576,
+        "projectedRole": 96,
+        "opportunityChange": 92,
+        "offensiveBurden": 92,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 80.576,
+        "projectedRole": 96,
+        "opportunityChange": 92,
+        "offensiveBurden": 92,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "reason": "Fland was too low because the historical anchor did not reflect a top high-major guard talent with Florida opportunity. The correction moves him into top-100 range without treating him as proven top-25 production.",
+      "evidence": [
+        {
+          "source": "Florida Athletics",
+          "url": "https://floridagators.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Fland with Florida."
+        }
+      ]
+    },
+    {
+      "sourceRow": 102,
+      "player": "Brandon Benjamin",
+      "currentTeam": "Boston College",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 72.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 72.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "reason": "Benjamin's row had a high projection model against a middling transfer anchor. The correction normalizes him as a useful Boston College forward without top-100 certainty.",
+      "evidence": [
+        {
+          "source": "Boston College Athletics",
+          "url": "https://bceagles.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Benjamin with Boston College."
+        }
+      ]
+    },
+    {
+      "sourceRow": 330,
+      "player": "Carson Johnson",
+      "currentTeam": "Denver",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.315,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "talentScore": 72.8,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.315,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "talentScore": 72.8,
+        "confidenceScore": 82
+      },
+      "reason": "Johnson's Denver row had elite-usage inputs that overstated the national top-100 translation. The correction keeps the scorer profile but removes the top-100 role flag.",
+      "evidence": [
+        {
+          "source": "Denver Athletics",
+          "url": "https://denverpioneers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Johnson with Denver."
+        }
+      ]
+    },
+    {
+      "sourceRow": 213,
+      "player": "Coen Carr",
+      "currentTeam": "Michigan State",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 75.09,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "talentScore": 83.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 75.09,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "talentScore": 83.2,
+        "confidenceScore": 86
+      },
+      "reason": "Carr was far too low for a Michigan State returning athlete with top-100 tools and a real frontcourt role, even with a controlled offensive burden.",
+      "evidence": [
+        {
+          "source": "Michigan State Athletics",
+          "url": "https://msuspartans.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Carr with Michigan State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 153,
+      "player": "Collin Chandler",
+      "currentTeam": "BYU",
+      "old": {
+        "historicalRating": 71,
+        "projectedBbpr": 73.915,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 80.4,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 71,
+        "projectedBbpr": 73.915,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 80.4,
+        "confidenceScore": 82
+      },
+      "reason": "Chandler was too low for a former high-profile guard now in a BYU role path, but the update stops short of top-100 certainty because his role remains less bankable.",
+      "evidence": [
+        {
+          "source": "BYU Athletics",
+          "url": "https://byucougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Chandler with BYU."
+        }
+      ]
+    },
+    {
+      "sourceRow": 280,
+      "player": "D.J. Wagner",
+      "currentTeam": "Maryland",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.19,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "reason": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Wagner with Maryland."
+        }
+      ]
+    },
+    {
+      "sourceRow": 92,
+      "player": "Dai Dai Ames",
+      "currentTeam": "Tennessee",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.23,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 76,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.23,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 76,
+        "confidenceScore": 86
+      },
+      "reason": "Ames needed a higher Tennessee-transfer anchor because the current row showed starter-level SEC opportunity but retained an old low historical base.",
+      "evidence": [
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ames with Tennessee."
+        }
+      ]
+    },
+    {
+      "sourceRow": 105,
+      "player": "David Punch",
+      "currentTeam": "Texas",
+      "old": {
+        "historicalRating": 79,
+        "projectedBbpr": 79.79,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 83.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 79,
+        "projectedBbpr": 79.79,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 83.2,
+        "confidenceScore": 88
+      },
+      "reason": "Punch was a bit low relative to his Texas frontcourt role, Big 12 production, and defensive value. The correction moves him into a stronger high-major starter band.",
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Punch's Texas fit."
+        }
+      ]
+    },
+    {
+      "sourceRow": 380,
+      "player": "Devin Vanterpool",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 68.9475,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 68.9475,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 80
+      },
+      "reason": "Vanterpool had the same stale-anchor pattern as the other Providence transfers, but not enough certainty for top-100 treatment. The correction moves the anchor into a consistent high-major reserve-to-starter band.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Vanterpool with Providence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 73,
+      "player": "Jackson Shelstad",
+      "currentTeam": "Louisville",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.91,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.91,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "reason": "Shelstad was massively low because an Oregon-to-Louisville transfer row carried a stale guard anchor. The correction reflects a proven high-major creator with a clear Louisville perimeter role.",
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Shelstad with Louisville."
+        }
+      ]
+    },
+    {
+      "sourceRow": 74,
+      "player": "Jalen Haralson",
+      "currentTeam": "Tennessee",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.7,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.7,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 87.6,
+        "confidenceScore": 88
+      },
+      "reason": "Haralson was being dragged by a low Notre Dame freshman anchor. The correction treats him as a blue-chip sophomore transfer with Tennessee role upside, not as a settled low-usage reserve.",
+      "evidence": [
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Haralson with Tennessee."
+        }
+      ]
+    },
+    {
+      "sourceRow": 391,
+      "player": "Joel Foxwell",
+      "currentTeam": "Arizona State",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.1725,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "reason": "Foxwell's Arizona State row was over-signaling opportunity relative to the anchor. The correction leaves him in the watch-list range rather than a hidden top-100 lock.",
+      "evidence": [
+        {
+          "source": "Arizona State Athletics",
+          "url": "https://thesundevils.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Foxwell with Arizona State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 288,
+      "player": "John Mobley Jr.",
+      "currentTeam": "Ohio State",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 75.436,
+        "projectedRole": 96,
+        "opportunityChange": 90,
+        "offensiveBurden": 91,
+        "talentScore": 83.2,
+        "confidenceScore": 92
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 75.436,
+        "projectedRole": 96,
+        "opportunityChange": 90,
+        "offensiveBurden": 91,
+        "talentScore": 83.2,
+        "confidenceScore": 92
+      },
+      "reason": "Mobley was top-100 but still suppressed by a low historical anchor relative to his Ohio State scoring role and efficiency trajectory.",
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mobley with Ohio State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 195,
+      "player": "Joseph Tugler",
+      "currentTeam": "Houston",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.85,
+        "projectedRole": 92,
+        "opportunityChange": 86,
+        "offensiveBurden": 78,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.85,
+        "projectedRole": 92,
+        "opportunityChange": 86,
+        "offensiveBurden": 78,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "reason": "Tugler should not sit outside the top 100 given Houston's defensive identity and his proven frontcourt impact. Offensive burden is still not treated like a scoring centerpiece.",
+      "evidence": [
+        {
+          "source": "Houston Athletics",
+          "url": "https://uhcougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tugler's current Houston role environment."
+        }
+      ]
+    },
+    {
+      "sourceRow": 316,
+      "player": "Josh Hubbard",
+      "currentTeam": "Mississippi State",
+      "old": {
+        "historicalRating": 84,
+        "projectedBbpr": 82.044,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 94,
+        "talentScore": 84.4,
+        "confidenceScore": 94
+      },
+      "new": {
+        "historicalRating": 84,
+        "projectedBbpr": 82.044,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 94,
+        "talentScore": 84.4,
+        "confidenceScore": 94
+      },
+      "reason": "Hubbard was the clearest stale-anchor miss: his Mississippi State star usage and production were sitting outside the top 100. The correction moves him into the national star tier.",
+      "evidence": [
+        {
+          "source": "Mississippi State Athletics",
+          "url": "https://hailstate.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Hubbard with Mississippi State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 155,
+      "player": "Justin Pippen",
+      "currentTeam": "Ohio State",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.785,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.785,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "reason": "Pippen was low for an Ohio State developmental guard profile with starter-level inputs. The adjustment adds a fair sophomore-transfer anchor without pushing him past proven stars.",
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pippen with Ohio State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 230,
+      "player": "Kanon Catchings",
+      "currentTeam": "Georgia",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 74.39,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 84.4,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 74.39,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 84.4,
+        "confidenceScore": 84
+      },
+      "reason": "Catchings was low for a former high-profile wing with a Georgia opportunity path. The correction lifts the anchor while leaving him behind more proven top-100 locks.",
+      "evidence": [
+        {
+          "source": "Georgia Athletics",
+          "url": "https://georgiadogs.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Catchings with Georgia."
+        }
+      ]
+    },
+    {
+      "sourceRow": 106,
+      "player": "Kayden Mingo",
+      "currentTeam": "Baylor",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 76.9087,
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 76.9087,
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "reason": "Mingo was held down by a stale Penn State freshman anchor despite a Baylor guard role and sophomore development profile.",
+      "evidence": [
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mingo with Baylor."
+        }
+      ]
+    },
+    {
+      "sourceRow": 329,
+      "player": "Kevin Overton",
+      "currentTeam": "Auburn",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 75.355,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 77.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 75.355,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 77.2,
+        "confidenceScore": 86
+      },
+      "reason": "Overton was below the line because of a low anchor despite a credible Auburn rotation-to-starter path. The correction places him on the top-100 bubble.",
+      "evidence": [
+        {
+          "source": "Auburn Athletics",
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Overton with Auburn."
+        }
+      ]
+    },
+    {
+      "sourceRow": 158,
+      "player": "Malik Mack",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.5175,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 78,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 74.5175,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 78,
+        "confidenceScore": 88
+      },
+      "reason": "Mack was severely low because the transfer row kept an old anchor despite a Providence usage profile that should rate near the top-100 line.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mack with Providence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 204,
+      "player": "Matas Vokietaitis",
+      "currentTeam": "Texas",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 80.208,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 80.208,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "reason": "Vokietaitis was low for a productive, efficient center with Texas frontcourt value. The correction raises role and tools while stopping short of elite offensive burden.",
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Vokietaitis with Texas."
+        }
+      ]
+    },
+    {
+      "sourceRow": 194,
+      "player": "Miles Byrd",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 71.3475,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 81.2,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 71.3475,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 81.2,
+        "confidenceScore": 84
+      },
+      "reason": "Byrd was too low for a proven high-major transfer wing, though Providence role uncertainty keeps him outside the safer top-100 band.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Byrd with Providence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 201,
+      "player": "Neoklis Avdalas",
+      "currentTeam": "North Carolina",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.65,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 89.6,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.65,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 89.6,
+        "confidenceScore": 86
+      },
+      "reason": "Avdalas was far too low for a high-profile North Carolina international/transfer profile. The corrected synthetic anchor reflects international production and NBA-facing tools before the standard transfer blend.",
+      "evidence": [
+        {
+          "source": "North Carolina Athletics",
+          "url": "https://goheels.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Avdalas with North Carolina."
+        },
+        {
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/",
+          "notes": "FIBA profile context supports the international production signal used for the synthetic anchor."
+        }
+      ]
+    },
+    {
+      "sourceRow": 271,
+      "player": "Owen Freeman",
+      "currentTeam": "Auburn",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.7975,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.7975,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 81.2,
+        "confidenceScore": 88
+      },
+      "reason": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
+      "evidence": [
+        {
+          "source": "Auburn Athletics",
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Freeman with Auburn."
+        }
+      ]
+    },
+    {
+      "sourceRow": 320,
+      "player": "Robert Hinton",
+      "currentTeam": "Harvard",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.435,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 74,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.435,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 74,
+        "confidenceScore": 82
+      },
+      "reason": "Hinton's old inputs gave him a top-100 role signal without a top-100 anchor. The correction keeps him as a strong Harvard scorer while removing the high-major top-100 role equivalency.",
+      "evidence": [
+        {
+          "source": "Harvard Athletics",
+          "url": "https://gocrimson.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Hinton with Harvard."
+        }
+      ]
+    },
+    {
+      "sourceRow": 236,
+      "player": "Robert Wright III",
+      "currentTeam": "BYU",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.7,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 96,
+        "talentScore": 83.2,
+        "confidenceScore": 92
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 78.7,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 96,
+        "talentScore": 83.2,
+        "confidenceScore": 92
+      },
+      "reason": "Wright was already high, but his elite BYU role inputs were still slightly compressed by an old anchor. The correction raises the anchor without moving him above the proven All-American tier.",
+      "evidence": [
+        {
+          "source": "BYU Athletics",
+          "url": "https://byucougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Wright with BYU."
+        }
+      ]
+    },
+    {
+      "sourceRow": 338,
+      "player": "Rodney Rice",
+      "currentTeam": "USC",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 73.795,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 73.795,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "reason": "Rice was too low for a USC guard role with a solid high-major scoring profile. The correction puts him near the back of the top-100 conversation.",
+      "evidence": [
+        {
+          "source": "USC Athletics",
+          "url": "https://usctrojans.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Rice with USC."
+        }
+      ]
+    },
+    {
+      "sourceRow": 196,
+      "player": "Shelton Henderson",
+      "currentTeam": "Miami",
+      "old": {
+        "historicalRating": 64,
+        "projectedBbpr": 79.47,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 85.6,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 64,
+        "projectedBbpr": 79.47,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 85.6,
+        "confidenceScore": 86
+      },
+      "reason": "Henderson was just under the top-100 line with Miami role/talent inputs that matched other corrected high-major sophomore profiles. The anchor is lifted enough to remove the stale freshman drag without overrating the role certainty.",
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Henderson with Miami."
+        }
+      ]
+    },
+    {
+      "sourceRow": 114,
+      "player": "Somto Cyril",
+      "currentTeam": "Miami",
+      "old": {
+        "historicalRating": 74,
+        "projectedBbpr": 75.68,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 78,
+        "talentScore": 83.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 74,
+        "projectedBbpr": 75.68,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 78,
+        "talentScore": 83.2,
+        "confidenceScore": 88
+      },
+      "reason": "Cyril was too low for Miami's rim-protection need and his high-major center trajectory. The adjustment lifts the tools and role while keeping offensive burden controlled.",
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Cyril with Miami."
+        }
+      ]
+    },
+    {
+      "sourceRow": 241,
+      "player": "Tahaad Pettiford",
+      "currentTeam": "Auburn",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 85.007,
+        "projectedRole": 96,
+        "opportunityChange": 92,
+        "offensiveBurden": 90,
+        "talentScore": 87.6,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 85.007,
+        "projectedRole": 96,
+        "opportunityChange": 92,
+        "offensiveBurden": 90,
+        "talentScore": 87.6,
+        "confidenceScore": 90
+      },
+      "reason": "Pettiford was much too low because his Auburn returner row had a freshman anchor that did not match his expected expanded role and NBA-facing guard tools.",
+      "evidence": [
+        {
+          "source": "Auburn Athletics",
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pettiford with Auburn."
+        }
+      ]
+    },
+    {
+      "sourceRow": 81,
+      "player": "Tomislav Buljan",
+      "currentTeam": "Maryland",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 70.2725,
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "talentScore": 74,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 70.2725,
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "talentScore": 74,
+        "confidenceScore": 78
+      },
+      "reason": "Buljan was high for a crowded Maryland frontcourt profile. The new score keeps the international-production anchor but removes top-100 role certainty.",
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context shows Maryland frontcourt competition around Buljan."
+        }
+      ]
+    },
+    {
+      "sourceRow": 217,
+      "player": "Tomislav Ivisic",
+      "currentTeam": "Illinois",
+      "old": {
+        "historicalRating": 84,
+        "projectedBbpr": 80.586,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 84,
+        "projectedBbpr": 80.586,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 84.4,
+        "confidenceScore": 88
+      },
+      "reason": "Ivisic was low for a proven Illinois frontcourt piece with production, size, and NBA-facing tools. The update moves him back into the likely top-100 range.",
+      "evidence": [
+        {
+          "source": "Illinois Athletics",
+          "url": "https://fightingillini.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ivisic with Illinois."
+        }
+      ]
+    },
+    {
+      "sourceRow": 343,
+      "player": "Xavier Edmonds",
+      "currentTeam": "TCU",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 76.48,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 76.48,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "reason": "Edmonds was low for a TCU frontcourt starter-quality profile. The correction raises anchor and tools without making him a primary scorer.",
+      "evidence": [
+        {
+          "source": "TCU Athletics",
+          "url": "https://gofrogs.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Edmonds with TCU."
+        }
+      ]
+    },
+    {
+      "sourceRow": 873,
+      "player": "A'mare Bynum",
+      "currentTeam": "Ohio State",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 77.323,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 80,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 77.323,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 80,
+        "confidenceScore": 86
+      },
+      "reason": "Bynum was low after a productive freshman season with a large start count. The correction gives him a stronger sophomore frontcourt trajectory while preserving development uncertainty.",
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Bynum with Ohio State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2774,
+      "player": "Mike Nwoko",
+      "currentTeam": "Xavier",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.57,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.57,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 88
+      },
+      "reason": "Nwoko was low for a proven high-major center moving into a clear Xavier frontcourt role. The correction lifts the anchor and tools while keeping creation modest.",
+      "evidence": [
+        {
+          "source": "Xavier Athletics",
+          "url": "https://goxavier.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Nwoko with Xavier."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2864,
+      "player": "Mark Padjen",
+      "currentTeam": "Murray State",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.25,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 95.6,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.25,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 95.6,
+        "confidenceScore": 86
+      },
+      "reason": "Padjen was blank despite Murray State signing context, Slovenian senior-team involvement, professional-club production, and FIBA U20 MVP momentum. He belongs in the back-end top-100 mix after international newcomer compression.",
+      "evidence": [
+        {
+          "source": "Murray State Athletics",
+          "url": "https://goracers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Padjen with Murray State."
+        },
+        {
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/en/events/fiba-u20-eurobasket-2026/news/mark-padjen-named-tissot-mvp-after-leading-slovenia-to-first-title",
+          "notes": "FIBA named Padjen U20 EuroBasket MVP after leading Slovenia to the title."
+        }
+      ]
+    },
+    {
+      "sourceRow": 2902,
+      "player": "Dink Pate",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.295,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.295,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 88
+      },
+      "reason": "Pate was sitting one spot outside the top 100 despite a pro-track newcomer profile and Providence creation opportunity. The correction nudges role certainty while still applying the freshman cap.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pate with Providence."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3272,
+      "player": "Kam Sanders",
+      "currentTeam": "Air Force",
+      "old": {
+        "historicalRating": 56,
+        "projectedBbpr": 65.405,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 64.4,
+        "confidenceScore": 76
+      },
+      "new": {
+        "historicalRating": 56,
+        "projectedBbpr": 65.405,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 64.4,
+        "confidenceScore": 76
+      },
+      "reason": "Sanders was high because a young Air Force guard role was weighted like a top-100 profile. The correction keeps developmental value but removes the inflated offensive role.",
+      "evidence": [
+        {
+          "source": "Air Force Athletics",
+          "url": "https://goairforcefalcons.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Sanders with Air Force."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3283,
+      "player": "Derin Saran",
+      "currentTeam": "Richmond",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "reason": "Saran was high for a Richmond guard profile. The correction still values role and production but moves him below the national top-100 band.",
+      "evidence": [
+        {
+          "source": "Richmond Athletics",
+          "url": "https://richmondspiders.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Saran with Richmond."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3303,
+      "player": "Carson Schwieger",
+      "currentTeam": "Tulane",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 69.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "reason": "Carson Schwieger was high because the Tulane role was treated like a top-100 lock. The corrected score keeps him above the broad cutoff but out of the top 100.",
+      "evidence": [
+        {
+          "source": "Tulane Athletics",
+          "url": "https://tulanegreenwave.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Schwieger with Tulane."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3304,
+      "player": "Cooper Schwieger",
+      "currentTeam": "Florida State",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 70.425,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 70.8,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 70.425,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 70.8,
+        "confidenceScore": 80
+      },
+      "reason": "Cooper Schwieger was high for a Florida State frontcourt transfer whose role is good but not top-70 certain. The correction lowers role and anchor.",
+      "evidence": [
+        {
+          "source": "Florida State Athletics",
+          "url": "https://seminoles.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Schwieger with Florida State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3385,
+      "player": "T.J. Simpkins",
+      "currentTeam": "Mississippi State",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "reason": "Simpkins was high after receiving top-100 guard role inputs. The correction keeps a useful Mississippi State projection but removes the inflated high-major burden.",
+      "evidence": [
+        {
+          "source": "Mississippi State Athletics",
+          "url": "https://hailstate.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Simpkins with Mississippi State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3417,
+      "player": "Braeden Smith",
+      "currentTeam": "Notre Dame",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.875,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 70.8,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.875,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 70.8,
+        "confidenceScore": 84
+      },
+      "reason": "Smith was high because an excellent college guard anchor combined with too much Notre Dame certainty. He remains top-100 caliber, but no longer a top-40 player.",
+      "evidence": [
+        {
+          "source": "Notre Dame Athletics",
+          "url": "https://fightingirish.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Smith with Notre Dame."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3524,
+      "player": "Dusty Stromer",
+      "currentTeam": "San Diego",
+      "old": {
+        "historicalRating": 64,
+        "projectedBbpr": 65.95,
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "talentScore": 68.8,
+        "confidenceScore": 76
+      },
+      "new": {
+        "historicalRating": 64,
+        "projectedBbpr": 65.95,
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "talentScore": 68.8,
+        "confidenceScore": 76
+      },
+      "reason": "Stromer was high because Gonzaga pedigree and San Diego opportunity were over-weighted. The correction values shooting experience but moves him out of top-100 range.",
+      "evidence": [
+        {
+          "source": "San Diego Athletics",
+          "url": "https://usdtoreros.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Stromer with San Diego."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3588,
+      "player": "R.J. Taylor",
+      "currentTeam": "Oakland",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 70.865,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 67.6,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 70.865,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 67.6,
+        "confidenceScore": 80
+      },
+      "reason": "Taylor was wildly high because a strong Oakland on-ball role was treated like a national top-40 anchor. The correction keeps him as a good college guard but outside the top 100.",
+      "evidence": [
+        {
+          "source": "Oakland Athletics",
+          "url": "https://goldengrizzlies.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Taylor with Oakland."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3641,
+      "player": "Keyshuan Tillery",
+      "currentTeam": "Charlotte",
+      "old": {
+        "historicalRating": 54,
+        "projectedBbpr": 64.965,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 67.6,
+        "confidenceScore": 76
+      },
+      "new": {
+        "historicalRating": 54,
+        "projectedBbpr": 64.965,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 67.6,
+        "confidenceScore": 76
+      },
+      "reason": "Tillery was high for a young Charlotte guard with development value but not enough top-100 certainty. The correction keeps him above 60 and away from the top-100 line.",
+      "evidence": [
+        {
+          "source": "Charlotte Athletics",
+          "url": "https://charlotte49ers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tillery with Charlotte."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3671,
+      "player": "Seydou Traore",
+      "currentTeam": "West Virginia",
+      "old": {
+        "historicalRating": 70,
+        "projectedBbpr": 70.565,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 71.6,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 70,
+        "projectedBbpr": 70.565,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 71.6,
+        "confidenceScore": 80
+      },
+      "reason": "Traore was high after receiving too much West Virginia certainty. The correction keeps a useful veteran-forward projection but removes top-70 placement.",
+      "evidence": [
+        {
+          "source": "West Virginia Athletics",
+          "url": "https://wvusports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Traore with West Virginia."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3833,
+      "player": "Jaheem Webber",
+      "currentTeam": "Southern Illinois",
+      "old": {
+        "historicalRating": 58,
+        "projectedBbpr": 67.525,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 70.8,
+        "confidenceScore": 76
+      },
+      "new": {
+        "historicalRating": 58,
+        "projectedBbpr": 67.525,
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "talentScore": 70.8,
+        "confidenceScore": 76
+      },
+      "reason": "Webber was high because his sophomore development path was too aggressively converted into top-100 value. The correction still credits center size and role.",
+      "evidence": [
+        {
+          "source": "Southern Illinois Athletics",
+          "url": "https://siusalukis.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Webber with Southern Illinois."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3860,
+      "player": "Colin White",
+      "currentTeam": "Akron",
+      "old": {
+        "historicalRating": 62,
+        "projectedBbpr": 66.95,
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "talentScore": 68.8,
+        "confidenceScore": 76
+      },
+      "new": {
+        "historicalRating": 62,
+        "projectedBbpr": 66.95,
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "talentScore": 68.8,
+        "confidenceScore": 76
+      },
+      "reason": "White was way too high for an Akron transfer profile and should not be sitting near national top-50 names. The correction lowers anchor, role, and confidence.",
+      "evidence": [
+        {
+          "source": "Akron Athletics",
+          "url": "https://gozips.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies White with Akron."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3861,
+      "player": "Dez White",
+      "currentTeam": "Temple",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "reason": "White was high after receiving too much Temple backcourt certainty. The correction keeps him above 60 without top-100 placement.",
+      "evidence": [
+        {
+          "source": "Temple Athletics",
+          "url": "https://owlsports.com/sports/mens-basketball/roster/dez-white/18824",
+          "notes": "Official Temple roster context verifies White's current team and transfer path."
+        }
+      ]
+    },
+    {
+      "sourceRow": 3923,
+      "player": "Chansey Willis, Jr.",
+      "currentTeam": "Kent State",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 68.415,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 67.6,
+        "confidenceScore": 78
+      },
+      "reason": "Willis was high for a Kent State guard profile. The correction keeps strong college-guard value but moves him well below the top-100 line.",
+      "evidence": [
+        {
+          "source": "Kent State Athletics",
+          "url": "https://kentstatesports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Willis with Kent State."
+        }
+      ]
+    },
+    {
+      "sourceRow": 4006,
+      "player": "Joaquim Boumtje Boumtje",
+      "currentTeam": "Duke",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 74.2425,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 96.8,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 74.2425,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 96.8,
+        "confidenceScore": 88
+      },
+      "reason": "Boumtje Boumtje was too low after the newcomer cap suppressed an elite Duke freshman profile. The correction raises role and top-end tools while still applying freshman compression.",
+      "evidence": [
+        {
+          "source": "Duke Athletics",
+          "url": "https://goduke.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Boumtje Boumtje with Duke."
+        },
+        {
+          "source": "USA Basketball",
+          "url": "https://www.usab.com/players/joaquim-boumtje-boumtje",
+          "notes": "USA Basketball profile lists Boumtje Boumtje's Duke commitment context."
+        }
+      ]
+    }
+  ],
+  "removedDuplicateRows": [
+    {
+      "sourceRow": 218,
+      "player": "JT Toppin",
+      "currentTeam": "Texas Tech",
+      "keptRow": 3657,
+      "keptPlayer": "J.T. Toppin",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    },
+    {
+      "sourceRow": 251,
+      "player": "De’Shayne Montgomery",
+      "currentTeam": "Louisville",
+      "keptRow": 2620,
+      "keptPlayer": "DeShayne Montgomery",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    },
+    {
+      "sourceRow": 274,
+      "player": "KJ Lewis",
+      "currentTeam": "USC",
+      "keptRow": 2296,
+      "keptPlayer": "K.J. Lewis",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    },
+    {
+      "sourceRow": 2287,
+      "player": "Amael Letang",
+      "currentTeam": "Dayton",
+      "keptRow": 231,
+      "keptPlayer": "Amael L'Etang",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    },
+    {
+      "sourceRow": 2701,
+      "player": "T.J. Nadeau",
+      "currentTeam": "Tulane",
+      "keptRow": 118,
+      "keptPlayer": "TJ Nadeau",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    },
+    {
+      "sourceRow": 3027,
+      "player": "T.J. Power",
+      "currentTeam": "Pennsylvania",
+      "keptRow": 281,
+      "keptPlayer": "TJ Power",
+      "status": "already-removed",
+      "keptReason": "Removed as a normalized duplicate after comparing name/team clusters; the retained row has the cleaner or higher-current projection record."
+    }
+  ]
+}

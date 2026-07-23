@@ -26,7 +26,7 @@
     "sourceRowRange": "2497-2996",
     "selectedAbove60": 30,
     "minProjectedBbpr": 60.1135,
-    "maxProjectedBbpr": 75.39,
+    "maxProjectedBbpr": 75.57,
     "remainingPendingRowsAfterWindow": 1009,
     "nextUnscannedSourceRow": 2997,
     "excludedReason": "Remaining screened rows either lacked enough sourced role/production signal, were crowded low-minute freshmen/internationals, had health/redshirt concerns, were same-name/same-team duplicate noise already handled separately, or calibrated at 60 BBPR or below."
@@ -659,41 +659,36 @@
       "currentTeam": "Xavier",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 72,
+      "historicalRating": 76,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
         "opportunityChange": 86,
-        "offensiveBurden": 82,
-        "opportunityScore": 87.2,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 72,
-        "upsideToolsScore": 82,
-        "talentScore": 76,
-        "projectionScore": 73.84,
-        "confidenceScore": 86,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.14,
+        "confidenceScore": 88,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 72.92
+        "projectedBbpr": 75.57
       },
-      "researchSummary": "Mike Nwoko receives a 72 anchor from proven high-major center production and physical tools. Xavier's frontcourt context makes him one of the stronger clear-above-60 candidates in this window.",
+      "researchSummary": "Nwoko was low for a proven high-major center moving into a clear Xavier frontcourt role. The correction lifts the anchor and tools while keeping creation modest.",
       "teamContext": {
-        "starterEvidence": "Xavier roster context supports a high-minute interior role with rebounding, screening, and rim pressure.",
-        "scoredAnchor": "Synthetic historical anchor: 72. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Nwoko was low for a proven high-major center moving into a clear Xavier frontcourt role. The correction lifts the anchor and tools while keeping creation modest.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "The role is strong but still capped by frontcourt fit and offensive touch limitations."
       },
       "evidence": [
         {
           "source": "Xavier Athletics",
           "url": "https://goxavier.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Mike Nwoko in the current Xavier player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 2774 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Nwoko with Xavier."
         }
       ]
     },
@@ -1015,42 +1010,32 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
+        "projectedRole": 92,
         "opportunityChange": 88,
         "offensiveBurden": 86,
-        "opportunityScore": 88.6,
+        "opportunityScore": 89.6,
         "entryTalentGrade": 98,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 94,
         "talentScore": 95.6,
-        "projectionScore": 93.33,
-        "confidenceScore": 86,
+        "projectionScore": 93.78,
+        "confidenceScore": 88,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 74.1825
+        "projectedBbpr": 74.295
       },
-      "researchSummary": "Dink Pate receives an 80 newcomer anchor from professional developmental experience and Providence role context. Even with freshman/newcomer caps, his size, creation, and pro-track background make him the top candidate in this scan window.",
+      "researchSummary": "Pate was sitting one spot outside the top 100 despite a pro-track newcomer profile and Providence creation opportunity. The correction nudges role certainty while still applying the freshman cap.",
       "teamContext": {
-        "starterEvidence": "Providence roster context supports immediate guard creation and major minutes.",
-        "scoredAnchor": "Synthetic historical anchor: 80. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Pate was sitting one spot outside the top 100 despite a pro-track newcomer profile and Providence creation opportunity. The correction nudges role certainty while still applying the freshman cap.",
+        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "The model still applies newcomer compression because he has not yet produced in college games."
       },
       "evidence": [
         {
           "source": "Providence Athletics",
           "url": "https://friars.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Dink Pate in the current Providence player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 2902 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
-        },
-        {
-          "source": "NBA G League",
-          "url": "https://stats.gleague.nba.com/player/1641842/",
-          "notes": "G League profile provides professional developmental context for Pate's anchor and tools."
+          "notes": "Official roster context verifies Pate with Providence."
         }
       ]
     },

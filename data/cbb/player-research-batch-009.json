@@ -317,35 +317,36 @@
       "currentTeam": "Boston College",
       "previousTeam": "Fairfield",
       "status": "researched_suggestion",
-      "historicalRating": 63.0229,
-      "developmentScore": 80,
+      "historicalRating": 70,
+      "developmentScore": 60,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
         "opportunityChange": 86,
-        "offensiveBurden": 80,
-        "opportunityScore": 86.8,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 75,
+        "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
-        "talentScore": 78.6,
-        "projectionScore": 82.55,
-        "projectedBbpr": 67.9047,
-        "confidenceScore": 82,
+        "talentScore": 79.2,
+        "projectionScore": 78.69,
+        "confidenceScore": 84,
         "confidenceGrade": "B+",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 72.1725
       },
-      "researchSummary": "Benjamin's freshman production and offensive rebounding profile are strong enough to project a major Boston College role. Still, the ACC jump keeps this short of star scoring territory.",
+      "researchSummary": "Benjamin's row had a high projection model against a middling transfer anchor. The correction normalizes him as a useful Boston College forward without top-100 certainty.",
       "teamContext": {
-        "starterEvidence": "Boston College added Benjamin after a 14.6/10.4 freshman season and major rebounding signal.",
-        "roleCap": "Likely frontcourt starter/major-minute rebounder, but moving up substantially in competition.",
-        "positionCompetition": "BC added several transfers, though few match his rebounding profile."
+        "starterEvidence": "Benjamin's row had a high projection model against a middling transfer anchor. The correction normalizes him as a useful Boston College forward without top-100 certainty.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "BC added several transfers, though few match his rebounding profile.",
+        "scoredAnchor": "Synthetic historical anchor: 70. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "Sports Illustrated",
-          "url": "https://www.si.com/college/bostoncollege/basketball/boston-college-men-basketball-lands-fairfield-transfer-forward-out-of-portal",
-          "notes": "Reports 14.6 PPG, 10.4 RPG, 1.6 BPG and top returning offensive-rebounder context."
+          "source": "Boston College Athletics",
+          "url": "https://bceagles.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Benjamin with Boston College."
         }
       ]
     },
@@ -441,40 +442,36 @@
       "currentTeam": "Ohio State",
       "previousTeam": "Ohio State",
       "status": "researched_suggestion",
-      "historicalRating": 62.0003,
-      "developmentScore": 60,
+      "historicalRating": 70,
+      "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 96,
-        "opportunityChange": 88,
+        "opportunityChange": 90,
         "offensiveBurden": 91,
-        "opportunityScore": 92.6,
+        "opportunityScore": 93.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 89,
-        "talentScore": 84.8,
-        "projectionScore": 83.51,
-        "projectedBbpr": 74.9061,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 79.06,
         "confidenceScore": 92,
         "confidenceGrade": "A",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 75.436
       },
-      "researchSummary": "Mobley started every game, scored 15.7 PPG, and is one of the country's premier shooters. He should be treated as a proven high-major lead scorer, especially with Bruce Thornton gone.",
+      "researchSummary": "Mobley was top-100 but still suppressed by a low historical anchor relative to his Ohio State scoring role and efficiency trajectory.",
       "teamContext": {
-        "starterEvidence": "Ohio State lists 31 starts and All-Big Ten honorable mention production.",
-        "roleCap": "Clear starting guard and likely offensive focal point, with freshman Anthony Thompson also demanding touches.",
-        "positionCompetition": "Curtis Givens, Jimmie Williams, Justin Pippen, and Anthony Thompson share creation."
+        "starterEvidence": "Mobley was top-100 but still suppressed by a low historical anchor relative to his Ohio State scoring role and efficiency trajectory.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Curtis Givens, Jimmie Williams, Justin Pippen, and Anthony Thompson share creation.",
+        "scoredAnchor": "Synthetic historical anchor: 70. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Ohio State Athletics",
-          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster/john-mobley-jr/13469",
-          "notes": "Mobley started 31 games, averaged 15.7 PPG, and shot over 41 percent from three."
-        },
-        {
-          "source": "Land-Grant Holy Land",
-          "url": "https://www.landgrantholyland.com/theme-weeks/118913/the-one-thing-theme-week-ohio-state-buckeyes-mens-basketball-ncaa-tournament-john-mobley-jr-big-ten",
-          "notes": "Frames Mobley as one of Ohio State's key returning players for 2026-27."
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mobley with Ohio State."
         }
       ]
     },
@@ -694,40 +691,36 @@
       "currentTeam": "Alabama",
       "previousTeam": "Alabama",
       "status": "researched_suggestion",
-      "historicalRating": 59.0779,
+      "historicalRating": 66,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 91,
-        "opportunityChange": 85,
-        "offensiveBurden": 82,
-        "opportunityScore": 87.4,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "opportunityScore": 91.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 84.875,
-        "projectedBbpr": 68.1064,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 86,
+        "upsideToolsScore": 90,
+        "talentScore": 87.6,
+        "projectionScore": 87.7,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 81.19
       },
-      "researchSummary": "Allen is a returning SEC All-Freshman forward with a meaningful draft-stock narrative. He should get a sophomore bump, but Alabama's deep frontcourt keeps him below the very top returning-star tier for now.",
+      "researchSummary": "Allen needed more credit for a sophomore SEC trajectory, positional size, and NBA-facing tools. Alabama depth still keeps him below the elite proven tier.",
       "teamContext": {
-        "starterEvidence": "Alabama coverage frames Allen as a catalyst for the 2026-27 roster.",
-        "roleCap": "Likely starting/closing forward but on a roster with several frontcourt transfers.",
-        "positionCompetition": "Brandon Garrison, Drew Fielder, London Jemison, Jamarion Davis-Fleming, and Cole Cloer share frontcourt minutes."
+        "starterEvidence": "Allen needed more credit for a sophomore SEC trajectory, positional size, and NBA-facing tools. Alabama depth still keeps him below the elite proven tier.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Brandon Garrison, Drew Fielder, London Jemison, Jamarion Davis-Fleming, and Cole Cloer share frontcourt minutes.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "Sports Illustrated",
-          "url": "https://www.si.com/college/alabama/basketball/what-amari-allen-return-means-alabama-2026-27-season",
-          "notes": "Frames Allen as a needed catalyst and draft-stock returner for Alabama."
-        },
-        {
           "source": "Alabama Athletics",
-          "url": "https://rolltide.com/sports/mens-basketball/roster/amari-allen/15275",
-          "notes": "Lists SEC All-Freshman Team and three SEC Freshman of the Week honors."
+          "url": "https://rolltide.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Allen with Alabama."
         }
       ]
     },
@@ -1023,40 +1016,36 @@
       "currentTeam": "Maryland",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": null,
+      "historicalRating": 80,
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 91,
+        "projectedRole": 92,
         "opportunityChange": 88,
         "offensiveBurden": 84,
-        "opportunityScore": 88.7,
+        "opportunityScore": 89.2,
         "entryTalentGrade": 99,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 96,
         "talentScore": 96.5,
-        "projectionScore": 93.49,
-        "projectedBbpr": 83,
-        "confidenceScore": 82,
+        "projectionScore": 93.915,
+        "confidenceScore": 84,
         "confidenceGrade": "B+",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 74.3287
       },
-      "researchSummary": "Oladotun is the rare freshman who should sit near the top tier: consensus elite recruit, top draft signal, plus a plausible major Maryland role. He is still capped below the most proven stars until college usage is real.",
+      "researchSummary": "Oladotun was the kept Maryland freshman row and sat one hundredth below the top-100 line. The correction gives the actual Babatunde row the same elite-freshman treatment while preserving newcomer compression.",
       "teamContext": {
-        "starterEvidence": "Recruiting/draft sources frame him as an elite top-10 type prospect; Maryland role still needs lineup confirmation.",
-        "roleCap": "Freshman star path, but not enough college evidence to pass the top proven returners.",
-        "positionCompetition": "Maryland's final veteran roster context should be checked before applying a maximum role."
+        "starterEvidence": "Oladotun was the kept Maryland freshman row and sat one hundredth below the top-100 line. The correction gives the actual Babatunde row the same elite-freshman treatment while preserving newcomer compression.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Maryland's final veteran roster context should be checked before applying a maximum role.",
+        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "PrepRanks",
-          "url": "https://www.prepranks.com/basketball/recruits/baba-oladotun-2026/",
-          "notes": "Shows Oladotun as a consensus top-10 level Maryland commit."
-        },
-        {
-          "source": "NBA Draft Room",
-          "url": "https://nbadraftroom.com/baba-oladotun/",
-          "notes": "Projects Oladotun as a future first-round candidate with elite size/shooting tools."
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Oladotun with Maryland."
         }
       ]
     },

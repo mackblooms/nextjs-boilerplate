@@ -24,7 +24,7 @@
     "previouslyScreenedPriorityRows": 2500,
     "screenedPendingRows": 500,
     "sourceRowRange": "2997-3496",
-    "selectedAbove60": 60,
+    "selectedAbove60": 59,
     "selectedFromScanWindow": 59,
     "manuallyVerifiedAbove60": 1,
     "manuallyVerifiedRowsOutsideWindow": [
@@ -344,50 +344,6 @@
           "source": "Local player projection export",
           "url": "data/cbb/player-projections.json",
           "notes": "Source row 3025 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
-        }
-      ]
-    },
-    {
-      "sourceRow": 3027,
-      "player": "T.J. Power",
-      "currentTeam": "Pennsylvania",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": 70,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 84,
-        "offensiveBurden": 80,
-        "opportunityScore": 85.2,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 74.06,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
-        "needsReview": true,
-        "projectedBbpr": 72.03
-      },
-      "researchSummary": "T.J. Power receives a 70 returning-player anchor from high-major transfer pedigree, size, shooting, and Penn usage opportunity. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
-      "teamContext": {
-        "starterEvidence": "Penn context supports a substantial frontcourt/perimeter role",
-        "scoredAnchor": "Synthetic historical anchor: 70. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
-        "positionCompetition": "The score balances recruiting pedigree with uneven high-major production"
-      },
-      "evidence": [
-        {
-          "source": "Pennsylvania Athletics",
-          "url": "https://pennathletics.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies T.J. Power in the current Pennsylvania player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3027 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
         }
       ]
     },
@@ -1577,40 +1533,36 @@
       "currentTeam": "Air Force",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 62,
+      "historicalRating": 56,
       "developmentScore": 80,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 86,
-        "offensiveBurden": 86,
-        "opportunityScore": 87,
+        "projectedStarter": "Maybe",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 80.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 62,
-        "upsideToolsScore": 78,
-        "talentScore": 68.4,
-        "projectionScore": 79.09,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
+        "nbaProjectionScore": 58,
+        "upsideToolsScore": 74,
+        "talentScore": 64.4,
+        "projectionScore": 74.81,
+        "confidenceScore": 76,
+        "confidenceGrade": "B-",
         "needsReview": true,
-        "projectedBbpr": 73.1085
+        "projectedBbpr": 65.405
       },
-      "researchSummary": "Kam Sanders receives a 62 returning-player anchor from young point-guard production and Air Force on-ball role. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Sanders was high because a young Air Force guard role was weighted like a top-100 profile. The correction keeps developmental value but removes the inflated offensive role.",
       "teamContext": {
-        "starterEvidence": "Air Force context supports major ball-handling responsibility",
-        "scoredAnchor": "Synthetic historical anchor: 62. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Sanders was high because a young Air Force guard role was weighted like a top-100 profile. The correction keeps developmental value but removes the inflated offensive role.",
+        "scoredAnchor": "Synthetic historical anchor: 56. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "Talent inputs remain measured while role drives the projection"
       },
       "evidence": [
         {
           "source": "Air Force Athletics",
-          "notes": "Official roster context verifies Kam Sanders in the current Air Force player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3272 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "url": "https://goairforcefalcons.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Sanders with Air Force."
         }
       ]
     },
@@ -1620,41 +1572,36 @@
       "currentTeam": "Richmond",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 72,
+      "historicalRating": 66,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 88.6,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 66,
-        "upsideToolsScore": 80,
-        "talentScore": 71.6,
-        "projectionScore": 76.93,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 72.83,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "projectedBbpr": 74.465
+        "projectedBbpr": 69.415
       },
-      "researchSummary": "Derin Saran receives a 72 returning-player anchor from proven guard production and Richmond usage context. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Saran was high for a Richmond guard profile. The correction still values role and production but moves him below the national top-100 band.",
       "teamContext": {
-        "starterEvidence": "Richmond context supports a major guard role",
-        "scoredAnchor": "Synthetic historical anchor: 72. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Saran was high for a Richmond guard profile. The correction still values role and production but moves him below the national top-100 band.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "The projection balances production with conference/role translation"
       },
       "evidence": [
         {
           "source": "Richmond Athletics",
           "url": "https://richmondspiders.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Derin Saran in the current Richmond player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3283 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Saran with Richmond."
         }
       ]
     },
@@ -1708,41 +1655,36 @@
       "currentTeam": "Tulane",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 74,
+      "historicalRating": 66,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 86,
-        "offensiveBurden": 84,
-        "opportunityScore": 86.6,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 66,
-        "upsideToolsScore": 80,
-        "talentScore": 71.6,
-        "projectionScore": 76.03,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 72.83,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "projectedBbpr": 75.015
+        "projectedBbpr": 69.415
       },
-      "researchSummary": "Carson Schwieger receives a 74 returning-player anchor from proven forward production and Tulane role context. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Carson Schwieger was high because the Tulane role was treated like a top-100 lock. The corrected score keeps him above the broad cutoff but out of the top 100.",
       "teamContext": {
-        "starterEvidence": "Tulane context supports a major forward role",
-        "scoredAnchor": "Synthetic historical anchor: 74. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Carson Schwieger was high because the Tulane role was treated like a top-100 lock. The corrected score keeps him above the broad cutoff but out of the top 100.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "The projection clears comfortably while remaining anchored to prior production"
       },
       "evidence": [
         {
           "source": "Tulane Athletics",
           "url": "https://tulanegreenwave.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Carson Schwieger in the current Tulane player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3303 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Schwieger with Tulane."
         }
       ]
     },
@@ -1752,41 +1694,36 @@
       "currentTeam": "Florida State",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 78,
+      "historicalRating": 70,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 86,
-        "offensiveBurden": 84,
-        "opportunityScore": 87.6,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 68,
-        "upsideToolsScore": 80,
-        "talentScore": 72.8,
-        "projectionScore": 72.9,
-        "confidenceScore": 86,
-        "confidenceGrade": "A-",
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 70.85,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "projectedBbpr": 75.45
+        "projectedBbpr": 70.425
       },
-      "researchSummary": "Cooper Schwieger receives a 78 returning-player anchor from productive forward track record and Florida State frontcourt opportunity. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Cooper Schwieger was high for a Florida State frontcourt transfer whose role is good but not top-70 certain. The correction lowers role and anchor.",
       "teamContext": {
-        "starterEvidence": "Florida State context supports a high-minute forward role",
-        "scoredAnchor": "Synthetic historical anchor: 78. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Cooper Schwieger was high for a Florida State frontcourt transfer whose role is good but not top-70 certain. The correction lowers role and anchor.",
+        "scoredAnchor": "Synthetic historical anchor: 70. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "ACC translation keeps the score below the highest proven stars"
       },
       "evidence": [
         {
           "source": "Florida State Athletics",
           "url": "https://seminoles.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies Cooper Schwieger in the current Florida State player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3304 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Schwieger with Florida State."
         }
       ]
     },
@@ -2190,41 +2127,36 @@
       "currentTeam": "Mississippi State",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 76,
+      "historicalRating": 68,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 88.6,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 66,
-        "upsideToolsScore": 80,
-        "talentScore": 71.6,
-        "projectionScore": 72.93,
-        "confidenceScore": 86,
-        "confidenceGrade": "A-",
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 76,
+        "talentScore": 67.6,
+        "projectionScore": 68.83,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "projectedBbpr": 74.465
+        "projectedBbpr": 68.415
       },
-      "researchSummary": "T.J. Simpkins receives a 76 returning-player anchor from veteran guard production and Mississippi State backcourt context. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Simpkins was high after receiving top-100 guard role inputs. The correction keeps a useful Mississippi State projection but removes the inflated high-major burden.",
       "teamContext": {
-        "starterEvidence": "Mississippi State context supports a major guard role",
-        "scoredAnchor": "Synthetic historical anchor: 76. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Simpkins was high after receiving top-100 guard role inputs. The correction keeps a useful Mississippi State projection but removes the inflated high-major burden.",
+        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "SEC translation and efficiency variance keep him below the very top tier"
       },
       "evidence": [
         {
           "source": "Mississippi State Athletics",
           "url": "https://hailstate.com/sports/mens-basketball/roster",
-          "notes": "Official roster context verifies T.J. Simpkins in the current Mississippi State player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3385 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Simpkins with Mississippi State."
         }
       ]
     },
@@ -2364,41 +2296,36 @@
       "currentTeam": "Notre Dame",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 82,
+      "historicalRating": 76,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 88,
-        "opportunityScore": 90,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 70,
-        "upsideToolsScore": 82,
-        "talentScore": 74.8,
-        "projectionScore": 74.68,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 71.75,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "projectedBbpr": 78.34
+        "projectedBbpr": 73.875
       },
-      "researchSummary": "Braeden Smith receives a 82 returning-player anchor from proven guard production and Notre Dame lead-creation context. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor.",
+      "researchSummary": "Smith was high because an excellent college guard anchor combined with too much Notre Dame certainty. He remains top-100 caliber, but no longer a top-40 player.",
       "teamContext": {
-        "starterEvidence": "Notre Dame context supports major ball-handling and tempo responsibility",
-        "scoredAnchor": "Synthetic historical anchor: 82. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; screened rows at 60 or below were intentionally left out.",
+        "starterEvidence": "Smith was high because an excellent college guard anchor combined with too much Notre Dame certainty. He remains top-100 caliber, but no longer a top-40 player.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "The projection reflects proven college impact with measured NBA/upside inputs"
       },
       "evidence": [
         {
           "source": "Notre Dame Athletics",
           "url": "https://fightingirish.com/sports/mbball/roster/",
-          "notes": "Official roster context verifies Braeden Smith in the current Notre Dame player pool used for this projection pass."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 3417 had no imported historical BBPR, so this batch assigns a scored anchor before projection."
+          "notes": "Official roster context verifies Smith with Notre Dame."
         }
       ]
     },

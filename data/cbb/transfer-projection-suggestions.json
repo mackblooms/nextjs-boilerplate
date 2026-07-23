@@ -3230,21 +3230,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
+        "projectedStarter": "Maybe",
+        "projectedRole": 86,
+        "opportunityChange": 84,
         "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 60,
-        "projectionScore": 67.075,
-        "projectedBbpr": 52.5488,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "opportunityScore": 84.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 77.19,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 68.7975
       },
       "nearestGoldExamples": [
         {
@@ -3314,6 +3313,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 66,
+      "developmentScore": 60,
+      "researchSummary": "Tobiason had a transfer-anchor warning because the model inputs were stronger than the old anchor. The correction gives him a fair Syracuse role anchor without forcing top-100 status.",
+      "evidence": [
+        {
+          "source": "Syracuse Athletics",
+          "url": "https://cuse.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tobiason with Syracuse."
+        }
       ]
     },
     {
@@ -4158,20 +4167,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 62.825,
-        "projectedBbpr": 43.1871,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 77.64,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 77.91
       },
       "nearestGoldExamples": [
         {
@@ -4241,6 +4249,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 78,
+      "developmentScore": 40,
+      "researchSummary": "Shelstad was massively low because an Oregon-to-Louisville transfer row carried a stale guard anchor. The correction reflects a proven high-major creator with a clear Louisville perimeter role.",
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Shelstad with Louisville."
+        }
       ]
     },
     {
@@ -4261,20 +4279,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 50,
-        "upsideToolsScore": 60,
-        "talentScore": 54,
-        "developmentScore": 80,
-        "projectionScore": 69.775,
-        "projectedBbpr": 46.6693,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 86,
+        "upsideToolsScore": 90,
+        "talentScore": 87.6,
+        "projectionScore": 86.8,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 78.7
       },
       "nearestGoldExamples": [
         {
@@ -4344,6 +4361,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 76,
+      "developmentScore": 80,
+      "researchSummary": "Haralson was being dragged by a low Notre Dame freshman anchor. The correction treats him as a blue-chip sophomore transfer with Tennessee role upside, not as a settled low-usage reserve.",
+      "evidence": [
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Haralson with Tennessee."
+        }
       ]
     },
     {
@@ -4981,21 +5008,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 65,
-        "opportunityChange": 45,
-        "offensiveBurden": 55,
-        "opportunityScore": 57,
-        "nbaProjectionScore": 40,
-        "upsideToolsScore": 55,
-        "talentScore": 46,
-        "developmentScore": 80,
-        "projectionScore": 57.75,
-        "projectedBbpr": 69.8459,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 78.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 77.09,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 70.2725
       },
       "nearestGoldExamples": [
         {
@@ -5065,6 +5091,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 68,
+      "developmentScore": 80,
+      "researchSummary": "Buljan was high for a crowded Maryland frontcourt profile. The new score keeps the international-production anchor but removes top-100 role certainty.",
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context shows Maryland frontcourt competition around Buljan."
+        }
       ]
     },
     {
@@ -6115,20 +6151,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 62.825,
-        "projectedBbpr": 46.5943,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 74.92,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 74.23
       },
       "nearestGoldExamples": [
         {
@@ -6198,6 +6233,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 74,
+      "developmentScore": 40,
+      "researchSummary": "Ames needed a higher Tennessee-transfer anchor because the current row showed starter-level SEC opportunity but retained an old low historical base.",
+      "evidence": [
+        {
+          "source": "Tennessee Athletics",
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ames with Tennessee."
+        }
       ]
     },
     {
@@ -7144,21 +7189,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 70,
-        "opportunityChange": 50,
-        "offensiveBurden": 60,
-        "opportunityScore": 62,
-        "nbaProjectionScore": 40,
-        "upsideToolsScore": 60,
-        "talentScore": 48,
-        "developmentScore": 80,
-        "projectionScore": 60.7,
-        "projectedBbpr": 62.4422,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 78.69,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 72.1725
       },
       "nearestGoldExamples": [
         {
@@ -7228,6 +7272,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 70,
+      "developmentScore": 60,
+      "researchSummary": "Benjamin's row had a high projection model against a middling transfer anchor. The correction normalizes him as a useful Boston College forward without top-100 certainty.",
+      "evidence": [
+        {
+          "source": "Boston College Athletics",
+          "url": "https://bceagles.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Benjamin with Boston College."
+        }
       ]
     },
     {
@@ -7454,20 +7508,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 65,
-        "opportunityChange": 50,
-        "offensiveBurden": 60,
-        "opportunityScore": 59.5,
-        "nbaProjectionScore": 40,
-        "upsideToolsScore": 50,
-        "talentScore": 44,
-        "developmentScore": 60,
-        "projectionScore": 54.175,
-        "projectedBbpr": 65.6651,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "opportunityScore": 91.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 82.16,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 79.79
       },
       "nearestGoldExamples": [
         {
@@ -7537,6 +7590,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 79,
+      "developmentScore": 60,
+      "researchSummary": "Punch was a bit low relative to his Texas frontcourt role, Big 12 production, and defensive value. The correction moves him into a stronger high-major starter band.",
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Punch's Texas fit."
+        }
       ]
     },
     {
@@ -7557,20 +7620,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 80,
-        "projectionScore": 70.825,
-        "projectedBbpr": 47.0034,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 91,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.1,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 85.635,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 76.9087
       },
       "nearestGoldExamples": [
         {
@@ -7640,6 +7702,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 74,
+      "developmentScore": 80,
+      "researchSummary": "Mingo was held down by a stale Penn State freshman anchor despite a Baylor guard role and sophomore development profile.",
+      "evidence": [
+        {
+          "source": "Baylor Athletics",
+          "url": "https://baylorbears.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mingo with Baylor."
+        }
       ]
     },
     {
@@ -8381,20 +8453,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 70,
-        "opportunityScore": 74.5,
-        "nbaProjectionScore": 60,
-        "upsideToolsScore": 65,
-        "talentScore": 62,
-        "developmentScore": 60,
-        "projectionScore": 67.225,
-        "projectedBbpr": 69.0123,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 78,
+        "opportunityScore": 88,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 80.72,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 75.68
       },
       "nearestGoldExamples": [
         {
@@ -8464,6 +8535,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 74,
+      "developmentScore": 60,
+      "researchSummary": "Cyril was too low for Miami's rim-protection need and his high-major center trajectory. The adjustment lifts the tools and role while keeping offensive burden controlled.",
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Cyril with Miami."
+        }
       ]
     },
     {
@@ -8999,20 +9080,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 80,
-        "projectionScore": 70.825,
-        "projectedBbpr": 51.8992,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "projectionScore": 87.18,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 80.295
       },
       "nearestGoldExamples": [
         {
@@ -9082,6 +9162,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 78,
+      "developmentScore": 80,
+      "researchSummary": "Lewis had top-100 role inputs but a stale Villanova anchor. The correction sets a comparable synthetic sophomore-transfer anchor before applying the same transfer formula.",
+      "evidence": [
+        {
+          "source": "Miami Athletics",
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Lewis with Miami."
+        }
       ]
     },
     {
@@ -9823,20 +9913,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 80,
-        "opportunityChange": 60,
-        "offensiveBurden": 70,
-        "opportunityScore": 72,
-        "nbaProjectionScore": 60,
-        "upsideToolsScore": 65,
-        "talentScore": 62,
-        "developmentScore": 40,
-        "projectionScore": 62.1,
-        "projectedBbpr": 68.3539,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.86,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 74.465
       },
       "nearestGoldExamples": [
         {
@@ -9906,6 +9995,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 74,
+      "developmentScore": 40,
+      "researchSummary": "Folgueiras was just below the top-100 line despite a productive forward profile and Louisville frontcourt opportunity. The corrected anchor keeps him in the high-major starter band.",
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Folgueiras with Louisville."
+        }
       ]
     },
     {
@@ -12397,21 +12496,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 60,
-        "projectionScore": 67.075,
-        "projectedBbpr": 49.7732,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 85.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 82.66,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 73.915
       },
       "nearestGoldExamples": [
         {
@@ -12481,6 +12579,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 71,
+      "developmentScore": 80,
+      "researchSummary": "Chandler was too low for a former high-profile guard now in a BYU role path, but the update stops short of top-100 certainty because his role remains less bankable.",
+      "evidence": [
+        {
+          "source": "BYU Athletics",
+          "url": "https://byucougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Chandler with BYU."
+        }
       ]
     },
     {
@@ -12605,19 +12713,18 @@
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 50,
-        "upsideToolsScore": 55,
-        "talentScore": 52,
-        "developmentScore": 60,
-        "projectionScore": 65.075,
-        "projectedBbpr": 53.4787,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 83.14,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 74.785
       },
       "nearestGoldExamples": [
         {
@@ -12687,6 +12794,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 72,
+      "developmentScore": 80,
+      "researchSummary": "Pippen was low for an Ohio State developmental guard profile with starter-level inputs. The adjustment adds a fair sophomore-transfer anchor without pushing him past proven stars.",
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pippen with Ohio State."
+        }
       ]
     },
     {
@@ -12913,20 +13030,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 62.825,
-        "projectedBbpr": 42.6116,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 90.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 76.07,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 74.5175
       },
       "nearestGoldExamples": [
         {
@@ -12996,6 +13112,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 74,
+      "developmentScore": 40,
+      "researchSummary": "Mack was severely low because the transfer row kept an old anchor despite a Providence usage profile that should rate near the top-100 line.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mack with Providence."
+        }
       ]
     },
     {
@@ -13324,21 +13450,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 62.375,
-        "projectedBbpr": 52.0567,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 75.39,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 71.3475
       },
       "nearestGoldExamples": [
         {
@@ -13408,6 +13533,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 70,
+      "developmentScore": 40,
+      "researchSummary": "Byrd was too low for a proven high-major transfer wing, though Providence role uncertainty keeps him outside the safer top-100 band.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Byrd with Providence."
+        }
       ]
     },
     {
@@ -13429,19 +13564,18 @@
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 80,
-        "projectionScore": 70.825,
-        "projectedBbpr": 44.8475,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 88,
+        "upsideToolsScore": 92,
+        "talentScore": 89.6,
+        "projectionScore": 86.6,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 78.65
       },
       "nearestGoldExamples": [
         {
@@ -13511,6 +13645,21 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 76,
+      "developmentScore": 80,
+      "researchSummary": "Avdalas was far too low for a high-profile North Carolina international/transfer profile. The corrected synthetic anchor reflects international production and NBA-facing tools before the standard transfer blend.",
+      "evidence": [
+        {
+          "source": "North Carolina Athletics",
+          "url": "https://goheels.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Avdalas with North Carolina."
+        },
+        {
+          "source": "FIBA",
+          "url": "https://www.fiba.basketball/",
+          "notes": "FIBA profile context supports the international production signal used for the synthetic anchor."
+        }
       ]
     },
     {
@@ -14338,109 +14487,6 @@
       ]
     },
     {
-      "sourceRow": 251,
-      "player": "De’Shayne Montgomery",
-      "currentTeam": "Louisville",
-      "previousTeam": "Dayton",
-      "position": "G",
-      "classYear": "Sr",
-      "current": {
-        "historicalRating": 65.8942,
-        "historicalBbpr": 67.29,
-        "starScore": 42.8632,
-        "difficulty": 63.8,
-        "developmentScore": 40,
-        "projectedBbpr": null,
-        "needsReview": true
-      },
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 75,
-        "opportunityChange": 55,
-        "offensiveBurden": 70,
-        "opportunityScore": 68,
-        "nbaProjectionScore": 45,
-        "upsideToolsScore": 55,
-        "talentScore": 49,
-        "developmentScore": 40,
-        "projectionScore": 55.75,
-        "projectedBbpr": 63.3581,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
-        "needsReview": true,
-        "suggestionStatus": "draft"
-      },
-      "nearestGoldExamples": [
-        {
-          "sourceRow": 13,
-          "player": "Dedan Thomas Jr.",
-          "currentTeam": "Houston",
-          "previousTeam": "LSU",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 65.6274,
-          "projectionScore": 60.23,
-          "opportunityScore": 75,
-          "talentScore": 52.8,
-          "distance": 0.1002
-        },
-        {
-          "sourceRow": 17,
-          "player": "Markus Burton",
-          "currentTeam": "Indiana",
-          "previousTeam": "Notre Dame",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.2356,
-          "projectionScore": 58.625,
-          "opportunityScore": 77.5,
-          "talentScore": 45,
-          "distance": 0.106
-        },
-        {
-          "sourceRow": 19,
-          "player": "Isaac Celiscar",
-          "currentTeam": "Baylor",
-          "previousTeam": "Yale",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 69.2428,
-          "projectionScore": 60.235,
-          "opportunityScore": 66.9,
-          "talentScore": 51.8,
-          "distance": 0.1387
-        },
-        {
-          "sourceRow": 27,
-          "player": "Tounde Yessoufou",
-          "currentTeam": "St. John's",
-          "previousTeam": "Baylor",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.6916,
-          "projectionScore": 84.105,
-          "opportunityScore": 89.9,
-          "talentScore": 79,
-          "distance": 0.1669
-        },
-        {
-          "sourceRow": 14,
-          "player": "Ryan Prather Jr.",
-          "currentTeam": "Iowa State",
-          "previousTeam": "Robert Morris",
-          "projectedStarter": "No",
-          "projectedBbpr": 61.9668,
-          "projectionScore": 30.1,
-          "opportunityScore": 32,
-          "talentScore": 22,
-          "distance": 0.1762
-        }
-      ],
-      "reasoning": [
-        "draft suggestion generated from nearest completed transfer gold-standard examples",
-        "nearest trusted transfers lean starter/major-minute profile",
-        "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
-        "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
-        "manual spreadsheet inputs should override this suggestion"
-      ]
-    },
-    {
       "sourceRow": 252,
       "player": "Shon Abaev",
       "currentTeam": "Florida State",
@@ -14561,20 +14607,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 79,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 63.5,
-        "projectedBbpr": 50.4637,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.86,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 75.965
       },
       "nearestGoldExamples": [
         {
@@ -14644,6 +14689,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 76,
+      "developmentScore": 40,
+      "researchSummary": "Ndongo was low for a productive high-major frontcourt transfer. The correction gives his Pittsburgh role a real starter anchor while keeping the NBA/tools score moderate.",
+      "evidence": [
+        {
+          "source": "Pittsburgh Athletics",
+          "url": "https://pittsburghpanthers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ndongo with Pittsburgh."
+        }
       ]
     },
     {
@@ -15488,20 +15543,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 40,
-        "projectionScore": 63.075,
-        "projectedBbpr": 54.4669,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 73.84,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 72.46
       },
       "nearestGoldExamples": [
         {
@@ -15571,6 +15625,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 72,
+      "developmentScore": 40,
+      "researchSummary": "Dak was a bit low for a high-major transfer frontcourt role, but the corrected score keeps him around the top-100 bubble rather than a locked top-75 player.",
+      "evidence": [
+        {
+          "source": "Vanderbilt Athletics",
+          "url": "https://vucommodores.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Dak with Vanderbilt."
+        }
       ]
     },
     {
@@ -15694,20 +15758,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 65,
-        "offensiveBurden": 75,
-        "opportunityScore": 77,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 40,
-        "projectionScore": 63.3,
-        "projectedBbpr": 55.3381,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 77.19,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 77.7975
       },
       "nearestGoldExamples": [
         {
@@ -15777,6 +15840,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 78,
+      "developmentScore": 40,
+      "researchSummary": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
+      "evidence": [
+        {
+          "source": "Auburn Athletics",
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Freeman with Auburn."
+        }
       ]
     },
     {
@@ -15975,109 +16048,6 @@
           "opportunityScore": 71,
           "talentScore": 45.8,
           "distance": 0.5716
-        }
-      ],
-      "reasoning": [
-        "draft suggestion generated from nearest completed transfer gold-standard examples",
-        "nearest trusted transfers lean starter/major-minute profile",
-        "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
-        "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
-        "manual spreadsheet inputs should override this suggestion"
-      ]
-    },
-    {
-      "sourceRow": 274,
-      "player": "KJ Lewis",
-      "currentTeam": "USC",
-      "previousTeam": "Georgetown",
-      "position": "G",
-      "classYear": "Sr",
-      "current": {
-        "historicalRating": 56.5351,
-        "historicalBbpr": 56.595,
-        "starScore": 30.2923,
-        "difficulty": 81.7,
-        "developmentScore": 40,
-        "projectedBbpr": null,
-        "needsReview": true
-      },
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 79,
-        "nbaProjectionScore": 50,
-        "upsideToolsScore": 55,
-        "talentScore": 52,
-        "developmentScore": 40,
-        "projectionScore": 61.75,
-        "projectedBbpr": 57.8388,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
-        "needsReview": true,
-        "suggestionStatus": "draft"
-      },
-      "nearestGoldExamples": [
-        {
-          "sourceRow": 17,
-          "player": "Markus Burton",
-          "currentTeam": "Indiana",
-          "previousTeam": "Notre Dame",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.2356,
-          "projectionScore": 58.625,
-          "opportunityScore": 77.5,
-          "talentScore": 45,
-          "distance": 0.1269
-        },
-        {
-          "sourceRow": 21,
-          "player": "Terrence Brown",
-          "currentTeam": "North Carolina",
-          "previousTeam": "Utah",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 52.3507,
-          "projectionScore": 55.98,
-          "opportunityScore": 71,
-          "talentScore": 45.8,
-          "distance": 0.163
-        },
-        {
-          "sourceRow": 15,
-          "player": "PJ Haggerty",
-          "currentTeam": "Texas A&M",
-          "previousTeam": "Kansas State",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 52.4321,
-          "projectionScore": 60.12,
-          "opportunityScore": 76,
-          "talentScore": 51.2,
-          "distance": 0.1657
-        },
-        {
-          "sourceRow": 27,
-          "player": "Tounde Yessoufou",
-          "currentTeam": "St. John's",
-          "previousTeam": "Baylor",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 62.6916,
-          "projectionScore": 84.105,
-          "opportunityScore": 89.9,
-          "talentScore": 79,
-          "distance": 0.187
-        },
-        {
-          "sourceRow": 13,
-          "player": "Dedan Thomas Jr.",
-          "currentTeam": "Houston",
-          "previousTeam": "LSU",
-          "projectedStarter": "Yes",
-          "projectedBbpr": 65.6274,
-          "projectionScore": 60.23,
-          "opportunityScore": 75,
-          "talentScore": 52.8,
-          "distance": 0.2047
         }
       ],
       "reasoning": [
@@ -16518,20 +16488,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 40,
-        "projectionScore": 62.375,
-        "projectedBbpr": 35.3088,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 78.76,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 81.19
       },
       "nearestGoldExamples": [
         {
@@ -16601,6 +16570,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 82,
+      "developmentScore": 40,
+      "researchSummary": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Wagner with Maryland."
+        }
       ]
     },
     {
@@ -17033,20 +17012,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 40,
-        "projectionScore": 63.075,
-        "projectedBbpr": 44.8005,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.69,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 71.1725
       },
       "nearestGoldExamples": [
         {
@@ -17116,6 +17094,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 70,
+      "developmentScore": 40,
+      "researchSummary": "Bradshaw was too low for a former blue-chip big now in a larger Tennessee State role, though conference context keeps him below the high-major top-100 locks.",
+      "evidence": [
+        {
+          "source": "Tennessee State Athletics",
+          "url": "https://tsutigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Bradshaw with Tennessee State."
+        }
       ]
     },
     {
@@ -20431,21 +20419,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 79,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 60,
-        "talentScore": 57,
-        "developmentScore": 60,
-        "projectionScore": 67.5,
-        "projectedBbpr": 52.4618,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 77.79,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 68.9475
       },
       "nearestGoldExamples": [
         {
@@ -20515,6 +20502,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 66,
+      "developmentScore": 60,
+      "researchSummary": "Vanterpool had the same stale-anchor pattern as the other Providence transfers, but not enough certainty for top-100 treatment. The correction moves the anchor into a consistent high-major reserve-to-starter band.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Vanterpool with Providence."
+        }
       ]
     },
     {
@@ -21255,21 +21252,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 84,
         "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 55,
-        "upsideToolsScore": 65,
-        "talentScore": 59,
-        "developmentScore": 40,
-        "projectionScore": 63.075,
-        "projectedBbpr": 56.119,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "opportunityScore": 85.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.06,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 69.515
       },
       "nearestGoldExamples": [
         {
@@ -21339,6 +21335,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 68,
+      "developmentScore": 40,
+      "researchSummary": "Page was too low for a former high-major frontcourt prospect, but the Providence role is still less certain than the top-100 frontcourt group.",
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Page with Providence."
+        }
       ]
     },
     {
@@ -21564,21 +21570,20 @@
         "needsReview": true
       },
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 55,
-        "offensiveBurden": 80,
-        "opportunityScore": 77.5,
-        "nbaProjectionScore": 50,
-        "upsideToolsScore": 55,
-        "talentScore": 52,
-        "developmentScore": 80,
-        "projectionScore": 69.075,
-        "projectedBbpr": 46.9561,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 78.69,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
         "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedBbpr": 69.1725
       },
       "nearestGoldExamples": [
         {
@@ -21648,6 +21653,16 @@
         "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
+      ],
+      "historicalRating": 66,
+      "developmentScore": 60,
+      "researchSummary": "Foxwell's Arizona State row was over-signaling opportunity relative to the anchor. The correction leaves him in the watch-list range rather than a hidden top-100 lock.",
+      "evidence": [
+        {
+          "source": "Arizona State Athletics",
+          "url": "https://thesundevils.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Foxwell with Arizona State."
+        }
       ]
     },
     {

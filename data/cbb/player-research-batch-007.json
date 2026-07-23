@@ -125,43 +125,39 @@
       "currentTeam": "TCU",
       "previousTeam": "TCU",
       "status": "researched_suggestion",
-      "historicalRating": 75.619,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 78,
-        "offensiveBurden": 74,
-        "opportunityScore": 82.2,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 70,
-        "upsideToolsScore": 76,
-        "talentScore": 72.4,
-        "projectionScore": 70.31,
-        "projectedBbpr": 72.9645,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.96,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 76.48
       },
-      "researchSummary": "Edmonds has projected-starter evidence for TCU, but the projection is kept below the higher-usage returners because the available evidence points more toward a solid frontcourt starter than a primary option.",
+      "researchSummary": "Edmonds was low for a TCU frontcourt starter-quality profile. The correction raises anchor and tools without making him a primary scorer.",
       "teamContext": {
         "projectedLineup": "Rothstein projects Edmonds as a starting forward for TCU.",
         "returningStars": "TCU's roster has multiple new and returning pieces sharing usage.",
         "incomingStars": "Bamgboye, Harding, Toolson, and other pieces create a balanced lineup.",
         "positionCompetition": "Starter path is present, but offensive hierarchy is not dominant.",
-        "starterEvidence": "projected lineup and official roster status",
-        "roleCap": "High-80s role with moderate burden."
+        "starterEvidence": "Edmonds was low for a TCU frontcourt starter-quality profile. The correction raises anchor and tools without making him a primary scorer.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "FanDuel Research",
-          "url": "https://www.fanduel.com/research/jon-rothstein-45-2026-offseason-edition-college-basketball-rankings",
-          "notes": "Projects Edmonds in TCU's starting five."
-        },
-        {
           "source": "TCU Athletics",
-          "url": "https://gofrogs.com/sports/mbball/roster",
-          "notes": "Lists Edmonds as a senior forward on TCU's 2026-27 roster."
+          "url": "https://gofrogs.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Edmonds with TCU."
         }
       ]
     },
@@ -171,43 +167,39 @@
       "currentTeam": "Texas",
       "previousTeam": "Texas",
       "status": "researched_suggestion",
-      "historicalRating": 75.1892,
+      "historicalRating": 78,
       "developmentScore": 60,
       "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 86,
-        "opportunityChange": 76,
-        "offensiveBurden": 70,
-        "opportunityScore": 79.8,
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 80,
-        "talentScore": 77.6,
-        "projectionScore": 75.07,
-        "projectedBbpr": 75.1296,
-        "confidenceScore": 80,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 81.68,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 80.208
       },
-      "researchSummary": "Vokietaitis is a productive, efficient big with international and FAU production, but Texas has a crowded rebuilt roster and multiple young frontcourt/wing options. He should be useful, but not treated as a locked high-usage starter yet.",
+      "researchSummary": "Vokietaitis was low for a productive, efficient center with Texas frontcourt value. The correction raises role and tools while stopping short of elite offensive burden.",
       "teamContext": {
         "projectedLineup": "Texas roster confirms him as a 7-foot junior center, but clear starting-lineup evidence is weaker than for other players in this batch.",
         "returningStars": "Texas has several returners/transfers and high-end freshmen competing for frontcourt/wing roles.",
         "incomingStars": "Austin Goosby and Marcus Spears Jr. increase roster talent and usage competition.",
         "positionCompetition": "Center minutes are available but not fully settled.",
-        "starterEvidence": "production profile more than definitive projected starter evidence",
-        "roleCap": "Mid-80s role until rotation clarity improves."
+        "starterEvidence": "Vokietaitis was low for a productive, efficient center with Texas frontcourt value. The correction raises role and tools while stopping short of elite offensive burden.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Texas Athletics",
-          "url": "https://texaslonghorns.com/sports/mens-basketball/roster/MATAS-VOKIETAITIS/17088",
-          "notes": "Lists Vokietaitis as a 7-foot junior with AAC Freshman of the Year and Lithuanian U20 experience."
-        },
-        {
-          "source": "Texas Athletics",
-          "url": "https://texaslonghorns.com/sports/mbball/roster",
-          "notes": "Shows Texas' crowded 2026-27 roster with multiple guards, freshmen, and frontcourt options."
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Vokietaitis with Texas."
         }
       ]
     },
@@ -309,38 +301,39 @@
       "currentTeam": "Maryland",
       "previousTeam": "New Mexico",
       "status": "researched_suggestion",
-      "historicalRating": 73.8779,
+      "historicalRating": 68,
       "developmentScore": 80,
       "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 86,
-        "opportunityChange": 78,
-        "offensiveBurden": 74,
-        "opportunityScore": 81.2,
+        "projectedStarter": "Maybe",
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 78.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 74,
-        "upsideToolsScore": 82,
-        "talentScore": 77.2,
-        "projectionScore": 79.54,
-        "projectedBbpr": 75.2934,
-        "confidenceScore": 74,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 77.09,
+        "confidenceScore": 78,
         "confidenceGrade": "B",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 70.2725
       },
-      "researchSummary": "Buljan's age/class and international production profile create upside, but Maryland's frontcourt has several bodies and the direct starting evidence is not as strong. He gets a solid projection without a transfer-star bump.",
+      "researchSummary": "Buljan was high for a crowded Maryland frontcourt profile. The new score keeps the international-production anchor but removes top-100 role certainty.",
       "teamContext": {
         "projectedLineup": "Maryland roster confirms Buljan as a sophomore frontcourt transfer.",
         "returningStars": "Maryland has multiple veteran frontcourt additions.",
         "incomingStars": "Pharrel Payne, Robert Jennings, and others share frontcourt minutes.",
         "positionCompetition": "Rotation path is real, but starter/usage certainty is capped.",
-        "starterEvidence": "roster fit more than clean projected lineup evidence",
-        "roleCap": "Mid-80s role due frontcourt competition."
+        "starterEvidence": "Buljan was high for a crowded Maryland frontcourt profile. The new score keeps the international-production anchor but removes top-100 role certainty.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Maryland Athletics",
           "url": "https://umterps.com/sports/mens-basketball/roster",
-          "notes": "Lists Buljan as a 6-foot-9 sophomore forward transfer from New Mexico."
+          "notes": "Official roster context shows Maryland frontcourt competition around Buljan."
         }
       ]
     },
@@ -401,38 +394,39 @@
       "currentTeam": "Houston",
       "previousTeam": "Houston",
       "status": "researched_suggestion",
-      "historicalRating": 73.331,
+      "historicalRating": 76,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 78,
-        "offensiveBurden": 70,
-        "opportunityScore": 81.4,
+        "projectedRole": 92,
+        "opportunityChange": 86,
+        "offensiveBurden": 78,
+        "opportunityScore": 87.4,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 72,
-        "upsideToolsScore": 82,
-        "talentScore": 76,
-        "projectionScore": 71.23,
-        "projectedBbpr": 72.2805,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 75.75,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 75.85
       },
-      "researchSummary": "Tugler should matter for Houston because he fits the physical frontcourt identity and has returning experience. The score stays moderate because Arafan Diane and other frontcourt pieces create competition and Tugler is not projected as a primary offensive player.",
+      "researchSummary": "Tugler should not sit outside the top 100 given Houston's defensive identity and his proven frontcourt impact. Offensive burden is still not treated like a scoring centerpiece.",
       "teamContext": {
         "projectedLineup": "Houston roster confirms Tugler as a senior returning forward.",
         "returningStars": "Houston's frontcourt has returning physicality plus new freshman size.",
         "incomingStars": "Arafan Diane and Djafar Silimana create freshman frontcourt competition.",
         "positionCompetition": "Minutes should be strong, burden lower.",
-        "starterEvidence": "returning veteran fit and roster need",
-        "roleCap": "High-80s role with low offensive burden."
+        "starterEvidence": "Tugler should not sit outside the top 100 given Houston's defensive identity and his proven frontcourt impact. Offensive burden is still not treated like a scoring centerpiece.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Houston Athletics",
-          "url": "https://uhcougars.com/sports/mens-basketball/roster?path=mbball",
-          "notes": "Lists Tugler as a senior returning forward on Houston's 2026-27 roster."
+          "url": "https://uhcougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tugler's current Houston role environment."
         }
       ]
     },
@@ -442,8 +436,8 @@
       "currentTeam": "BYU",
       "previousTeam": "BYU",
       "status": "researched_suggestion",
-      "historicalRating": 71.4864,
-      "developmentScore": 60,
+      "historicalRating": 76,
+      "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 98,
@@ -451,34 +445,30 @@
         "offensiveBurden": 96,
         "opportunityScore": 96.4,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 85,
+        "nbaProjectionScore": 80,
         "upsideToolsScore": 88,
-        "talentScore": 86.2,
-        "projectionScore": 85.27,
-        "projectedBbpr": 79.7566,
+        "talentScore": 83.2,
+        "projectionScore": 80.5,
         "confidenceScore": 92,
         "confidenceGrade": "A",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 78.7
       },
-      "researchSummary": "Wright is the strongest returning guard profile in this batch. BYU's own staff calls him the best point guard in college basketball, and his 18.1/4.6 line with elite shooting supports a major role boost above the raw historical anchor.",
+      "researchSummary": "Wright was already high, but his elite BYU role inputs were still slightly compressed by an old anchor. The correction raises the anchor without moving him above the proven All-American tier.",
       "teamContext": {
         "projectedLineup": "BYU announced Wright's return and frames him as the floor general.",
         "returningStars": "He becomes the clear offensive guard anchor after BYU's roster changes.",
         "incomingStars": "Bruce Branch and others add talent, but Wright's on-ball role is secure.",
         "positionCompetition": "No direct lead-guard threat.",
-        "starterEvidence": "school return announcement and all-conference production",
-        "roleCap": "Near-primary role; historical anchor still keeps him below the elite 90s."
+        "starterEvidence": "Wright was already high, but his elite BYU role inputs were still slightly compressed by an old anchor. The correction raises the anchor without moving him above the proven All-American tier.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "BYU Athletics",
-          "url": "https://byucougars.com/news/2026/4/15/robert-wright-iii-returns-to-byu",
-          "notes": "BYU announced Wright's return after averaging 18.1 points and 4.6 assists with strong efficiency."
-        },
-        {
-          "source": "BYU Athletics",
-          "url": "https://byucougars.com/sports/mens-basketball/roster/player/robert-wright-iii",
-          "notes": "Lists All-Big 12 and NABC district honors plus 35 starts and 34.8 MPG."
+          "url": "https://byucougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Wright with BYU."
         }
       ]
     },
@@ -488,43 +478,39 @@
       "currentTeam": "Miami",
       "previousTeam": "Georgia",
       "status": "researched_suggestion",
-      "historicalRating": 69.6081,
+      "historicalRating": 74,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 82,
-        "offensiveBurden": 72,
-        "opportunityScore": 84,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 78,
+        "opportunityScore": 88,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 75,
-        "upsideToolsScore": 84,
-        "talentScore": 78.6,
-        "projectionScore": 77.31,
-        "projectedBbpr": 71.5336,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 80.72,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 75.68
       },
-      "researchSummary": "Cyril gives Miami a true rim-protection starter profile. The final BBPR is held near the historical anchor because his value is defense/finishing, not a major offensive burden.",
+      "researchSummary": "Cyril was too low for Miami's rim-protection need and his high-major center trajectory. The adjustment lifts the tools and role while keeping offensive burden controlled.",
       "teamContext": {
         "projectedLineup": "Rothstein projects Cyril as Miami's starting center.",
         "returningStars": "Miami's roster is rebuilt with several new pieces.",
         "incomingStars": "Acaden Lewis and Caleb Gaskins share newcomer attention and usage.",
         "positionCompetition": "Cyril has the cleanest center path.",
-        "starterEvidence": "school signing release and projected lineup",
-        "roleCap": "Starter role with capped offensive burden."
+        "starterEvidence": "Cyril was too low for Miami's rim-protection need and his high-major center trajectory. The adjustment lifts the tools and role while keeping offensive burden controlled.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Miami Athletics",
-          "url": "https://miamihurricanes.com/news/2026/04/16/hurricanes-add-rim-protector-somto-cyril/",
-          "notes": "Miami describes Cyril as a rim protector after he averaged 9.3 points, 5.4 rebounds, and 2.2 blocks at Georgia."
-        },
-        {
-          "source": "FanDuel Research",
-          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
-          "notes": "Projects Cyril in Miami's starting lineup."
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Cyril with Miami."
         }
       ]
     },

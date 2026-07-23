@@ -24,7 +24,9 @@
     "screenedPendingRows": 500,
     "sourceRowRange": "495-995",
     "selectedAbove60": 30,
-    "excludedReason": "Remaining screened rows either lacked enough sourced role/production signal, were crowded low-minute freshmen/internationals, had health/redshirt concerns, or calibrated at 60 BBPR or below."
+    "excludedReason": "Remaining screened rows either lacked enough sourced role/production signal, were crowded low-minute freshmen/internationals, had health/redshirt concerns, or calibrated at 60 BBPR or below.",
+    "minProjectedBbpr": 60.24,
+    "maxProjectedBbpr": 77.323
   },
   "players": [
     {
@@ -1075,46 +1077,36 @@
       "currentTeam": "Ohio State",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": 58,
+      "historicalRating": 66,
       "developmentScore": 80,
       "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 88,
-        "opportunityChange": 84,
-        "offensiveBurden": 80,
-        "opportunityScore": 85.2,
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 72,
-        "upsideToolsScore": 82,
-        "talentScore": 76,
-        "projectionScore": 80.94,
-        "confidenceScore": 82,
-        "projectedBbpr": 72.911,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 83.42,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 77.323
       },
-      "researchSummary": "Amare Bynum receives a 58 anchor after Ohio State's bio credited him with 34 freshman games, 24 starts, 9.7 points, 4.9 rebounds, and over 50 percent shooting. Recent Ohio State coverage also expects him to remain important defensively, so the sophomore development formula places him comfortably above 60.",
+      "researchSummary": "Bynum was low after a productive freshman season with a large start count. The correction gives him a stronger sophomore frontcourt trajectory while preserving development uncertainty.",
       "teamContext": {
-        "starterEvidence": "Ohio State context and sourced roster/sentiment support a uncertain starter label for this screening pass.",
-        "scoredAnchor": "Synthetic historical anchor: 58. This is used only because the projection export had no historical BBPR for the row.",
-        "roleCap": "Selected because the same shared calibration projects above 60 BBPR; players in the screened window below that threshold were intentionally left out of this batch.",
+        "starterEvidence": "Bynum was low after a productive freshman season with a large start count. The correction gives him a stronger sophomore frontcourt trajectory while preserving development uncertainty.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "Ohio State's C minutes should still be reviewed against returning contributors, portal additions, freshmen, and health before applying the suggestion."
       },
       "evidence": [
         {
           "source": "Ohio State Athletics",
-          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster/bynum-amare/13467",
-          "notes": "Official bio lists 34 games, 24 starts, 9.7 ppg, 4.9 rpg, and over 50 percent shooting."
-        },
-        {
-          "source": "Land-Grant Holy Land",
-          "url": "https://www.landgrantholyland.com/youre-nuts/118871/youre-nuts-who-will-lead-ohio-state-in-blocked-shots-this-season",
-          "notes": "Current coverage projects Bynum as a notable defensive/shot-blocking piece for Ohio State."
-        },
-        {
-          "source": "Local player projection export",
-          "url": "data/cbb/player-projections.json",
-          "notes": "Source row 873 has no imported historical BBPR, so this batch assigns a scored anchor of 58 before projection."
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Bynum with Ohio State."
         }
       ]
     },

@@ -102,44 +102,6 @@
       ]
     },
     {
-      "sourceRow": 274,
-      "player": "KJ Lewis",
-      "currentTeam": "USC",
-      "previousTeam": "Georgetown",
-      "status": "researched_suggestion",
-      "historicalRating": 56.5351,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 91,
-        "opportunityChange": 86,
-        "offensiveBurden": 82,
-        "opportunityScore": 87.7,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 75.185,
-        "projectedBbpr": 61.1976,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
-        "needsReview": true
-      },
-      "researchSummary": "Lewis has a strong high-major body of work and USC needed veteran toughness on the wing. He gets starter/closing-lineup credit, but USC's many portal pieces keep him below top-option scorers.",
-      "teamContext": {
-        "starterEvidence": "USC announced Lewis as a veteran Big East/Big 12 transfer with immediate defensive and slashing value.",
-        "roleCap": "Likely starting wing or sixth starter, not a primary offensive creator.",
-        "positionCompetition": "Rodney Rice, Eric Reibe, Jadis Jones, and other USC additions distribute touches."
-      },
-      "evidence": [
-        {
-          "source": "USC Athletics",
-          "url": "https://usctrojans.com/news/2026/5/5/mens-basketball-kj-lewis-signs-with-usc.aspx",
-          "notes": "USC signs Lewis after high-major experience at Arizona and Georgetown."
-        }
-      ]
-    },
-    {
       "sourceRow": 317,
       "player": "Miro Little",
       "currentTeam": "UCSB",
@@ -489,40 +451,36 @@
       "currentTeam": "Illinois",
       "previousTeam": "Illinois",
       "status": "researched_suggestion",
-      "historicalRating": 54.3186,
+      "historicalRating": 82,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 96,
-        "opportunityChange": 92,
-        "offensiveBurden": 94,
-        "opportunityScore": 94.4,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 88,
-        "upsideToolsScore": 92,
-        "talentScore": 89.6,
-        "projectionScore": 81.84,
-        "projectedBbpr": 75,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 86.4,
+        "projectionScore": 79.46,
         "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 80.476
       },
-      "researchSummary": "Stojakovic should be lifted well above his historical anchor because Illinois acquired him to be a featured scorer and NBA-facing wing. This is a role/talent projection more than a pure past-production projection.",
+      "researchSummary": "Stojakovic was outside the top 100 because his historical anchor was far too low for his current Illinois scoring trajectory and NBA-facing wing profile.",
       "teamContext": {
-        "starterEvidence": "Illinois roster and transfer coverage frame Stojakovic as a marquee scoring wing addition/returning listed player.",
-        "roleCap": "Featured wing scorer with NBA tools, though Illinois has other usage-capable guards/bigs.",
-        "positionCompetition": "Tomislav Ivisic, Kylan Boswell, Quentin Coleman, and Lucas Morillo keep usage from being one-man."
+        "starterEvidence": "Stojakovic was outside the top 100 because his historical anchor was far too low for his current Illinois scoring trajectory and NBA-facing wing profile.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Tomislav Ivisic, Kylan Boswell, Quentin Coleman, and Lucas Morillo keep usage from being one-man.",
+        "scoredAnchor": "Synthetic historical anchor: 82. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Illinois Athletics",
-          "url": "https://fightingillini.com/sports/mens-basketball/roster/andrej-stojakovic/15562",
-          "notes": "Roster bio lists Stojakovic at Illinois with prior high-major scoring profile."
-        },
-        {
-          "source": "Sports Illustrated",
-          "url": "https://www.si.com/college/illinois/basketball/andrej-stojakovic-illinois-basketball-impact-2026",
-          "notes": "Frames Stojakovic as a high-impact Illinois scoring addition."
+          "url": "https://fightingillini.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Stojakovic with Illinois."
         }
       ]
     },
@@ -532,35 +490,36 @@
       "currentTeam": "USC",
       "previousTeam": "USC",
       "status": "researched_suggestion",
-      "historicalRating": 54.168,
+      "historicalRating": 72,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
+        "projectedRole": 90,
         "opportunityChange": 88,
-        "offensiveBurden": 90,
-        "opportunityScore": 90.4,
+        "offensiveBurden": 86,
+        "opportunityScore": 88.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
+        "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 76.32,
-        "projectedBbpr": 59.706,
+        "talentScore": 79.2,
+        "projectionScore": 75.59,
         "confidenceScore": 86,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 73.795
       },
-      "researchSummary": "Rice has a clean veteran scoring role for USC and should be one of the roster's primary perimeter options. The final score stays outside the elite range because the historical anchor is moderate.",
+      "researchSummary": "Rice was too low for a USC guard role with a solid high-major scoring profile. The correction puts him near the back of the top-100 conversation.",
       "teamContext": {
-        "starterEvidence": "USC roster/coverage points to Rice as a central veteran guard.",
-        "roleCap": "Lead or co-lead scorer, with several transfer scorers around him.",
-        "positionCompetition": "KJ Lewis, Jadis Jones, and USC's young bigs/guards share possessions."
+        "starterEvidence": "Rice was too low for a USC guard role with a solid high-major scoring profile. The correction puts him near the back of the top-100 conversation.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "KJ Lewis, Jadis Jones, and USC's young bigs/guards share possessions.",
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "USC Athletics",
-          "url": "https://usctrojans.com/sports/mens-basketball/roster/rodney-rice/17678",
-          "notes": "Roster bio lists Rice as a returning USC guard."
+          "url": "https://usctrojans.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Rice with USC."
         }
       ]
     },
@@ -608,35 +567,36 @@
       "currentTeam": "Providence",
       "previousTeam": "Northwestern",
       "status": "researched_suggestion",
-      "historicalRating": 53.8003,
+      "historicalRating": 68,
       "developmentScore": 40,
       "suggested": {
-        "projectedStarter": "Yes",
+        "projectedStarter": "Maybe",
         "projectedRole": 88,
         "opportunityChange": 84,
-        "offensiveBurden": 76,
-        "opportunityScore": 84.4,
+        "offensiveBurden": 80,
+        "opportunityScore": 85.2,
         "entryTalentGrade": null,
         "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
         "talentScore": 79.2,
-        "projectionScore": 73.7,
-        "projectedBbpr": 58.7752,
+        "projectionScore": 74.06,
         "confidenceScore": 82,
         "confidenceGrade": "B+",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 69.515
       },
-      "researchSummary": "Page has size, high-major pedigree, and a plausible Providence frontcourt starting path. Scoring burden stays capped because his best role is interior finishing/defense.",
+      "researchSummary": "Page was too low for a former high-major frontcourt prospect, but the Providence role is still less certain than the top-100 frontcourt group.",
       "teamContext": {
-        "starterEvidence": "Providence added Page as a frontcourt transfer with high-major experience.",
-        "roleCap": "Likely starting/major-minute big, lower offensive burden.",
-        "positionCompetition": "Providence has multiple new frontcourt pieces and guards to distribute usage."
+        "starterEvidence": "Page was too low for a former high-major frontcourt prospect, but the Providence role is still less certain than the top-100 frontcourt group.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Providence has multiple new frontcourt pieces and guards to distribute usage.",
+        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Providence Athletics",
-          "url": "https://friars.com/news/2026/4/22/mens-basketball-arrinten-page-transfers-to-providence-college",
-          "notes": "Providence announced Page as a transfer addition from Northwestern."
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Page with Providence."
         }
       ]
     },
@@ -685,35 +645,36 @@
       "currentTeam": "Illinois",
       "previousTeam": "Illinois",
       "status": "researched_suggestion",
-      "historicalRating": 53.0491,
+      "historicalRating": 84,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 95,
-        "opportunityChange": 91,
-        "offensiveBurden": 88,
-        "opportunityScore": 92.4,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 84,
-        "upsideToolsScore": 90,
-        "talentScore": 86.4,
-        "projectionScore": 79.78,
-        "projectedBbpr": 70,
-        "confidenceScore": 90,
-        "confidenceGrade": "A",
-        "needsReview": true
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 78.31,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 80.586
       },
-      "researchSummary": "Ivisic is a proven starting-caliber Big Ten big with production, size, and NBA-ish skill. He should be well above generic returning-player territory even if Stojakovic has more scoring upside.",
+      "researchSummary": "Ivisic was low for a proven Illinois frontcourt piece with production, size, and NBA-facing tools. The update moves him back into the likely top-100 range.",
       "teamContext": {
-        "starterEvidence": "Illinois roster and prior role make Ivisic a central returning big.",
-        "roleCap": "Starting center/forward with scoring, rebounding, and spacing value.",
-        "positionCompetition": "Stojakovic and perimeter pieces share offensive hierarchy."
+        "starterEvidence": "Ivisic was low for a proven Illinois frontcourt piece with production, size, and NBA-facing tools. The update moves him back into the likely top-100 range.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Stojakovic and perimeter pieces share offensive hierarchy.",
+        "scoredAnchor": "Synthetic historical anchor: 84. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Illinois Athletics",
-          "url": "https://fightingillini.com/sports/mens-basketball/roster/tomislav-ivisic/15566",
-          "notes": "Roster bio lists Ivisic as a returning Illinois frontcourt player."
+          "url": "https://fightingillini.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ivisic with Illinois."
         }
       ]
     },
@@ -799,35 +760,36 @@
       "currentTeam": "Auburn",
       "previousTeam": "Creighton",
       "status": "researched_suggestion",
-      "historicalRating": 52.6842,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
-        "opportunityChange": 86,
-        "offensiveBurden": 78,
-        "opportunityScore": 86.4,
+        "projectedRole": 94,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 90.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 74.6,
-        "projectedBbpr": 58.1632,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 77.19,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 77.7975
       },
-      "researchSummary": "Freeman has the strongest Auburn frontcourt role case among this batch's transfers. He gets starter credit, but Auburn's perimeter talent and frontcourt depth keep offensive burden moderate.",
+      "researchSummary": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
       "teamContext": {
-        "starterEvidence": "Auburn signed Freeman as a major frontcourt transfer from Creighton/Iowa.",
-        "roleCap": "Likely starting big with efficient scoring/rebounding rather than alpha usage.",
-        "positionCompetition": "Kevin Overton, Tahaad Pettiford, and other Auburn pieces share offense."
+        "starterEvidence": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Kevin Overton, Tahaad Pettiford, and other Auburn pieces share offense.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Auburn Athletics",
-          "url": "https://auburntigers.com/news/2026/4/22/mens-basketball-auburn-adds-owen-freeman",
-          "notes": "Auburn announced Freeman as a transfer frontcourt addition."
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Freeman with Auburn."
         }
       ]
     },
@@ -837,40 +799,36 @@
       "currentTeam": "Mississippi State",
       "previousTeam": "Mississippi State",
       "status": "researched_suggestion",
-      "historicalRating": 52.6576,
+      "historicalRating": 84,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 98,
         "opportunityChange": 94,
-        "offensiveBurden": 98,
-        "opportunityScore": 96.8,
+        "offensiveBurden": 94,
+        "opportunityScore": 96,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 84,
+        "nbaProjectionScore": 82,
         "upsideToolsScore": 88,
-        "talentScore": 85.6,
-        "projectionScore": 81.52,
-        "projectedBbpr": 72,
+        "talentScore": 84.4,
+        "projectionScore": 80.74,
         "confidenceScore": 94,
-        "confidenceGrade": "A+",
-        "needsReview": true
+        "confidenceGrade": "A",
+        "needsReview": true,
+        "projectedBbpr": 82.044
       },
-      "researchSummary": "Hubbard should be treated as an elite proven college guard despite a lower historical anchor in this file. His role, shot volume, awards profile, and national recognition justify a major leaderboard lift.",
+      "researchSummary": "Hubbard was the clearest stale-anchor miss: his Mississippi State star usage and production were sitting outside the top 100. The correction moves him into the national star tier.",
       "teamContext": {
-        "starterEvidence": "Mississippi State roster/history establishes Hubbard as the team's lead guard and high-usage scorer.",
-        "roleCap": "Primary scorer and offensive engine, with NBA signal good but not top-lottery level.",
-        "positionCompetition": "Mississippi State will add pieces around him, but Hubbard remains the clear offensive hierarchy leader."
+        "starterEvidence": "Hubbard was the clearest stale-anchor miss: his Mississippi State star usage and production were sitting outside the top 100. The correction moves him into the national star tier.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Mississippi State will add pieces around him, but Hubbard remains the clear offensive hierarchy leader.",
+        "scoredAnchor": "Synthetic historical anchor: 84. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Mississippi State Athletics",
-          "url": "https://hailstate.com/sports/mens-basketball/roster/josh-hubbard/11562",
-          "notes": "Roster bio documents Hubbard's lead-guard production and Mississippi State career accolades."
-        },
-        {
-          "source": "The Field of 68",
-          "url": "https://fieldof68.beehiiv.com/p/top-100-returning-players-college-basketball-2026-27",
-          "notes": "Includes Hubbard among notable returning-player names for 2026-27."
+          "url": "https://hailstate.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Hubbard with Mississippi State."
         }
       ]
     },
@@ -919,35 +877,36 @@
       "currentTeam": "Florida",
       "previousTeam": "Florida",
       "status": "researched_suggestion",
-      "historicalRating": 51.3155,
+      "historicalRating": 74,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 96,
-        "opportunityChange": 91,
-        "offensiveBurden": 94,
-        "opportunityScore": 94.1,
+        "opportunityChange": 92,
+        "offensiveBurden": 92,
+        "opportunityScore": 94,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 88,
-        "upsideToolsScore": 92,
-        "talentScore": 89.6,
-        "projectionScore": 85.205,
-        "projectedBbpr": 75,
+        "nbaProjectionScore": 86,
+        "upsideToolsScore": 90,
+        "talentScore": 87.6,
+        "projectionScore": 84.96,
         "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 80.576
       },
-      "researchSummary": "Fland has the right blend of former five-star pedigree, high-major guard creation, and Florida lead-guard opportunity to jump well above his historical anchor. He should mix near the top returner/transfer guards, not be treated as a generic returner.",
+      "researchSummary": "Fland was too low because the historical anchor did not reflect a top high-major guard talent with Florida opportunity. The correction moves him into top-100 range without treating him as proven top-25 production.",
       "teamContext": {
-        "starterEvidence": "Florida roster context places Fland in line for a major guard role.",
-        "roleCap": "High-usage lead guard, though Florida's title-level roster culture spreads offense.",
-        "positionCompetition": "Florida has multiple guards/wings, but Fland's shot creation is the clearest ceiling swing."
+        "starterEvidence": "Fland was too low because the historical anchor did not reflect a top high-major guard talent with Florida opportunity. The correction moves him into top-100 range without treating him as proven top-25 production.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Florida has multiple guards/wings, but Fland's shot creation is the clearest ceiling swing.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Florida Athletics",
-          "url": "https://floridagators.com/sports/mens-basketball/roster/boogie-fland/17351",
-          "notes": "Roster bio lists Fland at Florida with prior high-major guard profile."
+          "url": "https://floridagators.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Fland with Florida."
         }
       ]
     },
@@ -957,35 +916,36 @@
       "currentTeam": "Miami",
       "previousTeam": "Miami",
       "status": "researched_suggestion",
-      "historicalRating": 51.1154,
+      "historicalRating": 64,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 91,
+        "projectedRole": 92,
         "opportunityChange": 88,
         "offensiveBurden": 84,
-        "opportunityScore": 88.7,
+        "opportunityScore": 89.2,
         "entryTalentGrade": null,
         "nbaProjectionScore": 84,
-        "upsideToolsScore": 90,
-        "talentScore": 86.4,
-        "projectionScore": 86.055,
-        "projectedBbpr": 68.3852,
-        "confidenceScore": 82,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "projectionScore": 86.1,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 79.47
       },
-      "researchSummary": "Henderson is a strong sophomore leap candidate with high recruiting pedigree and an opening for Miami to feature young talent. He gets a real development/role lift, but not enough evidence yet for the elite proven tier.",
+      "researchSummary": "Henderson was just under the top-100 line with Miami role/talent inputs that matched other corrected high-major sophomore profiles. The anchor is lifted enough to remove the stale freshman drag without overrating the role certainty.",
       "teamContext": {
-        "starterEvidence": "Miami roster lists Henderson as a returning forward with major prospect pedigree.",
-        "roleCap": "Likely starter/major-minute forward with breakout upside.",
-        "positionCompetition": "Miami's transfer guards and frontcourt additions share usage."
+        "starterEvidence": "Henderson was just under the top-100 line with Miami role/talent inputs that matched other corrected high-major sophomore profiles. The anchor is lifted enough to remove the stale freshman drag without overrating the role certainty.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Miami's transfer guards and frontcourt additions share usage.",
+        "scoredAnchor": "Synthetic historical anchor: 64. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Miami Athletics",
-          "url": "https://miamihurricanes.com/sports/mbball/roster/shelton-henderson/",
-          "notes": "Roster bio lists Henderson as a returning Miami forward."
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Henderson with Miami."
         }
       ]
     },

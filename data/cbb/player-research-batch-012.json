@@ -112,35 +112,36 @@
       "currentTeam": "Ohio State",
       "previousTeam": "California",
       "status": "researched_suggestion",
-      "historicalRating": 49.6133,
-      "developmentScore": 60,
+      "historicalRating": 72,
+      "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 88.6,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 80.29,
-        "projectedBbpr": 69.1148,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 83.14,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 74.785
       },
-      "researchSummary": "Pippen is a high-major lead-guard transfer after starting at Cal and earning honorable mention All-ACC. Ohio State has guard competition, but his two-way production and assist/steal profile justify starter-level scoring.",
+      "researchSummary": "Pippen was low for an Ohio State developmental guard profile with starter-level inputs. The adjustment adds a fair sophomore-transfer anchor without pushing him past proven stars.",
       "teamContext": {
-        "starterEvidence": "Ohio State announced him as an experienced guard addition after 32 Cal starts.",
-        "roleCap": "Likely starter or closing guard, with usage shared alongside Mobley and other Buckeye guards.",
-        "positionCompetition": "Backcourt depth keeps him just below a no-doubt primary-creator score."
+        "starterEvidence": "Pippen was low for an Ohio State developmental guard profile with starter-level inputs. The adjustment adds a fair sophomore-transfer anchor without pushing him past proven stars.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Backcourt depth keeps him just below a no-doubt primary-creator score.",
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Ohio State Athletics",
-          "url": "https://ohiostatebuckeyes.com/news/2026/5/27/mens-basketball-justin-pippen-joins-ohio-state-for-2026-27-season",
-          "notes": "Official release cites 14.2 PPG, 4.6 APG, steals, and All-ACC honorable mention at Cal."
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pippen with Ohio State."
         }
       ]
     },
@@ -226,35 +227,36 @@
       "currentTeam": "Georgia",
       "previousTeam": "Georgia",
       "status": "researched_suggestion",
-      "historicalRating": 48.6698,
+      "historicalRating": 68,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
         "opportunityChange": 86,
-        "offensiveBurden": 84,
-        "opportunityScore": 87.6,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 80,
+        "nbaProjectionScore": 82,
         "upsideToolsScore": 88,
-        "talentScore": 83.2,
-        "projectionScore": 80.54,
-        "projectedBbpr": 64.4,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
+        "talentScore": 84.4,
+        "projectionScore": 80.78,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 74.39
       },
-      "researchSummary": "Catchings returns after starting all 32 games and flashing real SEC scoring/shooting growth. He earns starter-level projection with a development bump, while Georgia's broader roster keeps him out of the elite-usage range.",
+      "researchSummary": "Catchings was low for a former high-profile wing with a Georgia opportunity path. The correction lifts the anchor while leaving him behind more proven top-100 locks.",
       "teamContext": {
-        "starterEvidence": "Georgia bio confirms 32 starts and late-season SEC production.",
-        "roleCap": "Likely starting forward/scorer, but shared Bulldog creation caps top-option burden.",
-        "positionCompetition": "Georgia has multiple guards/transfers, though Catchings owns one of the cleanest returning forward paths."
+        "starterEvidence": "Catchings was low for a former high-profile wing with a Georgia opportunity path. The correction lifts the anchor while leaving him behind more proven top-100 locks.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Georgia has multiple guards/transfers, though Catchings owns one of the cleanest returning forward paths.",
+        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Georgia Athletics",
-          "url": "https://georgiadogs.com/sports/mens-basketball/roster/kanon-catchings/10745",
-          "notes": "Official bio lists 2025-26 starts, scoring, rebounding, and SEC shooting surge."
+          "url": "https://georgiadogs.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Catchings with Georgia."
         }
       ]
     },
@@ -264,35 +266,36 @@
       "currentTeam": "Providence",
       "previousTeam": "San Diego State",
       "status": "researched_suggestion",
-      "historicalRating": 48.6173,
+      "historicalRating": 70,
       "developmentScore": 40,
       "suggested": {
-        "projectedStarter": "Yes",
+        "projectedStarter": "Maybe",
         "projectedRole": 88,
-        "opportunityChange": 84,
-        "offensiveBurden": 78,
-        "opportunityScore": 84.8,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
-        "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 73.88,
-        "projectedBbpr": 54.89,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 75.39,
         "confidenceScore": 84,
         "confidenceGrade": "B+",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 71.3475
       },
-      "researchSummary": "Byrd's Mountain West Defensive Player of the Year profile should travel to Providence and gives him a strong starting/closing case. Offensive burden stays capped because his value is defense, size, and winning experience more than shot dominance.",
+      "researchSummary": "Byrd was too low for a proven high-major transfer wing, though Providence role uncertainty keeps him outside the safer top-100 band.",
       "teamContext": {
-        "starterEvidence": "Providence announced him as an experienced guard addition with four years of San Diego State winning context.",
-        "roleCap": "High-minute defender and connector, not a primary offensive option.",
-        "positionCompetition": "Friars added several guards, but Byrd's defensive identity should keep him in the rotation core."
+        "starterEvidence": "Byrd was too low for a proven high-major transfer wing, though Providence role uncertainty keeps him outside the safer top-100 band.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Friars added several guards, but Byrd's defensive identity should keep him in the rotation core.",
+        "scoredAnchor": "Synthetic historical anchor: 70. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Providence Athletics",
-          "url": "https://friars.com/news/2026/4/9/mens-basketball-adds-miles-byrd-to-the-2026-27-roster",
-          "notes": "Official release confirms transfer and Mountain West Defensive Player of the Year context."
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Byrd with Providence."
         }
       ]
     },
@@ -459,35 +462,36 @@
       "currentTeam": "Providence",
       "previousTeam": "Florida Atlantic",
       "status": "researched_suggestion",
-      "historicalRating": 47.4491,
+      "historicalRating": 66,
       "developmentScore": 60,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 86,
+        "projectedStarter": "Maybe",
+        "projectedRole": 86,
+        "opportunityChange": 84,
         "offensiveBurden": 82,
-        "opportunityScore": 86.2,
+        "opportunityScore": 84.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 74,
+        "nbaProjectionScore": 76,
         "upsideToolsScore": 84,
-        "talentScore": 78,
-        "projectionScore": 78.09,
-        "projectedBbpr": 65,
-        "confidenceScore": 86,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "talentScore": 79.2,
+        "projectionScore": 77.79,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 68.9475
       },
-      "researchSummary": "Vanterpool's AAC all-conference/most-improved profile gives Providence a real high-minute guard candidate. He earns a starter score, with role capped by a deep Friars portal class.",
+      "researchSummary": "Vanterpool had the same stale-anchor pattern as the other Providence transfers, but not enough certainty for top-100 treatment. The correction moves the anchor into a consistent high-major reserve-to-starter band.",
       "teamContext": {
-        "starterEvidence": "Providence release calls him one of the top players in the AAC and highlights all-conference honors.",
-        "roleCap": "Likely starting or closing guard, not guaranteed as the only creator.",
-        "positionCompetition": "Byrd and other Friars guards create a shared perimeter hierarchy."
+        "starterEvidence": "Vanterpool had the same stale-anchor pattern as the other Providence transfers, but not enough certainty for top-100 treatment. The correction moves the anchor into a consistent high-major reserve-to-starter band.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Byrd and other Friars guards create a shared perimeter hierarchy.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Providence Athletics",
-          "url": "https://friars.com/news/2026/4/15/mens-basketball-adds-devin-vanterpool-to-the-2026-27-roster",
-          "notes": "Official release confirms FAU transfer, all-conference honors, and most-improved award."
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Vanterpool with Providence."
         }
       ]
     },
@@ -497,40 +501,36 @@
       "currentTeam": "Auburn",
       "previousTeam": "Auburn",
       "status": "researched_suggestion",
-      "historicalRating": 47.4419,
-      "developmentScore": 60,
+      "historicalRating": 78,
+      "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 96,
         "opportunityChange": 92,
-        "offensiveBurden": 92,
-        "opportunityScore": 94,
+        "offensiveBurden": 90,
+        "opportunityScore": 93.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 84,
+        "nbaProjectionScore": 86,
         "upsideToolsScore": 90,
-        "talentScore": 86.4,
-        "projectionScore": 84.54,
-        "projectedBbpr": 75,
-        "confidenceScore": 92,
+        "talentScore": 87.6,
+        "projectionScore": 88.78,
+        "confidenceScore": 90,
         "confidenceGrade": "A",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 85.007
       },
-      "researchSummary": "Pettiford needs a major lift from the raw historical anchor: Auburn's own offseason language frames the backcourt as his and Kevin Overton's team, and his sophomore production was clear lead-guard material.",
+      "researchSummary": "Pettiford was much too low because his Auburn returner row had a freshman anchor that did not match his expected expanded role and NBA-facing guard tools.",
       "teamContext": {
-        "starterEvidence": "Auburn announced Pettiford's return and later framed him as a veteran leader beside Overton.",
-        "roleCap": "Primary/secondary creator with top-100 guard case.",
-        "positionCompetition": "Overton shares usage, but both should anchor Auburn's guard hierarchy."
+        "starterEvidence": "Pettiford was much too low because his Auburn returner row had a freshman anchor that did not match his expected expanded role and NBA-facing guard tools.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Overton shares usage, but both should anchor Auburn's guard hierarchy.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Auburn Athletics",
-          "url": "https://auburntigers.com/news/2026/04/11/tahaad-pettiford-returns-to-auburn-for-junior-season-in-2026-27",
-          "notes": "Official return article cites 15.4 PPG, 3.8 APG, 1,000 career points, and veteran leadership."
-        },
-        {
-          "source": "Auburn Athletics",
-          "url": "https://auburntigers.com/news/2026/07/2/auburn-basketball-notebook-its-their-team",
-          "notes": "Staff comments describe Pettiford and Overton as the veteran backcourt core."
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Pettiford with Auburn."
         }
       ]
     },
@@ -654,35 +654,36 @@
       "currentTeam": "Pittsburgh",
       "previousTeam": "Georgia Tech",
       "status": "researched_suggestion",
-      "historicalRating": 46.1183,
+      "historicalRating": 76,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 92,
-        "opportunityChange": 90,
+        "opportunityChange": 88,
         "offensiveBurden": 84,
-        "opportunityScore": 89.8,
+        "opportunityScore": 89.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 76.83,
-        "projectedBbpr": 70,
-        "confidenceScore": 90,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.86,
+        "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 75.965
       },
-      "researchSummary": "Ndongo is one of the stronger transfers left in the unprojected set: a three-year ACC starter with All-ACC history, efficient scoring, and rebounding. He deserves starter/high-role credit at Pitt.",
+      "researchSummary": "Ndongo was low for a productive high-major frontcourt transfer. The correction gives his Pittsburgh role a real starter anchor while keeping the NBA/tools score moderate.",
       "teamContext": {
-        "starterEvidence": "Pitt officially announced Ndongo as a proven ACC scorer/rebounder and three-year starter.",
-        "roleCap": "Starting frontcourt anchor, though guard-heavy Pitt additions share creation.",
-        "positionCompetition": "Pitt's many frontcourt/portal additions lower solo-usage assumptions but not minutes confidence."
+        "starterEvidence": "Ndongo was low for a productive high-major frontcourt transfer. The correction gives his Pittsburgh role a real starter anchor while keeping the NBA/tools score moderate.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Pitt's many frontcourt/portal additions lower solo-usage assumptions but not minutes confidence.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "Pitt Athletics",
-          "url": "https://pittsburghpanthers.com/news/2026/6/17/mens-basketball-three-year-acc-starter-baye-ndongo-joins-pitt",
-          "notes": "Official release cites ACC starter history, 11.8 PPG, 8.1 RPG, and All-ACC recognition."
+          "source": "Pittsburgh Athletics",
+          "url": "https://pittsburghpanthers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ndongo with Pittsburgh."
         }
       ]
     },
@@ -692,35 +693,36 @@
       "currentTeam": "Miami",
       "previousTeam": "Villanova",
       "status": "researched_suggestion",
-      "historicalRating": 45.5906,
+      "historicalRating": 78,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 93,
+        "projectedRole": 94,
         "opportunityChange": 90,
         "offensiveBurden": 88,
-        "opportunityScore": 91.1,
+        "opportunityScore": 91.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 90,
-        "talentScore": 85.2,
-        "projectionScore": 86.815,
-        "projectedBbpr": 70,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "projectionScore": 87.18,
         "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 80.295
       },
-      "researchSummary": "Lewis has one of the cleanest sophomore-transfer breakout cases: a productive freshman point guard at Villanova with assist/steal records and a Miami roster that needs him to organize a new high-talent group.",
+      "researchSummary": "Lewis had top-100 role inputs but a stale Villanova anchor. The correction sets a comparable synthetic sophomore-transfer anchor before applying the same transfer formula.",
       "teamContext": {
-        "starterEvidence": "Miami announced him as a standout guard after Second Team All-BIG EAST and All-Freshman honors.",
-        "roleCap": "Likely starting lead guard with strong creation burden.",
-        "positionCompetition": "Miami added many transfers, but Lewis is the best pure point-guard fit."
+        "starterEvidence": "Lewis had top-100 role inputs but a stale Villanova anchor. The correction sets a comparable synthetic sophomore-transfer anchor before applying the same transfer formula.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Miami added many transfers, but Lewis is the best pure point-guard fit.",
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Miami Athletics",
-          "url": "https://miamihurricanes.com/news/2026/04/17/miami-adds-standout-guard-acaden-lewis/",
-          "notes": "Official release cites Big East honors, freshman assist/steal records, and production."
+          "url": "https://miamihurricanes.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Lewis with Miami."
         }
       ]
     },
@@ -806,35 +808,36 @@
       "currentTeam": "Michigan State",
       "previousTeam": "Michigan State",
       "status": "researched_suggestion",
-      "historicalRating": 44.686,
+      "historicalRating": 74,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 90,
         "opportunityChange": 86,
-        "offensiveBurden": 82,
-        "opportunityScore": 87.2,
+        "offensiveBurden": 80,
+        "opportunityScore": 86.8,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
+        "nbaProjectionScore": 80,
         "upsideToolsScore": 88,
-        "talentScore": 82,
-        "projectionScore": 75.94,
-        "projectedBbpr": 58,
-        "confidenceScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 76.18,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 75.09
       },
-      "researchSummary": "Carr was a captain and every-game starter with clear athletic/NCAA Tournament production. He earns starter credit, but his jumper/creation limits keep him a tier below high-burden creators.",
+      "researchSummary": "Carr was far too low for a Michigan State returning athlete with top-100 tools and a real frontcourt role, even with a controlled offensive burden.",
       "teamContext": {
-        "starterEvidence": "Michigan State bio lists captain status, 35 starts, scoring/rebounding, and NCAA Tournament production.",
-        "roleCap": "Starting forward/transition finisher rather than primary halfcourt option.",
-        "positionCompetition": "MSU roster has backcourt and frontcourt options, but Carr's role is stable."
+        "starterEvidence": "Carr was far too low for a Michigan State returning athlete with top-100 tools and a real frontcourt role, even with a controlled offensive burden.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "MSU roster has backcourt and frontcourt options, but Carr's role is stable.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Michigan State Athletics",
-          "url": "https://msuspartans.com/sports/mens-basketball/roster/coen-carr/16436",
-          "notes": "Official bio cites starts, captain role, team scoring rank, rebounds, and dunk/defensive impact."
+          "url": "https://msuspartans.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Carr with Michigan State."
         }
       ]
     },
@@ -958,35 +961,36 @@
       "currentTeam": "BYU",
       "previousTeam": "Kentucky",
       "status": "researched_suggestion",
-      "historicalRating": 44.0059,
-      "developmentScore": 60,
+      "historicalRating": 71,
+      "developmentScore": 80,
       "suggested": {
-        "projectedStarter": "Yes",
+        "projectedStarter": "Maybe",
         "projectedRole": 88,
-        "opportunityChange": 86,
+        "opportunityChange": 84,
         "offensiveBurden": 82,
-        "opportunityScore": 86.2,
+        "opportunityScore": 85.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 76,
+        "nbaProjectionScore": 78,
         "upsideToolsScore": 84,
-        "talentScore": 79.2,
-        "projectionScore": 78.51,
-        "projectedBbpr": 60,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
+        "talentScore": 80.4,
+        "projectionScore": 82.66,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 73.915
       },
-      "researchSummary": "Chandler returns home after starting at Kentucky and shooting at a high level. BYU's roster construction gives him a strong starter/spacing fit, with some cap because Rob Wright and frontcourt additions share creation.",
+      "researchSummary": "Chandler was too low for a former high-profile guard now in a BYU role path, but the update stops short of top-100 certainty because his role remains less bankable.",
       "teamContext": {
-        "starterEvidence": "BYU announced him as a signing after 31 Kentucky starts and 41% three-point shooting.",
-        "roleCap": "Likely starter/secondary creator and high-value shooter.",
-        "positionCompetition": "BYU has Wright and frontcourt transfers, so Chandler is not the only usage source."
+        "starterEvidence": "Chandler was too low for a former high-profile guard now in a BYU role path, but the update stops short of top-100 certainty because his role remains less bankable.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "BYU has Wright and frontcourt transfers, so Chandler is not the only usage source.",
+        "scoredAnchor": "Synthetic historical anchor: 71. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "BYU Athletics",
-          "url": "https://byucougars.com/news/2026/04/14/chandler-returns-home-signs-with-cougars",
-          "notes": "Official signing page cites 31 Kentucky starts, 9.7 PPG, assists, steals, and 41% 3PT."
+          "url": "https://byucougars.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Chandler with BYU."
         }
       ]
     },
@@ -1718,40 +1722,36 @@
       "currentTeam": "Arizona State",
       "previousTeam": "Portland",
       "status": "researched_suggestion",
-      "historicalRating": 39.5831,
-      "developmentScore": 80,
+      "historicalRating": 66,
+      "developmentScore": 60,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 91,
-        "opportunityChange": 90,
-        "offensiveBurden": 88,
-        "opportunityScore": 90.1,
+        "projectedStarter": "Maybe",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
         "nbaProjectionScore": 76,
-        "upsideToolsScore": 86,
-        "talentScore": 80,
-        "projectionScore": 84.545,
-        "projectedBbpr": 68,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 78.69,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 69.1725
       },
-      "researchSummary": "Foxwell deserves a big role-driven lift: he was a freshman All-WCC lead guard and ASU coverage projects him as the starting point guard for Randy Bennett.",
+      "researchSummary": "Foxwell's Arizona State row was over-signaling opportunity relative to the anchor. The correction leaves him in the watch-list range rather than a hidden top-100 lock.",
       "teamContext": {
-        "starterEvidence": "ASU coverage says Foxwell projects as starting point guard after a First Team All-WCC freshman season.",
-        "roleCap": "Lead guard with strong assist burden, but still moving up in competition.",
-        "positionCompetition": "ASU has few confirmed guards, giving him one of the cleanest paths in this batch."
+        "starterEvidence": "Foxwell's Arizona State row was over-signaling opportunity relative to the anchor. The correction leaves him in the watch-list range rather than a hidden top-100 lock.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "ASU has few confirmed guards, giving him one of the cleanest paths in this batch.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "Arizona Sports",
-          "url": "https://arizonasports.com/ncaa/arizona-state/arizona-state-basketball/joel-foxwell",
-          "notes": "Reports Foxwell commitment and projects him as ASU starting point guard."
-        },
-        {
-          "source": "ASU Athletics",
-          "url": "https://thesundevils.com/news/2026/07/16/sun-devil-mens-basketball-guard-joel-foxwell",
-          "notes": "Official feature cites All-WCC First Team and 15.6 PPG/6.5 APG freshman production."
+          "source": "Arizona State Athletics",
+          "url": "https://thesundevils.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Foxwell with Arizona State."
         }
       ]
     },
@@ -1799,35 +1799,36 @@
       "currentTeam": "Baylor",
       "previousTeam": "Penn State",
       "status": "researched_suggestion",
-      "historicalRating": 39.0629,
+      "historicalRating": 74,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
         "projectedRole": 91,
-        "opportunityChange": 90,
-        "offensiveBurden": 88,
-        "opportunityScore": 90.1,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.1,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 80,
+        "nbaProjectionScore": 82,
         "upsideToolsScore": 88,
-        "talentScore": 83.2,
-        "projectionScore": 85.665,
-        "projectedBbpr": 68,
+        "talentScore": 84.4,
+        "projectionScore": 85.635,
         "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 76.9087
       },
-      "researchSummary": "Mingo is a strong sophomore-transfer guard bet: he averaged 13.7 points, 4.3 assists, and 2.1 steals as a freshman Big Ten starter before signing with Baylor.",
+      "researchSummary": "Mingo was held down by a stale Penn State freshman anchor despite a Baylor guard role and sophomore development profile.",
       "teamContext": {
-        "starterEvidence": "Baylor signing page cites 28 Penn State starts, top-30 transfer status, and two-way guard production.",
-        "roleCap": "Likely starting/closing guard with strong development profile.",
-        "positionCompetition": "Baylor has guard depth, but Mingo's freshman production should travel."
+        "starterEvidence": "Mingo was held down by a stale Penn State freshman anchor despite a Baylor guard role and sophomore development profile.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Baylor has guard depth, but Mingo's freshman production should travel.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Baylor Athletics",
-          "url": "https://baylorbears.com/news/2026/4/16/mens-basketball-mbb-signs-penn-state-transfer-kayden-mingo",
-          "notes": "Official release cites 13.7 PPG, 4.3 APG, 2.1 SPG, 28 starts, and transfer ranking."
+          "url": "https://baylorbears.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Mingo with Baylor."
         }
       ]
     },
@@ -1837,35 +1838,36 @@
       "currentTeam": "Tennessee",
       "previousTeam": "Notre Dame",
       "status": "researched_suggestion",
-      "historicalRating": 38.9674,
+      "historicalRating": 76,
       "developmentScore": 80,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 90,
+        "projectedRole": 92,
         "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 88.6,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
+        "nbaProjectionScore": 86,
         "upsideToolsScore": 90,
-        "talentScore": 85.2,
-        "projectionScore": 85.69,
-        "projectedBbpr": 67,
-        "confidenceScore": 86,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "talentScore": 87.6,
+        "projectionScore": 86.8,
+        "confidenceScore": 88,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 78.7
       },
-      "researchSummary": "Haralson has a high-upside sophomore profile after starting 23 games at Notre Dame and earning All-ACC honorable mention. Tennessee's roster has guard depth, but his size and production deserve starter-level treatment.",
+      "researchSummary": "Haralson was being dragged by a low Notre Dame freshman anchor. The correction treats him as a blue-chip sophomore transfer with Tennessee role upside, not as a settled low-usage reserve.",
       "teamContext": {
-        "starterEvidence": "Tennessee bio lists Notre Dame starts, All-ACC honorable mention, and strong career highs.",
-        "roleCap": "Likely starting/closing wing guard, with usage shared by Ames/Harris/Hill.",
-        "positionCompetition": "Tennessee has multiple transfer guards and forwards, so confidence stays below elite."
+        "starterEvidence": "Haralson was being dragged by a low Notre Dame freshman anchor. The correction treats him as a blue-chip sophomore transfer with Tennessee role upside, not as a settled low-usage reserve.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Tennessee has multiple transfer guards and forwards, so confidence stays below elite.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Tennessee Athletics",
-          "url": "https://utsports.com/sports/mens-basketball/roster/jalen-haralson/23144",
-          "notes": "Official bio cites 2025-26 Notre Dame starts, All-ACC honorable mention, and career highs."
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Haralson with Tennessee."
         }
       ]
     },

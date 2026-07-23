@@ -188,36 +188,37 @@
       "currentTeam": "Texas",
       "previousTeam": "TCU",
       "status": "researched_suggestion",
-      "historicalRating": 76,
+      "historicalRating": 79,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 82,
-        "opportunityScore": 88.8,
+        "projectedRole": 94,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "opportunityScore": 91.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 80.38,
-        "projectedBbpr": 77.095,
-        "confidenceScore": 86,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 88,
+        "talentScore": 83.2,
+        "projectionScore": 82.16,
+        "confidenceScore": 88,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 79.79
       },
-      "researchSummary": "projected Texas starting forward; All-Big 12 honorable mention with 61 starts, 10.4 PPG, 5.6 RPG, and 94 career blocks at TCU.",
+      "researchSummary": "Punch was a bit low relative to his Texas frontcourt role, Big 12 production, and defensive value. The correction moves him into a stronger high-major starter band.",
       "teamContext": {
-        "starterEvidence": "Texas projected-lineup context places Punch in the starting group.",
-        "roleCap": "Starting forward with shared usage.",
+        "starterEvidence": "Punch was a bit low relative to his Texas frontcourt role, Big 12 production, and defensive value. The correction moves him into a stronger high-major starter band.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
         "positionCompetition": "Texas frontcourt/wing depth lowers offensive burden.",
-        "reassessment": "July 22 reassessment lifted this row after player-specific role/production research showed the prior historical/role anchor was too conservative."
+        "reassessment": "July 22 reassessment lifted this row after player-specific role/production research showed the prior historical/role anchor was too conservative.",
+        "scoredAnchor": "Synthetic historical anchor: 79. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
-          "source": "FanDuel Research",
-          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
-          "notes": "Rothstein's Texas projected lineup includes Punch."
+          "source": "Texas Athletics",
+          "url": "https://texaslonghorns.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Punch's Texas fit."
         }
       ]
     },
@@ -576,44 +577,6 @@
           "source": "Yahoo Sports",
           "url": "https://sports.yahoo.com/articles/projected-gonzaga-starting-lineup-mario-184950341.html",
           "notes": "Gonzaga projected-lineup context shows unresolved guard/wing hierarchy."
-        }
-      ]
-    },
-    {
-      "sourceRow": 251,
-      "player": "De’Shayne Montgomery",
-      "currentTeam": "Louisville",
-      "previousTeam": "Dayton",
-      "status": "researched_suggestion",
-      "historicalRating": 65.8942,
-      "developmentScore": 40,
-      "suggested": {
-        "projectedStarter": "No",
-        "projectedRole": 80,
-        "opportunityChange": 72,
-        "offensiveBurden": 70,
-        "opportunityScore": 75.6,
-        "entryTalentGrade": null,
-        "nbaProjectionScore": 65,
-        "upsideToolsScore": 75,
-        "talentScore": 69,
-        "projectionScore": 66.17,
-        "projectedBbpr": 65.9632,
-        "confidenceScore": 72,
-        "confidenceGrade": "B",
-        "needsReview": true
-      },
-      "researchSummary": "Montgomery has useful transfer guard depth, but Louisville's projected lineup and bench are crowded. He should not receive starter credit unless later lineup reporting changes.",
-      "teamContext": {
-        "starterEvidence": "No projected starter evidence in Louisville's Rothstein lineup.",
-        "roleCap": "Bench/rotation guard.",
-        "positionCompetition": "Shelstad, Wooley, Knox, and other pieces absorb major usage."
-      },
-      "evidence": [
-        {
-          "source": "FanDuel Research",
-          "url": "https://www.fanduel.com/research/rothstein-45-jon-rothstein-2026-27-preseason-college-basketball-rankings",
-          "notes": "Louisville projected lineup/bench context shows a crowded rotation."
         }
       ]
     },

@@ -31,40 +31,36 @@
       "currentTeam": "Denver",
       "previousTeam": "Denver",
       "status": "researched_suggestion",
-      "historicalRating": 43.3677,
-      "developmentScore": 60,
+      "historicalRating": 66,
+      "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 99,
-        "opportunityChange": 97,
-        "offensiveBurden": 95,
-        "opportunityScore": 97.6,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "opportunityScore": 87,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 84.34,
-        "projectedBbpr": 67.9511,
-        "confidenceScore": 92,
-        "confidenceGrade": "A",
-        "needsReview": true
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 80,
+        "talentScore": 72.8,
+        "projectionScore": 72.63,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 69.315
       },
-      "researchSummary": "Summit League Player/Newcomer of the Year returns as Denver's clear lead guard and primary scorer as the program moves into the WCC. Low-major-to-WCC translation keeps him below high-major stars, but the production/role case is strong enough to sit near the top-100 line.",
+      "researchSummary": "Johnson's Denver row had elite-usage inputs that overstated the national top-100 translation. The correction keeps the scorer profile but removes the top-100 role flag.",
       "teamContext": {
-        "starterEvidence": "Denver confirmed Johnson is returning after a 20.1 PPG season and will lead the WCC transition.",
-        "roleCap": "Clear offensive focal point; role is not capped by roster competition, only by conference translation.",
-        "positionCompetition": "Primary scorer/creator after 35-plus MPG and league POY usage."
+        "starterEvidence": "Johnson's Denver row had elite-usage inputs that overstated the national top-100 translation. The correction keeps the scorer profile but removes the top-100 role flag.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Primary scorer/creator after 35-plus MPG and league POY usage.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Denver Athletics",
-          "url": "https://denverpioneers.com/news/2026/3/12/mens-basketball-carson-johnson-confirms-he-will-return-to-denver-next-season.aspx",
-          "notes": "Return announcement cites 20.1 PPG, 3.0 APG, heavy minutes, and WCC transition leadership."
-        },
-        {
-          "source": "Summit League",
-          "url": "https://thesummitleague.org/news/2026/3/3/awards-dus-johnson-nets-summitmbb-player-and-newcomer-of-the-year-honors.aspx",
-          "notes": "League awards page lists Player/Newcomer of the Year and top scoring context."
+          "url": "https://denverpioneers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Johnson with Denver."
         }
       ]
     },
@@ -289,40 +285,36 @@
       "currentTeam": "Syracuse",
       "previousTeam": "Temple",
       "status": "researched_suggestion",
-      "historicalRating": 47.7067,
+      "historicalRating": 66,
       "developmentScore": 60,
       "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 88,
+        "projectedStarter": "Maybe",
+        "projectedRole": 86,
         "opportunityChange": 84,
         "offensiveBurden": 80,
-        "opportunityScore": 85.2,
+        "opportunityScore": 84.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 75,
+        "nbaProjectionScore": 74,
         "upsideToolsScore": 84,
-        "talentScore": 78.6,
-        "projectionScore": 77.85,
-        "projectedBbpr": 55.2425,
-        "confidenceScore": 84,
-        "confidenceGrade": "B+",
-        "needsReview": true
+        "talentScore": 78,
+        "projectionScore": 77.19,
+        "confidenceScore": 80,
+        "confidenceGrade": "B",
+        "needsReview": true,
+        "projectedBbpr": 68.7975
       },
-      "researchSummary": "Tobiason made a big sophomore leap at Temple and has enough size/scoring to matter at Syracuse. He is scored as a likely high-rotation wing/guard rather than a guaranteed first option because Syracuse also added Doty/Dual/other pieces.",
+      "researchSummary": "Tobiason had a transfer-anchor warning because the model inputs were stronger than the old anchor. The correction gives him a fair Syracuse role anchor without forcing top-100 status.",
       "teamContext": {
-        "starterEvidence": "Syracuse announcement highlights full-season Temple starter production.",
-        "roleCap": "Likely starter or sixth-man scorer, but not enough lineup certainty for full starter credit.",
-        "positionCompetition": "Size and sophomore development give real upside."
+        "starterEvidence": "Tobiason had a transfer-anchor warning because the model inputs were stronger than the old anchor. The correction gives him a fair Syracuse role anchor without forcing top-100 status.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Size and sophomore development give real upside.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Syracuse Athletics",
-          "url": "https://cuse.com/news/2026/4/24/tobiason-joins-orange-mens-basketball",
-          "notes": "Official signing notes 15.3 PPG, 35.3 MPG, and all 32 starts at Temple."
-        },
-        {
-          "source": "Temple News",
-          "url": "https://temple-news.com/aiden-tobiason-enters-transfer-portal/",
-          "notes": "Transfer coverage notes scoring leap and Syracuse commitment."
+          "url": "https://cuse.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Tobiason with Syracuse."
         }
       ]
     },
@@ -418,40 +410,36 @@
       "currentTeam": "Auburn",
       "previousTeam": "Auburn",
       "status": "researched_suggestion",
-      "historicalRating": 50.408,
+      "historicalRating": 72,
       "developmentScore": 60,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 90,
-        "offensiveBurden": 86,
-        "opportunityScore": 91.2,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 88.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 86,
-        "talentScore": 83.6,
-        "projectionScore": 82.3,
-        "projectedBbpr": 69.5432,
-        "confidenceScore": 90,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 78.71,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 75.355
       },
-      "researchSummary": "Overton belongs near the top-100 line or better: he returns as Auburn's veteran perimeter scorer next to Pettiford after an NIT MOP breakout and elite shooting stretch.",
+      "researchSummary": "Overton was below the line because of a low anchor despite a credible Auburn rotation-to-starter path. The correction places him on the top-100 bubble.",
       "teamContext": {
-        "starterEvidence": "Auburn confirmed senior return.",
-        "roleCap": "Projected starter/closing guard with Pettiford in veteran backcourt.",
-        "positionCompetition": "Strong shooting/shot-making raises confidence."
+        "starterEvidence": "Overton was below the line because of a low anchor despite a credible Auburn rotation-to-starter path. The correction places him on the top-100 bubble.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Strong shooting/shot-making raises confidence.",
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Auburn Athletics",
-          "url": "https://auburntigers.com/news/2026/04/07/kevin-overton-announces-return-to-auburn-for-senior-season",
-          "notes": "Return story cites 14.1 PPG, 41.3% from three, and NIT Most Outstanding Player."
-        },
-        {
-          "source": "Auburn Athletics",
-          "url": "https://d1xk4lz7u1u0yl.cloudfront.net/sports/mens-basketball/roster",
-          "notes": "Auburn roster lists Overton alongside Pettiford in the 2026-27 backcourt."
+          "url": "https://auburntigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Overton with Auburn."
         }
       ]
     },
@@ -590,40 +578,36 @@
       "currentTeam": "Harvard",
       "previousTeam": "Harvard",
       "status": "researched_suggestion",
-      "historicalRating": 48.1214,
-      "developmentScore": 60,
+      "historicalRating": 66,
+      "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 96,
-        "opportunityChange": 94,
-        "offensiveBurden": 92,
-        "opportunityScore": 94.6,
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 82.71,
-        "projectedBbpr": 68.8746,
-        "confidenceScore": 92,
-        "confidenceGrade": "A",
-        "needsReview": true
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 72.87,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 69.435
       },
-      "researchSummary": "Hinton is a legitimate returning-star candidate: unanimous First Team All-Ivy, Harvard MVP, and efficient 16.8 PPG scorer. Ivy context keeps him around the top-100 border rather than top-50, but the role case is excellent.",
+      "researchSummary": "Hinton's old inputs gave him a top-100 role signal without a top-100 anchor. The correction keeps him as a strong Harvard scorer while removing the high-major top-100 role equivalency.",
       "teamContext": {
-        "starterEvidence": "Harvard bio provides clear lead-option evidence.",
-        "roleCap": "Locked starter and primary scorer/creator.",
-        "positionCompetition": "Conference translation limits ceiling, not role."
+        "starterEvidence": "Hinton's old inputs gave him a top-100 role signal without a top-100 anchor. The correction keeps him as a strong Harvard scorer while removing the high-major top-100 role equivalency.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Conference translation limits ceiling, not role.",
+        "scoredAnchor": "Synthetic historical anchor: 66. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Harvard Athletics",
-          "url": "https://gocrimson.com/sports/mens-basketball/roster/robert-hinton/32551",
-          "notes": "Official bio lists unanimous First Team All-Ivy, 16.8 PPG, and 33.5 MPG."
-        },
-        {
-          "source": "Harvard Athletics",
           "url": "https://gocrimson.com/sports/mens-basketball/roster",
-          "notes": "Roster lists Hinton as returning junior guard."
+          "notes": "Official roster context verifies Hinton with Harvard."
         }
       ]
     },
@@ -929,40 +913,36 @@
       "currentTeam": "Tennessee",
       "previousTeam": "California",
       "status": "researched_suggestion",
-      "historicalRating": 41.184,
+      "historicalRating": 74,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 93,
-        "opportunityChange": 90,
-        "offensiveBurden": 89,
-        "opportunityScore": 91.3,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 84,
-        "talentScore": 80.4,
-        "projectionScore": 77.225,
-        "projectedBbpr": 71.0297,
-        "confidenceScore": 90,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 74.92,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 74.23
       },
-      "researchSummary": "Ames is one of the strongest additions in this batch: Third Team All-ACC scorer moving to Tennessee with a clear late-clock scoring fit. Tennessee depth keeps him below the top-returner tier, but he should be safely top-100 caliber.",
+      "researchSummary": "Ames needed a higher Tennessee-transfer anchor because the current row showed starter-level SEC opportunity but retained an old low historical base.",
       "teamContext": {
-        "starterEvidence": "Tennessee announcement explicitly identifies late-clock shot creation as a need.",
-        "roleCap": "Likely starting or closing guard with meaningful usage.",
-        "positionCompetition": "Proven ACC efficiency supports high confidence."
+        "starterEvidence": "Ames needed a higher Tennessee-transfer anchor because the current row showed starter-level SEC opportunity but retained an old low historical base.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Proven ACC efficiency supports high confidence.",
+        "scoredAnchor": "Synthetic historical anchor: 74. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Tennessee Athletics",
-          "url": "https://utsports.com/news/2026/4/15/mens-basketball-vols-welcome-all-acc-selection-dai-dai-ames",
-          "notes": "Official signing cites Third Team All-ACC, 16.9 PPG, and system fit."
-        },
-        {
-          "source": "Tennessee Athletics",
-          "url": "https://utsports.com/sports/mens-basketball/roster/dai-dai-ames/23138",
-          "notes": "Roster bio details Cal production and efficiency benchmarks."
+          "url": "https://utsports.com/sports/mens-basketball/roster",
+          "notes": "Official roster context verifies Ames with Tennessee."
         }
       ]
     },
@@ -1015,40 +995,36 @@
       "currentTeam": "Vanderbilt",
       "previousTeam": "Colorado",
       "status": "researched_suggestion",
-      "historicalRating": 51.5975,
+      "historicalRating": 72,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 80,
-        "opportunityScore": 88.4,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 87.2,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 85,
-        "talentScore": 80.8,
-        "projectionScore": 76.06,
-        "projectedBbpr": 70.755,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
-        "needsReview": true
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 73.84,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 72.46
       },
-      "researchSummary": "Dak gives Vanderbilt a clear starting-caliber center after starting 30 games in the Big 12. Rim protection/rebounding and Byington fit make him a credible top-150ish piece, with scoring burden capped by roster balance.",
+      "researchSummary": "Dak was a bit low for a high-major transfer frontcourt role, but the corrected score keeps him around the top-100 bubble rather than a locked top-75 player.",
       "teamContext": {
-        "starterEvidence": "Vanderbilt announcement frames him as a portal frontcourt headliner.",
-        "roleCap": "Likely starting center; not a primary offensive option.",
-        "positionCompetition": "Big 12 production and block rate support confidence."
+        "starterEvidence": "Dak was a bit low for a high-major transfer frontcourt role, but the corrected score keeps him around the top-100 bubble rather than a locked top-75 player.",
+        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "positionCompetition": "Big 12 production and block rate support confidence.",
+        "scoredAnchor": "Synthetic historical anchor: 72. Updated in the July 23 top-100 calibration pass."
       },
       "evidence": [
         {
           "source": "Vanderbilt Athletics",
-          "url": "https://vucommodores.com/news/2026/04/20/dak-joins-dores",
-          "notes": "Official signing cites 11.5 PPG, 6.5 RPG, 30 starts, and 50 blocks."
-        },
-        {
-          "source": "Sports Illustrated",
-          "url": "https://www.si.com/college/vanderbilt/basketball/breaking-down-bangot-dak-vanderbilt-basketball-s-new-7-foot-addition",
-          "notes": "Role analysis says Dak headlines Vanderbilt frontcourt and fits Byington system."
+          "url": "https://vucommodores.com/sports/mbball/roster/",
+          "notes": "Official roster context verifies Dak with Vanderbilt."
         }
       ]
     }
