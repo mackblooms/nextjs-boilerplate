@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-22T22:31:10.755Z",
+  "generatedAt": "2026-07-23T13:48:14.523Z",
   "sourceWorkbook": "all d1 players.xlsx",
-  "sheetPlayerCount": 3874,
+  "sheetPlayerCount": 3875,
   "players": [
     {
       "nationalRow": 1,
@@ -73607,6 +73607,25 @@
         "name": "nathan zulemie",
         "nameTeam": "nathan zulemie::fresno state",
         "nameTeamClass": "nathan zulemie::fresno state::so"
+      }
+    },
+    {
+      "nationalRow": 3875,
+      "player": "Joaquim Boumtje Boumtje",
+      "position": "C",
+      "height": "6-10",
+      "heightInches": 82,
+      "weight": 245,
+      "currentTeam": "Duke",
+      "classYear": "Fr",
+      "sourcePlayerCode": null,
+      "hometown": "St. Petersburg (FL)",
+      "highSchool": "FC Barcelona",
+      "playerType": "Freshman",
+      "matchKeys": {
+        "name": "joaquim boumtje boumtje",
+        "nameTeam": "joaquim boumtje boumtje::duke",
+        "nameTeamClass": "joaquim boumtje boumtje::duke::fr"
       }
     }
   ]
