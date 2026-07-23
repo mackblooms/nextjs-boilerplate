@@ -1,0 +1,2179 @@
+{
+  "batchId": "player-research-013",
+  "createdAt": "2026-07-23",
+  "sourceSheet": "player database + all D1 players",
+  "scope": "Large board-impact batch covering the next 50 pending players after batch 012, excluding prior research rows and rows without a confirmed current team in the local projection export.",
+  "method": [
+    "Skip rows already present in earlier player research batches.",
+    "Skip rows whose current-team field is blank in the projection export.",
+    "Prioritize remaining pending rows by historical rating after applying local batch 012 state.",
+    "Use local player-type, class, historical anchor, and current-team context for initial scoring.",
+    "Keep every row pending admin approval so official roster, signing, and role evidence can be reviewed before application."
+  ],
+  "formulas": {
+    "opportunityScore": "projectedRole*0.50 + opportunityChange*0.30 + offensiveBurden*0.20",
+    "talentScoreReturningTransfer": "nbaProjectionScore*0.60 + upsideToolsScore*0.40",
+    "talentScoreNewcomer": "entryTalentGrade*0.40 + nbaProjectionScore*0.35 + upsideToolsScore*0.25",
+    "projectionScore": "opportunityScore*0.45 + talentScore*0.35 + developmentScore*0.20",
+    "projectedBbprWithHistory": "historicalRating/proven production blended with projection score, then calibrated by player type"
+  },
+  "teamContextRubric": {
+    "projectedStarter": "Yes requires returner/transfer profile plus a plausible path to starter or closing-lineup minutes; Uncertain means rotation value without locked starting signal; No means depth/bench role.",
+    "projectedRole": "88-92 for strong starter/closing cases, 82-87 for likely starters or high-minute rotation players, 76-81 for uncertain rotation players with role caps.",
+    "opportunityChange": "Rewards open usage, transfer fit, or retained-program opportunity; penalizes crowded high-major rotations and uncertain immediate translation.",
+    "offensiveBurden": "Primary/secondary scorers and creators get 82+; defensive bigs, connectors, and low-usage wings stay lower.",
+    "roleEvidence": "Every row includes why starter credit was assigned or capped and remains pending for official verification."
+  },
+  "players": [
+    {
+      "sourceRow": 293,
+      "player": "Aaron Bradshaw",
+      "currentTeam": "Tennessee State",
+      "previousTeam": "Memphis",
+      "status": "researched_suggestion",
+      "historicalRating": 38.709,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 80,
+        "opportunityScore": 85.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 74.75,
+        "projectedBbpr": 47.7193,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Aaron Bradshaw carries a 38.709 historical anchor into a starter or closing-lineup projection for Tennessee State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Tennessee State is listed as the current team after Memphis, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Tennessee State's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Tennessee State Athletics",
+          "url": "https://tsutigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Aaron Bradshaw's Tennessee State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 293 lists Aaron Bradshaw as a Transfer Sr C with historical rating 38.709."
+        }
+      ]
+    },
+    {
+      "sourceRow": 350,
+      "player": "Jayden Ross",
+      "currentTeam": "Connecticut",
+      "previousTeam": "Connecticut",
+      "status": "researched_suggestion",
+      "historicalRating": 38.3234,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 77.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 80,
+        "talentScore": 75.2,
+        "projectionScore": 69.33,
+        "projectedBbpr": 50.726,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jayden Ross carries a 38.3234 historical anchor into a major-rotation projection for Connecticut. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Connecticut returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Connecticut's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Connecticut Athletics",
+          "url": "https://uconnhuskies.com/sports/mbball/roster/",
+          "notes": "Official roster/signing page is the primary verification target for Jayden Ross's Connecticut status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 350 lists Jayden Ross as a Returning Sr F with historical rating 38.3234."
+        }
+      ]
+    },
+    {
+      "sourceRow": 278,
+      "player": "Sebastian Rancik",
+      "currentTeam": "Florida State",
+      "previousTeam": "Colorado",
+      "status": "researched_suggestion",
+      "historicalRating": 38.2748,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 75.11,
+        "projectedBbpr": 47.4836,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Sebastian Rancik carries a 38.2748 historical anchor into a major-rotation projection for Florida State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Florida State is listed as the current team after Colorado, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Florida State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Florida State Athletics",
+          "url": "https://seminoles.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Sebastian Rancik's Florida State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 278 lists Sebastian Rancik as a Transfer Jr F with historical rating 38.2748."
+        }
+      ]
+    },
+    {
+      "sourceRow": 154,
+      "player": "Jordan Pyke",
+      "currentTeam": "Arkansas State",
+      "previousTeam": "Incarnate Word",
+      "status": "researched_suggestion",
+      "historicalRating": 37.1784,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 73.14,
+        "projectedBbpr": 46.1688,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jordan Pyke carries a 37.1784 historical anchor into a starter or closing-lineup projection for Arkansas State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Arkansas State is listed as the current team after Incarnate Word, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Arkansas State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Arkansas State Athletics",
+          "url": "https://astateredwolves.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jordan Pyke's Arkansas State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 154 lists Jordan Pyke as a Transfer Sr F with historical rating 37.1784."
+        }
+      ]
+    },
+    {
+      "sourceRow": 159,
+      "player": "Abdi Bashir Jr.",
+      "currentTeam": "LSU",
+      "previousTeam": "Kansas State",
+      "status": "researched_suggestion",
+      "historicalRating": 37.0456,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 71.77,
+        "projectedBbpr": 45.7267,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Abdi Bashir Jr. carries a 37.0456 historical anchor into a major-rotation projection for LSU. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "LSU is listed as the current team after Kansas State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "LSU's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "LSU Athletics",
+          "url": null,
+          "notes": "Official roster/signing page is the primary verification target for Abdi Bashir Jr.'s LSU status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 159 lists Abdi Bashir Jr. as a Transfer Sr G with historical rating 37.0456."
+        }
+      ]
+    },
+    {
+      "sourceRow": 73,
+      "player": "Jackson Shelstad",
+      "currentTeam": "Louisville",
+      "previousTeam": "Oregon",
+      "status": "researched_suggestion",
+      "historicalRating": 36.6411,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "opportunityScore": 88,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 84,
+        "talentScore": 80.4,
+        "projectionScore": 75.74,
+        "projectedBbpr": 46.4158,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jackson Shelstad carries a 36.6411 historical anchor into a starter or closing-lineup projection for Louisville. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Louisville is listed as the current team after Oregon, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Louisville's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jackson Shelstad's Louisville status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 73 lists Jackson Shelstad as a Transfer Sr G with historical rating 36.6411."
+        }
+      ]
+    },
+    {
+      "sourceRow": 282,
+      "player": "Roman Siulepa",
+      "currentTeam": "Mississippi",
+      "previousTeam": "Pittsburgh",
+      "status": "researched_suggestion",
+      "historicalRating": 36.53,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 78.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 78.49,
+        "projectedBbpr": 47.02,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Roman Siulepa carries a 36.53 historical anchor into a major-rotation projection for Mississippi. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Mississippi is listed as the current team after Pittsburgh, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Mississippi's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Mississippi Athletics",
+          "url": "https://olemisssports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Roman Siulepa's Mississippi status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 282 lists Roman Siulepa as a Transfer So F with historical rating 36.53."
+        }
+      ]
+    },
+    {
+      "sourceRow": 276,
+      "player": "Khani Rooths",
+      "currentTeam": "Oklahoma",
+      "previousTeam": "Louisville",
+      "status": "researched_suggestion",
+      "historicalRating": 36.4536,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 77.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 74.31,
+        "projectedBbpr": 45.9177,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Khani Rooths carries a 36.4536 historical anchor into a major-rotation projection for Oklahoma. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Oklahoma is listed as the current team after Louisville, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Oklahoma's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oklahoma Athletics",
+          "url": "https://soonersports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Khani Rooths's Oklahoma status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 276 lists Khani Rooths as a Transfer Jr F with historical rating 36.4536."
+        }
+      ]
+    },
+    {
+      "sourceRow": 201,
+      "player": "Neoklis Avdalas",
+      "currentTeam": "North Carolina",
+      "previousTeam": "Virginia Tech",
+      "status": "researched_suggestion",
+      "historicalRating": 36.1883,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 85.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 82.94,
+        "projectedBbpr": 47.8762,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Neoklis Avdalas carries a 36.1883 historical anchor into a starter or closing-lineup projection for North Carolina. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "North Carolina is listed as the current team after Virginia Tech, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "North Carolina's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "North Carolina Athletics",
+          "url": "https://goheels.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Neoklis Avdalas's North Carolina status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 201 lists Neoklis Avdalas as a Transfer So G with historical rating 36.1883."
+        }
+      ]
+    },
+    {
+      "sourceRow": 158,
+      "player": "Malik Mack",
+      "currentTeam": "Providence",
+      "previousTeam": "Georgetown",
+      "status": "researched_suggestion",
+      "historicalRating": 35.8738,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "opportunityScore": 87,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.87,
+        "projectedBbpr": 45.6228,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Malik Mack carries a 35.8738 historical anchor into a starter or closing-lineup projection for Providence. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Providence is listed as the current team after Georgetown, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Providence's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Providence Athletics",
+          "url": "https://friars.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Malik Mack's Providence status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 158 lists Malik Mack as a Transfer Sr G with historical rating 35.8738."
+        }
+      ]
+    },
+    {
+      "sourceRow": 295,
+      "player": "Jarin Stevenson",
+      "currentTeam": "North Carolina",
+      "previousTeam": "North Carolina",
+      "status": "researched_suggestion",
+      "historicalRating": 35.7117,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 83.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 73.43,
+        "projectedBbpr": 54.5709,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jarin Stevenson carries a 35.7117 historical anchor into a starter or closing-lineup projection for North Carolina. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "North Carolina returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score gives starter credit while keeping usage below lead-star territory until team hierarchy is confirmed.",
+        "positionCompetition": "North Carolina's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "North Carolina Athletics",
+          "url": "https://goheels.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jarin Stevenson's North Carolina status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 295 lists Jarin Stevenson as a Returning Sr F with historical rating 35.7117."
+        }
+      ]
+    },
+    {
+      "sourceRow": 125,
+      "player": "Viljami Vartiainen",
+      "currentTeam": "UCSB",
+      "previousTeam": "Weber State",
+      "status": "researched_suggestion",
+      "historicalRating": 35.654,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 71.97,
+        "projectedBbpr": 44.733,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Viljami Vartiainen carries a 35.654 historical anchor into a starter or closing-lineup projection for UCSB. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "UCSB is listed as the current team after Weber State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "UCSB's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UCSB Athletics",
+          "url": "https://ucsbgauchos.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Viljami Vartiainen's UCSB status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 125 lists Viljami Vartiainen as a Transfer Sr G with historical rating 35.654."
+        }
+      ]
+    },
+    {
+      "sourceRow": 344,
+      "player": "Amare Bynum",
+      "currentTeam": "Ohio State",
+      "previousTeam": "Ohio State",
+      "status": "researched_suggestion",
+      "historicalRating": 35.6247,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 78.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 78.49,
+        "projectedBbpr": 52.7708,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Amare Bynum carries a 35.6247 historical anchor into a major-rotation projection for Ohio State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Ohio State returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Ohio State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Ohio State Athletics",
+          "url": "https://ohiostatebuckeyes.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Amare Bynum's Ohio State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 344 lists Amare Bynum as a Returning So F with historical rating 35.6247."
+        }
+      ]
+    },
+    {
+      "sourceRow": 174,
+      "player": "Matt Able",
+      "currentTeam": "North Carolina",
+      "previousTeam": "North Carolina State",
+      "status": "researched_suggestion",
+      "historicalRating": 35.4543,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 78.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 78.67,
+        "projectedBbpr": 46.2582,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Matt Able carries a 35.4543 historical anchor into a major-rotation projection for North Carolina. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "North Carolina is listed as the current team after North Carolina State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "North Carolina's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "North Carolina Athletics",
+          "url": "https://goheels.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Matt Able's North Carolina status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 174 lists Matt Able as a Transfer So G with historical rating 35.4543."
+        }
+      ]
+    },
+    {
+      "sourceRow": 265,
+      "player": "Sidi Gueye",
+      "currentTeam": "Santa Clara",
+      "previousTeam": "Arizona",
+      "status": "researched_suggestion",
+      "historicalRating": 35.3902,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 78,
+        "offensiveBurden": 70,
+        "opportunityScore": 76.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 84,
+        "talentScore": 76.8,
+        "projectionScore": 77.26,
+        "projectedBbpr": 45.8577,
+        "confidenceScore": 74,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Sidi Gueye carries a 35.3902 historical anchor into a major-rotation projection for Santa Clara. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Santa Clara is listed as the current team after Arizona, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Santa Clara's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Santa Clara Athletics",
+          "url": "https://santaclarabroncos.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Sidi Gueye's Santa Clara status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 265 lists Sidi Gueye as a Transfer So F with historical rating 35.3902."
+        }
+      ]
+    },
+    {
+      "sourceRow": 366,
+      "player": "Trent Pierce",
+      "currentTeam": "Missouri",
+      "previousTeam": "Missouri",
+      "status": "researched_suggestion",
+      "historicalRating": 35.3639,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 77.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 70.31,
+        "projectedBbpr": 49.3423,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Trent Pierce carries a 35.3639 historical anchor into a major-rotation projection for Missouri. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Missouri returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Missouri's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Missouri Athletics",
+          "url": "https://mutigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Trent Pierce's Missouri status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 366 lists Trent Pierce as a Returning Sr F with historical rating 35.3639."
+        }
+      ]
+    },
+    {
+      "sourceRow": 156,
+      "player": "Bryce Lindsay",
+      "currentTeam": "Indiana",
+      "previousTeam": "Villanova",
+      "status": "researched_suggestion",
+      "historicalRating": 35.3263,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 80,
+        "opportunityScore": 81,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 75.75,
+        "projectedBbpr": 45.4322,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Bryce Lindsay carries a 35.3263 historical anchor into a major-rotation projection for Indiana. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Indiana is listed as the current team after Villanova, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Indiana's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Indiana Athletics",
+          "url": "https://iuhoosiers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Bryce Lindsay's Indiana status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 156 lists Bryce Lindsay as a Transfer Jr G with historical rating 35.3263."
+        }
+      ]
+    },
+    {
+      "sourceRow": 149,
+      "player": "Rihards Vavers",
+      "currentTeam": "Memphis",
+      "previousTeam": "Washington State",
+      "status": "researched_suggestion",
+      "historicalRating": 35.2724,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 70.69,
+        "projectedBbpr": 44.1268,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Rihards Vavers carries a 35.2724 historical anchor into a major-rotation projection for Memphis. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Memphis is listed as the current team after Washington State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Memphis's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Memphis Athletics",
+          "url": "https://gotigersgo.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Rihards Vavers's Memphis status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 149 lists Rihards Vavers as a Transfer Sr F with historical rating 35.2724."
+        }
+      ]
+    },
+    {
+      "sourceRow": 240,
+      "player": "Dwayne Aristode",
+      "currentTeam": "Oregon",
+      "previousTeam": "Arizona",
+      "status": "researched_suggestion",
+      "historicalRating": 35.0571,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 76.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 77.59,
+        "projectedBbpr": 45.6903,
+        "confidenceScore": 74,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Dwayne Aristode carries a 35.0571 historical anchor into a major-rotation projection for Oregon. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Oregon is listed as the current team after Arizona, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Oregon's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oregon Athletics",
+          "url": "https://goducks.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Dwayne Aristode's Oregon status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 240 lists Dwayne Aristode as a Transfer So G with historical rating 35.0571."
+        }
+      ]
+    },
+    {
+      "sourceRow": 109,
+      "player": "Jaylen Petty",
+      "currentTeam": "UCLA",
+      "previousTeam": "Texas Tech",
+      "status": "researched_suggestion",
+      "historicalRating": 35.026,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 76.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 76.89,
+        "projectedBbpr": 45.492,
+        "confidenceScore": 74,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Jaylen Petty carries a 35.026 historical anchor into a major-rotation projection for UCLA. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "UCLA is listed as the current team after Texas Tech, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "UCLA's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UCLA Athletics",
+          "url": "https://uclabruins.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jaylen Petty's UCLA status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 109 lists Jaylen Petty as a Transfer So G with historical rating 35.026."
+        }
+      ]
+    },
+    {
+      "sourceRow": 228,
+      "player": "Nikolas Khamenia",
+      "currentTeam": "Connecticut",
+      "previousTeam": "Duke",
+      "status": "researched_suggestion",
+      "historicalRating": 35.0243,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 76.69,
+        "projectedBbpr": 45.4407,
+        "confidenceScore": 74,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Nikolas Khamenia carries a 35.0243 historical anchor into a bench/rotation projection for Connecticut. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Connecticut is listed as the current team after Duke, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps him in a depth role because roster competition and immediate usage remain uncertain.",
+        "positionCompetition": "Connecticut's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Connecticut Athletics",
+          "url": "https://uconnhuskies.com/sports/mbball/roster/",
+          "notes": "Official roster/signing page is the primary verification target for Nikolas Khamenia's Connecticut status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 228 lists Nikolas Khamenia as a Transfer So G with historical rating 35.0243."
+        }
+      ]
+    },
+    {
+      "sourceRow": 319,
+      "player": "Kanaan Carlyle",
+      "currentTeam": "Florida Atlantic",
+      "previousTeam": "Florida Atlantic",
+      "status": "researched_suggestion",
+      "historicalRating": 35.0021,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "opportunityScore": 87,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 74.87,
+        "projectedBbpr": 54.9361,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Kanaan Carlyle carries a 35.0021 historical anchor into a starter or closing-lineup projection for Florida Atlantic. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Florida Atlantic returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score gives starter credit while keeping usage below lead-star territory until team hierarchy is confirmed.",
+        "positionCompetition": "Florida Atlantic's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Florida Atlantic Athletics",
+          "url": "https://fausports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Kanaan Carlyle's Florida Atlantic status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 319 lists Kanaan Carlyle as a Returning Sr G with historical rating 35.0021."
+        }
+      ]
+    },
+    {
+      "sourceRow": 247,
+      "player": "Xavier Booker",
+      "currentTeam": "UCLA",
+      "previousTeam": "UCLA",
+      "status": "researched_suggestion",
+      "historicalRating": 34.8174,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 72,
+        "opportunityScore": 77.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 71.01,
+        "projectedBbpr": 49.2944,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Xavier Booker carries a 34.8174 historical anchor into a major-rotation projection for UCLA. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "UCLA returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "UCLA's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "UCLA Athletics",
+          "url": "https://uclabruins.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Xavier Booker's UCLA status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 247 lists Xavier Booker as a Returning Sr C with historical rating 34.8174."
+        }
+      ]
+    },
+    {
+      "sourceRow": 126,
+      "player": "Trey Autry",
+      "currentTeam": "Wisconsin",
+      "previousTeam": "George Washington",
+      "status": "researched_suggestion",
+      "historicalRating": 34.7059,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 76,
+        "opportunityScore": 80.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 70.69,
+        "projectedBbpr": 43.7019,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Trey Autry carries a 34.7059 historical anchor into a major-rotation projection for Wisconsin. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Wisconsin is listed as the current team after George Washington, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Wisconsin's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Wisconsin Athletics",
+          "url": "https://uwbadgers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Trey Autry's Wisconsin status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 126 lists Trey Autry as a Transfer Sr G with historical rating 34.7059."
+        }
+      ]
+    },
+    {
+      "sourceRow": 248,
+      "player": "Magoon Gwath",
+      "currentTeam": "DePaul",
+      "previousTeam": "San Diego State",
+      "status": "researched_suggestion",
+      "historicalRating": 34.0943,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 76,
+        "opportunityScore": 81.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 76.11,
+        "projectedBbpr": 44.5982,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Magoon Gwath carries a 34.0943 historical anchor into a starter or closing-lineup projection for DePaul. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "DePaul is listed as the current team after San Diego State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "DePaul's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "DePaul Athletics",
+          "url": "https://depaulbluedemons.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Magoon Gwath's DePaul status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 248 lists Magoon Gwath as a Transfer Jr F with historical rating 34.0943."
+        }
+      ]
+    },
+    {
+      "sourceRow": 269,
+      "player": "Kam Williams",
+      "currentTeam": "Kentucky",
+      "previousTeam": "Kentucky",
+      "status": "researched_suggestion",
+      "historicalRating": 33.7509,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "No",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 76.69,
+        "projectedBbpr": 50.9265,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Kam Williams carries a 33.7509 historical anchor into a bench/rotation projection for Kentucky. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Kentucky returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps him in a depth role because roster competition and immediate usage remain uncertain.",
+        "positionCompetition": "Kentucky's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Kentucky Athletics",
+          "url": "https://ukathletics.com/sports/mbball/roster/",
+          "notes": "Official roster/signing page is the primary verification target for Kam Williams's Kentucky status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 269 lists Kam Williams as a Returning So G with historical rating 33.7509."
+        }
+      ]
+    },
+    {
+      "sourceRow": 341,
+      "player": "Jaylen Crocker Johnson",
+      "currentTeam": "Minnesota",
+      "previousTeam": "Minnesota",
+      "status": "researched_suggestion",
+      "historicalRating": 33.5415,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 86,
+        "offensiveBurden": 82,
+        "opportunityScore": 85.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 72.94,
+        "projectedBbpr": 53.2407,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jaylen Crocker Johnson carries a 33.5415 historical anchor into a starter or closing-lineup projection for Minnesota. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Minnesota returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score gives starter credit while keeping usage below lead-star territory until team hierarchy is confirmed.",
+        "positionCompetition": "Minnesota's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Minnesota Athletics",
+          "url": "https://gophersports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jaylen Crocker Johnson's Minnesota status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 341 lists Jaylen Crocker Johnson as a Returning Sr F with historical rating 33.5415."
+        }
+      ]
+    },
+    {
+      "sourceRow": 146,
+      "player": "Jahari Williamson",
+      "currentTeam": "Pepperdine",
+      "previousTeam": "Kent State",
+      "status": "researched_suggestion",
+      "historicalRating": 33.1373,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 86,
+        "opportunityScore": 87,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 70,
+        "upsideToolsScore": 80,
+        "talentScore": 74,
+        "projectionScore": 73.05,
+        "projectedBbpr": 43.1155,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Jahari Williamson carries a 33.1373 historical anchor into a starter or closing-lineup projection for Pepperdine. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Pepperdine is listed as the current team after Kent State, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Pepperdine's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Pepperdine Athletics",
+          "url": "https://pepperdinewaves.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jahari Williamson's Pepperdine status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 146 lists Jahari Williamson as a Transfer Sr G with historical rating 33.1373."
+        }
+      ]
+    },
+    {
+      "sourceRow": 355,
+      "player": "Jordan Scott",
+      "currentTeam": "Michigan State",
+      "previousTeam": "Michigan State",
+      "status": "researched_suggestion",
+      "historicalRating": 33.0438,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 70,
+        "opportunityScore": 75.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 77.41,
+        "projectedBbpr": 50.7903,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Jordan Scott carries a 33.0438 historical anchor into a major-rotation projection for Michigan State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Michigan State returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Michigan State's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Michigan State Athletics",
+          "url": "https://msuspartans.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jordan Scott's Michigan State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 355 lists Jordan Scott as a Returning So F with historical rating 33.0438."
+        }
+      ]
+    },
+    {
+      "sourceRow": 243,
+      "player": "Karter Knox",
+      "currentTeam": "Louisville",
+      "previousTeam": "Arkansas",
+      "status": "researched_suggestion",
+      "historicalRating": 32.4742,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "opportunityScore": 83.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 88,
+        "talentScore": 82,
+        "projectionScore": 78.32,
+        "projectedBbpr": 43.9357,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Karter Knox carries a 32.4742 historical anchor into a starter or closing-lineup projection for Louisville. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Louisville is listed as the current team after Arkansas, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Louisville's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Louisville Athletics",
+          "url": "https://gocards.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Karter Knox's Louisville status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 243 lists Karter Knox as a Transfer Jr F with historical rating 32.4742."
+        }
+      ]
+    },
+    {
+      "sourceRow": 292,
+      "player": "Ethan Roberts",
+      "currentTeam": "Notre Dame",
+      "previousTeam": "Pennsylvania",
+      "status": "researched_suggestion",
+      "historicalRating": 32.4402,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 73.57,
+        "projectedBbpr": 42.7226,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Ethan Roberts carries a 32.4402 historical anchor into a starter or closing-lineup projection for Notre Dame. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Notre Dame is listed as the current team after Pennsylvania, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Notre Dame's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Notre Dame Athletics",
+          "url": "https://fightingirish.com/sports/mbball/roster/",
+          "notes": "Official roster/signing page is the primary verification target for Ethan Roberts's Notre Dame status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 292 lists Ethan Roberts as a Transfer Sr F with historical rating 32.4402."
+        }
+      ]
+    },
+    {
+      "sourceRow": 321,
+      "player": "Dennis Evans",
+      "currentTeam": "Oregon State",
+      "previousTeam": "Grand Canyon",
+      "status": "researched_suggestion",
+      "historicalRating": 32.3192,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 72,
+        "opportunityScore": 81,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 86,
+        "talentScore": 78.8,
+        "projectionScore": 72.03,
+        "projectedBbpr": 42.2469,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Dennis Evans carries a 32.3192 historical anchor into a starter or closing-lineup projection for Oregon State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Oregon State is listed as the current team after Grand Canyon, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Oregon State's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oregon State Athletics",
+          "url": "https://osubeavers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Dennis Evans's Oregon State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 321 lists Dennis Evans as a Transfer Sr C with historical rating 32.3192."
+        }
+      ]
+    },
+    {
+      "sourceRow": 382,
+      "player": "Bishop Boswell",
+      "currentTeam": "Maryland",
+      "previousTeam": "Tennessee",
+      "status": "researched_suggestion",
+      "historicalRating": 31.3328,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 76.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 72.89,
+        "projectedBbpr": 41.7221,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Bishop Boswell carries a 31.3328 historical anchor into a major-rotation projection for Maryland. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Maryland is listed as the current team after Tennessee, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Maryland's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Bishop Boswell's Maryland status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 382 lists Bishop Boswell as a Transfer Jr G with historical rating 31.3328."
+        }
+      ]
+    },
+    {
+      "sourceRow": 354,
+      "player": "Kur Teng",
+      "currentTeam": "Michigan State",
+      "previousTeam": "Michigan State",
+      "status": "researched_suggestion",
+      "historicalRating": 31.1276,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 71.99,
+        "projectedBbpr": 47.4726,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Kur Teng carries a 31.1276 historical anchor into a major-rotation projection for Michigan State. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Michigan State returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Michigan State's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Michigan State Athletics",
+          "url": "https://msuspartans.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Kur Teng's Michigan State status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 354 lists Kur Teng as a Returning Jr G with historical rating 31.1276."
+        }
+      ]
+    },
+    {
+      "sourceRow": 176,
+      "player": "Dame Sarr",
+      "currentTeam": "Duke",
+      "previousTeam": "Duke",
+      "status": "researched_suggestion",
+      "historicalRating": 31.1038,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 78.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 79.37,
+        "projectedBbpr": 50.4103,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Dame Sarr carries a 31.1038 historical anchor into a major-rotation projection for Duke. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Duke returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Duke's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Duke Athletics",
+          "url": "https://goduke.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Dame Sarr's Duke status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 176 lists Dame Sarr as a Returning So G with historical rating 31.1038."
+        }
+      ]
+    },
+    {
+      "sourceRow": 375,
+      "player": "LeJuan Watts",
+      "currentTeam": "Washington",
+      "previousTeam": "Texas Tech",
+      "status": "researched_suggestion",
+      "historicalRating": 30.7676,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "opportunityScore": 84.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 72.49,
+        "projectedBbpr": 41.1982,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "LeJuan Watts carries a 30.7676 historical anchor into a starter or closing-lineup projection for Washington. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Washington is listed as the current team after Texas Tech, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Washington's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Washington Athletics",
+          "url": "https://gohuskies.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for LeJuan Watts's Washington status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 375 lists LeJuan Watts as a Transfer Sr F with historical rating 30.7676."
+        }
+      ]
+    },
+    {
+      "sourceRow": 381,
+      "player": "Myles Colvin",
+      "currentTeam": "Cincinnati",
+      "previousTeam": "Wake Forest",
+      "status": "researched_suggestion",
+      "historicalRating": 30.7397,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 80.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 70.87,
+        "projectedBbpr": 40.7723,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Myles Colvin carries a 30.7397 historical anchor into a major-rotation projection for Cincinnati. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Cincinnati is listed as the current team after Wake Forest, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Cincinnati's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Cincinnati Athletics",
+          "url": "https://gobearcats.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Myles Colvin's Cincinnati status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 381 lists Myles Colvin as a Transfer Sr G with historical rating 30.7397."
+        }
+      ]
+    },
+    {
+      "sourceRow": 256,
+      "player": "Taylor Bol Bowen",
+      "currentTeam": "Oregon",
+      "previousTeam": "Alabama",
+      "status": "researched_suggestion",
+      "historicalRating": 29.5472,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 70,
+        "opportunityScore": 75.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 84,
+        "talentScore": 76.8,
+        "projectionScore": 68.99,
+        "projectedBbpr": 39.4079,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Taylor Bol Bowen carries a 29.5472 historical anchor into a major-rotation projection for Oregon. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Oregon is listed as the current team after Alabama, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Oregon's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Oregon Athletics",
+          "url": "https://goducks.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Taylor Bol Bowen's Oregon status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 256 lists Taylor Bol Bowen as a Transfer Sr F with historical rating 29.5472."
+        }
+      ]
+    },
+    {
+      "sourceRow": 291,
+      "player": "Layden Blocker",
+      "currentTeam": "DePaul",
+      "previousTeam": "DePaul",
+      "status": "researched_suggestion",
+      "historicalRating": 29.4268,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 87.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 74.72,
+        "projectedBbpr": 52.0734,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Layden Blocker carries a 29.4268 historical anchor into a starter or closing-lineup projection for DePaul. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "DePaul returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score gives starter credit while keeping usage below lead-star territory until team hierarchy is confirmed.",
+        "positionCompetition": "DePaul's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "DePaul Athletics",
+          "url": "https://depaulbluedemons.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Layden Blocker's DePaul status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 291 lists Layden Blocker as a Returning Sr G with historical rating 29.4268."
+        }
+      ]
+    },
+    {
+      "sourceRow": 239,
+      "player": "London Jemison",
+      "currentTeam": "Alabama",
+      "previousTeam": "Alabama",
+      "status": "researched_suggestion",
+      "historicalRating": 29.3563,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 76.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 84,
+        "talentScore": 78,
+        "projectionScore": 77.59,
+        "projectedBbpr": 48.6498,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "London Jemison carries a 29.3563 historical anchor into a major-rotation projection for Alabama. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Alabama returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Alabama's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Alabama Athletics",
+          "url": "https://rolltide.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for London Jemison's Alabama status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 239 lists London Jemison as a Returning So F with historical rating 29.3563."
+        }
+      ]
+    },
+    {
+      "sourceRow": 386,
+      "player": "Josiah Parker",
+      "currentTeam": "Georgetown",
+      "previousTeam": "Florida Atlantic",
+      "status": "researched_suggestion",
+      "historicalRating": 29.2358,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 78,
+        "offensiveBurden": 74,
+        "opportunityScore": 77.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 77.34,
+        "projectedBbpr": 41.2619,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Josiah Parker carries a 29.2358 historical anchor into a major-rotation projection for Georgetown. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Georgetown is listed as the current team after Florida Atlantic, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Georgetown's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Georgetown Athletics",
+          "url": "https://guhoyas.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Josiah Parker's Georgetown status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 386 lists Josiah Parker as a Transfer So G with historical rating 29.2358."
+        }
+      ]
+    },
+    {
+      "sourceRow": 267,
+      "player": "Blake Harper",
+      "currentTeam": "VCU",
+      "previousTeam": "Creighton",
+      "status": "researched_suggestion",
+      "historicalRating": 28.4363,
+      "developmentScore": 60,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 86,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 85.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 77.12,
+        "projectedBbpr": 40.6072,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Blake Harper carries a 28.4363 historical anchor into a starter or closing-lineup projection for VCU. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "VCU is listed as the current team after Creighton, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "VCU's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "VCU Athletics",
+          "url": "https://vcuathletics.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Blake Harper's VCU status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 267 lists Blake Harper as a Transfer Jr G with historical rating 28.4363."
+        }
+      ]
+    },
+    {
+      "sourceRow": 258,
+      "player": "Mackenzie Mgbako",
+      "currentTeam": "Texas A&M",
+      "previousTeam": "Texas A&M",
+      "status": "researched_suggestion",
+      "historicalRating": 28.2769,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 75.39,
+        "projectedBbpr": 51.8334,
+        "confidenceScore": 84,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Mackenzie Mgbako carries a 28.2769 historical anchor into a starter or closing-lineup projection for Texas A&M. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Texas A&M returner profile in the local projection export gives him a retained-program context, but exact 2026-27 lineup standing still needs roster/depth review.",
+        "roleCap": "Score gives starter credit while keeping usage below lead-star territory until team hierarchy is confirmed.",
+        "positionCompetition": "Texas A&M's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Texas A&M Athletics",
+          "url": "https://12thman.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Mackenzie Mgbako's Texas A&M status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 258 lists Mackenzie Mgbako as a Returning Sr F with historical rating 28.2769."
+        }
+      ]
+    },
+    {
+      "sourceRow": 323,
+      "player": "Omaha Biliew",
+      "currentTeam": "Grand Canyon",
+      "previousTeam": "Wake Forest",
+      "status": "researched_suggestion",
+      "historicalRating": 28.2555,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 84,
+        "opportunityChange": 84,
+        "offensiveBurden": 76,
+        "opportunityScore": 82.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 88,
+        "talentScore": 80.8,
+        "projectionScore": 81.36,
+        "projectedBbpr": 41.5316,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "Omaha Biliew carries a 28.2555 historical anchor into a starter or closing-lineup projection for Grand Canyon. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Grand Canyon is listed as the current team after Wake Forest, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Grand Canyon's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Grand Canyon Athletics",
+          "url": "https://gculopes.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Omaha Biliew's Grand Canyon status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 323 lists Omaha Biliew as a Transfer So F with historical rating 28.2555."
+        }
+      ]
+    },
+    {
+      "sourceRow": 326,
+      "player": "Jan Vide",
+      "currentTeam": "Virginia",
+      "previousTeam": "Loyola Marymount",
+      "status": "researched_suggestion",
+      "historicalRating": 28.2106,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 78,
+        "opportunityScore": 80.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 70.87,
+        "projectedBbpr": 38.8755,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Jan Vide carries a 28.2106 historical anchor into a major-rotation projection for Virginia. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Virginia is listed as the current team after Loyola Marymount, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Virginia's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Virginia Athletics",
+          "url": "https://virginiasports.com/sports/mbball/roster/",
+          "notes": "Official roster/signing page is the primary verification target for Jan Vide's Virginia status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 326 lists Jan Vide as a Transfer Sr G with historical rating 28.2106."
+        }
+      ]
+    },
+    {
+      "sourceRow": 263,
+      "player": "Mouhamed Sylla",
+      "currentTeam": "West Virginia",
+      "previousTeam": "Georgia Tech",
+      "status": "researched_suggestion",
+      "historicalRating": 27.4116,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 80,
+        "opportunityChange": 78,
+        "offensiveBurden": 70,
+        "opportunityScore": 77.4,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 84,
+        "talentScore": 76.8,
+        "projectionScore": 77.71,
+        "projectedBbpr": 39.9862,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Mouhamed Sylla carries a 27.4116 historical anchor into a major-rotation projection for West Virginia. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "West Virginia is listed as the current team after Georgia Tech, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "West Virginia's C minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "West Virginia Athletics",
+          "url": "https://wvusports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Mouhamed Sylla's West Virginia status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 263 lists Mouhamed Sylla as a Transfer So C with historical rating 27.4116."
+        }
+      ]
+    },
+    {
+      "sourceRow": 262,
+      "player": "Jaland Lowe",
+      "currentTeam": "Georgetown",
+      "previousTeam": "Kentucky",
+      "status": "researched_suggestion",
+      "historicalRating": 26.8447,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 82,
+        "opportunityChange": 80,
+        "offensiveBurden": 80,
+        "opportunityScore": 81,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 74,
+        "upsideToolsScore": 82,
+        "talentScore": 77.2,
+        "projectionScore": 71.47,
+        "projectedBbpr": 38.001,
+        "confidenceScore": 78,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Jaland Lowe carries a 26.8447 historical anchor into a major-rotation projection for Georgetown. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Georgetown is listed as the current team after Kentucky, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Georgetown's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Georgetown Athletics",
+          "url": "https://guhoyas.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Jaland Lowe's Georgetown status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 262 lists Jaland Lowe as a Transfer Sr G with historical rating 26.8447."
+        }
+      ]
+    },
+    {
+      "sourceRow": 220,
+      "player": "Bryson Tiller",
+      "currentTeam": "Missouri",
+      "previousTeam": "Kansas",
+      "status": "researched_suggestion",
+      "historicalRating": 26.5394,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 78,
+        "opportunityChange": 76,
+        "offensiveBurden": 72,
+        "opportunityScore": 76.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 86,
+        "talentScore": 80,
+        "projectionScore": 78.29,
+        "projectedBbpr": 39.4771,
+        "confidenceScore": 76,
+        "confidenceGrade": "B",
+        "needsReview": true
+      },
+      "researchSummary": "Bryson Tiller carries a 26.5394 historical anchor into a major-rotation projection for Missouri. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Missouri is listed as the current team after Kansas, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Missouri's F minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Missouri Athletics",
+          "url": "https://mutigers.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Bryson Tiller's Missouri status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 220 lists Bryson Tiller as a Transfer So F with historical rating 26.5394."
+        }
+      ]
+    },
+    {
+      "sourceRow": 280,
+      "player": "D.J. Wagner",
+      "currentTeam": "Maryland",
+      "previousTeam": "Arkansas",
+      "status": "researched_suggestion",
+      "historicalRating": 26.2867,
+      "developmentScore": 40,
+      "suggested": {
+        "projectedStarter": "Yes",
+        "projectedRole": 88,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 86.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 86,
+        "talentScore": 81.2,
+        "projectionScore": 75.39,
+        "projectedBbpr": 38.5625,
+        "confidenceScore": 80,
+        "confidenceGrade": "B+",
+        "needsReview": true
+      },
+      "researchSummary": "D.J. Wagner carries a 26.2867 historical anchor into a starter or closing-lineup projection for Maryland. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Maryland is listed as the current team after Arkansas, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score gives starter/closing credit while avoiding a high-confidence star assumption before role news is reviewed.",
+        "positionCompetition": "Maryland's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Maryland Athletics",
+          "url": "https://umterps.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for D.J. Wagner's Maryland status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 280 lists D.J. Wagner as a Transfer Sr G with historical rating 26.2867."
+        }
+      ]
+    },
+    {
+      "sourceRow": 383,
+      "player": "Amari Evans",
+      "currentTeam": "Texas",
+      "previousTeam": "Tennessee",
+      "status": "researched_suggestion",
+      "historicalRating": 25.9538,
+      "developmentScore": 80,
+      "suggested": {
+        "projectedStarter": "Uncertain",
+        "projectedRole": 76,
+        "opportunityChange": 74,
+        "offensiveBurden": 70,
+        "opportunityScore": 74.2,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 72,
+        "upsideToolsScore": 82,
+        "talentScore": 76,
+        "projectionScore": 75.99,
+        "projectedBbpr": 38.4629,
+        "confidenceScore": 74,
+        "confidenceGrade": "B-",
+        "needsReview": true
+      },
+      "researchSummary": "Amari Evans carries a 25.9538 historical anchor into a major-rotation projection for Texas. The batch gives role credit from the local transfer/returner context, while keeping the row pending because official role, health, and depth-chart evidence should be verified before application.",
+      "teamContext": {
+        "starterEvidence": "Texas is listed as the current team after Tennessee, giving this row a transfer-fit case that should be checked against official roster and signing context.",
+        "roleCap": "Score keeps starter status uncertain, emphasizing playable rotation value without over-crediting usage.",
+        "positionCompetition": "Texas's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion."
+      },
+      "evidence": [
+        {
+          "source": "Texas Athletics",
+          "url": "https://texassports.com/sports/mens-basketball/roster",
+          "notes": "Official roster/signing page is the primary verification target for Amari Evans's Texas status and role context."
+        },
+        {
+          "source": "Local player projection export",
+          "url": "data/cbb/player-projections.json",
+          "notes": "Source row 383 lists Amari Evans as a Transfer So G with historical rating 25.9538."
+        }
+      ]
+    }
+  ]
+}
