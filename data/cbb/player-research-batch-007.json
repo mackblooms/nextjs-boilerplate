@@ -436,7 +436,7 @@
       "currentTeam": "BYU",
       "previousTeam": "BYU",
       "status": "researched_suggestion",
-      "historicalRating": 76,
+      "historicalRating": 82,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
@@ -445,24 +445,24 @@
         "offensiveBurden": 96,
         "opportunityScore": 96.4,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 80,
-        "upsideToolsScore": 88,
-        "talentScore": 83.2,
-        "projectionScore": 80.5,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 90,
+        "talentScore": 86.4,
+        "projectionScore": 81.62,
         "confidenceScore": 92,
         "confidenceGrade": "A",
         "needsReview": true,
-        "projectedBbpr": 78.7
+        "projectedBbpr": 81.772
       },
-      "researchSummary": "Wright was already high, but his elite BYU role inputs were still slightly compressed by an old anchor. The correction raises the anchor without moving him above the proven All-American tier.",
+      "researchSummary": "Robert Wright III was still low for elite BYU usage. The update raises the anchor and tools without pushing him into the 90-plus proven-star lift.",
       "teamContext": {
         "projectedLineup": "BYU announced Wright's return and frames him as the floor general.",
         "returningStars": "He becomes the clear offensive guard anchor after BYU's roster changes.",
         "incomingStars": "Bruce Branch and others add talent, but Wright's on-ball role is secure.",
         "positionCompetition": "No direct lead-guard threat.",
-        "starterEvidence": "Wright was already high, but his elite BYU role inputs were still slightly compressed by an old anchor. The correction raises the anchor without moving him above the proven All-American tier.",
-        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
-        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 top-100 calibration pass."
+        "starterEvidence": "Robert Wright III was still low for elite BYU usage. The update raises the anchor and tools without pushing him into the 90-plus proven-star lift.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 82. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {
@@ -612,43 +612,38 @@
       "currentTeam": "Baylor",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": null,
+      "historicalRating": 76,
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 88,
-        "opportunityChange": 82,
+        "projectedRole": 90,
+        "opportunityChange": 86,
         "offensiveBurden": 84,
-        "opportunityScore": 85.4,
+        "opportunityScore": 87.6,
         "entryTalentGrade": 98,
         "nbaProjectionScore": 94,
-        "upsideToolsScore": 94,
-        "talentScore": 95.4,
-        "projectionScore": 91.32,
-        "projectedBbpr": 79.6975,
-        "confidenceScore": 68,
+        "upsideToolsScore": 96,
+        "talentScore": 96.1,
+        "projectionScore": 93.055,
+        "confidenceScore": 80,
         "confidenceGrade": "B",
-        "needsReview": true
+        "needsReview": true,
+        "projectedBbpr": 73.9471
       },
-      "researchSummary": "Mingo has one of the strongest newcomer talent profiles left, and Baylor should give him real guard responsibility. Senior-season injury history and freshman volatility keep him below the Stokes/Jordan Smith top-newcomer tier.",
+      "researchSummary": "Dylan Mingo was under the top-100 line despite Baylor freshman profile and two-way tools.",
       "teamContext": {
         "projectedLineup": "Baylor's roster construction points to Mingo as an immediate lead-guard candidate.",
         "returningStars": "Baylor has other guard options, including his brother Kayden Mingo.",
         "incomingStars": "Mingo is the clear headliner of Baylor's freshman additions.",
         "positionCompetition": "Role should be high, but usage certainty is slightly capped by injury and roster depth.",
-        "starterEvidence": "five-star point guard signing and roster need",
-        "roleCap": "High-80s role, below elite freshman role-lock tier."
+        "starterEvidence": "Dylan Mingo was under the top-100 line despite Baylor freshman profile and two-way tools.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {
-          "source": "Baylor Athletics",
-          "url": "https://baylorbears.com/news/2026/5/12/mens-basketball-mbb-picks-up-five-star-point-guard-dylan-mingo",
-          "notes": "Baylor signed Mingo as a five-star point guard and consensus top-10/top-five talent."
-        },
-        {
-          "source": "Baylor Athletics",
-          "url": "https://d1nnrx9kca53zl.cloudfront.net/sports/mens-basketball/roster",
-          "notes": "Lists Mingo as a freshman point guard on Baylor's 2026-27 roster."
+          "source": "On3",
+          "url": "https://www.on3.com/db/dylan-mingo-236716/"
         }
       ]
     },

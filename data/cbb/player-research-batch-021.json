@@ -1010,25 +1010,25 @@
       "developmentScore": 100,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 92,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 89.6,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "opportunityScore": 91.1,
         "entryTalentGrade": 98,
         "nbaProjectionScore": 94,
         "upsideToolsScore": 94,
         "talentScore": 95.6,
-        "projectionScore": 93.78,
-        "confidenceScore": 88,
-        "confidenceGrade": "A-",
+        "projectionScore": 94.455,
+        "confidenceScore": 90,
+        "confidenceGrade": "A",
         "needsReview": true,
-        "projectedBbpr": 74.295
+        "projectedBbpr": 74.4637
       },
-      "researchSummary": "Pate was sitting one spot outside the top 100 despite a pro-track newcomer profile and Providence creation opportunity. The correction nudges role certainty while still applying the freshman cap.",
+      "researchSummary": "Dink Pate remains a top-100 newcomer after the freshman/international expansion because his pro-track profile and Providence creation path are stronger than the generic freshman cap tier.",
       "teamContext": {
-        "starterEvidence": "Pate was sitting one spot outside the top 100 despite a pro-track newcomer profile and Providence creation opportunity. The correction nudges role certainty while still applying the freshman cap.",
-        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 top-100 calibration pass.",
-        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "starterEvidence": "Dink Pate remains a top-100 newcomer after the freshman/international expansion because his pro-track profile and Providence creation path are stronger than the generic freshman cap tier.",
+        "scoredAnchor": "Synthetic historical anchor: 80. Updated in the July 23 newcomer calibration pass.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
         "positionCompetition": "The model still applies newcomer compression because he has not yet produced in college games."
       },
       "evidence": [

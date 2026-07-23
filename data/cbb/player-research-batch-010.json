@@ -760,30 +760,30 @@
       "currentTeam": "Auburn",
       "previousTeam": "Creighton",
       "status": "researched_suggestion",
-      "historicalRating": 78,
+      "historicalRating": 76,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 90.6,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 77.19,
-        "confidenceScore": 88,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.14,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 77.7975
+        "projectedBbpr": 75.785
       },
-      "researchSummary": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
+      "researchSummary": "Owen Freeman was a little high after the last correction. He remains top-100, but closer to the frontcourt-starter band than the top-50 band.",
       "teamContext": {
-        "starterEvidence": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
-        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "starterEvidence": "Owen Freeman was a little high after the last correction. He remains top-100, but closer to the frontcourt-starter band than the top-50 band.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
         "positionCompetition": "Kevin Overton, Tahaad Pettiford, and other Auburn pieces share offense.",
-        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 top-100 calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {

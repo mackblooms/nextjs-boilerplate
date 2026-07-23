@@ -400,43 +400,42 @@
       "currentTeam": "Arkansas",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": null,
+      "historicalRating": 76,
       "developmentScore": 100,
       "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 80,
-        "opportunityChange": 70,
-        "offensiveBurden": 68,
-        "opportunityScore": 74.6,
-        "entryTalentGrade": 94,
-        "nbaProjectionScore": 85,
-        "upsideToolsScore": 92,
-        "talentScore": 90.35,
-        "projectionScore": 85.1925,
-        "projectedBbpr": 85.1925,
-        "confidenceScore": 66,
-        "confidenceGrade": "B",
-        "needsReview": true
+        "projectedStarter": "Yes",
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.2,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 96,
+        "upsideToolsScore": 96,
+        "talentScore": 97.2,
+        "projectionScore": 94.16,
+        "confidenceScore": 86,
+        "confidenceGrade": "A-",
+        "needsReview": true,
+        "projectedBbpr": 74.39
       },
-      "researchSummary": "Muurinen is a major international/upside prospect, but Arkansas has one of the most crowded high-end rosters in the country. Talent is high; role is capped until preseason lineup evidence separates him from Arkansas' other forwards.",
+      "researchSummary": "Miikka Muurinen was far too low for a high-profile Arkansas international recruit. The update keeps freshman/international compression but treats him like a real top-100 candidate.",
       "teamContext": {
         "projectedLineup": "Arkansas projected-lineup context is crowded and does not clearly lock him into a starting spot.",
         "returningStars": "Billy Richmond and other Arkansas returners compete for forward minutes.",
         "incomingStars": "Jordan Smith Jr., Jeremiah Wilkinson, Cooper Bowser and Abdou Toure all affect the role map.",
         "positionCompetition": "Elite talent, but heavy competition.",
-        "starterEvidence": "international/recruiting profile plus roster fit, not clear starter proof",
-        "roleCap": "high-upside rotation/starter contender; cap around 80"
+        "starterEvidence": "Miikka Muurinen was far too low for a high-profile Arkansas international recruit. The update keeps freshman/international compression but treats him like a real top-100 candidate.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 76. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {
-          "source": "On3",
-          "url": "https://www.on3.com/db/miikka-muurinen-236741/",
-          "notes": "International/recruiting profile and high-end prospect context."
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/sport/m-baskbl/roster/"
         },
         {
-          "source": "Best of Arkansas Sports",
-          "url": "https://www.bestofarkansassports.com/arkansas-basketball-2026-27-roster-tracker-leaving-staying-deciding/",
-          "notes": "Shows Arkansas' crowded roster and freshman/transfer additions."
+          "source": "On3",
+          "url": "https://www.on3.com/db/miikka-muurinen-236715/"
         }
       ]
     },
@@ -446,32 +445,33 @@
       "currentTeam": "LSU",
       "previousTeam": null,
       "status": "researched_suggestion",
-      "historicalRating": null,
+      "historicalRating": 68,
       "developmentScore": 100,
       "suggested": {
-        "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 75,
-        "offensiveBurden": 72,
-        "opportunityScore": 79.4,
-        "entryTalentGrade": 88,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 83,
-        "talentScore": 83.25,
-        "projectionScore": 84.8675,
-        "projectedBbpr": 84.8675,
-        "confidenceScore": 70,
-        "confidenceGrade": "B",
-        "needsReview": true
+        "projectedStarter": "Maybe",
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "opportunityScore": 84.6,
+        "entryTalentGrade": 92,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 88.2,
+        "projectionScore": 88.94,
+        "confidenceScore": 82,
+        "confidenceGrade": "B+",
+        "needsReview": true,
+        "projectedBbpr": 61.6913
       },
-      "researchSummary": "Ruzic has a stronger immediate-role signal than most internationals because he brings professional experience and LSU has a clear need for frontcourt talent. Talent is very strong, but not quite elite one-and-done tier.",
+      "researchSummary": "Michael Ruzic gets bumped because LSU's international frontcourt group should not be treated as generic pending depth.",
       "teamContext": {
         "projectedLineup": "No direct lineup source, but LSU roster need supports starter-level opportunity.",
         "returningStars": "LSU frontcourt hierarchy has room for an international forward with pro experience.",
         "incomingStars": "Other additions compete, but Ruzic's experience is a separator.",
         "positionCompetition": "Starter path is plausible, but not fully confirmed.",
-        "starterEvidence": "pro experience plus roster-need context",
-        "roleCap": "starter-level international newcomer; cap mid-80s"
+        "starterEvidence": "Michael Ruzic gets bumped because LSU's international frontcourt group should not be treated as generic pending depth.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
+        "scoredAnchor": "Synthetic historical anchor: 68. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {

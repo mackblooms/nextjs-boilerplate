@@ -15758,19 +15758,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 88,
-        "offensiveBurden": 86,
-        "opportunityScore": 90.6,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "opportunityScore": 87.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 86,
-        "talentScore": 81.2,
-        "projectionScore": 77.19,
-        "confidenceScore": 88,
+        "nbaProjectionScore": 76,
+        "upsideToolsScore": 84,
+        "talentScore": 79.2,
+        "projectionScore": 75.14,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 77.7975
+        "projectedBbpr": 75.785
       },
       "nearestGoldExamples": [
         {
@@ -15841,9 +15841,9 @@
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
       ],
-      "historicalRating": 78,
+      "historicalRating": 76,
       "developmentScore": 40,
-      "researchSummary": "Freeman was one of the biggest misses: a productive high-major big transferred to Auburn but retained a low stale anchor. The correction places him with other proven top-100 frontcourt players.",
+      "researchSummary": "Owen Freeman was a little high after the last correction. He remains top-100, but closer to the frontcourt-starter band than the top-50 band.",
       "evidence": [
         {
           "source": "Auburn Athletics",
@@ -16488,19 +16488,19 @@
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 90,
-        "offensiveBurden": 88,
-        "opportunityScore": 91.6,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 78.76,
-        "confidenceScore": 88,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 86,
+        "talentScore": 82.4,
+        "projectionScore": 77.16,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 81.19
+        "projectedBbpr": 77.79
       },
       "nearestGoldExamples": [
         {
@@ -16571,9 +16571,9 @@
         "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
         "manual spreadsheet inputs should override this suggestion"
       ],
-      "historicalRating": 82,
+      "historicalRating": 78,
       "developmentScore": 40,
-      "researchSummary": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
+      "researchSummary": "D.J. Wagner was too high after the last pass. This keeps a top-100 Maryland guard profile but pulls him out of the top-25 range.",
       "evidence": [
         {
           "source": "Maryland Athletics",

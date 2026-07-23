@@ -1955,30 +1955,30 @@
       "currentTeam": "Maryland",
       "previousTeam": "Arkansas",
       "status": "researched_suggestion",
-      "historicalRating": 82,
+      "historicalRating": 78,
       "developmentScore": 40,
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 94,
-        "opportunityChange": 90,
-        "offensiveBurden": 88,
-        "opportunityScore": 91.6,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 89.6,
         "entryTalentGrade": null,
-        "nbaProjectionScore": 82,
-        "upsideToolsScore": 88,
-        "talentScore": 84.4,
-        "projectionScore": 78.76,
-        "confidenceScore": 88,
+        "nbaProjectionScore": 80,
+        "upsideToolsScore": 86,
+        "talentScore": 82.4,
+        "projectionScore": 77.16,
+        "confidenceScore": 86,
         "confidenceGrade": "A-",
         "needsReview": true,
-        "projectedBbpr": 81.19
+        "projectedBbpr": 77.79
       },
-      "researchSummary": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
+      "researchSummary": "D.J. Wagner was too high after the last pass. This keeps a top-100 Maryland guard profile but pulls him out of the top-25 range.",
       "teamContext": {
-        "starterEvidence": "Wagner was wildly low because his Maryland transfer row carried an extremely stale anchor. The correction restores a former elite recruit/high-major guard profile into the top-100 range.",
-        "roleCap": "Corrected so role, anchor, and current trajectory are comparable across the full rated pool.",
+        "starterEvidence": "D.J. Wagner was too high after the last pass. This keeps a top-100 Maryland guard profile but pulls him out of the top-25 range.",
+        "roleCap": "Corrected so newcomer hype, role chance, and shared formula caps are comparable across the full rated pool.",
         "positionCompetition": "Maryland's G minutes should be reviewed against returning contributors, portal additions, and freshmen before applying the suggestion.",
-        "scoredAnchor": "Synthetic historical anchor: 82. Updated in the July 23 top-100 calibration pass."
+        "scoredAnchor": "Synthetic historical anchor: 78. Updated in the July 23 newcomer calibration pass."
       },
       "evidence": [
         {

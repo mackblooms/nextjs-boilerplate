@@ -1,0 +1,653 @@
+{
+  "generatedAt": "2026-07-23T18:45:00.000Z",
+  "scope": "Targeted correction for user-flagged top-100 calibration issues plus high-profile freshman/international coverage gaps.",
+  "method": [
+    "Kept the same projectedBbpr calculation path for transfers, returners, freshmen, and internationals.",
+    "Added or adjusted scored anchors before running the existing formula where a profile had no fair anchor.",
+    "Raised only newcomers with both high-profile talent signal and plausible immediate role context; crowded-roster players stayed capped.",
+    "Added Marcio Santos to the engine because he was absent from the imported workbook but is part of LSU's incoming international group."
+  ],
+  "players": [
+    {
+      "sourceRow": 162,
+      "player": "Caleb Holt",
+      "currentTeam": "Arizona",
+      "old": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.5225,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 100,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.5225,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 100,
+        "confidenceScore": 80
+      },
+      "reason": "Caleb Holt was too low for an elite freshman profile at Arizona. The update gives him top-100 treatment with newcomer compression still active.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/caleb-holt-236688/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 163,
+      "player": "Bruce Branch III",
+      "currentTeam": "BYU",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.8686,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 95.7,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.8686,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 95.7,
+        "confidenceScore": 80
+      },
+      "reason": "Bruce Branch III was low for a high-profile BYU freshman with real path to wing minutes.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/bruce-branch-iii-236709/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 6,
+      "player": "Juke Harris",
+      "currentTeam": "Tennessee",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.06,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.06,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 79.2,
+        "confidenceScore": 84
+      },
+      "reason": "Juke Harris was a bit low relative to the Tennessee opportunity and historical anchor, so the role inputs move up while staying short of star usage.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 39,
+      "player": "Nolan Minessale",
+      "currentTeam": "Marquette",
+      "old": {
+        "historicalRating": 85,
+        "projectedBbpr": 80.5075,
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "talentScore": 67.6,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 85,
+        "projectedBbpr": 80.5075,
+        "projectedRole": 82,
+        "opportunityChange": 76,
+        "offensiveBurden": 74,
+        "talentScore": 67.6,
+        "confidenceScore": 82
+      },
+      "reason": "Nolan Minessale was slightly low; his projection now gives the high historical anchor a more realistic Marquette rotation path.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 24,
+      "player": "DeSean Goode",
+      "currentTeam": "Miami",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 79.0875,
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 78,
+        "talentScore": 74,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 79.0875,
+        "projectedRole": 84,
+        "opportunityChange": 78,
+        "offensiveBurden": 78,
+        "talentScore": 74,
+        "confidenceScore": 82
+      },
+      "reason": "DeSean Goode was a little low because the historical anchor was strong but the role inputs were too muted for Miami's frontcourt need.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 209,
+      "player": "Abdou Toure",
+      "currentTeam": "Arkansas",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.4625,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.1,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.4625,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.1,
+        "confidenceScore": 90
+      },
+      "reason": "Abdou Toure was low for a top recruit with Arkansas freshman hype. Arkansas remains crowded, so he gets back-end top-100 treatment rather than elite freshman treatment.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/abdou-toure-236713/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 178,
+      "player": "Babatunde Oladotun",
+      "currentTeam": "Maryland",
+      "old": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.4975,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.5,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.4975,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.5,
+        "confidenceScore": 86
+      },
+      "reason": "Babatunde Oladotun remains a protected top-100 freshman row after the newcomer expansion because he is the kept Maryland elite-recruit profile.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 280,
+      "player": "D.J. Wagner",
+      "currentTeam": "Maryland",
+      "old": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.79,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 82.4,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 77.79,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 82.4,
+        "confidenceScore": 86
+      },
+      "reason": "D.J. Wagner was too high after the last pass. This keeps a top-100 Maryland guard profile but pulls him out of the top-25 range.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 191,
+      "player": "Dylan Mingo",
+      "currentTeam": "Baylor",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.9471,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 96.1,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 73.9471,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 96.1,
+        "confidenceScore": 80
+      },
+      "reason": "Dylan Mingo was under the top-100 line despite Baylor freshman profile and two-way tools.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/dylan-mingo-236716/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 221,
+      "player": "Michael Ruzic",
+      "currentTeam": "LSU",
+      "old": {
+        "historicalRating": 68,
+        "projectedBbpr": 61.6913,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 88.2,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 68,
+        "projectedBbpr": 61.6913,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 82,
+        "talentScore": 88.2,
+        "confidenceScore": 82
+      },
+      "reason": "Michael Ruzic gets bumped because LSU's international frontcourt group should not be treated as generic pending depth.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 170,
+      "player": "Miikka Muurinen",
+      "currentTeam": "Arkansas",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 74.39,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 97.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 74.39,
+        "projectedRole": 92,
+        "opportunityChange": 88,
+        "offensiveBurden": 84,
+        "talentScore": 97.2,
+        "confidenceScore": 86
+      },
+      "reason": "Miikka Muurinen was far too low for a high-profile Arkansas international recruit. The update keeps freshman/international compression but treats him like a real top-100 candidate.",
+      "evidence": [
+        {
+          "source": "Arkansas Athletics",
+          "url": "https://arkansasrazorbacks.com/sport/m-baskbl/roster/"
+        },
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/miikka-muurinen-236715/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 188,
+      "player": "Obinna Ekezie Jr.",
+      "currentTeam": "Louisville",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 71.6526,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 96.5,
+        "confidenceScore": 84
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 71.6526,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 96.5,
+        "confidenceScore": 84
+      },
+      "reason": "Obinna Ekezie Jr. was too low for a top-end Louisville freshman big, even with role uncertainty.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 271,
+      "player": "Owen Freeman",
+      "currentTeam": "Auburn",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.785,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 75.785,
+        "projectedRole": 90,
+        "opportunityChange": 86,
+        "offensiveBurden": 84,
+        "talentScore": 79.2,
+        "confidenceScore": 86
+      },
+      "reason": "Owen Freeman was a little high after the last correction. He remains top-100, but closer to the frontcourt-starter band than the top-50 band.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 236,
+      "player": "Robert Wright III",
+      "currentTeam": "BYU",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.772,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 96,
+        "talentScore": 86.4,
+        "confidenceScore": 92
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 81.772,
+        "projectedRole": 98,
+        "opportunityChange": 94,
+        "offensiveBurden": 96,
+        "talentScore": 86.4,
+        "confidenceScore": 92
+      },
+      "reason": "Robert Wright III was still low for elite BYU usage. The update raises the anchor and tools without pushing him into the 90-plus proven-star lift.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 521,
+      "player": "J.J. Andrews",
+      "currentTeam": "Arkansas",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 71.1804,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 94.1,
+        "confidenceScore": 82
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 71.1804,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 94.1,
+        "confidenceScore": 82
+      },
+      "reason": "J.J. Andrews remains behind Arkansas' top newcomer group but needed a stronger high-profile freshman score.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 2743,
+      "player": "Saliou Niang",
+      "currentTeam": "LSU",
+      "old": {
+        "historicalRating": 76,
+        "projectedBbpr": 74.4075,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 76,
+        "projectedBbpr": 74.4075,
+        "projectedRole": 92,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "reason": "Saliou Niang was unscored despite LSU/pro-international momentum. The row now has a scored anchor and top-100-caliber newcomer inputs without overstating him as an elite college-role lock.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/saliou-niang-180316/"
+        },
+        {
+          "source": "LSU Athletics",
+          "url": "https://lsusports.net/sports/mb/roster/"
+        }
+      ]
+    },
+    {
+      "sourceRow": 2864,
+      "player": "Mark Padjen",
+      "currentTeam": "Murray State",
+      "old": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.4187,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 72,
+        "projectedBbpr": 74.4187,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "reason": "Mark Padjen remains a back-end top-100 profile after the newcomer expansion because his FIBA MVP/pro-production signal is stronger than generic international depth.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 2902,
+      "player": "Dink Pate",
+      "currentTeam": "Providence",
+      "old": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.3512,
+        "projectedRole": 93,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 88
+      },
+      "new": {
+        "historicalRating": 80,
+        "projectedBbpr": 74.4637,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 88,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "reason": "Dink Pate remains a top-100 newcomer after the freshman/international expansion because his pro-track profile and Providence creation path are stronger than the generic freshman cap tier.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 3065,
+      "player": "Mekhi Ragland",
+      "currentTeam": "Oklahoma State",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 71.585,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "talentScore": 74.8,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 71.585,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "talentScore": 74.8,
+        "confidenceScore": 80
+      },
+      "reason": "Mekhi Ragland was high for an Oklahoma State sophomore frontcourt profile. The update keeps him relevant but below the top-100 line.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 3257,
+      "player": "Alexandros Samodurov",
+      "currentTeam": "North Carolina",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 66.8731,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 92.9,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 66.8731,
+        "projectedRole": 86,
+        "opportunityChange": 84,
+        "offensiveBurden": 80,
+        "talentScore": 92.9,
+        "confidenceScore": 80
+      },
+      "reason": "Alexandros Samodurov is the kept UNC row and gets a stronger international/pro-development score while remaining outside the top-100 tier.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 3306,
+      "player": "Cam Scott",
+      "currentTeam": "Temple",
+      "old": {
+        "historicalRating": 66,
+        "projectedBbpr": 73.355,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 84.4,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 66,
+        "projectedBbpr": 73.355,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 84.4,
+        "confidenceScore": 80
+      },
+      "reason": "Cam Scott was too high for a Temple returner with real tools but less bankable national top-50 usage.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 3864,
+      "player": "Sadiq White, Jr.",
+      "currentTeam": "Syracuse",
+      "old": {
+        "historicalRating": 64,
+        "projectedBbpr": 72.355,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 84.4,
+        "confidenceScore": 80
+      },
+      "new": {
+        "historicalRating": 64,
+        "projectedBbpr": 72.355,
+        "projectedRole": 84,
+        "opportunityChange": 82,
+        "offensiveBurden": 80,
+        "talentScore": 84.4,
+        "confidenceScore": 80
+      },
+      "reason": "Sadiq White was too high for the current Syracuse role certainty. The update preserves the prospect pedigree but removes top-60 treatment.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 4006,
+      "player": "Joaquim Boumtje Boumtje",
+      "currentTeam": "Duke",
+      "old": {
+        "historicalRating": 82,
+        "projectedBbpr": 74.5237,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.8,
+        "confidenceScore": 90
+      },
+      "new": {
+        "historicalRating": 82,
+        "projectedBbpr": 74.5237,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 96.8,
+        "confidenceScore": 90
+      },
+      "reason": "Boumtje Boumtje slipped outside the top 100 after the newcomer pass. This preserves Duke freshman compression while keeping the high-profile Duke row inside the line.",
+      "evidence": []
+    },
+    {
+      "sourceRow": 4007,
+      "player": "Marcio Santos",
+      "currentTeam": "LSU",
+      "old": null,
+      "new": {
+        "historicalRating": 78,
+        "projectedBbpr": 74.4187,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 86,
+        "talentScore": 95.6,
+        "confidenceScore": 90
+      },
+      "reason": "Marcio Santos was missing from the engine. LSU commit reporting and pro-profile context make him a plausible immediate contributor, so he is added with the same international newcomer compression as the other top LSU/Arkansas prospects.",
+      "evidence": [
+        {
+          "source": "On3",
+          "url": "https://www.on3.com/db/marcio-santos-244814/"
+        },
+        {
+          "source": "LSU Athletics",
+          "url": "https://lsusports.net/sports/mb/roster/"
+        }
+      ]
+    }
+  ],
+  "removedDuplicateRows": [],
+  "top100Line": 74.39
+}

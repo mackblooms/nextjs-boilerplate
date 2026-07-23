@@ -717,52 +717,6 @@
           "notes": "Lists Keita as a five-star, top-20 national/No. 3 center prospect committed to UNC."
         }
       ]
-    },
-    {
-      "sourceRow": 245,
-      "player": "Alexandros Samodurav",
-      "currentTeam": "North Carolina",
-      "previousTeam": null,
-      "status": "researched_suggestion",
-      "historicalRating": null,
-      "developmentScore": 100,
-      "suggested": {
-        "projectedStarter": "Uncertain",
-        "projectedRole": 76,
-        "opportunityChange": 70,
-        "offensiveBurden": 64,
-        "opportunityScore": 71.8,
-        "entryTalentGrade": 84,
-        "nbaProjectionScore": 78,
-        "upsideToolsScore": 82,
-        "talentScore": 81.4,
-        "projectionScore": 80.8,
-        "projectedBbpr": 75.3946,
-        "confidenceScore": 66,
-        "confidenceGrade": "B-",
-        "needsReview": true
-      },
-      "researchSummary": "Samodurav/Samodurov has real professional and FIBA experience, but UNC-specific reporting suggests he may come off the bench and share minutes. That makes him a good example of a skilled international who should be mixed into the board rather than pushed too high.",
-      "teamContext": {
-        "projectedLineup": "UNC frontcourt reporting expects Samodurov to share minutes rather than own the starting center job.",
-        "returningStars": "Jarin Stevenson and transfer pieces affect role certainty.",
-        "incomingStars": "Sayon Keita adds direct center/frontcourt competition.",
-        "positionCompetition": "Crowded international/newcomer frontcourt lowers role and confidence.",
-        "starterEvidence": "professional experience, but bench/minute-share context",
-        "roleCap": "Mid-70s role until UNC lineup clarity improves."
-      },
-      "evidence": [
-        {
-          "source": "Tar Heel Blog",
-          "url": "https://www.tarheelblog.com/unc-basketball/56541/unc-basketball-alexandros-samodurov-commits-to-unc",
-          "notes": "Reports Samodurov's UNC commitment, professional/FIBA background, and expected bench/minute-share context."
-        },
-        {
-          "source": "Chapelboro",
-          "url": "https://chapelboro.com/sports/new-kids-on-the-block-every-newcomer-joining-unc-mens-basketball-for-the-2026-27-season",
-          "notes": "Summarizes UNC newcomers and Samodurov's FIBA U20 production."
-        }
-      ]
     }
   ]
 }
