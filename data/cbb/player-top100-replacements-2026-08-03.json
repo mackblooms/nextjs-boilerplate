@@ -1,0 +1,301 @@
+{
+  "generatedAt": "2026-08-03T12:00:00.000Z",
+  "scope": "User-directed top-100 replacements for Uriah Tenette, Desmond Roberts, and Miikka Muurinen.",
+  "method": [
+    "Used the existing returning/transfer/newcomer calibration formulas.",
+    "Added Nikola Kusturica directly to the projection engine because he was not present locally.",
+    "Kept replacements above the pre-existing #80 line so the #80-#100 player set remains unchanged."
+  ],
+  "changes": [
+    {
+      "label": "demote-replaced-uriah-tenette",
+      "sourceRow": 3594,
+      "player": "Uriah Tenette",
+      "old": {
+        "rank": 52,
+        "historicalRating": 72,
+        "projectedBbpr": 78.0775,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 88.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 68,
+        "upsideToolsScore": 80,
+        "talentScore": 72.8,
+        "projectionScore": 81.35,
+        "confidenceScore": 86
+      },
+      "new": {
+        "rank": 187,
+        "historicalRating": 64,
+        "projectedBbpr": 69.46,
+        "projectedRole": 82,
+        "opportunityChange": 78,
+        "offensiveBurden": 76,
+        "opportunityScore": 79.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 62,
+        "upsideToolsScore": 72,
+        "talentScore": 66,
+        "projectionScore": 74.92,
+        "confidenceScore": 72
+      }
+    },
+    {
+      "label": "replace-uriah-with-jeremiah-wilkinson",
+      "sourceRow": 60,
+      "player": "Jeremiah Wilkinson",
+      "old": {
+        "rank": 375,
+        "historicalRating": 63.3216,
+        "projectedBbpr": 64.4099,
+        "projectedRole": 88,
+        "opportunityChange": 75,
+        "offensiveBurden": 80,
+        "opportunityScore": 82.5,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 45,
+        "upsideToolsScore": 65,
+        "talentScore": 53,
+        "projectionScore": 67.675,
+        "confidenceScore": 86
+      },
+      "new": {
+        "rank": 51,
+        "historicalRating": 77.4,
+        "projectedBbpr": 77.9238,
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 94,
+        "opportunityScore": 92.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "projectionScore": 79.495,
+        "confidenceScore": 92
+      }
+    },
+    {
+      "label": "clear-desmond-roberts",
+      "sourceRow": 3160,
+      "player": "Desmond Roberts",
+      "old": {
+        "rank": 72,
+        "historicalRating": 76,
+        "projectedBbpr": 76.325,
+        "projectedRole": 90,
+        "opportunityChange": 88,
+        "offensiveBurden": 86,
+        "opportunityScore": 88.6,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 66,
+        "upsideToolsScore": 78,
+        "talentScore": 70.8,
+        "projectionScore": 76.65,
+        "confidenceScore": 86
+      },
+      "new": {
+        "rank": null,
+        "historicalRating": null,
+        "projectedBbpr": null,
+        "projectedRole": null,
+        "opportunityChange": null,
+        "offensiveBurden": null,
+        "opportunityScore": null,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": null,
+        "upsideToolsScore": null,
+        "talentScore": null,
+        "projectionScore": null,
+        "confidenceScore": 55
+      }
+    },
+    {
+      "label": "demote-miikka-muurinen",
+      "sourceRow": 170,
+      "player": "Miikka Muurinen",
+      "old": {
+        "rank": 40,
+        "historicalRating": 76,
+        "projectedBbpr": 80.1107,
+        "projectedRole": 96,
+        "opportunityChange": 95,
+        "offensiveBurden": 91,
+        "opportunityScore": 94.7,
+        "entryTalentGrade": 99,
+        "nbaProjectionScore": 96,
+        "upsideToolsScore": 96,
+        "talentScore": 97.2,
+        "projectionScore": 96.635,
+        "confidenceScore": 95
+      },
+      "new": {
+        "rank": 298,
+        "historicalRating": 72,
+        "projectedBbpr": 67.0406,
+        "projectedRole": 86,
+        "opportunityChange": 82,
+        "offensiveBurden": 78,
+        "opportunityScore": 83.2,
+        "entryTalentGrade": 97,
+        "nbaProjectionScore": 94,
+        "upsideToolsScore": 96,
+        "talentScore": 95.7,
+        "projectionScore": 90.935,
+        "confidenceScore": 80
+      }
+    },
+    {
+      "label": "move-billy-richmond-into-70s",
+      "sourceRow": 200,
+      "player": "Billy Richmond III",
+      "old": {
+        "rank": 388,
+        "historicalRating": 49.0609,
+        "projectedBbpr": 63.9604,
+        "projectedRole": 88,
+        "opportunityChange": 84,
+        "offensiveBurden": 78,
+        "opportunityScore": 84.8,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 78,
+        "upsideToolsScore": 88,
+        "talentScore": 82,
+        "projectionScore": 78.86,
+        "confidenceScore": 86
+      },
+      "new": {
+        "rank": 73,
+        "historicalRating": 70.6,
+        "projectedBbpr": 76.1625,
+        "projectedRole": 91,
+        "opportunityChange": 90,
+        "offensiveBurden": 84,
+        "opportunityScore": 89.3,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": 82,
+        "upsideToolsScore": 88,
+        "talentScore": 84.4,
+        "projectionScore": 81.725,
+        "confidenceScore": 88
+      }
+    },
+    {
+      "label": "replace-roberts-with-nikola-kusturica",
+      "sourceRow": 4008,
+      "player": "Nikola Kusturica",
+      "old": {
+        "rank": null,
+        "historicalRating": null,
+        "projectedBbpr": null,
+        "projectedRole": null,
+        "opportunityChange": null,
+        "offensiveBurden": null,
+        "opportunityScore": null,
+        "entryTalentGrade": null,
+        "nbaProjectionScore": null,
+        "upsideToolsScore": null,
+        "talentScore": null,
+        "projectionScore": null,
+        "confidenceScore": 45
+      },
+      "new": {
+        "rank": 71,
+        "historicalRating": 76,
+        "projectedBbpr": 76.3357,
+        "projectedRole": 90,
+        "opportunityChange": 94,
+        "offensiveBurden": 90,
+        "opportunityScore": 91.2,
+        "entryTalentGrade": 100,
+        "nbaProjectionScore": 100,
+        "upsideToolsScore": 99,
+        "talentScore": 99.75,
+        "projectionScore": 95.9525,
+        "confidenceScore": 86
+      }
+    }
+  ],
+  "targetRanks": [
+    {
+      "rank": 51,
+      "player": "Jeremiah Wilkinson",
+      "team": "Arkansas",
+      "projectedBbpr": 77.9238
+    },
+    {
+      "rank": 71,
+      "player": "Nikola Kusturica",
+      "team": "UCLA",
+      "projectedBbpr": 76.3357
+    },
+    {
+      "rank": 73,
+      "player": "Billy Richmond III",
+      "team": "Arkansas",
+      "projectedBbpr": 76.1625
+    },
+    {
+      "rank": 187,
+      "player": "Uriah Tenette",
+      "team": "New Mexico",
+      "projectedBbpr": 69.46
+    },
+    {
+      "rank": 298,
+      "player": "Miikka Muurinen",
+      "team": "Arkansas",
+      "projectedBbpr": 67.0406
+    }
+  ],
+  "oldRank80to100": [
+    "80:Jason Crowe Jr.",
+    "81:Joseph Tugler",
+    "82:Ben Defty",
+    "83:Owen Freeman",
+    "84:Somto Cyril",
+    "85:Mike Nwoko",
+    "86:John Mobley Jr.",
+    "87:Pharrel Payne",
+    "88:Kevin Overton",
+    "89:Tariq Francis",
+    "90:Amani Hansberry",
+    "91:Coen Carr",
+    "92:Motiejus Krivas",
+    "93:Chance Westry",
+    "94:Kanon Catchings",
+    "95:Aiden Sherrell",
+    "96:Marcio Santos",
+    "97:Justin Pippen",
+    "98:Saliou Niang",
+    "99:Davis Fogle",
+    "100:Mark Padjen"
+  ],
+  "newRank80to100": [
+    "80:Jason Crowe Jr.",
+    "81:Joseph Tugler",
+    "82:Ben Defty",
+    "83:Owen Freeman",
+    "84:Somto Cyril",
+    "85:Mike Nwoko",
+    "86:John Mobley Jr.",
+    "87:Pharrel Payne",
+    "88:Kevin Overton",
+    "89:Tariq Francis",
+    "90:Amani Hansberry",
+    "91:Coen Carr",
+    "92:Motiejus Krivas",
+    "93:Chance Westry",
+    "94:Kanon Catchings",
+    "95:Aiden Sherrell",
+    "96:Marcio Santos",
+    "97:Justin Pippen",
+    "98:Saliou Niang",
+    "99:Davis Fogle",
+    "100:Mark Padjen"
+  ],
+  "rank80to100Unchanged": true,
+  "top100Line": 74.5739
+}

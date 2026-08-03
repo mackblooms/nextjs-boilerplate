@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-23T19:22:37.670Z",
+  "generatedAt": "2026-08-03T15:42:06.509Z",
   "source": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\player-projections.json",
   "output": "C:\\Users\\MackBloom\\nextjs-boilerplate\\data\\cbb\\projection-calibration-audit.json",
   "summary": {
-    "playerCount": 3982,
+    "playerCount": 3983,
     "completedProjectionCount": 766,
     "top100Line": 74.5739,
     "projectedFindingCount": 44,
@@ -32,17 +32,16 @@
     "top50": {
       "Returning": 28,
       "Freshman": 5,
-      "Transfer": 16,
-      "International": 1
+      "Transfer": 17
     },
     "top100": {
-      "Returning": 56,
-      "Freshman": 10,
-      "Transfer": 30,
-      "International": 4
+      "Returning": 55,
+      "Freshman": 11,
+      "Transfer": 31,
+      "International": 3
     },
     "top25Newcomers": 4,
-    "top50Newcomers": 6,
+    "top50Newcomers": 5,
     "top100Newcomers": 14,
     "findings": []
   },
@@ -217,41 +216,13 @@
     },
     {
       "source": "projection",
-      "sourceRow": 170,
-      "player": "Miikka Muurinen",
-      "currentTeam": "Arkansas",
-      "previousTeam": null,
-      "playerType": "International",
-      "classYear": "Fr",
-      "rank": 40,
-      "rankTier": "top 50",
-      "projectedBbpr": 80.1107,
-      "top100Line": 74.5739,
-      "historicalRating": 76,
-      "projectedRole": 96,
-      "opportunityChange": 95,
-      "offensiveBurden": 91,
-      "opportunityScore": 94.7,
-      "talentScore": 97.2,
-      "projectionScore": 96.635,
-      "confidenceScore": 95,
-      "flags": [
-        {
-          "code": "historical-anchor-review",
-          "severity": "medium",
-          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
-        }
-      ]
-    },
-    {
-      "source": "projection",
       "sourceRow": 196,
       "player": "Shelton Henderson",
       "currentTeam": "Miami",
       "previousTeam": "Miami",
       "playerType": "Returning",
       "classYear": "So",
-      "rank": 42,
+      "rank": 41,
       "rankTier": "top 50",
       "projectedBbpr": 79.47,
       "top100Line": 74.5739,
@@ -279,7 +250,7 @@
       "previousTeam": "Virginia",
       "playerType": "Returning",
       "classYear": "So",
-      "rank": 50,
+      "rank": 49,
       "rankTier": "top 50",
       "projectedBbpr": 78.3382,
       "top100Line": 74.5739,
@@ -307,7 +278,7 @@
       "previousTeam": null,
       "playerType": "Freshman",
       "classYear": "Fr",
-      "rank": 59,
+      "rank": 58,
       "rankTier": "top 100",
       "projectedBbpr": 77.3137,
       "top100Line": 74.5739,
@@ -335,7 +306,7 @@
       "previousTeam": null,
       "playerType": "Freshman",
       "classYear": "Fr",
-      "rank": 64,
+      "rank": 63,
       "rankTier": "top 100",
       "projectedBbpr": 76.7996,
       "top100Line": 74.5739,
@@ -363,7 +334,7 @@
       "previousTeam": null,
       "playerType": "Freshman",
       "classYear": "Fr",
-      "rank": 66,
+      "rank": 65,
       "rankTier": "top 100",
       "projectedBbpr": 76.6988,
       "top100Line": 74.5739,
@@ -391,7 +362,7 @@
       "previousTeam": "Michigan",
       "playerType": "Returning",
       "classYear": "So",
-      "rank": 70,
+      "rank": 69,
       "rankTier": "top 100",
       "projectedBbpr": 76.4193,
       "top100Line": 74.5739,
@@ -413,6 +384,62 @@
           "code": "historical-anchor-review",
           "severity": "medium",
           "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 4008,
+      "player": "Nikola Kusturica",
+      "currentTeam": "UCLA",
+      "previousTeam": null,
+      "playerType": "Freshman",
+      "classYear": "Fr",
+      "rank": 71,
+      "rankTier": "top 100",
+      "projectedBbpr": 76.3357,
+      "top100Line": 74.5739,
+      "historicalRating": 76,
+      "projectedRole": 90,
+      "opportunityChange": 94,
+      "offensiveBurden": 90,
+      "opportunityScore": 91.2,
+      "talentScore": 99.75,
+      "projectionScore": 95.9525,
+      "confidenceScore": 86,
+      "flags": [
+        {
+          "code": "historical-anchor-review",
+          "severity": "medium",
+          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
+        }
+      ]
+    },
+    {
+      "source": "projection",
+      "sourceRow": 200,
+      "player": "Billy Richmond III",
+      "currentTeam": "Arkansas",
+      "previousTeam": "Arkansas",
+      "playerType": "Returning",
+      "classYear": "Jr",
+      "rank": 73,
+      "rankTier": "top 100",
+      "projectedBbpr": 76.1625,
+      "top100Line": 74.5739,
+      "historicalRating": 70.6,
+      "projectedRole": 91,
+      "opportunityChange": 90,
+      "offensiveBurden": 84,
+      "opportunityScore": 89.3,
+      "talentScore": 84.4,
+      "projectionScore": 81.725,
+      "confidenceScore": 88,
+      "flags": [
+        {
+          "code": "returning-breakout-underweighted",
+          "severity": "medium",
+          "message": "Returning player has breakout role/talent inputs but remains below the usual top-100 range."
         }
       ]
     },
@@ -788,7 +815,7 @@
       "previousTeam": "Yale",
       "playerType": "Transfer",
       "classYear": "Jr",
-      "rank": 195,
+      "rank": 196,
       "rankTier": "outside top 150",
       "projectedBbpr": 69.2428,
       "top100Line": 74.5739,
@@ -816,7 +843,7 @@
       "previousTeam": "Winthrop",
       "playerType": "Transfer",
       "classYear": "Sr",
-      "rank": 212,
+      "rank": 213,
       "rankTier": "outside top 150",
       "projectedBbpr": 68.8046,
       "top100Line": 74.5739,
@@ -844,7 +871,7 @@
       "previousTeam": "UCSB",
       "playerType": "Returning",
       "classYear": "Sr",
-      "rank": 219,
+      "rank": 220,
       "rankTier": "outside top 150",
       "projectedBbpr": 68.767,
       "top100Line": 74.5739,
@@ -872,7 +899,7 @@
       "previousTeam": "Buffalo",
       "playerType": "Transfer",
       "classYear": "Jr",
-      "rank": 262,
+      "rank": 263,
       "rankTier": "outside top 150",
       "projectedBbpr": 67.7741,
       "top100Line": 74.5739,
@@ -900,7 +927,7 @@
       "previousTeam": "LSU",
       "playerType": "Transfer",
       "classYear": "Sr",
-      "rank": 339,
+      "rank": 341,
       "rankTier": "outside top 150",
       "projectedBbpr": 65.6274,
       "top100Line": 74.5739,
@@ -917,34 +944,6 @@
           "code": "starter-input-conflict",
           "severity": "medium",
           "message": "Projected starter has low role or opportunity-change inputs that should be rechecked."
-        }
-      ]
-    },
-    {
-      "source": "projection",
-      "sourceRow": 200,
-      "player": "Billy Richmond III",
-      "currentTeam": "Arkansas",
-      "previousTeam": "Arkansas",
-      "playerType": "Returning",
-      "classYear": "Jr",
-      "rank": 389,
-      "rankTier": "outside top 150",
-      "projectedBbpr": 63.9604,
-      "top100Line": 74.5739,
-      "historicalRating": 49.0609,
-      "projectedRole": 88,
-      "opportunityChange": 84,
-      "offensiveBurden": 78,
-      "opportunityScore": 84.8,
-      "talentScore": 82,
-      "projectionScore": 78.86,
-      "confidenceScore": 86,
-      "flags": [
-        {
-          "code": "historical-anchor-review",
-          "severity": "medium",
-          "message": "Projection model is much higher than the historical anchor; verify the historical anchor still represents the player."
         }
       ]
     },
@@ -1355,7 +1354,7 @@
         "currentTeam": "Hawaii",
         "normalizedTeam": "hawaii",
         "projectedBbpr": 63.97,
-        "rank": 387,
+        "rank": 388,
         "needsReview": false
       },
       {
@@ -1375,7 +1374,7 @@
         "currentTeam": "Illinois",
         "normalizedTeam": "illinois",
         "projectedBbpr": 67.145,
-        "rank": 293,
+        "rank": 294,
         "needsReview": false
       },
       {
@@ -1395,7 +1394,7 @@
         "currentTeam": "Utah Valley",
         "normalizedTeam": "utah valley",
         "projectedBbpr": 66.265,
-        "rank": 325,
+        "rank": 327,
         "needsReview": false
       },
       {
@@ -1435,7 +1434,7 @@
         "currentTeam": "UCF",
         "normalizedTeam": "ucf",
         "projectedBbpr": 66.225,
-        "rank": 326,
+        "rank": 328,
         "needsReview": false
       },
       {
@@ -1475,7 +1474,7 @@
         "currentTeam": "New Mexico",
         "normalizedTeam": "new mexico",
         "projectedBbpr": 78.6868,
-        "rank": 47,
+        "rank": 46,
         "needsReview": false
       },
       {
@@ -1544,7 +1543,7 @@
         "currentTeam": "Illinois",
         "normalizedTeam": "illinois",
         "projectedBbpr": 76.41,
-        "rank": 71,
+        "rank": 70,
         "needsReview": false
       }
     ],
@@ -1884,7 +1883,7 @@
         "currentTeam": "Baylor",
         "normalizedTeam": "baylor",
         "projectedBbpr": 76.9087,
-        "rank": 62,
+        "rank": 61,
         "needsReview": false
       }
     ],
@@ -1995,7 +1994,7 @@
         "currentTeam": "Xavier",
         "normalizedTeam": "xavier",
         "projectedBbpr": 66.7402,
-        "rank": 307,
+        "rank": 309,
         "needsReview": false
       },
       {
@@ -2124,7 +2123,7 @@
         "currentTeam": "UConn",
         "normalizedTeam": "uconn",
         "projectedBbpr": 67.935,
-        "rank": 257,
+        "rank": 258,
         "needsReview": false
       }
     ],
@@ -2155,7 +2154,7 @@
         "currentTeam": "Notre Dame",
         "normalizedTeam": "notre dame",
         "projectedBbpr": 67.215,
-        "rank": 292,
+        "rank": 293,
         "needsReview": false
       },
       {
@@ -2235,7 +2234,7 @@
         "currentTeam": "Houston",
         "normalizedTeam": "houston",
         "projectedBbpr": 65.6274,
-        "rank": 339,
+        "rank": 341,
         "needsReview": false
       },
       {
@@ -2255,7 +2254,7 @@
         "currentTeam": "Florida Gulf Coast",
         "normalizedTeam": "florida gulf coast",
         "projectedBbpr": 69.015,
-        "rank": 202,
+        "rank": 203,
         "needsReview": false
       },
       {
@@ -2284,7 +2283,7 @@
         "currentTeam": "Baylor",
         "normalizedTeam": "baylor",
         "projectedBbpr": 67.235,
-        "rank": 287,
+        "rank": 288,
         "needsReview": false
       }
     ],

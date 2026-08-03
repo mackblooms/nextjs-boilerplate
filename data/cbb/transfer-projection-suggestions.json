@@ -2912,30 +2912,30 @@
       "position": "G",
       "classYear": "Jr",
       "current": {
-        "historicalRating": 63.3216,
+        "historicalRating": 77.4,
         "historicalBbpr": 62.815,
         "starScore": 62.8626,
         "difficulty": 72.9,
-        "developmentScore": 60,
-        "projectedBbpr": null,
-        "needsReview": true
+        "developmentScore": 40,
+        "projectedBbpr": 77.9238,
+        "needsReview": false
       },
       "suggested": {
         "projectedStarter": "Yes",
-        "projectedRole": 85,
-        "opportunityChange": 60,
-        "offensiveBurden": 80,
-        "opportunityScore": 76.5,
-        "nbaProjectionScore": 50,
-        "upsideToolsScore": 55,
-        "talentScore": 52,
-        "developmentScore": 60,
-        "projectionScore": 64.625,
-        "projectedBbpr": 63.6474,
-        "confidenceScore": 60,
-        "confidenceGrade": "C+",
-        "needsReview": true,
-        "suggestionStatus": "draft"
+        "projectedRole": 93,
+        "opportunityChange": 90,
+        "offensiveBurden": 94,
+        "opportunityScore": 92.3,
+        "nbaProjectionScore": 84,
+        "upsideToolsScore": 88,
+        "talentScore": 85.6,
+        "developmentScore": 40,
+        "projectionScore": 79.495,
+        "projectedBbpr": 77.9238,
+        "confidenceScore": 92,
+        "confidenceGrade": "A+",
+        "needsReview": false,
+        "suggestionStatus": "researched"
       },
       "nearestGoldExamples": [
         {
@@ -3000,12 +3000,13 @@
         }
       ],
       "reasoning": [
-        "draft suggestion generated from nearest completed transfer gold-standard examples",
-        "nearest trusted transfers lean starter/major-minute profile",
-        "verify expected starting role/minutes with roster news, depth chart context, and transfer destination reporting",
-        "verify NBA/draft/tools inputs with mock drafts, scouting sentiment, and player-specific research",
-        "manual spreadsheet inputs should override this suggestion"
-      ]
+        "synced to researched player-projection engine values after user-directed top-100 replacement",
+        "Arkansas fit is driven by projected starting role, SEC-proven scoring, and reliable perimeter usage",
+        "kept below primary-star tier because Arkansas still has multiple blue-chip freshmen and returning athletes competing for touches"
+      ],
+      "historicalRating": 77.4,
+      "developmentScore": 40,
+      "researchSummary": "Replaces Uriah Tenette in the top-100 band after Arkansas added an SEC-proven scorer who led Georgia at 17.4 PPG; role input is kept below elite-primary territory because Arkansas still has multiple blue-chip usage threats."
     },
     {
       "sourceRow": 61,
