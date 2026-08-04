@@ -269,12 +269,12 @@ export default function LoginClient() {
   }
 
   return (
-    <main className="page-shell login-shell">
+    <main className="page-shell login-shell court-glow">
       <div className="back-arrow-row login-back-row">
         <BackArrowButton fallbackHref="/" />
       </div>
 
-      <section className="page-surface login-brand-panel">
+      <section className="console-panel login-brand-panel">
         <div className="login-brand-mark-wrap">
           <Image
             src="/bracketball-logo-mark.png"
@@ -318,7 +318,7 @@ export default function LoginClient() {
         </div>
       </section>
 
-      <section className="page-card login-form-card">
+      <section className="console-panel login-form-card">
         <h2 className="login-form-title">
           {mode === "sign-up" ? "Create your account" : "Welcome back"}
         </h2>
@@ -516,7 +516,7 @@ export default function LoginClient() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.55)",
+            background: "color-mix(in srgb, black 58%, transparent)",
             display: "grid",
             placeItems: "center",
             zIndex: 3000,
@@ -533,7 +533,7 @@ export default function LoginClient() {
               borderRadius: 14,
               border: "1px solid var(--border-color)",
               background: "var(--surface)",
-              boxShadow: "0 20px 42px rgba(0,0,0,0.3)",
+              boxShadow: "var(--shadow-lg)",
               overflow: "hidden",
             }}
           >
@@ -570,9 +570,9 @@ export default function LoginClient() {
                     style={{
                       padding: "8px 10px",
                       borderRadius: 8,
-                      border: "1px solid #2563eb",
-                      background: "#eff6ff",
-                      color: "#1d4ed8",
+                      border: "1px solid var(--highlight-border)",
+                      background: "var(--highlight)",
+                      color: "var(--primary)",
                       fontWeight: 800,
                       textDecoration: "underline",
                       textUnderlineOffset: 2,
@@ -587,9 +587,9 @@ export default function LoginClient() {
                     style={{
                       padding: "8px 10px",
                       borderRadius: 8,
-                      border: "1px solid #2563eb",
-                      background: "#eff6ff",
-                      color: "#1d4ed8",
+                      border: "1px solid var(--highlight-border)",
+                      background: "var(--highlight)",
+                      color: "var(--primary)",
                       fontWeight: 800,
                       textDecoration: "underline",
                       textUnderlineOffset: 2,

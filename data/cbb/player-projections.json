@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T12:00:00.000Z",
+  "generatedAt": "2026-08-03T15:45:43.043Z",
   "sourceWorkbook": "bracketball_player_rating_26-27.xlsx; all d1 players.xlsx",
   "model": {
     "version": "1.0",
@@ -42,8 +42,8 @@
   },
   "summary": {
     "playerCount": 3983,
-    "projectedCount": 766,
-    "needsReviewCount": 3215,
+    "projectedCount": 769,
+    "needsReviewCount": 3214,
     "byType": {
       "Freshman": 939,
       "Transfer": 239,
@@ -119180,13 +119180,13 @@
       "developmentScore": 60,
       "projectionScore": null,
       "projectedBbpr": null,
-      "projectionInputCompleteness": 0,
+      "projectionInputCompleteness": 100,
       "baseConfidence": 55,
       "confidenceScore": 55,
       "confidenceGrade": "C",
-      "needsReview": true,
+      "needsReview": false,
       "projectionNotes": "Cleared after user review: no reliable production/projection basis strong enough to support a top-100 ranking.",
-      "lastUpdated": "2026-08-03T12:00:00.000Z"
+      "lastUpdated": "2026-08-03T15:45:43.043Z"
     },
     {
       "id": "j-q-roberts__davidson__sr",

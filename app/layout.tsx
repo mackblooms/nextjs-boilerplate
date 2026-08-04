@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react";
-import { IBM_Plex_Mono, Manrope, Space_Grotesk } from "next/font/google";
+import { Barlow_Condensed, IBM_Plex_Mono, Manrope } from "next/font/google";
 import AppDeepLinkHandler from "./components/AppDeepLinkHandler";
 import AppHaptics from "./components/AppHaptics";
 import AppLaunchIntro from "./components/AppLaunchIntro";
@@ -27,7 +27,7 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
   variable: "--font-brand-display",
   weight: ["500", "600", "700"],
@@ -43,10 +43,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#eef2f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a1220" },
-  ],
+  themeColor: "#181e2b",
 };
 
 export default function RootLayout({
@@ -57,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${manrope.variable} ${ibmPlexMono.variable} ${spaceGrotesk.variable} antialiased`}
+        className={`${manrope.variable} ${ibmPlexMono.variable} ${barlowCondensed.variable} antialiased`}
       >
         <AppLaunchIntro />
         <AppDeepLinkHandler />

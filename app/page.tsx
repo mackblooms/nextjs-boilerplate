@@ -259,60 +259,124 @@ function LandingPage({
   invitePoolName?: string | null;
   activeCompetitionSlug?: CompetitionSlug;
 }) {
+  const competition = getCompetition(activeCompetitionSlug ?? "march-madness");
+  const howItWorksHref = `/how-it-works?competition=${competition.slug}`;
+
   return (
-    <main
-      className="page-shell home-page-shell home-landing-shell"
-      style={{
-        maxWidth: 920,
-        margin: "10px auto 22px",
-        padding: 8,
-      }}
-    >
-        <section className="landing-center-stage" aria-label="Landing actions">
-          <div className="page-surface landing-center-card landing-simple-card">
-            <Link href="/" className="landing-logo-only-link" aria-label="Go to bracketball home">
-              <Image
-                src="/bracketball-logo-mark.png"
-                alt="bracketball logo"
-                width={320}
-                height={90}
-                className="landing-primary-mark"
-                priority
-              />
+    <main className="page-shell home-page-shell home-landing-shell">
+      <section className="landing-hero court-glow" aria-label="bracketball home">
+        <div className="landing-hero-copy">
+          <Link href="/" className="landing-logo-only-link" aria-label="go to bracketball home">
+            <Image
+              src="/bracketball-logo-mark.png"
+              alt="bracketball logo"
+              width={280}
+              height={80}
+              className="landing-primary-mark"
+              priority
+            />
+          </Link>
+          <span className="landing-kicker">
+            {competition.shortName} pools are live
+          </span>
+          <h1 className="landing-title">draft teams. beat the board.</h1>
+          <p className="landing-copy">
+            build private tournament pools, draft teams by value, and track every score swing from one live command center.
+          </p>
+
+          {invitePoolId ? (
+            <p className="landing-invite-text">
+              you are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
+            </p>
+          ) : null}
+
+          <div className="landing-action-row">
+            <Link
+              href={loginHref}
+              className="btn btn-primary landing-action-button"
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
+                })
+              }
+            >
+              {invitePoolId ? "join pool" : "login / sign up"}
             </Link>
-            {invitePoolId ? (
-              <p className="landing-invite-text">
-                You are being invited to join <b>{invitePoolName ?? "this pool"}</b>.
-              </p>
-            ) : null}
-            <div className="landing-action-row">
-              <Link
-                href={loginHref}
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "login_signup", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                {invitePoolId ? "Join pool" : "Login / Sign up"}
-              </Link>
-              <Link
-                href={`/how-it-works?competition=${activeCompetitionSlug ?? "march-madness"}`}
-                className="ui-btn ui-btn--md ui-btn--secondary landing-action-button"
-                onClick={() =>
-                  trackEvent({
-                    eventName: "home_cta_click",
-                    metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
-                  })
-                }
-              >
-                How it works
-              </Link>
+            <Link
+              href={howItWorksHref}
+              className="btn btn-secondary landing-action-button"
+              onClick={() =>
+                trackEvent({
+                  eventName: "home_cta_click",
+                  metadata: { cta: "how_it_works", has_invite: Boolean(invitePoolId), logged_in: false },
+                })
+              }
+            >
+              how it works
+            </Link>
+          </div>
+
+          <div className="landing-stat-strip" aria-label="platform stats">
+            <div>
+              <strong className="num">100</strong>
+              <span>draft budget</span>
+            </div>
+            <div>
+              <strong className="num">8</strong>
+              <span>price tiers</span>
+            </div>
+            <div>
+              <strong className="num">live</strong>
+              <span>leaderboards</span>
             </div>
           </div>
-        </section>
+        </div>
+
+        <aside className="console-panel landing-live-console" aria-label="live preview">
+          <div className="landing-console-head">
+            <span><span className="live-dot" aria-hidden="true" /> in play now</span>
+            <strong>{competition.shortName}</strong>
+          </div>
+          <div className="landing-console-rows">
+            {[
+              ["1", "your entry", "+18", "142"],
+              ["2", "downtown draft", "+11", "136"],
+              ["3", "value hunters", "+8", "129"],
+              ["4", "chalk talk", "+3", "121"],
+            ].map(([rank, name, live, total]) => (
+              <div key={rank} className="landing-console-row">
+                <span className="num">{rank}</span>
+                <strong>{name}</strong>
+                <span className="num landing-live-points">{live}</span>
+                <span className="num">{total}</span>
+              </div>
+            ))}
+          </div>
+          <div className="landing-match-list">
+            {["favorites holding", "longshots alive", "leaderboard moving"].map((label) => (
+              <div key={label}>
+                <span className="live-dot" aria-hidden="true" />
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <section className="landing-how-grid" aria-label="how it plays">
+        {[
+          ["1", "draft by value", "spend your budget on teams with the best path and upside."],
+          ["2", "join private pools", "reuse saved drafts or build entries for each pool."],
+          ["3", "follow every swing", "scores, ranks, and live movement stay in one app-like view."],
+        ].map(([step, title, body]) => (
+          <article key={step} className="console-panel landing-step-card">
+            <span className="num">{step}</span>
+            <strong>{title}</strong>
+            <p>{body}</p>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }
@@ -614,7 +678,7 @@ function ScorePanel({
   const trackedKeys = trackedKeySet ?? new Set<string>();
 
   return (
-    <aside className="home-score-panel home-dashboard-card" style={scorePanelStyle}>
+    <aside className="home-score-panel home-dashboard-card console-panel" style={scorePanelStyle}>
       <div
         className="home-section-heading"
         style={{
@@ -691,7 +755,7 @@ function ScorePanel({
                     </span>
                   )}
                 </span>
-                <span style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
+                <span className="num" style={{ fontWeight: 900 }}>{game.awayScore ?? "-"}</span>
               </div>
               <div
                 style={{
@@ -717,7 +781,7 @@ function ScorePanel({
                     </span>
                   )}
                 </span>
-                <span style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
+                <span className="num" style={{ fontWeight: 900 }}>{game.homeScore ?? "-"}</span>
               </div>
               <div
                 style={{
@@ -1984,7 +2048,7 @@ export function HomeContent({
         padding: 16,
       }}
     >
-      <section className="home-dashboard-hero home-dashboard-card" aria-label="Dashboard overview">
+      <section className="home-dashboard-hero home-dashboard-card console-panel court-glow" aria-label="Dashboard overview">
         <div className="home-dashboard-intro">
           <span className="home-dashboard-kicker">{activeCompetition.shortName} dashboard</span>
           <h1>draft teams. join pools. track what moves the standings.</h1>
@@ -2026,23 +2090,23 @@ export function HomeContent({
       <section className="home-dashboard-stats" aria-label="Dashboard stats">
         <div className="home-stat-card">
           <span>competition</span>
-          <strong>{activeCompetition.shortName}</strong>
+          <strong className="num">{activeCompetition.shortName}</strong>
         </div>
         <div className="home-stat-card">
           <span>joined pools</span>
-          <strong>{memberPools.length}</strong>
+          <strong className="num">{memberPools.length}</strong>
         </div>
         <div className="home-stat-card">
           <span>saved drafts</span>
-          <strong>{homeDrafts.length}</strong>
+          <strong className="num">{homeDrafts.length}</strong>
         </div>
         <div className="home-stat-card">
           <span>tracked teams</span>
-          <strong>{trackedTeamCount}</strong>
+          <strong className="num">{trackedTeamCount}</strong>
         </div>
       </section>
 
-      <section className="home-pool-toolbar home-dashboard-card" aria-label="Scoreboard context">
+      <section className="home-pool-toolbar home-dashboard-card console-panel" aria-label="Scoreboard context">
         <div className="home-pool-context">
           <span>
             {scoreViewMode === "my-teams"
@@ -2102,7 +2166,7 @@ export function HomeContent({
         </div>
 
         <section
-          className="home-center home-primary-panel"
+          className="home-center home-primary-panel console-panel"
           style={{
             border: "1px solid var(--border-color)",
             borderRadius: 14,
@@ -2252,9 +2316,9 @@ export function HomeContent({
                               width: 40,
                               height: 40,
                               borderRadius: 8,
-                              border: "1px solid #dc2626",
-                              background: "rgba(220, 38, 38, 0.12)",
-                              color: "#dc2626",
+                              border: "1px solid var(--down)",
+                              background: "color-mix(in srgb, var(--down) 14%, transparent)",
+                              color: "var(--down)",
                               cursor: deletingDraftId === draft.id ? "not-allowed" : "pointer",
                               opacity: deletingDraftId === draft.id ? 0.7 : 1,
                               display: "inline-flex",
@@ -2267,7 +2331,7 @@ export function HomeContent({
                           </button>
                         </UiTooltip>
                       </div>
-                      <div className="home-draft-points" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
+                      <div className="home-draft-points num" style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
                         {currentPoints} pts
                       </div>
                     </div>
@@ -2281,7 +2345,7 @@ export function HomeContent({
                         flexWrap: "wrap",
                       }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>Pools: ({pools.length})</div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>pools: <span className="num">({pools.length})</span></div>
                       <button
                         type="button"
                         onClick={() => toggleDraftPools(draft.id)}
