@@ -1,0 +1,656 @@
+{
+  "generatedAt": "2026-08-05T12:00:00.000Z",
+  "scope": "User-directed CBB top-100 replacement batch for ranks 53, 63, 67, 76, 77, 79, 82, and 83.",
+  "method": [
+    "Incoming players inherited the outgoing player's final projected BBPR to preserve the requested slot.",
+    "Outgoing players were moved below the top-100 line and all ranks were recomputed from projected BBPR.",
+    "Projection notes and confidence grades were updated for each touched player."
+  ],
+  "changes": [
+    {
+      "rank": 83,
+      "outgoing": {
+        "old": {
+          "rank": 83,
+          "player": "Owen Freeman",
+          "team": "Auburn",
+          "sourceRow": 271,
+          "projectedBbpr": 75.785,
+          "projectionScore": 75.14,
+          "confidenceScore": 86,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "Owen Freeman was a little high after the last correction. He remains top-100, but closer to the frontcourt-starter band than the top-50 band."
+        },
+        "new": {
+          "rank": 105,
+          "player": "Owen Freeman",
+          "team": "Auburn",
+          "sourceRow": 271,
+          "projectedBbpr": 74.4,
+          "projectionScore": 75.14,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Omer Mayer at #83."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 723,
+          "player": "Omer Mayer",
+          "team": "Purdue",
+          "sourceRow": 224,
+          "projectedBbpr": 40.6652,
+          "projectionScore": 76.89,
+          "confidenceScore": 74,
+          "confidenceGrade": "B-",
+          "needsReview": false,
+          "projectionNotes": "Omer Mayer carries a 16.5154 anchor into a major-rotation projection for Purdue. The batch uses the same projection inputs and shared BBPR calibration as applied rows, while keeping the row pending for official role, health, and depth-chart review."
+        },
+        "new": {
+          "rank": 83,
+          "player": "Omer Mayer",
+          "team": "Purdue",
+          "sourceRow": 224,
+          "projectedBbpr": 75.785,
+          "projectionScore": 76.89,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #83 slot in place of Owen Freeman."
+        }
+      }
+    },
+    {
+      "rank": 82,
+      "outgoing": {
+        "old": {
+          "rank": 82,
+          "player": "Ben Defty",
+          "team": "Arizona State",
+          "sourceRow": 77,
+          "projectedBbpr": 75.795,
+          "projectionScore": 73.61,
+          "confidenceScore": 84,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Defty has one of the strongest remaining historical anchors and current Arizona State coverage expects him to start at center. Role is high because of rim protection/frontcourt need, while offensive burden is capped."
+        },
+        "new": {
+          "rank": 106,
+          "player": "Ben Defty",
+          "team": "Arizona State",
+          "sourceRow": 77,
+          "projectedBbpr": 74.35,
+          "projectionScore": 73.61,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Christian Collins at #82."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 292,
+          "player": "Christian Collins",
+          "team": "USC",
+          "sourceRow": 177,
+          "projectedBbpr": 67.2251,
+          "projectionScore": 89.5825,
+          "confidenceScore": 65,
+          "confidenceGrade": "B-",
+          "needsReview": false,
+          "projectionNotes": "Collins is an elite top-five recruit and should be one of USC's most talented players, but USC's freshman class is loaded and his exact offensive role is less clean than a one-man freshman centerpiece."
+        },
+        "new": {
+          "rank": 82,
+          "player": "Christian Collins",
+          "team": "USC",
+          "sourceRow": 177,
+          "projectedBbpr": 75.795,
+          "projectionScore": 89.5825,
+          "confidenceScore": 84,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #82 slot in place of Ben Defty."
+        }
+      }
+    },
+    {
+      "rank": 79,
+      "outgoing": {
+        "old": {
+          "rank": 79,
+          "player": "Dellquan Warren",
+          "team": "McNeese State",
+          "sourceRow": 3801,
+          "projectedBbpr": 75.915,
+          "projectionScore": 77.83,
+          "confidenceScore": 86,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "Dellquan Warren receives a 74 returning-player anchor from veteran guard production and McNeese on-ball opportunity. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor."
+        },
+        "new": {
+          "rank": 108,
+          "player": "Dellquan Warren",
+          "team": "McNeese State",
+          "sourceRow": 3801,
+          "projectedBbpr": 74.3,
+          "projectionScore": 77.83,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Dedan Thomas Jr. at #79."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 341,
+          "player": "Dedan Thomas Jr.",
+          "team": "Houston",
+          "sourceRow": 13,
+          "projectedBbpr": 65.6274,
+          "projectionScore": 60.23,
+          "confidenceScore": 80,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": null
+        },
+        "new": {
+          "rank": 79,
+          "player": "Dedan Thomas Jr.",
+          "team": "Houston",
+          "sourceRow": 13,
+          "projectedBbpr": 75.915,
+          "projectionScore": 60.23,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #79 slot in place of Dellquan Warren."
+        }
+      }
+    },
+    {
+      "rank": 77,
+      "outgoing": {
+        "old": {
+          "rank": 77,
+          "player": "Kashie Natt",
+          "team": "Oklahoma State",
+          "sourceRow": 116,
+          "projectedBbpr": 75.9379,
+          "projectionScore": 73.68,
+          "confidenceScore": 86,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "Natt is a strong transfer add with proven defense, rebounding, and all-around production. Oklahoma State should use him immediately, but the offensive burden is held below primary-creator range because the new roster has several scoring additions."
+        },
+        "new": {
+          "rank": 110,
+          "player": "Kashie Natt",
+          "team": "Oklahoma State",
+          "sourceRow": 116,
+          "projectedBbpr": 74.25,
+          "projectionScore": 73.68,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Leroy Blyden Jr. at #77."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 240,
+          "player": "Leroy Blyden Jr.",
+          "team": "Kansas",
+          "sourceRow": 48,
+          "projectedBbpr": 68.3702,
+          "projectionScore": 74.375,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "High-upside young guard with strong Kansas coach endorsement. Bill Self called him one of the best guard prospects in the portal and said he can be lead/scoring guard, but Kansas also has major incoming backcourt talent. Treat as high-minute possible starter, not automatic lead guard."
+        },
+        "new": {
+          "rank": 77,
+          "player": "Leroy Blyden Jr.",
+          "team": "Kansas",
+          "sourceRow": 48,
+          "projectedBbpr": 75.9379,
+          "projectionScore": 74.375,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #77 slot in place of Kashie Natt."
+        }
+      }
+    },
+    {
+      "rank": 76,
+      "outgoing": {
+        "old": {
+          "rank": 76,
+          "player": "Baye Ndongo",
+          "team": "Pittsburgh",
+          "sourceRow": 253,
+          "projectedBbpr": 75.965,
+          "projectionScore": 75.86,
+          "confidenceScore": 88,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "Ndongo was low for a productive high-major frontcourt transfer. The correction gives his Pittsburgh role a real starter anchor while keeping the NBA/tools score moderate."
+        },
+        "new": {
+          "rank": 112,
+          "player": "Baye Ndongo",
+          "team": "Pittsburgh",
+          "sourceRow": 253,
+          "projectedBbpr": 74.2,
+          "projectionScore": 75.86,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Trent Perry at #76."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 349,
+          "player": "Trent Perry",
+          "team": "UCLA",
+          "sourceRow": 285,
+          "projectedBbpr": 65.3982,
+          "projectionScore": 76.365,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Perry has guard skill and prior prospect pedigree, but UCLA's guard/wing competition keeps him from a full starter projection. Treat as a key rotation guard with upside."
+        },
+        "new": {
+          "rank": 76,
+          "player": "Trent Perry",
+          "team": "UCLA",
+          "sourceRow": 285,
+          "projectedBbpr": 75.965,
+          "projectionScore": 76.365,
+          "confidenceScore": 88,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #76 slot in place of Baye Ndongo."
+        }
+      }
+    },
+    {
+      "rank": 67,
+      "outgoing": {
+        "old": {
+          "rank": 67,
+          "player": "Jackson Holcombe",
+          "team": "Utah",
+          "sourceRow": 84,
+          "projectedBbpr": 76.5885,
+          "projectionScore": 67.48,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "Holcombe has direct starter evidence from Utah On SI and was UVU's top two-way player. Utah needed a roster rebuild and his size/defense/playmaking fit a major role. The score is high, but not 90+, because shooting limitations and Big 12 translation create some cap."
+        },
+        "new": {
+          "rank": 113,
+          "player": "Jackson Holcombe",
+          "team": "Utah",
+          "sourceRow": 84,
+          "projectedBbpr": 74.15,
+          "projectionScore": 67.48,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Dra Gibbs-Lawhorn at #67."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 448,
+          "player": "Dra Gibbs-Lawhorn",
+          "team": "Texas Tech",
+          "sourceRow": 16,
+          "projectedBbpr": 62.1931,
+          "projectionScore": 56.515,
+          "confidenceScore": 80,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": null
+        },
+        "new": {
+          "rank": 67,
+          "player": "Dra Gibbs-Lawhorn",
+          "team": "Texas Tech",
+          "sourceRow": 16,
+          "projectedBbpr": 76.5885,
+          "projectionScore": 56.515,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #67 slot in place of Jackson Holcombe."
+        }
+      }
+    },
+    {
+      "rank": 63,
+      "outgoing": {
+        "old": {
+          "rank": 63,
+          "player": "Abdou Toure",
+          "team": "Arkansas",
+          "sourceRow": 209,
+          "projectedBbpr": 76.7996,
+          "projectionScore": 95.53,
+          "confidenceScore": 88,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed rank-target calibration around #65, scored through the shared newcomer projection formula."
+        },
+        "new": {
+          "rank": 114,
+          "player": "Abdou Toure",
+          "team": "Arkansas",
+          "sourceRow": 209,
+          "projectedBbpr": 74.1,
+          "projectionScore": 95.53,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Isaiah Johnson at #63."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 144,
+          "player": "Isaiah Johnson",
+          "team": "Texas",
+          "sourceRow": 9,
+          "projectedBbpr": 71.3564,
+          "projectionScore": 65.28,
+          "confidenceScore": 80,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": null
+        },
+        "new": {
+          "rank": 63,
+          "player": "Isaiah Johnson",
+          "team": "Texas",
+          "sourceRow": 9,
+          "projectedBbpr": 76.7996,
+          "projectionScore": 65.28,
+          "confidenceScore": 88,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #63 slot in place of Abdou Toure."
+        }
+      }
+    },
+    {
+      "rank": 53,
+      "outgoing": {
+        "old": {
+          "rank": 53,
+          "player": "Jaden Toombs",
+          "team": "Southern Methodist",
+          "sourceRow": 3656,
+          "projectedBbpr": 77.7025,
+          "projectionScore": 81.85,
+          "confidenceScore": 84,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Jaden Toombs receives a 70 returning-player anchor from SMU freshman center production and frontcourt opportunity. The shared returning-player blend lets current role and talent context move the projection without ignoring the scored anchor."
+        },
+        "new": {
+          "rank": 115,
+          "player": "Jaden Toombs",
+          "team": "Southern Methodist",
+          "sourceRow": 3656,
+          "projectedBbpr": 74.05,
+          "projectionScore": 81.85,
+          "confidenceScore": 78,
+          "confidenceGrade": "B+",
+          "needsReview": false,
+          "projectionNotes": "Removed from the top-100 board after user-directed replacement by Rodney Rice at #53."
+        }
+      },
+      "incoming": {
+        "old": {
+          "rank": 111,
+          "player": "Rodney Rice",
+          "team": "USC",
+          "sourceRow": 338,
+          "projectedBbpr": 73.795,
+          "projectionScore": 75.59,
+          "confidenceScore": 86,
+          "confidenceGrade": "A-",
+          "needsReview": false,
+          "projectionNotes": "Rice was too low for a USC guard role with a solid high-major scoring profile. The correction puts him near the back of the top-100 conversation."
+        },
+        "new": {
+          "rank": 53,
+          "player": "Rodney Rice",
+          "team": "USC",
+          "sourceRow": 338,
+          "projectedBbpr": 77.7025,
+          "projectionScore": 75.59,
+          "confidenceScore": 86,
+          "confidenceGrade": "A",
+          "needsReview": false,
+          "projectionNotes": "User-directed top-100 replacement: moved into the #53 slot in place of Jaden Toombs."
+        }
+      }
+    }
+  ],
+  "targetRanks": [
+    {
+      "rank": 53,
+      "player": "Rodney Rice",
+      "team": "USC",
+      "projectedBbpr": 77.7025
+    },
+    {
+      "rank": 63,
+      "player": "Isaiah Johnson",
+      "team": "Texas",
+      "projectedBbpr": 76.7996
+    },
+    {
+      "rank": 67,
+      "player": "Dra Gibbs-Lawhorn",
+      "team": "Texas Tech",
+      "projectedBbpr": 76.5885
+    },
+    {
+      "rank": 76,
+      "player": "Trent Perry",
+      "team": "UCLA",
+      "projectedBbpr": 75.965
+    },
+    {
+      "rank": 77,
+      "player": "Leroy Blyden Jr.",
+      "team": "Kansas",
+      "projectedBbpr": 75.9379
+    },
+    {
+      "rank": 79,
+      "player": "Dedan Thomas Jr.",
+      "team": "Houston",
+      "projectedBbpr": 75.915
+    },
+    {
+      "rank": 82,
+      "player": "Christian Collins",
+      "team": "USC",
+      "projectedBbpr": 75.795
+    },
+    {
+      "rank": 83,
+      "player": "Omer Mayer",
+      "team": "Purdue",
+      "projectedBbpr": 75.785
+    },
+    {
+      "rank": 105,
+      "player": "Owen Freeman",
+      "team": "Auburn",
+      "projectedBbpr": 74.4
+    },
+    {
+      "rank": 106,
+      "player": "Ben Defty",
+      "team": "Arizona State",
+      "projectedBbpr": 74.35
+    },
+    {
+      "rank": 108,
+      "player": "Dellquan Warren",
+      "team": "McNeese State",
+      "projectedBbpr": 74.3
+    },
+    {
+      "rank": 110,
+      "player": "Kashie Natt",
+      "team": "Oklahoma State",
+      "projectedBbpr": 74.25
+    },
+    {
+      "rank": 112,
+      "player": "Baye Ndongo",
+      "team": "Pittsburgh",
+      "projectedBbpr": 74.2
+    },
+    {
+      "rank": 113,
+      "player": "Jackson Holcombe",
+      "team": "Utah",
+      "projectedBbpr": 74.15
+    },
+    {
+      "rank": 114,
+      "player": "Abdou Toure",
+      "team": "Arkansas",
+      "projectedBbpr": 74.1
+    },
+    {
+      "rank": 115,
+      "player": "Jaden Toombs",
+      "team": "Southern Methodist",
+      "projectedBbpr": 74.05
+    }
+  ],
+  "oldRank50to100": [
+    "50:Jaquan Johnson",
+    "51:Jeremiah Wilkinson",
+    "52:Jackson Shelstad",
+    "53:Jaden Toombs",
+    "54:TJ Power",
+    "55:Braden Huff",
+    "56:A'mare Bynum",
+    "57:Jason Rivera-Torres",
+    "58:Dink Pate",
+    "59:Roman Domon",
+    "60:Rueben Chinyelu",
+    "61:Kayden Mingo",
+    "62:Aden Holloway",
+    "63:Abdou Toure",
+    "64:Alex Condon",
+    "65:Bruce Branch III",
+    "66:Silas Demary Jr.",
+    "67:Jackson Holcombe",
+    "68:Xavier Edmonds",
+    "69:Trey McKenney Jr.",
+    "70:Zvonimir Ivisic",
+    "71:Nikola Kusturica",
+    "72:Braden Frager",
+    "73:Billy Richmond III",
+    "74:Tomislav Ivisic",
+    "75:Babatunde Oladotun",
+    "76:Baye Ndongo",
+    "77:Kashie Natt",
+    "78:Terrence Hill Jr.",
+    "79:Dellquan Warren",
+    "80:Jason Crowe Jr.",
+    "81:Joseph Tugler",
+    "82:Ben Defty",
+    "83:Owen Freeman",
+    "84:Somto Cyril",
+    "85:Mike Nwoko",
+    "86:John Mobley Jr.",
+    "87:Pharrel Payne",
+    "88:Kevin Overton",
+    "89:Tariq Francis",
+    "90:Amani Hansberry",
+    "91:Coen Carr",
+    "92:Motiejus Krivas",
+    "93:Chance Westry",
+    "94:Kanon Catchings",
+    "95:Aiden Sherrell",
+    "96:Marcio Santos",
+    "97:Justin Pippen",
+    "98:Saliou Niang",
+    "99:Davis Fogle",
+    "100:Mark Padjen"
+  ],
+  "newRank50to100": [
+    "50:Jaquan Johnson",
+    "51:Jeremiah Wilkinson",
+    "52:Jackson Shelstad",
+    "53:Rodney Rice",
+    "54:TJ Power",
+    "55:Braden Huff",
+    "56:A'mare Bynum",
+    "57:Jason Rivera-Torres",
+    "58:Dink Pate",
+    "59:Roman Domon",
+    "60:Rueben Chinyelu",
+    "61:Kayden Mingo",
+    "62:Aden Holloway",
+    "63:Isaiah Johnson",
+    "64:Alex Condon",
+    "65:Bruce Branch III",
+    "66:Silas Demary Jr.",
+    "67:Dra Gibbs-Lawhorn",
+    "68:Xavier Edmonds",
+    "69:Trey McKenney Jr.",
+    "70:Zvonimir Ivisic",
+    "71:Nikola Kusturica",
+    "72:Braden Frager",
+    "73:Billy Richmond III",
+    "74:Tomislav Ivisic",
+    "75:Babatunde Oladotun",
+    "76:Trent Perry",
+    "77:Leroy Blyden Jr.",
+    "78:Terrence Hill Jr.",
+    "79:Dedan Thomas Jr.",
+    "80:Jason Crowe Jr.",
+    "81:Joseph Tugler",
+    "82:Christian Collins",
+    "83:Omer Mayer",
+    "84:Somto Cyril",
+    "85:Mike Nwoko",
+    "86:John Mobley Jr.",
+    "87:Pharrel Payne",
+    "88:Kevin Overton",
+    "89:Tariq Francis",
+    "90:Amani Hansberry",
+    "91:Coen Carr",
+    "92:Motiejus Krivas",
+    "93:Chance Westry",
+    "94:Kanon Catchings",
+    "95:Aiden Sherrell",
+    "96:Marcio Santos",
+    "97:Justin Pippen",
+    "98:Saliou Niang",
+    "99:Davis Fogle",
+    "100:Mark Padjen"
+  ],
+  "top100Line": 74.5739
+}
