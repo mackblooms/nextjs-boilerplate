@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T23:36:13.136Z",
+  "generatedAt": "2026-10-06T19:28:04.000Z",
   "sourceWorkbook": "bracketball_player_rating_26-27.xlsx; all d1 players.xlsx",
   "model": {
     "version": "1.0",
@@ -403,7 +403,7 @@
     {
       "id": "milan-momcilovic__kentucky__sr",
       "sourceRow": 5,
-      "rank": 26,
+      "rank": 18,
       "player": "Milan Momcilovic",
       "currentTeam": "Kentucky",
       "previousTeam": "Iowa State",
@@ -429,14 +429,14 @@
       "talentScore": 84.4,
       "developmentScore": 40,
       "projectionScore": 78.76,
-      "projectedBbpr": 81.19,
+      "projectedBbpr": 83.134,
       "projectionInputCompleteness": 100,
       "baseConfidence": 80,
       "confidenceScore": 90,
       "confidenceGrade": "A",
       "needsReview": false,
-      "projectionNotes": "Momcilovic was too low because the old projection treated Kentucky opportunity as a low-change role. The correction reflects a proven high-major scoring forward with clear Kentucky spacing and usage value.",
-      "lastUpdated": "2026-07-23T17:35:00.000Z"
+      "projectionNotes": "Momcilovic was too low because the old projection treated Kentucky opportunity as a low-change role. The correction reflects a proven high-major scoring forward with clear Kentucky spacing and usage value. October 6, 2026: user-directed editorial swap with Malachi Moreno, moving from #26 to #18. Final BBPR adjusted from 81.19 to 83.134; this is an editorial override of the calibrated score.",
+      "lastUpdated": "2026-10-06T19:28:04.000Z"
     },
     {
       "id": "desean-goode__miami__jr",
@@ -897,7 +897,7 @@
     {
       "id": "malachi-moreno__kentucky__so",
       "sourceRow": 186,
-      "rank": 18,
+      "rank": 26,
       "player": "Malachi Moreno",
       "currentTeam": "Kentucky",
       "previousTeam": "Kentucky",
@@ -923,14 +923,14 @@
       "talentScore": 87.6,
       "developmentScore": 80,
       "projectionScore": 86.62,
-      "projectedBbpr": 83.134,
+      "projectedBbpr": 81.19,
       "projectionInputCompleteness": 100,
       "baseConfidence": 95,
       "confidenceScore": 90,
       "confidenceGrade": "A",
       "needsReview": false,
-      "projectionNotes": "Reassessed July 22, 2026: returning Kentucky starting center, SEC All-Freshman, NBA draft-process player, team rebounding/block leader with sophomore physical-development upside.",
-      "lastUpdated": "2026-07-22T23:30:55.819Z"
+      "projectionNotes": "Reassessed July 22, 2026: returning Kentucky starting center, SEC All-Freshman, NBA draft-process player, team rebounding/block leader with sophomore physical-development upside. October 6, 2026: user-directed editorial swap with Milan Momcilovic, moving from #18 to #26. Final BBPR adjusted from 83.134 to 81.19; this is an editorial override of the calibrated score.",
+      "lastUpdated": "2026-10-06T19:28:04.000Z"
     },
     {
       "id": "dedan-thomas-jr__houston__sr",
