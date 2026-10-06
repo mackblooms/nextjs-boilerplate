@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-05T12:00:00.000Z",
+  "generatedAt": "2026-09-28T23:36:13.136Z",
   "sourceWorkbook": "bracketball_player_rating_26-27.xlsx; all d1 players.xlsx",
   "model": {
     "version": "1.0",
@@ -555,7 +555,7 @@
     {
       "id": "jack-karasinski__northwestern__sr",
       "sourceRow": 10,
-      "rank": 146,
+      "rank": 147,
       "player": "Jack Karasinski",
       "currentTeam": "Northwestern",
       "previousTeam": "Bellarmine",
@@ -707,7 +707,7 @@
     {
       "id": "isaac-celiscar__baylor__jr",
       "sourceRow": 19,
-      "rank": 202,
+      "rank": 203,
       "player": "Isaac Celiscar",
       "currentTeam": "Baylor",
       "previousTeam": "Yale",
@@ -745,7 +745,7 @@
     {
       "id": "gavin-doty__syracuse__jr",
       "sourceRow": 25,
-      "rank": 107,
+      "rank": 108,
       "player": "Gavin Doty",
       "currentTeam": "Syracuse",
       "previousTeam": "Siena",
@@ -821,7 +821,7 @@
     {
       "id": "logan-duncomb__notre-dame__sr",
       "sourceRow": 23,
-      "rank": 219,
+      "rank": 220,
       "player": "Logan Duncomb",
       "currentTeam": "Notre Dame",
       "previousTeam": "Winthrop",
@@ -859,7 +859,7 @@
     {
       "id": "daniel-freitag__oregon-state__jr",
       "sourceRow": 18,
-      "rank": 268,
+      "rank": 269,
       "player": "Daniel Freitag",
       "currentTeam": "Oregon State",
       "previousTeam": "Buffalo",
@@ -1505,7 +1505,7 @@
     {
       "id": "aaron-bradshaw__tennessee-state__sr",
       "sourceRow": 293,
-      "rank": 156,
+      "rank": 157,
       "player": "Aaron Bradshaw",
       "currentTeam": "Tennessee State",
       "previousTeam": "Memphis",
@@ -1581,7 +1581,7 @@
     {
       "id": "abdou-toure__arkansas__fr",
       "sourceRow": 209,
-      "rank": 114,
+      "rank": 115,
       "player": "Abdou Toure",
       "currentTeam": "Arkansas",
       "previousTeam": null,
@@ -1885,7 +1885,7 @@
     {
       "id": "aiden-tobiason__syracuse__jr",
       "sourceRow": 63,
-      "rank": 220,
+      "rank": 221,
       "player": "Aiden Tobiason",
       "currentTeam": "Syracuse",
       "previousTeam": "Temple",
@@ -2037,7 +2037,7 @@
     {
       "id": "alvaro-folgueiras__louisville__sr",
       "sourceRow": 128,
-      "rank": 103,
+      "rank": 104,
       "player": "Alvaro Folgueiras",
       "currentTeam": "Louisville",
       "previousTeam": "Iowa",
@@ -2075,7 +2075,7 @@
     {
       "id": "amael-l-etang__dayton__jr",
       "sourceRow": 231,
-      "rank": 310,
+      "rank": 25,
       "player": "Amael L'Etang",
       "currentTeam": "Dayton",
       "previousTeam": "Dayton",
@@ -2101,14 +2101,14 @@
       "talentScore": 78,
       "developmentScore": 60,
       "projectionScore": 77.775,
-      "projectedBbpr": 66.7985,
+      "projectedBbpr": 81.438,
       "projectionInputCompleteness": 100,
       "baseConfidence": 95,
       "confidenceScore": 84,
       "confidenceGrade": "B+",
       "needsReview": false,
-      "projectionNotes": "L'Etang has a returning-starter frontcourt path and enough size/tools to pop, but Dayton's offense should not run through him every possession. Starter role, moderate offensive burden.",
-      "lastUpdated": "2026-07-22T23:20:55.865Z"
+      "projectionNotes": "User-directed ranking adjustment: replaces Cameron Williams at #25. Projected BBPR manually set for this board placement; underlying model inputs retained.",
+      "lastUpdated": "2026-09-28T23:36:13.136Z"
     },
     {
       "id": "amani-hansberry__virginia-tech__sr",
@@ -2417,7 +2417,7 @@
     {
       "id": "anthony-thompson__ohio-state__fr",
       "sourceRow": 167,
-      "rank": 182,
+      "rank": 183,
       "player": "Anthony Thompson",
       "currentTeam": "Ohio State",
       "previousTeam": null,
@@ -2569,7 +2569,7 @@
     {
       "id": "arrinten-page__providence__sr",
       "sourceRow": 388,
-      "rank": 192,
+      "rank": 193,
       "player": "Arrinten Page",
       "currentTeam": "Providence",
       "previousTeam": "Northwestern",
@@ -2683,7 +2683,7 @@
     {
       "id": "bangot-dak__vanderbilt__sr",
       "sourceRow": 268,
-      "rank": 128,
+      "rank": 129,
       "player": "Bangot Dak",
       "currentTeam": "Vanderbilt",
       "previousTeam": "Colorado",
@@ -2835,7 +2835,7 @@
     {
       "id": "baye-ndongo__pittsburgh__sr",
       "sourceRow": 253,
-      "rank": 112,
+      "rank": 113,
       "player": "Baye Ndongo",
       "currentTeam": "Pittsburgh",
       "previousTeam": "Georgia Tech",
@@ -2873,7 +2873,7 @@
     {
       "id": "ben-defty__arizona-state__jr",
       "sourceRow": 77,
-      "rank": 106,
+      "rank": 107,
       "player": "Ben Defty",
       "currentTeam": "Arizona State",
       "previousTeam": "Boston",
@@ -3025,7 +3025,7 @@
     {
       "id": "bj-davis__creighton__sr",
       "sourceRow": 142,
-      "rank": 238,
+      "rank": 239,
       "player": "BJ Davis",
       "currentTeam": "Creighton",
       "previousTeam": "San Diego State",
@@ -3101,7 +3101,7 @@
     {
       "id": "blake-buchanan__iowa-state__sr",
       "sourceRow": 373,
-      "rank": 291,
+      "rank": 292,
       "player": "Blake Buchanan",
       "currentTeam": "Iowa State",
       "previousTeam": "Iowa State",
@@ -3177,7 +3177,7 @@
     {
       "id": "blue-cain__georgia__sr",
       "sourceRow": 335,
-      "rank": 127,
+      "rank": 128,
       "player": "Blue Cain",
       "currentTeam": "Georgia",
       "previousTeam": "Georgia",
@@ -3481,7 +3481,7 @@
     {
       "id": "brandon-benjamin__boston-college__so",
       "sourceRow": 102,
-      "rank": 135,
+      "rank": 136,
       "player": "Brandon Benjamin",
       "currentTeam": "Boston College",
       "previousTeam": "Fairfield",
@@ -3557,7 +3557,7 @@
     {
       "id": "brandon-mccoy__michigan__fr",
       "sourceRow": 180,
-      "rank": 204,
+      "rank": 205,
       "player": "Brandon McCoy",
       "currentTeam": "Michigan",
       "previousTeam": null,
@@ -3899,7 +3899,7 @@
     {
       "id": "cameron-williams__duke__fr",
       "sourceRow": 168,
-      "rank": 25,
+      "rank": 101,
       "player": "Cameron Williams",
       "currentTeam": "Duke",
       "previousTeam": null,
@@ -3925,14 +3925,14 @@
       "talentScore": 96.1,
       "developmentScore": 100,
       "projectionScore": 95.35,
-      "projectedBbpr": 81.438,
+      "projectedBbpr": 74.5722,
       "projectionInputCompleteness": 100,
       "baseConfidence": 65,
       "confidenceScore": 86,
       "confidenceGrade": "A",
       "needsReview": false,
-      "projectionNotes": "User-directed rank-target calibration around #25, scored through the shared newcomer projection formula.",
-      "lastUpdated": "2026-07-23T20:45:00.000Z"
+      "projectionNotes": "User-directed ranking adjustment: moved outside the top 100 to #101, with Amael L'Etang taking his former #25 spot. Projected BBPR manually set for this board placement; underlying model inputs retained.",
+      "lastUpdated": "2026-09-28T23:36:13.136Z"
     },
     {
       "id": "carey-booth__colorado-state__sr",
@@ -3975,7 +3975,7 @@
     {
       "id": "carson-johnson__denver__jr",
       "sourceRow": 330,
-      "rank": 200,
+      "rank": 201,
       "player": "Carson Johnson",
       "currentTeam": "Denver",
       "previousTeam": "Denver",
@@ -4317,7 +4317,7 @@
     {
       "id": "christian-reeves__kansas__sr",
       "sourceRow": 370,
-      "rank": 273,
+      "rank": 274,
       "player": "Christian Reeves",
       "currentTeam": "Kansas",
       "previousTeam": "Charleston",
@@ -4507,7 +4507,7 @@
     {
       "id": "collin-chandler__byu__jr",
       "sourceRow": 153,
-      "rank": 116,
+      "rank": 117,
       "player": "Collin Chandler",
       "currentTeam": "BYU",
       "previousTeam": "Kentucky",
@@ -4659,7 +4659,7 @@
     {
       "id": "d-j-wagner__maryland__sr",
       "sourceRow": 280,
-      "rank": 109,
+      "rank": 110,
       "player": "D.J. Wagner",
       "currentTeam": "Maryland",
       "previousTeam": "Arkansas",
@@ -4697,7 +4697,7 @@
     {
       "id": "dai-dai-ames__tennessee__sr",
       "sourceRow": 92,
-      "rank": 111,
+      "rank": 112,
       "player": "Dai Dai Ames",
       "currentTeam": "Tennessee",
       "previousTeam": "California",
@@ -5609,7 +5609,7 @@
     {
       "id": "devin-vanterpool__providence__jr",
       "sourceRow": 380,
-      "rank": 210,
+      "rank": 211,
       "player": "Devin Vanterpool",
       "currentTeam": "Providence",
       "previousTeam": "Florida Atlantic",
@@ -5799,7 +5799,7 @@
     {
       "id": "drew-fielder__alabama__sr",
       "sourceRow": 58,
-      "rank": 252,
+      "rank": 253,
       "player": "Drew Fielder",
       "currentTeam": "Alabama",
       "previousTeam": "Boise State",
@@ -5913,7 +5913,7 @@
     {
       "id": "dylan-faulkner__clemson__sr",
       "sourceRow": 76,
-      "rank": 101,
+      "rank": 102,
       "player": "Dylan Faulkner",
       "currentTeam": "Clemson",
       "previousTeam": "Samford",
@@ -5951,7 +5951,7 @@
     {
       "id": "dylan-mingo__baylor__fr",
       "sourceRow": 191,
-      "rank": 140,
+      "rank": 141,
       "player": "Dylan Mingo",
       "currentTeam": "Baylor",
       "previousTeam": null,
@@ -7015,7 +7015,7 @@
     {
       "id": "j-p-estrella__michigan__jr",
       "sourceRow": 112,
-      "rank": 139,
+      "rank": 140,
       "player": "J.P. Estrella",
       "currentTeam": "Michigan",
       "previousTeam": "Tennessee",
@@ -7053,7 +7053,7 @@
     {
       "id": "jackson-holcombe__utah__jr",
       "sourceRow": 84,
-      "rank": 113,
+      "rank": 114,
       "player": "Jackson Holcombe",
       "currentTeam": "Utah",
       "previousTeam": "Utah Valley",
@@ -7471,7 +7471,7 @@
     {
       "id": "jalen-cox__usc__sr",
       "sourceRow": 38,
-      "rank": 272,
+      "rank": 273,
       "player": "Jalen Cox",
       "currentTeam": "USC",
       "previousTeam": "Colgate",
@@ -8231,7 +8231,7 @@
     {
       "id": "joel-foxwell__arizona-state__so",
       "sourceRow": 391,
-      "rank": 205,
+      "rank": 206,
       "player": "Joel Foxwell",
       "currentTeam": "Arizona State",
       "previousTeam": "Portland",
@@ -8611,7 +8611,7 @@
     {
       "id": "joshua-dent__saint-mary-s__jr",
       "sourceRow": 332,
-      "rank": 136,
+      "rank": 137,
       "player": "Joshua Dent",
       "currentTeam": "Saint Mary's",
       "previousTeam": "Saint Mary's",
@@ -8953,7 +8953,7 @@
     {
       "id": "kahmare-holmes__depaul__jr",
       "sourceRow": 93,
-      "rank": 271,
+      "rank": 272,
       "player": "Kahmare Holmes",
       "currentTeam": "DePaul",
       "previousTeam": "Wofford",
@@ -9181,7 +9181,7 @@
     {
       "id": "kashie-natt__oklahoma-state__sr",
       "sourceRow": 116,
-      "rank": 110,
+      "rank": 111,
       "player": "Kashie Natt",
       "currentTeam": "Oklahoma State",
       "previousTeam": "Sam Houston State",
@@ -9637,7 +9637,7 @@
     {
       "id": "kyle-evans__north-carolina-state__sr",
       "sourceRow": 91,
-      "rank": 121,
+      "rank": 122,
       "player": "Kyle Evans",
       "currentTeam": "North Carolina State",
       "previousTeam": "UC Irvine",
@@ -10093,7 +10093,7 @@
     {
       "id": "malik-mack__providence__sr",
       "sourceRow": 158,
-      "rank": 102,
+      "rank": 103,
       "player": "Malik Mack",
       "currentTeam": "Providence",
       "previousTeam": "Georgetown",
@@ -10511,7 +10511,7 @@
     {
       "id": "miikka-muurinen__arkansas__fr",
       "sourceRow": 170,
-      "rank": 302,
+      "rank": 303,
       "player": "Miikka Muurinen",
       "currentTeam": "Arkansas",
       "previousTeam": null,
@@ -10625,7 +10625,7 @@
     {
       "id": "miles-byrd__providence__sr",
       "sourceRow": 194,
-      "rank": 152,
+      "rank": 153,
       "player": "Miles Byrd",
       "currentTeam": "Providence",
       "previousTeam": "San Diego State",
@@ -10701,7 +10701,7 @@
     {
       "id": "miro-little__ucsb__sr",
       "sourceRow": 317,
-      "rank": 226,
+      "rank": 227,
       "player": "Miro Little",
       "currentTeam": "UCSB",
       "previousTeam": "UCSB",
@@ -11195,7 +11195,7 @@
     {
       "id": "nolan-winter__wisconsin__sr",
       "sourceRow": 233,
-      "rank": 104,
+      "rank": 105,
       "player": "Nolan Winter",
       "currentTeam": "Wisconsin",
       "previousTeam": "Wisconsin",
@@ -11233,7 +11233,7 @@
     {
       "id": "obinna-ekezie-jr__louisville__fr",
       "sourceRow": 188,
-      "rank": 138,
+      "rank": 139,
       "player": "Obinna Ekezie Jr.",
       "currentTeam": "Louisville",
       "previousTeam": null,
@@ -11423,7 +11423,7 @@
     {
       "id": "owen-freeman__auburn__sr",
       "sourceRow": 271,
-      "rank": 105,
+      "rank": 106,
       "player": "Owen Freeman",
       "currentTeam": "Auburn",
       "previousTeam": "Creighton",
@@ -11841,7 +11841,7 @@
     {
       "id": "robert-hinton__harvard__jr",
       "sourceRow": 320,
-      "rank": 195,
+      "rank": 196,
       "player": "Robert Hinton",
       "currentTeam": "Harvard",
       "previousTeam": "Harvard",
@@ -12373,7 +12373,7 @@
     {
       "id": "sananda-fru__marquette__so",
       "sourceRow": 78,
-      "rank": 175,
+      "rank": 176,
       "player": "Sananda Fru",
       "currentTeam": "Marquette",
       "previousTeam": "Louisville",
@@ -12449,7 +12449,7 @@
     {
       "id": "sayon-keita__north-carolina__fr",
       "sourceRow": 181,
-      "rank": 144,
+      "rank": 145,
       "player": "Sayon Keita",
       "currentTeam": "North Carolina",
       "previousTeam": null,
@@ -13361,7 +13361,7 @@
     {
       "id": "tomislav-buljan__maryland__so",
       "sourceRow": 81,
-      "rank": 169,
+      "rank": 170,
       "player": "Tomislav Buljan",
       "currentTeam": "Maryland",
       "previousTeam": "New Mexico",
@@ -13437,7 +13437,7 @@
     {
       "id": "toni-bryant__missouri__fr",
       "sourceRow": 367,
-      "rank": 150,
+      "rank": 151,
       "player": "Toni Bryant",
       "currentTeam": "Missouri",
       "previousTeam": null,
@@ -13855,7 +13855,7 @@
     {
       "id": "tyler-perkins__villanova__sr",
       "sourceRow": 336,
-      "rank": 134,
+      "rank": 135,
       "player": "Tyler Perkins",
       "currentTeam": "Villanova",
       "previousTeam": "Villanova",
@@ -14045,7 +14045,7 @@
     {
       "id": "tyshawn-archie__texas-a-and-m__sr",
       "sourceRow": 132,
-      "rank": 284,
+      "rank": 285,
       "player": "Tyshawn Archie",
       "currentTeam": "Texas A&M",
       "previousTeam": "McNeese State",
@@ -19213,7 +19213,7 @@
     {
       "id": "j-j-andrews__arkansas__fr",
       "sourceRow": 521,
-      "rank": 155,
+      "rank": 156,
       "player": "J.J. Andrews",
       "currentTeam": "Arkansas",
       "previousTeam": null,
@@ -19669,7 +19669,7 @@
     {
       "id": "tajh-ariza__oregon__fr",
       "sourceRow": 533,
-      "rank": 229,
+      "rank": 230,
       "player": "Tajh Ariza",
       "currentTeam": "Oregon",
       "previousTeam": null,
@@ -27421,7 +27421,7 @@
     {
       "id": "john-bol__ucf__jr",
       "sourceRow": 738,
-      "rank": 288,
+      "rank": 289,
       "player": "John Bol",
       "currentTeam": "UCF",
       "previousTeam": null,
@@ -29397,7 +29397,7 @@
     {
       "id": "dewayne-brown-ii__tennessee__so",
       "sourceRow": 790,
-      "rank": 151,
+      "rank": 152,
       "player": "DeWayne Brown II",
       "currentTeam": "Tennessee",
       "previousTeam": null,
@@ -30651,7 +30651,7 @@
     {
       "id": "isaac-bruns__usc__sr",
       "sourceRow": 824,
-      "rank": 290,
+      "rank": 291,
       "player": "Isaac Bruns",
       "currentTeam": "USC",
       "previousTeam": null,
@@ -33615,7 +33615,7 @@
     {
       "id": "danny-carbuccia__massachusetts__so",
       "sourceRow": 902,
-      "rank": 174,
+      "rank": 175,
       "player": "Danny Carbuccia",
       "currentTeam": "Massachusetts",
       "previousTeam": null,
@@ -43723,7 +43723,7 @@
     {
       "id": "jake-davis__illinois__sr",
       "sourceRow": 1168,
-      "rank": 298,
+      "rank": 299,
       "player": "Jake Davis",
       "currentTeam": "Illinois",
       "previousTeam": null,
@@ -57593,7 +57593,7 @@
     {
       "id": "nait-george__pittsburgh__sr",
       "sourceRow": 1533,
-      "rank": 118,
+      "rank": 119,
       "player": "Nait George",
       "currentTeam": "Pittsburgh",
       "previousTeam": null,
@@ -61773,7 +61773,7 @@
     {
       "id": "gavin-griffiths__temple__sr",
       "sourceRow": 1643,
-      "rank": 248,
+      "rank": 249,
       "player": "Gavin Griffiths",
       "currentTeam": "Temple",
       "previousTeam": null,
@@ -63901,7 +63901,7 @@
     {
       "id": "donald-hand-jr__loyola-il__sr",
       "sourceRow": 1701,
-      "rank": 201,
+      "rank": 202,
       "player": "Donald Hand, Jr.",
       "currentTeam": "Loyola (IL)",
       "previousTeam": null,
@@ -64433,7 +64433,7 @@
     {
       "id": "brock-harding__tcu__sr",
       "sourceRow": 1715,
-      "rank": 183,
+      "rank": 184,
       "player": "Brock Harding",
       "currentTeam": "TCU",
       "previousTeam": null,
@@ -66637,7 +66637,7 @@
     {
       "id": "jalen-haynes__dayton__sr",
       "sourceRow": 1773,
-      "rank": 217,
+      "rank": 218,
       "player": "Jalen Haynes",
       "currentTeam": "Dayton",
       "previousTeam": null,
@@ -67891,7 +67891,7 @@
     {
       "id": "gavin-hightower__providence__so",
       "sourceRow": 1806,
-      "rank": 191,
+      "rank": 192,
       "player": "Gavin Hightower",
       "currentTeam": "Providence",
       "previousTeam": null,
@@ -70133,7 +70133,7 @@
     {
       "id": "bryson-howard__duke__fr",
       "sourceRow": 1865,
-      "rank": 167,
+      "rank": 168,
       "player": "Bryson Howard",
       "currentTeam": "Duke",
       "previousTeam": null,
@@ -72185,7 +72185,7 @@
     {
       "id": "nojus-indrusaitis__california__jr",
       "sourceRow": 1919,
-      "rank": 299,
+      "rank": 300,
       "player": "Nojus Indrusaitis",
       "currentTeam": "California",
       "previousTeam": null,
@@ -72451,7 +72451,7 @@
     {
       "id": "pop-isaacs-jr__oklahoma__sr",
       "sourceRow": 1926,
-      "rank": 145,
+      "rank": 146,
       "player": "Pop Isaacs Jr.",
       "currentTeam": "Oklahoma",
       "previousTeam": null,
@@ -73971,7 +73971,7 @@
     {
       "id": "jizzle-james-jr__charlotte__sr",
       "sourceRow": 1966,
-      "rank": 275,
+      "rank": 276,
       "player": "Jizzle James, Jr.",
       "currentTeam": "Charlotte",
       "previousTeam": null,
@@ -75567,7 +75567,7 @@
     {
       "id": "jasper-johnson__oregon__so",
       "sourceRow": 2009,
-      "rank": 129,
+      "rank": 130,
       "player": "Jasper Johnson",
       "currentTeam": "Oregon",
       "previousTeam": null,
@@ -80507,7 +80507,7 @@
     {
       "id": "nik-khamenia__uconn__so",
       "sourceRow": 2139,
-      "rank": 120,
+      "rank": 121,
       "player": "Nik Khamenia",
       "currentTeam": "UConn",
       "previousTeam": null,
@@ -81115,7 +81115,7 @@
     {
       "id": "taylen-kinney__kansas__fr",
       "sourceRow": 2155,
-      "rank": 215,
+      "rank": 216,
       "player": "Taylen Kinney",
       "currentTeam": "Kansas",
       "previousTeam": null,
@@ -81153,7 +81153,7 @@
     {
       "id": "john-kinziger__illinois-state__sr",
       "sourceRow": 2156,
-      "rank": 307,
+      "rank": 308,
       "player": "John Kinziger",
       "currentTeam": "Illinois State",
       "previousTeam": null,
@@ -82179,7 +82179,7 @@
     {
       "id": "cooper-koch__iowa__so",
       "sourceRow": 2183,
-      "rank": 122,
+      "rank": 123,
       "player": "Cooper Koch",
       "currentTeam": "Iowa",
       "previousTeam": null,
@@ -86435,7 +86435,7 @@
     {
       "id": "k-j-lewis__usc__sr",
       "sourceRow": 2296,
-      "rank": 189,
+      "rank": 190,
       "player": "K.J. Lewis",
       "currentTeam": "USC",
       "previousTeam": null,
@@ -86549,7 +86549,7 @@
     {
       "id": "nyk-lewis__vcu__so",
       "sourceRow": 2299,
-      "rank": 164,
+      "rank": 165,
       "player": "Nyk Lewis",
       "currentTeam": "VCU",
       "previousTeam": null,
@@ -89399,7 +89399,7 @@
     {
       "id": "sebastian-mack__unlv__sr",
       "sourceRow": 2374,
-      "rank": 176,
+      "rank": 177,
       "player": "Sebastian Mack",
       "currentTeam": "UNLV",
       "previousTeam": null,
@@ -89779,7 +89779,7 @@
     {
       "id": "kaden-magwood__murray-state__so",
       "sourceRow": 2384,
-      "rank": 162,
+      "rank": 163,
       "player": "Kaden Magwood",
       "currentTeam": "Murray State",
       "previousTeam": null,
@@ -95403,7 +95403,7 @@
     {
       "id": "paul-mcmillan-iv__alabama-state__sr",
       "sourceRow": 2532,
-      "rank": 181,
+      "rank": 182,
       "player": "Paul McMillan IV",
       "currentTeam": "Alabama State",
       "previousTeam": null,
@@ -96011,7 +96011,7 @@
     {
       "id": "cian-medley__east-carolina__sr",
       "sourceRow": 2548,
-      "rank": 187,
+      "rank": 188,
       "player": "Cian Medley",
       "currentTeam": "East Carolina",
       "previousTeam": null,
@@ -96239,7 +96239,7 @@
     {
       "id": "ryan-mela__providence__jr",
       "sourceRow": 2554,
-      "rank": 178,
+      "rank": 179,
       "player": "Ryan Mela",
       "currentTeam": "Providence",
       "previousTeam": null,
@@ -96885,7 +96885,7 @@
     {
       "id": "alon-michaeli__saint-louis__so",
       "sourceRow": 2571,
-      "rank": 142,
+      "rank": 143,
       "player": "Alon Michaeli",
       "currentTeam": "Saint Louis",
       "previousTeam": null,
@@ -98747,7 +98747,7 @@
     {
       "id": "deshayne-montgomery__louisville__sr",
       "sourceRow": 2620,
-      "rank": 203,
+      "rank": 204,
       "player": "DeShayne Montgomery",
       "currentTeam": "Louisville",
       "previousTeam": null,
@@ -108513,7 +108513,7 @@
     {
       "id": "royce-parham__marquette__jr",
       "sourceRow": 2879,
-      "rank": 262,
+      "rank": 263,
       "player": "Royce Parham",
       "currentTeam": "Marquette",
       "previousTeam": null,
@@ -111515,7 +111515,7 @@
     {
       "id": "rytis-petraitis__new-mexico__sr",
       "sourceRow": 2958,
-      "rank": 171,
+      "rank": 172,
       "player": "Rytis Petraitis",
       "currentTeam": "New Mexico",
       "previousTeam": null,
@@ -113187,7 +113187,7 @@
     {
       "id": "kyle-pock__northern-iowa__sr",
       "sourceRow": 3002,
-      "rank": 300,
+      "rank": 301,
       "player": "Kyle Pock",
       "currentTeam": "Northern Iowa",
       "previousTeam": null,
@@ -113225,7 +113225,7 @@
     {
       "id": "mikhail-pocknett__gardner-webb__sr",
       "sourceRow": 3003,
-      "rank": 247,
+      "rank": 248,
       "player": "Mikhail Pocknett",
       "currentTeam": "Gardner-Webb",
       "previousTeam": null,
@@ -113415,7 +113415,7 @@
     {
       "id": "nehemiah-pollard__portland-state__sr",
       "sourceRow": 3008,
-      "rank": 283,
+      "rank": 284,
       "player": "Nehemiah Pollard",
       "currentTeam": "Portland State",
       "previousTeam": null,
@@ -113453,7 +113453,7 @@
     {
       "id": "niklas-polonowski__pennsylvania__sr",
       "sourceRow": 3009,
-      "rank": 309,
+      "rank": 310,
       "player": "Niklas Polonowski",
       "currentTeam": "Pennsylvania",
       "previousTeam": null,
@@ -113795,7 +113795,7 @@
     {
       "id": "mason-porter-brown__florida-atlantic__sr",
       "sourceRow": 3018,
-      "rank": 233,
+      "rank": 234,
       "player": "Mason Porter-Brown",
       "currentTeam": "Florida Atlantic",
       "previousTeam": null,
@@ -114061,7 +114061,7 @@
     {
       "id": "jonathan-powell__pittsburgh__jr",
       "sourceRow": 3025,
-      "rank": 206,
+      "rank": 207,
       "player": "Jonathan Powell",
       "currentTeam": "Pittsburgh",
       "previousTeam": null,
@@ -114175,7 +114175,7 @@
     {
       "id": "gabriel-pozzato__xavier__so",
       "sourceRow": 3029,
-      "rank": 285,
+      "rank": 286,
       "player": "Gabriel Pozzato",
       "currentTeam": "Xavier",
       "previousTeam": null,
@@ -114365,7 +114365,7 @@
     {
       "id": "malik-presley__george-mason__sr",
       "sourceRow": 3034,
-      "rank": 264,
+      "rank": 265,
       "player": "Malik Presley",
       "currentTeam": "George Mason",
       "previousTeam": null,
@@ -114403,7 +114403,7 @@
     {
       "id": "elijah-price__nevada__jr",
       "sourceRow": 3035,
-      "rank": 161,
+      "rank": 162,
       "player": "Elijah Price",
       "currentTeam": "Nevada",
       "previousTeam": null,
@@ -115201,7 +115201,7 @@
     {
       "id": "jeremiah-quigley__binghamton__sr",
       "sourceRow": 3056,
-      "rank": 188,
+      "rank": 189,
       "player": "Jeremiah Quigley",
       "currentTeam": "Binghamton",
       "previousTeam": null,
@@ -115543,7 +115543,7 @@
     {
       "id": "mekhi-ragland__oklahoma-state__so",
       "sourceRow": 3065,
-      "rank": 147,
+      "rank": 148,
       "player": "Mekhi Ragland",
       "currentTeam": "Oklahoma State",
       "previousTeam": null,
@@ -115961,7 +115961,7 @@
     {
       "id": "nick-randall__colorado__jr",
       "sourceRow": 3076,
-      "rank": 282,
+      "rank": 283,
       "player": "Nick Randall",
       "currentTeam": "Colorado",
       "previousTeam": null,
@@ -116113,7 +116113,7 @@
     {
       "id": "austin-rapp__wisconsin__jr",
       "sourceRow": 3080,
-      "rank": 124,
+      "rank": 125,
       "player": "Austin Rapp",
       "currentTeam": "Wisconsin",
       "previousTeam": null,
@@ -116797,7 +116797,7 @@
     {
       "id": "brandon-rechsteiner__kansas-state__sr",
       "sourceRow": 3098,
-      "rank": 256,
+      "rank": 257,
       "player": "Brandon Rechsteiner",
       "currentTeam": "Kansas State",
       "previousTeam": null,
@@ -116949,7 +116949,7 @@
     {
       "id": "jalen-reed__michigan__sr",
       "sourceRow": 3102,
-      "rank": 131,
+      "rank": 132,
       "player": "Jalen Reed",
       "currentTeam": "Michigan",
       "previousTeam": null,
@@ -117177,7 +117177,7 @@
     {
       "id": "jayden-reid__memphis__sr",
       "sourceRow": 3108,
-      "rank": 125,
+      "rank": 126,
       "player": "Jayden Reid",
       "currentTeam": "Memphis",
       "previousTeam": null,
@@ -117329,7 +117329,7 @@
     {
       "id": "ace-reiser__utah-state__jr",
       "sourceRow": 3112,
-      "rank": 251,
+      "rank": 252,
       "player": "Ace Reiser",
       "currentTeam": "Utah State",
       "previousTeam": null,
@@ -118013,7 +118013,7 @@
     {
       "id": "dietrich-richardson__bradley__so",
       "sourceRow": 3130,
-      "rank": 133,
+      "rank": 134,
       "player": "Dietrich Richardson",
       "currentTeam": "Bradley",
       "previousTeam": null,
@@ -118279,7 +118279,7 @@
     {
       "id": "chris-riddle__toledo__so",
       "sourceRow": 3137,
-      "rank": 243,
+      "rank": 244,
       "player": "Chris Riddle",
       "currentTeam": "Toledo",
       "previousTeam": null,
@@ -118697,7 +118697,7 @@
     {
       "id": "deron-rippey-jr__duke__fr",
       "sourceRow": 3148,
-      "rank": 168,
+      "rank": 169,
       "player": "Deron Rippey, Jr.",
       "currentTeam": "Duke",
       "previousTeam": null,
@@ -119343,7 +119343,7 @@
     {
       "id": "anthony-robinson-ii__florida-state__sr",
       "sourceRow": 3165,
-      "rank": 119,
+      "rank": 120,
       "player": "Anthony Robinson II",
       "currentTeam": "Florida State",
       "previousTeam": null,
@@ -119685,7 +119685,7 @@
     {
       "id": "micah-robinson__tcu__jr",
       "sourceRow": 3174,
-      "rank": 177,
+      "rank": 178,
       "player": "Micah Robinson",
       "currentTeam": "TCU",
       "previousTeam": null,
@@ -120103,7 +120103,7 @@
     {
       "id": "ty-rodgers__boise-state__sr",
       "sourceRow": 3185,
-      "rank": 216,
+      "rank": 217,
       "player": "Ty Rodgers",
       "currentTeam": "Boise State",
       "previousTeam": null,
@@ -120939,7 +120939,7 @@
     {
       "id": "kohl-rosario__kansas__so",
       "sourceRow": 3207,
-      "rank": 255,
+      "rank": 256,
       "player": "Kohl Rosario",
       "currentTeam": "Kansas",
       "previousTeam": null,
@@ -121129,7 +121129,7 @@
     {
       "id": "jacob-ross__uconn__so",
       "sourceRow": 3212,
-      "rank": 263,
+      "rank": 264,
       "player": "Jacob Ross",
       "currentTeam": "UConn",
       "previousTeam": null,
@@ -121167,7 +121167,7 @@
     {
       "id": "jordan-ross__california__sr",
       "sourceRow": 3213,
-      "rank": 132,
+      "rank": 133,
       "player": "Jordan Ross",
       "currentTeam": "California",
       "previousTeam": null,
@@ -122839,7 +122839,7 @@
     {
       "id": "alexandros-samodurov__north-carolina__fr",
       "sourceRow": 3257,
-      "rank": 308,
+      "rank": 309,
       "player": "Alexandros Samodurov",
       "currentTeam": "North Carolina",
       "previousTeam": null,
@@ -123827,7 +123827,7 @@
     {
       "id": "derin-saran__richmond__jr",
       "sourceRow": 3283,
-      "rank": 197,
+      "rank": 198,
       "player": "Derin Saran",
       "currentTeam": "Richmond",
       "previousTeam": null,
@@ -124549,7 +124549,7 @@
     {
       "id": "jaden-schutt__kansas-state__sr",
       "sourceRow": 3302,
-      "rank": 278,
+      "rank": 279,
       "player": "Jaden Schutt",
       "currentTeam": "Kansas State",
       "previousTeam": null,
@@ -124587,7 +124587,7 @@
     {
       "id": "carson-schwieger__tulane__jr",
       "sourceRow": 3303,
-      "rank": 196,
+      "rank": 197,
       "player": "Carson Schwieger",
       "currentTeam": "Tulane",
       "previousTeam": null,
@@ -124625,7 +124625,7 @@
     {
       "id": "cooper-schwieger__florida-state__sr",
       "sourceRow": 3304,
-      "rank": 166,
+      "rank": 167,
       "player": "Cooper Schwieger",
       "currentTeam": "Florida State",
       "previousTeam": null,
@@ -124701,7 +124701,7 @@
     {
       "id": "cam-scott__temple__so",
       "sourceRow": 3306,
-      "rank": 123,
+      "rank": 124,
       "player": "Cam Scott",
       "currentTeam": "Temple",
       "previousTeam": null,
@@ -124777,7 +124777,7 @@
     {
       "id": "james-scott__georgia__sr",
       "sourceRow": 3308,
-      "rank": 279,
+      "rank": 280,
       "player": "James Scott",
       "currentTeam": "Georgia",
       "previousTeam": null,
@@ -124967,7 +124967,7 @@
     {
       "id": "josh-scovens__davidson__sr",
       "sourceRow": 3313,
-      "rank": 126,
+      "rank": 127,
       "player": "Josh Scovens",
       "currentTeam": "Davidson",
       "previousTeam": null,
@@ -126069,7 +126069,7 @@
     {
       "id": "will-shaver__samford__jr",
       "sourceRow": 3342,
-      "rank": 246,
+      "rank": 247,
       "player": "Will Shaver",
       "currentTeam": "Samford",
       "previousTeam": null,
@@ -126373,7 +126373,7 @@
     {
       "id": "jalen-shelley__texas-a-and-m__jr",
       "sourceRow": 3350,
-      "rank": 199,
+      "rank": 200,
       "player": "Jalen Shelley",
       "currentTeam": "Texas A&M",
       "previousTeam": null,
@@ -126867,7 +126867,7 @@
     {
       "id": "braeden-shrewsberry__notre-dame__sr",
       "sourceRow": 3363,
-      "rank": 297,
+      "rank": 298,
       "player": "Braeden Shrewsberry",
       "currentTeam": "Notre Dame",
       "previousTeam": null,
@@ -126981,7 +126981,7 @@
     {
       "id": "ben-shtolzberg__murray-state__sr",
       "sourceRow": 3366,
-      "rank": 228,
+      "rank": 229,
       "player": "Ben Shtolzberg",
       "currentTeam": "Murray State",
       "previousTeam": null,
@@ -127665,7 +127665,7 @@
     {
       "id": "jaiun-simon__dayton__jr",
       "sourceRow": 3384,
-      "rank": 224,
+      "rank": 225,
       "player": "Jaiun Simon",
       "currentTeam": "Dayton",
       "previousTeam": null,
@@ -127703,7 +127703,7 @@
     {
       "id": "t-j-simpkins__mississippi-state__sr",
       "sourceRow": 3385,
-      "rank": 242,
+      "rank": 243,
       "player": "T.J. Simpkins",
       "currentTeam": "Mississippi State",
       "previousTeam": null,
@@ -128159,7 +128159,7 @@
     {
       "id": "trent-sisley__indiana__so",
       "sourceRow": 3397,
-      "rank": 154,
+      "rank": 155,
       "player": "Trent Sisley",
       "currentTeam": "Indiana",
       "previousTeam": null,
@@ -128425,7 +128425,7 @@
     {
       "id": "kristers-skrinda__stanford__so",
       "sourceRow": 3404,
-      "rank": 267,
+      "rank": 268,
       "player": "Kristers Skrinda",
       "currentTeam": "Stanford",
       "previousTeam": null,
@@ -128919,7 +128919,7 @@
     {
       "id": "braeden-smith__notre-dame__sr",
       "sourceRow": 3417,
-      "rank": 117,
+      "rank": 118,
       "player": "Braeden Smith",
       "currentTeam": "Notre Dame",
       "previousTeam": null,
@@ -130287,7 +130287,7 @@
     {
       "id": "martin-somerville__west-virginia__jr",
       "sourceRow": 3453,
-      "rank": 160,
+      "rank": 161,
       "player": "Martin Somerville",
       "currentTeam": "West Virginia",
       "previousTeam": null,
@@ -130477,7 +130477,7 @@
     {
       "id": "ibrahim-souare__pittsburgh__jr",
       "sourceRow": 3458,
-      "rank": 289,
+      "rank": 290,
       "player": "Ibrahim Souare",
       "currentTeam": "Pittsburgh",
       "previousTeam": null,
@@ -131693,7 +131693,7 @@
     {
       "id": "xavion-staton__oregon-state__so",
       "sourceRow": 3490,
-      "rank": 198,
+      "rank": 199,
       "player": "Xavion Staton",
       "currentTeam": "Oregon State",
       "previousTeam": null,
@@ -132263,7 +132263,7 @@
     {
       "id": "jeshawn-stevenson-jr__north-texas__jr",
       "sourceRow": 3505,
-      "rank": 250,
+      "rank": 251,
       "player": "JeShawn Stevenson, Jr.",
       "currentTeam": "North Texas",
       "previousTeam": null,
@@ -132567,7 +132567,7 @@
     {
       "id": "evan-stinson__stanford__jr",
       "sourceRow": 3513,
-      "rank": 274,
+      "rank": 275,
       "player": "Evan Stinson",
       "currentTeam": "Stanford",
       "previousTeam": null,
@@ -133023,7 +133023,7 @@
     {
       "id": "elijah-strong__saint-louis__sr",
       "sourceRow": 3525,
-      "rank": 149,
+      "rank": 150,
       "player": "Elijah Strong",
       "currentTeam": "Saint Louis",
       "previousTeam": null,
@@ -133061,7 +133061,7 @@
     {
       "id": "mynor-strong__toledo__jr",
       "sourceRow": 3526,
-      "rank": 180,
+      "rank": 181,
       "player": "Mynor Strong",
       "currentTeam": "Toledo",
       "previousTeam": null,
@@ -133099,7 +133099,7 @@
     {
       "id": "kevin-stubblefield-jr__missouri-state__jr",
       "sourceRow": 3527,
-      "rank": 186,
+      "rank": 187,
       "player": "Kevin Stubblefield, Jr.",
       "currentTeam": "Missouri State",
       "previousTeam": null,
@@ -133327,7 +133327,7 @@
     {
       "id": "giorgi-sulaberidze__tennessee-martin__jr",
       "sourceRow": 3533,
-      "rank": 281,
+      "rank": 282,
       "player": "Giorgi Sulaberidze",
       "currentTeam": "Tennessee-Martin",
       "previousTeam": null,
@@ -133745,7 +133745,7 @@
     {
       "id": "garrett-sundra__james-madison__jr",
       "sourceRow": 3544,
-      "rank": 236,
+      "rank": 237,
       "player": "Garrett Sundra",
       "currentTeam": "James Madison",
       "previousTeam": null,
@@ -133859,7 +133859,7 @@
     {
       "id": "jake-sussberg__princeton__so",
       "sourceRow": 3547,
-      "rank": 303,
+      "rank": 304,
       "player": "Jake Sussberg",
       "currentTeam": "Princeton",
       "previousTeam": null,
@@ -133897,7 +133897,7 @@
     {
       "id": "isaiah-sutherland__green-bay__sr",
       "sourceRow": 3548,
-      "rank": 173,
+      "rank": 174,
       "player": "Isaiah Sutherland",
       "currentTeam": "Green Bay",
       "previousTeam": null,
@@ -134239,7 +134239,7 @@
     {
       "id": "a-j-swinton__florida-state__jr",
       "sourceRow": 3557,
-      "rank": 208,
+      "rank": 209,
       "player": "A.J. Swinton",
       "currentTeam": "Florida State",
       "previousTeam": null,
@@ -134277,7 +134277,7 @@
     {
       "id": "isaiah-sy__san-diego-state__sr",
       "sourceRow": 3558,
-      "rank": 157,
+      "rank": 158,
       "player": "Isaiah Sy",
       "currentTeam": "San Diego State",
       "previousTeam": null,
@@ -134353,7 +134353,7 @@
     {
       "id": "will-sydnor__rutgers__jr",
       "sourceRow": 3560,
-      "rank": 218,
+      "rank": 219,
       "player": "Will Sydnor",
       "currentTeam": "Rutgers",
       "previousTeam": null,
@@ -134619,7 +134619,7 @@
     {
       "id": "elliott-taite__air-force__jr",
       "sourceRow": 3567,
-      "rank": 194,
+      "rank": 195,
       "player": "Elliott Taite",
       "currentTeam": "Air Force",
       "previousTeam": null,
@@ -134657,7 +134657,7 @@
     {
       "id": "ace-talbert__gardner-webb__sr",
       "sourceRow": 3568,
-      "rank": 253,
+      "rank": 254,
       "player": "Ace Talbert",
       "currentTeam": "Gardner-Webb",
       "previousTeam": null,
@@ -134771,7 +134771,7 @@
     {
       "id": "jose-roberto-tanchyn__san-diego__sr",
       "sourceRow": 3571,
-      "rank": 287,
+      "rank": 288,
       "player": "Jose Roberto Tanchyn",
       "currentTeam": "San Diego",
       "previousTeam": null,
@@ -135037,7 +135037,7 @@
     {
       "id": "kaden-tate__north-dakota-state__jr",
       "sourceRow": 3578,
-      "rank": 257,
+      "rank": 258,
       "player": "Kaden Tate",
       "currentTeam": "North Dakota State",
       "previousTeam": null,
@@ -135113,7 +135113,7 @@
     {
       "id": "deywilk-tavarez__hofstra__sr",
       "sourceRow": 3580,
-      "rank": 137,
+      "rank": 138,
       "player": "Deywilk Tavarez",
       "currentTeam": "Hofstra",
       "previousTeam": null,
@@ -135417,7 +135417,7 @@
     {
       "id": "r-j-taylor__oakland__jr",
       "sourceRow": 3588,
-      "rank": 163,
+      "rank": 164,
       "player": "R.J. Taylor",
       "currentTeam": "Oakland",
       "previousTeam": null,
@@ -135645,7 +135645,7 @@
     {
       "id": "uriah-tenette__new-mexico__so",
       "sourceRow": 3594,
-      "rank": 193,
+      "rank": 194,
       "player": "Uriah Tenette",
       "currentTeam": "New Mexico",
       "previousTeam": null,
@@ -135683,7 +135683,7 @@
     {
       "id": "david-terrell-jr__southern-methodist__sr",
       "sourceRow": 3595,
-      "rank": 158,
+      "rank": 159,
       "player": "David Terrell, Jr.",
       "currentTeam": "Southern Methodist",
       "previousTeam": null,
@@ -135759,7 +135759,7 @@
     {
       "id": "kellen-thames__saint-louis__sr",
       "sourceRow": 3597,
-      "rank": 184,
+      "rank": 185,
       "player": "Kellen Thames",
       "currentTeam": "Saint Louis",
       "previousTeam": null,
@@ -136063,7 +136063,7 @@
     {
       "id": "asa-thomas__illinois-chicago__jr",
       "sourceRow": 3605,
-      "rank": 234,
+      "rank": 235,
       "player": "Asa Thomas",
       "currentTeam": "Illinois-Chicago",
       "previousTeam": null,
@@ -136139,7 +136139,7 @@
     {
       "id": "d-j-thomas__tcu__so",
       "sourceRow": 3607,
-      "rank": 211,
+      "rank": 212,
       "player": "D.J. Thomas",
       "currentTeam": "TCU",
       "previousTeam": null,
@@ -136177,7 +136177,7 @@
     {
       "id": "dallas-thomas__clemson__so",
       "sourceRow": 3608,
-      "rank": 254,
+      "rank": 255,
       "player": "Dallas Thomas",
       "currentTeam": "Clemson",
       "previousTeam": null,
@@ -136405,7 +136405,7 @@
     {
       "id": "kareem-thomas__dartmouth__jr",
       "sourceRow": 3614,
-      "rank": 301,
+      "rank": 302,
       "player": "Kareem Thomas",
       "currentTeam": "Dartmouth",
       "previousTeam": null,
@@ -136519,7 +136519,7 @@
     {
       "id": "m-j-thomas__unlv__jr",
       "sourceRow": 3617,
-      "rank": 179,
+      "rank": 180,
       "player": "M.J. Thomas",
       "currentTeam": "UNLV",
       "previousTeam": null,
@@ -136557,7 +136557,7 @@
     {
       "id": "malcolm-thomas__dayton__so",
       "sourceRow": 3618,
-      "rank": 214,
+      "rank": 215,
       "player": "Malcolm Thomas",
       "currentTeam": "Dayton",
       "previousTeam": null,
@@ -137013,7 +137013,7 @@
     {
       "id": "myles-thompson__south-dakota-state__sr",
       "sourceRow": 3630,
-      "rank": 222,
+      "rank": 223,
       "player": "Myles Thompson",
       "currentTeam": "South Dakota State",
       "previousTeam": null,
@@ -137393,7 +137393,7 @@
     {
       "id": "jordan-tillery__vcu__so",
       "sourceRow": 3640,
-      "rank": 277,
+      "rank": 278,
       "player": "Jordan Tillery",
       "currentTeam": "VCU",
       "previousTeam": null,
@@ -137735,7 +137735,7 @@
     {
       "id": "luka-toews__furman__jr",
       "sourceRow": 3649,
-      "rank": 260,
+      "rank": 261,
       "player": "Luka Toews",
       "currentTeam": "Furman",
       "previousTeam": null,
@@ -137811,7 +137811,7 @@
     {
       "id": "sage-tolentino__unc-asheville__sr",
       "sourceRow": 3651,
-      "rank": 266,
+      "rank": 267,
       "player": "Sage Tolentino",
       "currentTeam": "UNC Asheville",
       "previousTeam": null,
@@ -137963,7 +137963,7 @@
     {
       "id": "tanner-toolson__tcu__sr",
       "sourceRow": 3655,
-      "rank": 190,
+      "rank": 191,
       "player": "Tanner Toolson",
       "currentTeam": "TCU",
       "previousTeam": null,
@@ -138001,7 +138001,7 @@
     {
       "id": "jaden-toombs__southern-methodist__so",
       "sourceRow": 3656,
-      "rank": 115,
+      "rank": 116,
       "player": "Jaden Toombs",
       "currentTeam": "Southern Methodist",
       "previousTeam": null,
@@ -138343,7 +138343,7 @@
     {
       "id": "aly-tounkara__boston-college__jr",
       "sourceRow": 3665,
-      "rank": 276,
+      "rank": 277,
       "player": "Aly Tounkara",
       "currentTeam": "Boston College",
       "previousTeam": null,
@@ -138419,7 +138419,7 @@
     {
       "id": "tallis-toure__stanford__jr",
       "sourceRow": 3667,
-      "rank": 221,
+      "rank": 222,
       "player": "Tallis Toure",
       "currentTeam": "Stanford",
       "previousTeam": null,
@@ -138571,7 +138571,7 @@
     {
       "id": "seydou-traore__west-virginia__sr",
       "sourceRow": 3671,
-      "rank": 165,
+      "rank": 166,
       "player": "Seydou Traore",
       "currentTeam": "West Virginia",
       "previousTeam": null,
@@ -139141,7 +139141,7 @@
     {
       "id": "george-turkson__maryland__so",
       "sourceRow": 3686,
-      "rank": 212,
+      "rank": 213,
       "player": "George Turkson",
       "currentTeam": "Maryland",
       "previousTeam": null,
@@ -139217,7 +139217,7 @@
     {
       "id": "connor-turnbull__utah-state__sr",
       "sourceRow": 3688,
-      "rank": 172,
+      "rank": 173,
       "player": "Connor Turnbull",
       "currentTeam": "Utah State",
       "previousTeam": null,
@@ -140129,7 +140129,7 @@
     {
       "id": "jaret-valencia__wichita-state__sr",
       "sourceRow": 3712,
-      "rank": 225,
+      "rank": 226,
       "player": "Jaret Valencia",
       "currentTeam": "Wichita State",
       "previousTeam": null,
@@ -140205,7 +140205,7 @@
     {
       "id": "makhai-valentine__george-mason__jr",
       "sourceRow": 3714,
-      "rank": 239,
+      "rank": 240,
       "player": "Makhai Valentine",
       "currentTeam": "George Mason",
       "previousTeam": null,
@@ -140585,7 +140585,7 @@
     {
       "id": "landon-vanderwarker__kent-state__so",
       "sourceRow": 3724,
-      "rank": 245,
+      "rank": 246,
       "player": "Landon Vanderwarker",
       "currentTeam": "Kent State",
       "previousTeam": null,
@@ -141345,7 +141345,7 @@
     {
       "id": "erik-villarreal__mcneese-state__so",
       "sourceRow": 3744,
-      "rank": 227,
+      "rank": 228,
       "player": "Erik Villarreal",
       "currentTeam": "McNeese State",
       "previousTeam": null,
@@ -141421,7 +141421,7 @@
     {
       "id": "jamie-vinson-iv__texas-a-and-m__jr",
       "sourceRow": 3746,
-      "rank": 213,
+      "rank": 214,
       "player": "Jamie Vinson IV",
       "currentTeam": "Texas A&M",
       "previousTeam": null,
@@ -141687,7 +141687,7 @@
     {
       "id": "dimitrije-vukicevic__uc-san-diego__so",
       "sourceRow": 3753,
-      "rank": 230,
+      "rank": 231,
       "player": "Dimitrije Vukicevic",
       "currentTeam": "UC San Diego",
       "previousTeam": null,
@@ -142409,7 +142409,7 @@
     {
       "id": "myles-walker__nevada__so",
       "sourceRow": 3772,
-      "rank": 296,
+      "rank": 297,
       "player": "Myles Walker",
       "currentTeam": "Nevada",
       "previousTeam": null,
@@ -142713,7 +142713,7 @@
     {
       "id": "cam-wallace__temple__so",
       "sourceRow": 3780,
-      "rank": 249,
+      "rank": 250,
       "player": "Cam Wallace",
       "currentTeam": "Temple",
       "previousTeam": null,
@@ -143055,7 +143055,7 @@
     {
       "id": "barry-wang__massachusetts__sr",
       "sourceRow": 3789,
-      "rank": 265,
+      "rank": 266,
       "player": "Barry Wang",
       "currentTeam": "Massachusetts",
       "previousTeam": null,
@@ -143283,7 +143283,7 @@
     {
       "id": "tyrell-ward__vcu__sr",
       "sourceRow": 3795,
-      "rank": 143,
+      "rank": 144,
       "player": "Tyrell Ward",
       "currentTeam": "VCU",
       "previousTeam": null,
@@ -143511,7 +143511,7 @@
     {
       "id": "dellquan-warren__mcneese-state__jr",
       "sourceRow": 3801,
-      "rank": 108,
+      "rank": 109,
       "player": "Dellquan Warren",
       "currentTeam": "McNeese State",
       "previousTeam": null,
@@ -143663,7 +143663,7 @@
     {
       "id": "george-washington-iii__florida-gulf-coast__sr",
       "sourceRow": 3805,
-      "rank": 209,
+      "rank": 210,
       "player": "George Washington III",
       "currentTeam": "Florida Gulf Coast",
       "previousTeam": null,
@@ -144043,7 +144043,7 @@
     {
       "id": "jacob-wassler__bellarmine__so",
       "sourceRow": 3815,
-      "rank": 244,
+      "rank": 245,
       "player": "Jacob Wassler",
       "currentTeam": "Bellarmine",
       "previousTeam": null,
@@ -144157,7 +144157,7 @@
     {
       "id": "mason-watkins__north-florida__so",
       "sourceRow": 3818,
-      "rank": 270,
+      "rank": 271,
       "player": "Mason Watkins",
       "currentTeam": "North Florida",
       "previousTeam": null,
@@ -144195,7 +144195,7 @@
     {
       "id": "chace-watley__wofford__so",
       "sourceRow": 3819,
-      "rank": 269,
+      "rank": 270,
       "player": "Chace Watley",
       "currentTeam": "Wofford",
       "previousTeam": null,
@@ -144309,7 +144309,7 @@
     {
       "id": "kaseem-watson__east-carolina__sr",
       "sourceRow": 3822,
-      "rank": 170,
+      "rank": 171,
       "player": "Kaseem Watson",
       "currentTeam": "East Carolina",
       "previousTeam": null,
@@ -144727,7 +144727,7 @@
     {
       "id": "jaheem-webber__southern-illinois__so",
       "sourceRow": 3833,
-      "rank": 280,
+      "rank": 281,
       "player": "Jaheem Webber",
       "currentTeam": "Southern Illinois",
       "previousTeam": null,
@@ -145107,7 +145107,7 @@
     {
       "id": "carter-welling__clemson__sr",
       "sourceRow": 3843,
-      "rank": 292,
+      "rank": 293,
       "player": "Carter Welling",
       "currentTeam": "Clemson",
       "previousTeam": null,
@@ -145297,7 +145297,7 @@
     {
       "id": "isaiah-west__belmont__sr",
       "sourceRow": 3848,
-      "rank": 159,
+      "rank": 160,
       "player": "Isaiah West",
       "currentTeam": "Belmont",
       "previousTeam": null,
@@ -145449,7 +145449,7 @@
     {
       "id": "spence-wewe__hofstra__jr",
       "sourceRow": 3852,
-      "rank": 261,
+      "rank": 262,
       "player": "Spence Wewe",
       "currentTeam": "Hofstra",
       "previousTeam": null,
@@ -145525,7 +145525,7 @@
     {
       "id": "montana-wheeler__kansas-state__so",
       "sourceRow": 3854,
-      "rank": 295,
+      "rank": 296,
       "player": "Montana Wheeler",
       "currentTeam": "Kansas State",
       "previousTeam": null,
@@ -145753,7 +145753,7 @@
     {
       "id": "colin-white__akron__jr",
       "sourceRow": 3860,
-      "rank": 306,
+      "rank": 307,
       "player": "Colin White",
       "currentTeam": "Akron",
       "previousTeam": null,
@@ -145791,7 +145791,7 @@
     {
       "id": "dez-white__temple__sr",
       "sourceRow": 3861,
-      "rank": 241,
+      "rank": 242,
       "player": "Dez White",
       "currentTeam": "Temple",
       "previousTeam": null,
@@ -145905,7 +145905,7 @@
     {
       "id": "sadiq-white-jr__syracuse__so",
       "sourceRow": 3864,
-      "rank": 130,
+      "rank": 131,
       "player": "Sadiq White, Jr.",
       "currentTeam": "Syracuse",
       "previousTeam": null,
@@ -146019,7 +146019,7 @@
     {
       "id": "peyton-white__nevada__so",
       "sourceRow": 3867,
-      "rank": 305,
+      "rank": 306,
       "player": "Peyton White",
       "currentTeam": "Nevada",
       "previousTeam": null,
@@ -146133,7 +146133,7 @@
     {
       "id": "jace-whiting__utep__sr",
       "sourceRow": 3870,
-      "rank": 259,
+      "rank": 260,
       "player": "Jace Whiting",
       "currentTeam": "UTEP",
       "previousTeam": null,
@@ -146589,7 +146589,7 @@
     {
       "id": "mike-williams-iii__tulsa__sr",
       "sourceRow": 3882,
-      "rank": 153,
+      "rank": 154,
       "player": "Mike Williams III",
       "currentTeam": "Tulsa",
       "previousTeam": null,
@@ -146893,7 +146893,7 @@
     {
       "id": "dontrez-williams__unlv__jr",
       "sourceRow": 3890,
-      "rank": 258,
+      "rank": 259,
       "player": "Dontrez Williams",
       "currentTeam": "UNLV",
       "previousTeam": null,
@@ -147083,7 +147083,7 @@
     {
       "id": "isaac-williams__baylor__jr",
       "sourceRow": 3895,
-      "rank": 293,
+      "rank": 294,
       "player": "Isaac Williams",
       "currentTeam": "Baylor",
       "previousTeam": null,
@@ -147843,7 +147843,7 @@
     {
       "id": "t-j-williams__wichita-state__so",
       "sourceRow": 3915,
-      "rank": 232,
+      "rank": 233,
       "player": "T.J. Williams",
       "currentTeam": "Wichita State",
       "previousTeam": null,
@@ -148033,7 +148033,7 @@
     {
       "id": "dylan-williamson__rhode-island__sr",
       "sourceRow": 3920,
-      "rank": 237,
+      "rank": 238,
       "player": "Dylan Williamson",
       "currentTeam": "Rhode Island",
       "previousTeam": null,
@@ -148147,7 +148147,7 @@
     {
       "id": "chansey-willis-jr__kent-state__sr",
       "sourceRow": 3923,
-      "rank": 240,
+      "rank": 241,
       "player": "Chansey Willis, Jr.",
       "currentTeam": "Kent State",
       "previousTeam": null,
@@ -148337,7 +148337,7 @@
     {
       "id": "luke-wilson__syracuse__jr",
       "sourceRow": 3928,
-      "rank": 286,
+      "rank": 287,
       "player": "Luke Wilson",
       "currentTeam": "Syracuse",
       "previousTeam": null,
@@ -148565,7 +148565,7 @@
     {
       "id": "dwayne-wimbley-jr__massachusetts__so",
       "sourceRow": 3934,
-      "rank": 294,
+      "rank": 295,
       "player": "Dwayne Wimbley, Jr.",
       "currentTeam": "Massachusetts",
       "previousTeam": null,
@@ -148641,7 +148641,7 @@
     {
       "id": "k-j-windham-jr__james-madison__jr",
       "sourceRow": 3936,
-      "rank": 235,
+      "rank": 236,
       "player": "K.J. Windham, Jr.",
       "currentTeam": "James Madison",
       "previousTeam": null,
@@ -150123,7 +150123,7 @@
     {
       "id": "eemeli-yalaho__nc-state__sr",
       "sourceRow": 3975,
-      "rank": 207,
+      "rank": 208,
       "player": "Eemeli Yalaho",
       "currentTeam": "NC State",
       "previousTeam": null,
@@ -150161,7 +150161,7 @@
     {
       "id": "gus-yalden__vermont__jr",
       "sourceRow": 3976,
-      "rank": 141,
+      "rank": 142,
       "player": "Gus Yalden",
       "currentTeam": "Vermont",
       "previousTeam": null,
@@ -150275,7 +150275,7 @@
     {
       "id": "sammie-yeanay__california__jr",
       "sourceRow": 3979,
-      "rank": 231,
+      "rank": 232,
       "player": "Sammie Yeanay",
       "currentTeam": "California",
       "previousTeam": null,
@@ -150313,7 +150313,7 @@
     {
       "id": "darrel-yepdo__vermont__sr",
       "sourceRow": 3980,
-      "rank": 185,
+      "rank": 186,
       "player": "Darrel Yepdo",
       "currentTeam": "Vermont",
       "previousTeam": null,
@@ -151187,7 +151187,7 @@
     {
       "id": "imanuel-zorgvol__hofstra__sr",
       "sourceRow": 4003,
-      "rank": 223,
+      "rank": 224,
       "player": "Imanuel Zorgvol",
       "currentTeam": "Hofstra",
       "previousTeam": null,
@@ -151225,7 +151225,7 @@
     {
       "id": "evangelos-zougris__saint-mary-s__sr",
       "sourceRow": 4004,
-      "rank": 148,
+      "rank": 149,
       "player": "Evangelos Zougris",
       "currentTeam": "Saint Mary's",
       "previousTeam": null,
@@ -151263,7 +151263,7 @@
     {
       "id": "nathan-zulemie__fresno-state__so",
       "sourceRow": 4005,
-      "rank": 304,
+      "rank": 305,
       "player": "Nathan Zulemie",
       "currentTeam": "Fresno State",
       "previousTeam": null,

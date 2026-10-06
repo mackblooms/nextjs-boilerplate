@@ -706,6 +706,31 @@ textarea::placeholder {
   gap: 16px;
 }
 
+.cbb-player-link { color: var(--foreground); font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
+.cbb-player-link:hover { color: var(--focus-ring); }
+.cbb-player-link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; border-radius: 3px; }
+.cbb-profile-section { padding: clamp(16px, 3vw, 24px); }
+.cbb-profile-section h2 { font-size: clamp(22px, 3vw, 30px); margin: 0 0 12px; }
+.cbb-profile-section h3 { margin: 24px 0 12px; }
+.cbb-profile-section > p { line-height: 1.6; }
+.cbb-profile-heading, .cbb-profile-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cbb-profile-pagination { padding: 16px; }
+.cbb-profile-rating { font-size: 42px; line-height: 1.1; }
+.cbb-profile-stat-grid, .cbb-profile-shooting { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; }
+.cbb-profile-stat-grid > div, .cbb-profile-shooting > div { display: grid; gap: 4px; padding: 14px; background: var(--surface-muted); border: 1px solid var(--border-color); border-radius: 10px; }
+.cbb-profile-stat-grid strong, .cbb-profile-shooting strong { font-size: 28px; font-variant-numeric: tabular-nums; }
+.cbb-profile-stat-grid small, .cbb-profile-shooting small, .cbb-profile-muted { font-size: 13px; line-height: 1.6; opacity: .8; }
+.cbb-profile-factors { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.cbb-profile-factors > div { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 14px; border: 1px solid var(--border-color); border-radius: 10px; }
+.cbb-profile-factors dt { font-weight: 700; }
+.cbb-profile-factors dd { margin: 0; font-weight: 900; font-variant-numeric: tabular-nums; }
+.cbb-profile-factors p { grid-column: 1 / -1; margin: 0; font-size: 13px; opacity: .8; }
+.cbb-profile-explanations { padding-left: 22px; display: grid; gap: 12px; line-height: 1.6; }
+@media (max-width: 600px) {
+  .cbb-profile-section { padding: 14px; }
+  .cbb-profile-factors { grid-template-columns: 1fr; }
+}
+
 .cbb-projections-hero {
   border: 1px solid var(--border-color);
   border-radius: 14px;

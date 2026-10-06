@@ -55,6 +55,13 @@ export function isCronAuthorized(req: Request): boolean {
   return cronHeader === secret;
 }
 
+export function isLocalDevRequest(req: Request): boolean {
+  if (process.env.NODE_ENV === "production") return false;
+
+  const host = req.headers.get("host")?.split(":")[0]?.toLowerCase();
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1";
+}
+
 export async function requireSiteAdmin(
   req: Request
 ): Promise<{ userId: string } | { response: NextResponse }> {
@@ -85,6 +92,18 @@ export async function requireSiteAdmin(
   }
 
   return { userId };
+}
+
+export async function requireSiteAdminOrLocalDev(
+  req: Request
+): Promise<{ userId: string | null; viaLocalDev: boolean } | { response: NextResponse }> {
+  if (isLocalDevRequest(req)) {
+    return { userId: null, viaLocalDev: true };
+  }
+
+  const auth = await requireSiteAdmin(req);
+  if ("response" in auth) return auth;
+  return { userId: auth.userId, viaLocalDev: false };
 }
 
 export async function requireSiteAdminOrCron(

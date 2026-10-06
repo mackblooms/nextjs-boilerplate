@@ -12,6 +12,26 @@ import {
 type GateStatus = "checking" | "allowed" | "blocked";
 
 const PROFILE_COMPLETED_EVENT = "bb:profile-completed";
+const PROFILE_CHECK_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      reject(new Error(`${label} timed out`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+}
 
 function getProfileRedirect(pathname: string, queryString: string) {
   const currentQuery = queryString;
@@ -45,13 +65,18 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
     pathname === "/reset-password" ||
     pathname.startsWith("/auth/callback") ||
     pathname.startsWith("/login/reset-password");
+  const isAdminWorkspaceRoute = pathname.startsWith("/cbb/player-projections");
+  const isPublicPlayerRoute = pathname === "/cbb/players" || pathname.startsWith("/cbb/players/");
+  const skipProfileGate = isAdminWorkspaceRoute || isPublicPlayerRoute;
   const queryString = searchParams.toString();
   const redirectTarget = useMemo(
     () => getProfileRedirect(pathname, queryString),
     [pathname, queryString],
   );
   const effectiveStatus: GateStatus =
-    !isProfileRoute && !isHomeRoute && !isAuthFlowRoute && profileComplete === false
+    skipProfileGate
+      ? "allowed"
+      : !isProfileRoute && !isHomeRoute && !isAuthFlowRoute && profileComplete === false
       ? "blocked"
       : status;
 
@@ -63,40 +88,62 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
         setStatus("checking");
       }
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (canceled) return;
-      hasCheckedRef.current = true;
+      try {
+        const { data: sessionData } = await withTimeout(
+          supabase.auth.getSession(),
+          PROFILE_CHECK_TIMEOUT_MS,
+          "Profile session check",
+        );
+        if (canceled) return;
+        hasCheckedRef.current = true;
 
-      const userId = sessionData.session?.user.id;
-      if (!userId) {
+        const userId = sessionData.session?.user.id;
+        if (!userId) {
+          setProfileComplete(null);
+          setStatus("allowed");
+          return;
+        }
+
+        const { data, error } = await withTimeout(
+          supabase
+            .from("profiles")
+            .select(PROFILE_COMPLETION_COLUMNS.join(","))
+            .eq("user_id", userId)
+            .maybeSingle(),
+          PROFILE_CHECK_TIMEOUT_MS,
+          "Profile completion check",
+        );
+
+        if (canceled) return;
+
+        if (error) {
+          setProfileComplete(false);
+          setStatus(isProfileRoute || isHomeRoute || isAuthFlowRoute ? "allowed" : "blocked");
+          return;
+        }
+
+        const complete = isProfileComplete((data as ProfileCompletionRow | null) ?? null);
+        setProfileComplete(complete);
+
+        if (complete) {
+          setStatus("allowed");
+          return;
+        }
+
+        setStatus(isProfileRoute || isHomeRoute || isAuthFlowRoute ? "allowed" : "blocked");
+      } catch (error) {
+        if (canceled) return;
+        console.warn("Profile completion check failed", error);
+        hasCheckedRef.current = true;
         setProfileComplete(null);
         setStatus("allowed");
-        return;
       }
+    }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(PROFILE_COMPLETION_COLUMNS.join(","))
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (canceled) return;
-
-      if (error) {
-        setProfileComplete(false);
-        setStatus(isProfileRoute || isHomeRoute || isAuthFlowRoute ? "allowed" : "blocked");
-        return;
-      }
-
-      const complete = isProfileComplete((data as ProfileCompletionRow | null) ?? null);
-      setProfileComplete(complete);
-
-      if (complete) {
-        setStatus("allowed");
-        return;
-      }
-
-      setStatus(isProfileRoute || isHomeRoute || isAuthFlowRoute ? "allowed" : "blocked");
+    if (skipProfileGate) {
+      return () => {
+        canceled = true;
+      };
     }
 
     void checkProfile(true);
@@ -116,12 +163,12 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
       authSubscription.subscription.unsubscribe();
       window.removeEventListener(PROFILE_COMPLETED_EVENT, onProfileCompleted);
     };
-  }, [isAuthFlowRoute, isHomeRoute, isProfileRoute, pathname, queryString]);
+  }, [skipProfileGate, isAuthFlowRoute, isHomeRoute, isProfileRoute, pathname, queryString]);
 
   useEffect(() => {
-    if (effectiveStatus !== "blocked" || isProfileRoute) return;
+    if (effectiveStatus !== "blocked" || isProfileRoute || skipProfileGate) return;
     router.replace(redirectTarget);
-  }, [effectiveStatus, isProfileRoute, redirectTarget, router]);
+  }, [effectiveStatus, skipProfileGate, isProfileRoute, redirectTarget, router]);
 
   if (effectiveStatus === "checking" || (effectiveStatus === "blocked" && !isProfileRoute)) {
     return (

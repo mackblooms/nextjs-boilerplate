@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { Russo_One } from "next/font/google";
+import { supabase } from "../../lib/supabaseClient";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 const russoOne = Russo_One({
@@ -27,15 +27,6 @@ export default function HomeButton() {
 
   useEffect(() => {
     const loadDestination = async () => {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        setHref("/");
-        return;
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
 

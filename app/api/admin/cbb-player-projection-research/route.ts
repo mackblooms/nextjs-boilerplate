@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSiteAdmin } from "@/lib/adminAuth";
+import { requireSiteAdminOrLocalDev } from "@/lib/adminAuth";
 import {
   buildCbbResearchPayload,
   readCbbProjections,
@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
-  const auth = await requireSiteAdmin(req);
+  const auth = await requireSiteAdminOrLocalDev(req);
   if ("response" in auth) return auth.response;
 
   const [batches, projections] = await Promise.all([readCbbResearchBatches(), readCbbProjections()]);

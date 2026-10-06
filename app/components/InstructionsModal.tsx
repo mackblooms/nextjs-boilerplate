@@ -230,6 +230,7 @@ export default function InstructionsModal() {
 
   const shouldSuppressModal = useMemo(() => {
     if (!pathname) return false;
+    if (pathname.startsWith("/cbb/player-projections")) return true;
     if (pathname.startsWith("/auth/callback")) return true;
     if (pathname.startsWith("/login/reset-password")) return true;
     if (pathname === "/reset-password") return true;
@@ -247,12 +248,31 @@ export default function InstructionsModal() {
   useEffect(() => {
     let mounted = true;
 
+    if (shouldSuppressModal) {
+      const timeout = window.setTimeout(() => {
+        if (!mounted) return;
+        setIsOpen(false);
+        setIsAuthed(false);
+        setIsReady(true);
+      }, 0);
+      return () => {
+        mounted = false;
+        window.clearTimeout(timeout);
+      };
+    }
+
     const loadAuth = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!mounted) return;
-      syncTutorialOptOutFromUser(data.user);
-      setIsAuthed(Boolean(data.user));
-      setIsReady(true);
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!mounted) return;
+        syncTutorialOptOutFromUser(data.user);
+        setIsAuthed(Boolean(data.user));
+        setIsReady(true);
+      } catch {
+        if (!mounted) return;
+        setIsAuthed(false);
+        setIsReady(true);
+      }
     };
 
     void loadAuth();
@@ -268,7 +288,7 @@ export default function InstructionsModal() {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [shouldSuppressModal]);
 
   useEffect(() => {
     let canceled = false;

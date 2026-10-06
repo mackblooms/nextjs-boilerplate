@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
 import { Haptics } from "@capacitor/haptics";
 import Link from "next/link";
@@ -28,6 +27,7 @@ import {
   type CompetitionSlug,
 } from "../../lib/competitions";
 import { canUseLegacyMarchMadnessFallback, isMissingCompetitionSlugColumn } from "../../lib/competitionData";
+import { supabase } from "../../lib/supabaseClient";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 import { UiTooltip } from "./ui/primitives";
 
@@ -47,17 +47,6 @@ function getPreferredTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
-}
-
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -219,7 +208,6 @@ export default function AppTopNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const supabase = useMemo(() => getSupabaseClient(), []);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [storedCompetitionSlug, setStoredCompetitionSlug] = useState<CompetitionSlug>(() =>
@@ -293,6 +281,7 @@ export default function AppTopNav() {
 
   useEffect(() => {
     let canceled = false;
+    const skipAuthSync = pathname.startsWith("/cbb/player-projections");
 
     const resetNav = () => {
       if (canceled) return;
@@ -303,25 +292,29 @@ export default function AppTopNav() {
     };
 
     const syncAuth = async () => {
-      if (!supabase) {
+      if (skipAuthSync) {
         resetNav();
         return;
       }
 
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-      if (!user) {
-        resetNav();
-        return;
-      }
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData.user;
+        if (!user) {
+          resetNav();
+          return;
+        }
 
-      if (canceled) return;
-      setUserId(user.id);
+        if (canceled) return;
+        setUserId(user.id);
+      } catch {
+        resetNav();
+      }
     };
 
     void syncAuth();
 
-    if (!supabase) {
+    if (skipAuthSync) {
       return () => {
         canceled = true;
       };
@@ -341,7 +334,7 @@ export default function AppTopNav() {
       canceled = true;
       sub.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [pathname]);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -370,7 +363,7 @@ export default function AppTopNav() {
     let canceled = false;
 
     const loadAvatar = async () => {
-      if (!supabase || !userId) {
+      if (!userId) {
         if (!canceled) setProfileAvatarUrl(null);
         return;
       }
@@ -397,13 +390,13 @@ export default function AppTopNav() {
     return () => {
       canceled = true;
     };
-  }, [supabase, userId]);
+  }, [userId]);
 
   useEffect(() => {
     let canceled = false;
 
     const loadPoolContext = async () => {
-      if (!supabase || !userId) {
+      if (!userId) {
         if (!canceled) {
           setActivePoolId(null);
           setActivePool(null);
@@ -495,10 +488,10 @@ export default function AppTopNav() {
     return () => {
       canceled = true;
     };
-  }, [competitionSlug, poolIdFromPath, supabase, userId]);
+  }, [competitionSlug, poolIdFromPath, userId]);
 
   useEffect(() => {
-    if (poolIdFromPath || !supabase || !userId) return;
+    if (poolIdFromPath || !userId) return;
 
     let canceled = false;
 
@@ -545,7 +538,7 @@ export default function AppTopNav() {
       canceled = true;
       window.removeEventListener(ACTIVE_POOL_CHANGED_EVENT, onActivePoolChanged as EventListener);
     };
-  }, [poolIdFromPath, supabase, userId]);
+  }, [poolIdFromPath, userId]);
 
   useEffect(() => {
     const onEscape = (event: KeyboardEvent) => {
@@ -657,12 +650,10 @@ export default function AppTopNav() {
     setHelpOpen(false);
     setStoredActivePoolId(null);
 
-    if (supabase) {
-      try {
-        await supabase.auth.signOut();
-      } catch {
-        // Keep redirect behavior even if revoke request fails.
-      }
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Keep redirect behavior even if revoke request fails.
     }
 
     router.replace("/");

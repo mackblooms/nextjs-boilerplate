@@ -1,7 +1,7 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabaseClient";
 import { useAutoHideOnScroll } from "./useAutoHideOnScroll";
 
 type Theme = "light" | "dark";
@@ -19,17 +19,6 @@ function getPreferredTheme(): Theme {
     : "light";
 }
 
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
-
 export default function ThemeSwitch() {
   const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
   const [isAuthed, setIsAuthed] = useState(false);
@@ -42,12 +31,6 @@ export default function ThemeSwitch() {
   }, [theme]);
 
   useEffect(() => {
-    const supabase = getSupabaseClient();
-
-    if (!supabase) {
-      return;
-    }
-
     const syncAuth = async () => {
       const { data: authData } = await supabase.auth.getUser();
       setIsAuthed(Boolean(authData.user));

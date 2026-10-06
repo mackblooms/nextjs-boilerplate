@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import type {
   CbbPlayerProjection,
@@ -21,12 +22,37 @@ import {
 type SortKey = "rank" | "player" | "team" | "projectedBbpr" | "confidence" | "review";
 type LeaderboardSource = "projected" | "historical" | "profile" | "unscored";
 const researchReviewBatchSize = 48;
+const authTimeoutMs = 8000;
 
 type RankedCbbPlayer = CbbPlayerProjection & {
   leaderboardRank: number;
   leaderboardScore: number | null;
   leaderboardSource: LeaderboardSource;
 };
+
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      reject(new Error(`${label} timed out`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+}
+
+function isLocalhost() {
+  if (typeof window === "undefined") return false;
+  return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "::1";
+}
 
 function formatNumber(value: number | null | undefined, digits = 1) {
   if (value == null || !Number.isFinite(value)) return "-";
@@ -142,9 +168,20 @@ export default function CbbPlayerProjectionsPage() {
       setLoading(true);
       setError("");
 
-      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (sessionErr || !token) {
+      const localDev = isLocalhost();
+      const { data: sessionData, error: sessionErr } = localDev
+        ? { data: { session: null }, error: null }
+        : await withTimeout(
+            supabase.auth.getSession(),
+            authTimeoutMs,
+            "Admin session check",
+          ).catch((authError) => ({
+            data: { session: null },
+            error: authError instanceof Error ? authError : new Error("Could not read admin session."),
+          }));
+      const session = sessionData.session;
+      const token = session?.access_token;
+      if ((sessionErr || !token) && !localDev) {
         if (!canceled) {
           setError("Please log in with a site admin account to view player projections.");
           setLoading(false);
@@ -152,10 +189,9 @@ export default function CbbPlayerProjectionsPage() {
         return;
       }
 
-      const { data: userData } = await supabase.auth.getUser();
-      const signedInUserId = userData.user?.id ?? null;
+      const signedInUserId = session?.user.id ?? null;
 
-      const headers = { authorization: `Bearer ${token}` };
+      const headers = token ? { authorization: `Bearer ${token}` } : undefined;
       const [res, researchRes] = await Promise.all([
         fetch("/api/admin/cbb-player-projections", { headers }).catch(() => null),
         fetch("/api/admin/cbb-player-projection-research", { headers }).catch(() => null),
@@ -170,7 +206,7 @@ export default function CbbPlayerProjectionsPage() {
       }
 
       if (!res.ok || !researchRes.ok) {
-        const message =
+      const message =
           res.status === 403 || researchRes.status === 403
             ? signedInUserId
               ? `Not authorized. Add this user id to POOL_SITE_ADMIN_USER_IDS in .env.local: ${signedInUserId}`
@@ -244,9 +280,16 @@ export default function CbbPlayerProjectionsPage() {
     setApplyError("");
     setApplyMessage("");
 
-    const { data: sessionData } = await supabase.auth.getSession();
+    const localDev = isLocalhost();
+    const { data: sessionData } = localDev
+      ? { data: { session: null } }
+      : await withTimeout(
+          supabase.auth.getSession(),
+          authTimeoutMs,
+          "Admin session check",
+        ).catch(() => ({ data: { session: null } }));
     const token = sessionData.session?.access_token;
-    if (!token) {
+    if (!token && !localDev) {
       setApplyError("Please log in with a site admin account to apply projections.");
       setApplying(false);
       return;
@@ -255,7 +298,7 @@ export default function CbbPlayerProjectionsPage() {
     const res = await fetch("/api/admin/cbb-player-projection-research/apply", {
       method: "POST",
       headers: {
-        authorization: `Bearer ${token}`,
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
         "content-type": "application/json",
       },
       body: JSON.stringify({ sourceRows }),
@@ -348,6 +391,7 @@ export default function CbbPlayerProjectionsPage() {
           </p>
         </div>
         <div className="cbb-projections-meta">
+          <Link href="/cbb/players">view player profiles →</Link>
           <span>updated {formatDateTime(payload.generatedAt)}</span>
           <span>model {payload.model.version ?? "draft"}</span>
         </div>
@@ -621,7 +665,7 @@ export default function CbbPlayerProjectionsPage() {
                       <span>{player.leaderboardSource}</span>
                     </td>
                     <td>
-                      <strong>{player.player}</strong>
+                      <Link className="cbb-player-link" href={`/cbb/players/${encodeURIComponent(player.id)}`}>{player.player}</Link>
                       <span>
                         {player.position ?? "-"} · {player.classYear ?? "-"}
                       </span>

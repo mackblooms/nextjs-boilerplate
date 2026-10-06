@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireSiteAdmin } from "@/lib/adminAuth";
+import { requireSiteAdminOrLocalDev } from "@/lib/adminAuth";
 import { applyCbbResearchRows } from "@/lib/cbbProjectionResearch";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ type ApplyBody = {
 };
 
 export async function POST(req: Request) {
-  const auth = await requireSiteAdmin(req);
+  const auth = await requireSiteAdminOrLocalDev(req);
   if ("response" in auth) return auth.response;
 
   const body = (await req.json().catch(() => ({}))) as ApplyBody;
