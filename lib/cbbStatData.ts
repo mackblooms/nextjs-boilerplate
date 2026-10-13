@@ -20,5 +20,11 @@ export async function readCbbPlayerProfile(id: string) {
   const index = players.findIndex(p => p.id === id);
   if (index === -1) return null;
   const player = players[index];
-  return { player, rank: index + 1, season: rankings.model.rankingSeason, stats, projection: projectCbbStats(player, stats.records) };
+  const projection = projectCbbStats(player, stats.records);
+  const baseline = projection.baseline;
+  if (baseline?.season && baseline.season !== stats.season) throw new Error('Verified baseline season does not match the rankings.');
+  const profileStats = baseline?.source ? {
+    ...stats, source: baseline.source, sourceUrl: baseline.sourceUrl!, fetchedAt: baseline.fetchedAt!,
+  } : stats;
+  return { player, rank: index + 1, season: rankings.model.rankingSeason, stats: profileStats, projection };
 }

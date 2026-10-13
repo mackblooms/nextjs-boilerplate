@@ -10,6 +10,8 @@ Rows with inconsistent scoring totals, missing fields, invalid counts, or an une
 
 ## Experimental model v0.1
 
+Verified identity links and official school season totals live in `data/cbb/verified-stat-baselines.json`. These repairs persist across source refreshes. Each identity link requires an exact, unique source ID, name and team; each official record includes its source URL and totals, validated before conversion to per-game values. Official records apply only to their named player, leaving the newcomer cohort unchanged. Their reported turnovers and school attribution appear on the profile. When advancing the historical season, re-verify this file; profile loading rejects official records from a different season.
+
 `lib/cbbStatProjection.ts` contains the pure model, separate from the BBPR calibration. Existing rankings are not modified.
 
 - Role maps to a 6–35 MPG target. Returners blend 55% prior minutes / 45% role target, plus an opportunity adjustment. Newcomers use the role target.

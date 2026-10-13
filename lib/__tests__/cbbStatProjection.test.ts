@@ -1,13 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import rankings from '../../data/cbb/player-projections.json';
 import stats from '../../data/cbb/stat-baselines.json';
-import { matchStatBaseline, projectCbbStats, shootingPercent, type StatBaseline } from '../cbbStatProjection';
+import verified from '../../data/cbb/verified-stat-baselines.json';
+import { baselineFromOfficialTotals, matchStatBaseline, projectCbbStats, shootingPercent, verifiedStatBaseline, type StatBaseline } from '../cbbStatProjection';
 import type { CbbPlayerProjection } from '../cbbPlayerProjections';
 
 const baseline: StatBaseline = { sourceId: 'test', player: 'Test Player', team: 'Test State', classYear: 'So', position: 'G', games: 30, minutes: 25, points: 12, rebounds: 4, assists: 3, steals: 1, blocks: 0.5, turnovers: 2, twoMade: 3, twoAttempts: 6, threeMade: 1, threeAttempts: 3, ftMade: 3, ftAttempts: 4 };
 const player: CbbPlayerProjection = { ...rankings.players[0], player: baseline.player, currentTeam: baseline.team, previousTeam: null, playerType: 'Returning', projectedRole: 75, opportunityChange: 50, offensiveBurden: 50, developmentScore: 50 };
 
 describe('CBB stat projections', () => {
+  it('provides projections for every top-100 player', () => {
+    const score = (p: CbbPlayerProjection) => p.projectedBbpr ?? p.historicalRating ?? p.historicalBbpr ?? p.starScore ?? p.entryTalentGrade ?? -1;
+    const top = [...rankings.players].sort((a, b) => score(b) - score(a) || (b.confidenceScore ?? -1) - (a.confidenceScore ?? -1) || a.player.localeCompare(b.player)).slice(0, 100);
+    for (const row of top) {
+      const result = projectCbbStats(row, stats.records);
+      expect(result.projected, row.player).not.toBeNull();
+      if (row.playerType === 'Returning' || row.playerType === 'Transfer') expect(result.status, row.player).toBe('historical');
+    }
+  });
+  it('uses verified official totals with consistent scoring and reported turnovers', () => {
+    expect(verified.season).toBe(stats.season);
+    for (const record of verified.officialTotals) {
+      const actual = baselineFromOfficialTotals(record);
+      expect(actual.points).toBeCloseTo(record.totals.points / record.totals.games, 10);
+      expect(actual.points).toBeCloseTo(2 * actual.twoMade + 3 * actual.threeMade + actual.ftMade, 10);
+      expect(actual.turnovers).toBeCloseTo(record.totals.turnovers / record.totals.games, 10);
+      expect(actual.sourceUrl).toBe(record.sourceUrl);
+      expect(actual.turnoversSource).toBe('reported');
+    }
+    const record = verified.officialTotals[0];
+    expect(() => baselineFromOfficialTotals({ ...record, totals: { ...record.totals, points: 1 } })).toThrow('Invalid verified');
+    expect(() => baselineFromOfficialTotals({ ...record, totals: { ...record.totals, games: 0 } })).toThrow('Invalid verified');
+  });
+  it('requires exact, unique source identities for name and team repairs', () => {
+    for (const link of verified.links) {
+      const actual = verifiedStatBaseline(link.playerId, stats.records)!;
+      expect(actual, link.playerId).not.toBeNull();
+      expect(actual.sourceId).toBe(link.sourceId);
+      expect(verifiedStatBaseline(link.playerId, [{ ...actual, team: 'Unrelated team' }])).toBeNull();
+      expect(verifiedStatBaseline(link.playerId, [{ ...actual, sourceId: 'wrong' }])).toBeNull();
+      expect(verifiedStatBaseline(link.playerId, [actual, actual])).toBeNull();
+    }
+  });
   it('reconciles scoring and shooting across all three scenarios', () => {
     const result = projectCbbStats(player, [baseline]);
     for (const line of [result.projected!, result.lower!, result.upper!]) {

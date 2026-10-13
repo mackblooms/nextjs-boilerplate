@@ -125,7 +125,7 @@ export function SeasonComparison({ baseline, projected, historicalSeason, season
           ))}
         </tbody>
       </table>
-      <p className={styles.footnote}>Shooting changes are percentage points (pp). *Turnovers are estimated from assist-to-turnover ratio.</p>
+      <p className={styles.footnote}>Shooting changes are percentage points (pp). {baseline.turnoversSource === 'reported' ? '*Turnovers use reported season totals.' : '*Turnovers are estimated from assist-to-turnover ratio.'}</p>
     </div>
   );
 }

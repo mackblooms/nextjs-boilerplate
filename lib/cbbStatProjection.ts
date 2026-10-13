@@ -1,4 +1,5 @@
 import type { CbbPlayerProjection } from './cbbPlayerProjections';
+import verified from '../data/cbb/verified-stat-baselines.json' with { type: 'json' };
 
 export type StatLine = {
   minutes: number; points: number; rebounds: number; assists: number;
@@ -8,6 +9,7 @@ export type StatLine = {
 };
 export type StatBaseline = StatLine & {
   sourceId: string; player: string; team: string; classYear: string; position: string; games: number;
+  source?: string; sourceUrl?: string; season?: string; fetchedAt?: string; turnoversSource?: 'reported';
 };
 export type StatDataset = {
   season: string; source: string; sourceUrl: string; fetchedAt: string; records: StatBaseline[];
@@ -41,6 +43,8 @@ function indexRecords(records: StatBaseline[]) {
 }
 
 export function matchStatBaseline(player: CbbPlayerProjection, records: StatBaseline[]) {
+  const verified = verifiedStatBaseline(player.id, records);
+  if (verified) return verified;
   const candidates = indexRecords(records).get(normalizePlayerName(player.player)) ?? [];
   const expectedTeam = player.previousTeam ?? player.currentTeam;
   const teamMatches = expectedTeam ? candidates.filter(r => normalizeTeam(r.team) === normalizeTeam(expectedTeam)) : [];
@@ -50,6 +54,7 @@ export function matchStatBaseline(player: CbbPlayerProjection, records: StatBase
 
 function positionGroup(position: string | null) {
   if (!position) return null;
+  if (/^(GF|FG)$/i.test(position.trim())) return 'wing';
   if (/(?:^|[\s/-])(C|PF)(?:$|[\s/-])|center/i.test(position)) return 'big';
   if (/(?:^|[\s/-])(PG|SG|G)(?:$|[\s/-])|guard/i.test(position)) return 'guard';
   if (/(?:^|[\s/-])(SF|F)(?:$|[\s/-])|wing|forward|stretch/i.test(position)) return 'wing';
@@ -134,8 +139,48 @@ export function projectCbbStats(player: CbbPlayerProjection, records: StatBaseli
       `Development adjusts rebound, assist, steal, and block rates by ${((growth - 1) * 100).toFixed(0)}%.`,
       'Shooting accuracy is pulled toward draft priors (50% on twos, 33% on threes, 72% at the line), with less adjustment for larger samples.',
       ...(newcomer ? [`Uses ${cohort!.count} freshmen in a similar position from the prior season. Entry talent adjusts volume; individual shooting skills are not yet modeled.`] : []),
-      'Turnovers are estimated from the source assist-to-turnover ratio when available.',
+      baseline.turnoversSource === 'reported'
+        ? 'Turnovers use the official reported season total, adjusted for projected minutes and workload.'
+        : 'Turnovers are estimated from the source assist-to-turnover ratio when available.',
       'Lower and upper cases vary minutes and workload. They are scenarios, not statistical confidence intervals.',
     ],
   };
+}
+
+type OfficialRecord = typeof verified.officialTotals[number];
+
+export function baselineFromOfficialTotals(record: OfficialRecord): StatBaseline {
+  const t = record.totals;
+  const twoMade = t.fgMade - t.threeMade;
+  const twoAttempts = t.fgAttempts - t.threeAttempts;
+  if (!Number.isInteger(t.games) || t.games <= 0 || t.minutes <= 0 ||
+      Object.values(t).some(value => !Number.isFinite(value) || value < 0) ||
+      twoMade < 0 || twoAttempts < 0 || twoMade > twoAttempts ||
+      t.threeMade > t.threeAttempts || t.ftMade > t.ftAttempts ||
+      t.points !== 2 * t.fgMade + t.threeMade + t.ftMade) {
+    throw new Error(`Invalid verified season totals: ${record.playerId}`);
+  }
+  return {
+    sourceId: `official:${record.playerId}:${verified.season}`,
+    player: record.player, team: record.team, classYear: record.classYear, position: record.position,
+    games: t.games, minutes: t.minutes / t.games, points: t.points / t.games,
+    rebounds: t.rebounds / t.games, assists: t.assists / t.games,
+    steals: t.steals / t.games, blocks: t.blocks / t.games, turnovers: t.turnovers / t.games,
+    twoMade: twoMade / t.games, twoAttempts: twoAttempts / t.games,
+    threeMade: t.threeMade / t.games, threeAttempts: t.threeAttempts / t.games,
+    ftMade: t.ftMade / t.games, ftAttempts: t.ftAttempts / t.games,
+    source: record.source, sourceUrl: record.sourceUrl, season: verified.season,
+    fetchedAt: verified.verifiedAt, turnoversSource: 'reported',
+  };
+}
+
+/** Explicit identity repairs; never fall back to surname-only or fuzzy matching. */
+export function verifiedStatBaseline(playerId: string, records: StatBaseline[]) {
+  const official = verified.officialTotals.find(record => record.playerId === playerId);
+  if (official) return baselineFromOfficialTotals(official);
+  const link = verified.links.find(record => record.playerId === playerId);
+  if (!link) return null;
+  const matches = records.filter(record => record.sourceId === link.sourceId &&
+    record.player === link.sourcePlayer && record.team === link.sourceTeam);
+  return matches.length === 1 ? matches[0] : null;
 }

@@ -1,0 +1,54 @@
+{
+  "season": "2025-26",
+  "verifiedAt": "2026-10-13",
+  "notes": "Player-specific repairs for missing top-100 historical projections. Official totals use one consistent overall-season games denominator. Links are explicitly verified identities, not fuzzy matching. Kept separately so refreshing the bulk import cannot remove them.",
+  "links": [
+    { "playerId": "elliott-cadeau__michigan__jr", "sourceId": "78589", "sourcePlayer": "Elliot Cadeau", "sourceTeam": "Michigan", "evidenceUrl": "https://mgoblue.com/sports/mens-basketball/stats/2025-26", "reason": "Elliott in rankings versus Elliot in the official roster and source." },
+    { "playerId": "paul-mcneil-jr__north-carolina-state__jr", "sourceId": "127274", "sourcePlayer": "Paul McNeil, Jr.", "sourceTeam": "N.C. State", "evidenceUrl": "https://gopack.com/sports/mens-basketball/stats/2025-26", "reason": "North Carolina State versus N.C. State." },
+    { "playerId": "shelton-henderson__miami__so", "sourceId": "134009", "sourcePlayer": "Shelton Henderson", "sourceTeam": "Miami FL", "evidenceUrl": "https://storage.googleapis.com/hurricanesports-com/2025/12/8d0a704c-11_ulm.pdf", "reason": "Miami versus Miami FL; explicitly identified so Miami Ohio cannot match." },
+    { "playerId": "na-jai-hines__uconn__so", "sourceId": "134877", "sourcePlayer": "Najai Hines", "sourceTeam": "Seton Hall", "evidenceUrl": "https://uconnhuskies.com/sports/mens-basketball/roster/najai-hines/15802", "reason": "Prior Seton Hall season missing from ranking metadata." },
+    { "playerId": "mike-nwoko__xavier__sr", "sourceId": "78090", "sourcePlayer": "Michael Nwoko", "sourceTeam": "LSU", "evidenceUrl": "https://goxavier.com/sports/mens-basketball/roster", "reason": "Mike/Michael name variant and missing prior LSU team." }
+  ],
+  "officialTotals": [
+    {
+      "playerId": "tounde-yessoufou__st-john-s__so", "player": "Tounde Yessoufou", "team": "Baylor", "classYear": "Fr", "position": "G",
+      "source": "Baylor Athletics", "sourceUrl": "https://baylorbears.com/sports/mens-basketball/stats/2025-26",
+      "totals": { "games": 34, "minutes": 1105, "points": 605, "rebounds": 199, "assists": 54, "steals": 67, "blocks": 21, "turnovers": 64, "fgMade": 226, "fgAttempts": 486, "threeMade": 53, "threeAttempts": 181, "ftMade": 100, "ftAttempts": 134 }
+    },
+    {
+      "playerId": "teagan-moore__western-kentucky__jr", "player": "Teagan Moore", "team": "Western Kentucky", "classYear": "So", "position": "G",
+      "source": "WKU Athletics", "sourceUrl": "https://wkusports.com/sports/mens-basketball/stats/2025-26",
+      "totals": { "games": 27, "minutes": 786, "points": 506, "rebounds": 150, "assists": 53, "steals": 28, "blocks": 9, "turnovers": 46, "fgMade": 156, "fgAttempts": 295, "threeMade": 30, "threeAttempts": 70, "ftMade": 164, "ftAttempts": 205 }
+    },
+    {
+      "playerId": "nolan-minessale__marquette__jr", "player": "Nolan Minessale", "team": "St. Thomas", "classYear": "So", "position": "G",
+      "source": "St. Thomas Athletics", "sourceUrl": "https://tommiesports.com/sports/mbball/stats/2025-26",
+      "totals": { "games": 34, "minutes": 1056, "points": 674, "rebounds": 156, "assists": 145, "steals": 54, "blocks": 19, "turnovers": 76, "fgMade": 228, "fgAttempts": 451, "threeMade": 44, "threeAttempts": 144, "ftMade": 174, "ftAttempts": 232 }
+    },
+    {
+      "playerId": "desean-goode__miami__jr", "player": "DeSean Goode", "team": "Robert Morris", "classYear": "So", "position": "F",
+      "source": "Robert Morris Athletics", "sourceUrl": "https://rmucolonials.com/sports/mens-basketball/stats/2025-26",
+      "totals": { "games": 33, "minutes": 1020, "points": 503, "rebounds": 287, "assists": 45, "steals": 26, "blocks": 18, "turnovers": 46, "fgMade": 190, "fgAttempts": 302, "threeMade": 36, "threeAttempts": 63, "ftMade": 87, "ftAttempts": 114 }
+    },
+    {
+      "playerId": "mason-falslev__utah-state__sr", "player": "Mason Falslev", "team": "Utah State", "classYear": "Jr", "position": "G",
+      "source": "Utah State Athletics", "sourceUrl": "https://utahstateaggies.com/sports/mens-basketball/stats?clean=true",
+      "totals": { "games": 36, "minutes": 1153, "points": 576, "rebounds": 206, "assists": 112, "steals": 70, "blocks": 9, "turnovers": 55, "fgMade": 209, "fgAttempts": 407, "threeMade": 48, "threeAttempts": 123, "ftMade": 110, "ftAttempts": 144 }
+    },
+    {
+      "playerId": "tj-power__pennsylvania__sr", "player": "TJ Power", "team": "Pennsylvania", "classYear": "Jr", "position": "F",
+      "source": "Penn Athletics", "sourceUrl": "https://s3.us-east-2.amazonaws.com/sidearm.nextgen.sites/penn.sidearmsports.com/stats/mbball/2025/pdf/cume.pdf",
+      "totals": { "games": 30, "minutes": 1051, "points": 492, "rebounds": 229, "assists": 71, "steals": 33, "blocks": 18, "turnovers": 63, "fgMade": 176, "fgAttempts": 390, "threeMade": 79, "threeAttempts": 183, "ftMade": 61, "ftAttempts": 94 }
+    },
+    {
+      "playerId": "chance-westry__xavier__jr", "player": "Chance Westry", "team": "UAB", "classYear": "So", "position": "G",
+      "source": "UAB Athletics", "sourceUrl": "https://uabsports.com/sports/mens-basketball/stats/2025-26",
+      "totals": { "games": 32, "minutes": 980, "points": 495, "rebounds": 121, "assists": 177, "steals": 43, "blocks": 15, "turnovers": 61, "fgMade": 169, "fgAttempts": 347, "threeMade": 21, "threeAttempts": 87, "ftMade": 136, "ftAttempts": 192 }
+    },
+    {
+      "playerId": "justin-pippen__ohio-state__jr", "player": "Justin Pippen", "team": "California", "classYear": "So", "position": "G",
+      "source": "Cal Athletics", "sourceUrl": "https://calbears.com/sports/mens-basketball/stats/2025-26",
+      "totals": { "games": 32, "minutes": 986, "points": 454, "rebounds": 125, "assists": 147, "steals": 61, "blocks": 19, "turnovers": 78, "fgMade": 133, "fgAttempts": 359, "threeMade": 54, "threeAttempts": 165, "ftMade": 134, "ftAttempts": 162 }
+    }
+  ]
+}
