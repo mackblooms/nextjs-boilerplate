@@ -4,6 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "localhost:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-localhost.ps1 -Action Install",
+    "localhost:status": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-localhost.ps1 -Action Status",
+    "localhost:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-localhost.ps1 -Action Start",
+    "localhost:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-localhost.ps1 -Action Stop",
+    "localhost:uninstall": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/local-localhost.ps1 -Action Uninstall",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
