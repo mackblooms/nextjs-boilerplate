@@ -1,0 +1,3298 @@
+{
+  "season": "2026-27",
+  "sourceLabel": "2027 T-Rank College Basketball Projections",
+  "sourceUrl": "https://barttorvik.com/trankpre.php",
+  "sourceFile": "2026-27 Projections - - Customizable College Basketball Tempo Free Stats - T-Rank.pdf",
+  "sourceSha256": "991c60428f5d814b1d31677850df75841d94f12f67640905113c9ad561176bfe",
+  "sourcePageCount": 12,
+  "sourceSnapshotDate": null,
+  "recordPrecision": "Displayed integer overall records, not fractional expected wins",
+  "coverage": "365 consecutive ranked rows in the supplied PDF; independent D-I membership and non-D-I schedule coverage not verified",
+  "teams": [
+    {
+      "rank": 1,
+      "team": "Duke",
+      "conference": "ACC",
+      "projectedWins": 26,
+      "projectedLosses": 6,
+      "projectedConferenceRecord": "14-4",
+      "sourcePage": 1
+    },
+    {
+      "rank": 2,
+      "team": "Arizona",
+      "conference": "B12",
+      "projectedWins": 23,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 1
+    },
+    {
+      "rank": 3,
+      "team": "Florida",
+      "conference": "SEC",
+      "projectedWins": 23,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 1
+    },
+    {
+      "rank": 4,
+      "team": "Virginia",
+      "conference": "ACC",
+      "projectedWins": 24,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 1
+    },
+    {
+      "rank": 5,
+      "team": "Houston",
+      "conference": "B12",
+      "projectedWins": 23,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 1
+    },
+    {
+      "rank": 6,
+      "team": "Illinois",
+      "conference": "B10",
+      "projectedWins": 24,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "14-6",
+      "sourcePage": 1
+    },
+    {
+      "rank": 7,
+      "team": "Kansas",
+      "conference": "B12",
+      "projectedWins": 22,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 1
+    },
+    {
+      "rank": 8,
+      "team": "Louisville",
+      "conference": "ACC",
+      "projectedWins": 21,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 1
+    },
+    {
+      "rank": 9,
+      "team": "Iowa St.",
+      "conference": "B12",
+      "projectedWins": 23,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 1
+    },
+    {
+      "rank": 10,
+      "team": "Michigan St.",
+      "conference": "B10",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 11,
+      "team": "Miami FL",
+      "conference": "ACC",
+      "projectedWins": 23,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 1
+    },
+    {
+      "rank": 12,
+      "team": "Connecticut",
+      "conference": "BE",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 13,
+      "team": "Texas Tech",
+      "conference": "B12",
+      "projectedWins": 20,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 14,
+      "team": "Michigan",
+      "conference": "B10",
+      "projectedWins": 20,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 15,
+      "team": "Nebraska",
+      "conference": "B10",
+      "projectedWins": 23,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 16,
+      "team": "Tennessee",
+      "conference": "SEC",
+      "projectedWins": 21,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 17,
+      "team": "Gonzaga",
+      "conference": "P12",
+      "projectedWins": 22,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "13-3",
+      "sourcePage": 1
+    },
+    {
+      "rank": 18,
+      "team": "St. John's",
+      "conference": "BE",
+      "projectedWins": 21,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 1
+    },
+    {
+      "rank": 19,
+      "team": "Texas",
+      "conference": "SEC",
+      "projectedWins": 21,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 20,
+      "team": "Ohio St.",
+      "conference": "B10",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 21,
+      "team": "Alabama",
+      "conference": "SEC",
+      "projectedWins": 19,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 22,
+      "team": "Arkansas",
+      "conference": "SEC",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 23,
+      "team": "Vanderbilt",
+      "conference": "SEC",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 24,
+      "team": "BYU",
+      "conference": "B12",
+      "projectedWins": 20,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 1
+    },
+    {
+      "rank": 25,
+      "team": "UCLA",
+      "conference": "B10",
+      "projectedWins": 21,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 1
+    },
+    {
+      "rank": 26,
+      "team": "Indiana",
+      "conference": "B10",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 27,
+      "team": "Kentucky",
+      "conference": "SEC",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 2
+    },
+    {
+      "rank": 28,
+      "team": "Oklahoma",
+      "conference": "SEC",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 2
+    },
+    {
+      "rank": 29,
+      "team": "Purdue",
+      "conference": "B10",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 30,
+      "team": "Villanova",
+      "conference": "BE",
+      "projectedWins": 20,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 31,
+      "team": "Marquette",
+      "conference": "BE",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 32,
+      "team": "Texas A&M",
+      "conference": "SEC",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 33,
+      "team": "N.C. State",
+      "conference": "ACC",
+      "projectedWins": 22,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "11-8",
+      "sourcePage": 2
+    },
+    {
+      "rank": 34,
+      "team": "Georgia",
+      "conference": "SEC",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 35,
+      "team": "USC",
+      "conference": "B10",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 36,
+      "team": "Virginia Tech",
+      "conference": "ACC",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 2
+    },
+    {
+      "rank": 37,
+      "team": "Clemson",
+      "conference": "ACC",
+      "projectedWins": 20,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 2
+    },
+    {
+      "rank": 38,
+      "team": "Oregon",
+      "conference": "B10",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 39,
+      "team": "Cincinnati",
+      "conference": "B12",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 40,
+      "team": "Maryland",
+      "conference": "B10",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 41,
+      "team": "Auburn",
+      "conference": "SEC",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 42,
+      "team": "Grand Canyon",
+      "conference": "MWC",
+      "projectedWins": 25,
+      "projectedLosses": 6,
+      "projectedConferenceRecord": "14-4",
+      "sourcePage": 2
+    },
+    {
+      "rank": 43,
+      "team": "Creighton",
+      "conference": "BE",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 44,
+      "team": "Missouri",
+      "conference": "SEC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 45,
+      "team": "Baylor",
+      "conference": "B12",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 46,
+      "team": "North Carolina",
+      "conference": "ACC",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 47,
+      "team": "Wisconsin",
+      "conference": "B10",
+      "projectedWins": 18,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 2
+    },
+    {
+      "rank": 48,
+      "team": "West Virginia",
+      "conference": "B12",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 49,
+      "team": "Iowa",
+      "conference": "B10",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 2
+    },
+    {
+      "rank": 50,
+      "team": "UCF",
+      "conference": "B12",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 51,
+      "team": "LSU",
+      "conference": "SEC",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 52,
+      "team": "Xavier",
+      "conference": "BE",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 53,
+      "team": "TCU",
+      "conference": "B12",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 54,
+      "team": "SMU",
+      "conference": "ACC",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 2
+    },
+    {
+      "rank": 55,
+      "team": "Providence",
+      "conference": "BE",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 56,
+      "team": "Oklahoma St.",
+      "conference": "B12",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 2
+    },
+    {
+      "rank": 57,
+      "team": "VCU",
+      "conference": "A10",
+      "projectedWins": 21,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 2
+    },
+    {
+      "rank": 58,
+      "team": "San Diego St.",
+      "conference": "P12",
+      "projectedWins": 19,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 3
+    },
+    {
+      "rank": 59,
+      "team": "Utah St.",
+      "conference": "P12",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 3
+    },
+    {
+      "rank": 60,
+      "team": "Georgetown",
+      "conference": "BE",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 61,
+      "team": "Mississippi",
+      "conference": "SEC",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 62,
+      "team": "Mississippi St.",
+      "conference": "SEC",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 63,
+      "team": "DePaul",
+      "conference": "BE",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 3
+    },
+    {
+      "rank": 64,
+      "team": "Saint Mary's",
+      "conference": "WCC",
+      "projectedWins": 23,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "12-4",
+      "sourcePage": 3
+    },
+    {
+      "rank": 65,
+      "team": "Arizona St.",
+      "conference": "B12",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 66,
+      "team": "New Mexico",
+      "conference": "MWC",
+      "projectedWins": 23,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 3
+    },
+    {
+      "rank": 67,
+      "team": "High Point",
+      "conference": "BSth",
+      "projectedWins": 28,
+      "projectedLosses": 4,
+      "projectedConferenceRecord": "15-1",
+      "sourcePage": 3
+    },
+    {
+      "rank": 68,
+      "team": "Saint Louis",
+      "conference": "A10",
+      "projectedWins": 22,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 3
+    },
+    {
+      "rank": 69,
+      "team": "Wichita St.",
+      "conference": "Amer",
+      "projectedWins": 23,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 3
+    },
+    {
+      "rank": 70,
+      "team": "Seton Hall",
+      "conference": "BE",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 3
+    },
+    {
+      "rank": 71,
+      "team": "Florida St.",
+      "conference": "ACC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 3
+    },
+    {
+      "rank": 72,
+      "team": "Dayton",
+      "conference": "A10",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 3
+    },
+    {
+      "rank": 73,
+      "team": "Washington",
+      "conference": "B10",
+      "projectedWins": 14,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 3
+    },
+    {
+      "rank": 74,
+      "team": "Syracuse",
+      "conference": "ACC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 3
+    },
+    {
+      "rank": 75,
+      "team": "Northwestern",
+      "conference": "B10",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 3
+    },
+    {
+      "rank": 76,
+      "team": "Rutgers",
+      "conference": "B10",
+      "projectedWins": 15,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 3
+    },
+    {
+      "rank": 77,
+      "team": "George Washington",
+      "conference": "A10",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 3
+    },
+    {
+      "rank": 78,
+      "team": "Wake Forest",
+      "conference": "ACC",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 79,
+      "team": "Minnesota",
+      "conference": "B10",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 3
+    },
+    {
+      "rank": 80,
+      "team": "Kansas St.",
+      "conference": "B12",
+      "projectedWins": 14,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 3
+    },
+    {
+      "rank": 81,
+      "team": "Notre Dame",
+      "conference": "ACC",
+      "projectedWins": 16,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 3
+    },
+    {
+      "rank": 82,
+      "team": "Stanford",
+      "conference": "ACC",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 83,
+      "team": "Colorado St.",
+      "conference": "P12",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 3
+    },
+    {
+      "rank": 84,
+      "team": "Colorado",
+      "conference": "B12",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 3
+    },
+    {
+      "rank": 85,
+      "team": "Boise St.",
+      "conference": "P12",
+      "projectedWins": 19,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 3
+    },
+    {
+      "rank": 86,
+      "team": "Nevada",
+      "conference": "MWC",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 3
+    },
+    {
+      "rank": 87,
+      "team": "Pittsburgh",
+      "conference": "ACC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 3
+    },
+    {
+      "rank": 88,
+      "team": "Butler",
+      "conference": "BE",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-14",
+      "sourcePage": 3
+    },
+    {
+      "rank": 89,
+      "team": "McNeese St.",
+      "conference": "Slnd",
+      "projectedWins": 24,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "18-4",
+      "sourcePage": 3
+    },
+    {
+      "rank": 90,
+      "team": "Santa Clara",
+      "conference": "WCC",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "11-5",
+      "sourcePage": 4
+    },
+    {
+      "rank": 91,
+      "team": "California",
+      "conference": "ACC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 4
+    },
+    {
+      "rank": 92,
+      "team": "South Florida",
+      "conference": "Amer",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 93,
+      "team": "George Mason",
+      "conference": "A10",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 94,
+      "team": "Tulsa",
+      "conference": "Amer",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 95,
+      "team": "South Carolina",
+      "conference": "SEC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 4
+    },
+    {
+      "rank": 96,
+      "team": "UNLV",
+      "conference": "MWC",
+      "projectedWins": 20,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 97,
+      "team": "Penn St.",
+      "conference": "B10",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "6-14",
+      "sourcePage": 4
+    },
+    {
+      "rank": 98,
+      "team": "Oregon St.",
+      "conference": "P12",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 99,
+      "team": "Akron",
+      "conference": "MAC",
+      "projectedWins": 23,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "16-6",
+      "sourcePage": 4
+    },
+    {
+      "rank": 100,
+      "team": "Illinois Chicago",
+      "conference": "MVC",
+      "projectedWins": 23,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 101,
+      "team": "Charlotte",
+      "conference": "Amer",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 102,
+      "team": "UC Santa Barbara",
+      "conference": "BW",
+      "projectedWins": 24,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "16-6",
+      "sourcePage": 4
+    },
+    {
+      "rank": 103,
+      "team": "Utah",
+      "conference": "B12",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 4
+    },
+    {
+      "rank": 104,
+      "team": "Miami OH",
+      "conference": "MAC",
+      "projectedWins": 22,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "15-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 105,
+      "team": "Western Kentucky",
+      "conference": "CUSA",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 4
+    },
+    {
+      "rank": 106,
+      "team": "Illinois St.",
+      "conference": "MVC",
+      "projectedWins": 21,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 107,
+      "team": "Murray St.",
+      "conference": "MVC",
+      "projectedWins": 21,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 108,
+      "team": "Boston College",
+      "conference": "ACC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 4
+    },
+    {
+      "rank": 109,
+      "team": "UC Irvine",
+      "conference": "BW",
+      "projectedWins": 22,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "15-7",
+      "sourcePage": 4
+    },
+    {
+      "rank": 110,
+      "team": "UNC Wilmington",
+      "conference": "CAA",
+      "projectedWins": 24,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 4
+    },
+    {
+      "rank": 111,
+      "team": "Memphis",
+      "conference": "Amer",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 112,
+      "team": "Georgia Tech",
+      "conference": "ACC",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 4
+    },
+    {
+      "rank": 113,
+      "team": "Richmond",
+      "conference": "A10",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 4
+    },
+    {
+      "rank": 114,
+      "team": "Texas St.",
+      "conference": "P12",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 4
+    },
+    {
+      "rank": 115,
+      "team": "Belmont",
+      "conference": "MVC",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 116,
+      "team": "Davidson",
+      "conference": "A10",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 4
+    },
+    {
+      "rank": 117,
+      "team": "North Texas",
+      "conference": "Amer",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 118,
+      "team": "UC San Diego",
+      "conference": "BW",
+      "projectedWins": 20,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "14-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 119,
+      "team": "Penn",
+      "conference": "Ivy",
+      "projectedWins": 19,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "10-4",
+      "sourcePage": 4
+    },
+    {
+      "rank": 120,
+      "team": "Northern Iowa",
+      "conference": "MVC",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 4
+    },
+    {
+      "rank": 121,
+      "team": "Wyoming",
+      "conference": "MWC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 4
+    },
+    {
+      "rank": 122,
+      "team": "St. Bonaventure",
+      "conference": "A10",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 123,
+      "team": "Utah Valley",
+      "conference": "BW",
+      "projectedWins": 19,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "14-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 124,
+      "team": "Harvard",
+      "conference": "Ivy",
+      "projectedWins": 18,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "9-5",
+      "sourcePage": 5
+    },
+    {
+      "rank": 125,
+      "team": "Stephen F. Austin",
+      "conference": "Slnd",
+      "projectedWins": 22,
+      "projectedLosses": 8,
+      "projectedConferenceRecord": "16-6",
+      "sourcePage": 5
+    },
+    {
+      "rank": 126,
+      "team": "Florida Atlantic",
+      "conference": "Amer",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 5
+    },
+    {
+      "rank": 127,
+      "team": "Duquesne",
+      "conference": "A10",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 128,
+      "team": "UAB",
+      "conference": "Amer",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 5
+    },
+    {
+      "rank": 129,
+      "team": "Saint Joseph's",
+      "conference": "A10",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 130,
+      "team": "Loyola Marymount",
+      "conference": "WCC",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 131,
+      "team": "Fordham",
+      "conference": "A10",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 132,
+      "team": "Pacific",
+      "conference": "WCC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 133,
+      "team": "Montana St.",
+      "conference": "BSky",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "15-5",
+      "sourcePage": 5
+    },
+    {
+      "rank": 134,
+      "team": "Temple",
+      "conference": "Amer",
+      "projectedWins": 16,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 5
+    },
+    {
+      "rank": 135,
+      "team": "Hawaii",
+      "conference": "MWC",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 136,
+      "team": "San Diego",
+      "conference": "WCC",
+      "projectedWins": 17,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 137,
+      "team": "Fresno St.",
+      "conference": "P12",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "5-11",
+      "sourcePage": 5
+    },
+    {
+      "rank": 138,
+      "team": "Troy",
+      "conference": "SB",
+      "projectedWins": 20,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 5
+    },
+    {
+      "rank": 139,
+      "team": "Kent St.",
+      "conference": "MAC",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 140,
+      "team": "Pepperdine",
+      "conference": "WCC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "8-9",
+      "sourcePage": 5
+    },
+    {
+      "rank": 141,
+      "team": "Liberty",
+      "conference": "CUSA",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 142,
+      "team": "Rhode Island",
+      "conference": "A10",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 5
+    },
+    {
+      "rank": 143,
+      "team": "Middle Tennessee",
+      "conference": "CUSA",
+      "projectedWins": 18,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 144,
+      "team": "Tarleton St.",
+      "conference": "UAC",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "11-5",
+      "sourcePage": 5
+    },
+    {
+      "rank": 145,
+      "team": "St. Thomas",
+      "conference": "Sum",
+      "projectedWins": 22,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "10-4",
+      "sourcePage": 5
+    },
+    {
+      "rank": 146,
+      "team": "Furman",
+      "conference": "SC",
+      "projectedWins": 23,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "14-6",
+      "sourcePage": 5
+    },
+    {
+      "rank": 147,
+      "team": "Drake",
+      "conference": "MVC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 148,
+      "team": "Valparaiso",
+      "conference": "MVC",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 149,
+      "team": "Kennesaw St.",
+      "conference": "CUSA",
+      "projectedWins": 17,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 5
+    },
+    {
+      "rank": 150,
+      "team": "La Salle",
+      "conference": "A10",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 5
+    },
+    {
+      "rank": 151,
+      "team": "North Dakota St.",
+      "conference": "Sum",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-4",
+      "sourcePage": 5
+    },
+    {
+      "rank": 152,
+      "team": "Toledo",
+      "conference": "MAC",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 5
+    },
+    {
+      "rank": 153,
+      "team": "Howard",
+      "conference": "MEAC",
+      "projectedWins": 22,
+      "projectedLosses": 7,
+      "projectedConferenceRecord": "12-2",
+      "sourcePage": 5
+    },
+    {
+      "rank": 154,
+      "team": "James Madison",
+      "conference": "SB",
+      "projectedWins": 21,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 6
+    },
+    {
+      "rank": 155,
+      "team": "Charleston",
+      "conference": "CAA",
+      "projectedWins": 17,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 6
+    },
+    {
+      "rank": 156,
+      "team": "Merrimack",
+      "conference": "Metro",
+      "projectedWins": 21,
+      "projectedLosses": 10,
+      "projectedConferenceRecord": "15-5",
+      "sourcePage": 6
+    },
+    {
+      "rank": 157,
+      "team": "Wright St.",
+      "conference": "Horz",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 6
+    },
+    {
+      "rank": 158,
+      "team": "New Mexico St.",
+      "conference": "CUSA",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 6
+    },
+    {
+      "rank": 159,
+      "team": "Seattle",
+      "conference": "WCC",
+      "projectedWins": 15,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 6
+    },
+    {
+      "rank": 160,
+      "team": "Sacramento St.",
+      "conference": "BW",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 6
+    },
+    {
+      "rank": 161,
+      "team": "Princeton",
+      "conference": "Ivy",
+      "projectedWins": 16,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "8-6",
+      "sourcePage": 6
+    },
+    {
+      "rank": 162,
+      "team": "Green Bay",
+      "conference": "Horz",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 6
+    },
+    {
+      "rank": 163,
+      "team": "FIU",
+      "conference": "CUSA",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 6
+    },
+    {
+      "rank": 164,
+      "team": "Hofstra",
+      "conference": "CAA",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 6
+    },
+    {
+      "rank": 165,
+      "team": "UTEP",
+      "conference": "MWC",
+      "projectedWins": 14,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 166,
+      "team": "Tulane",
+      "conference": "Amer",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 6
+    },
+    {
+      "rank": 167,
+      "team": "Eastern Michigan",
+      "conference": "MAC",
+      "projectedWins": 16,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 168,
+      "team": "Western Michigan",
+      "conference": "MAC",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 169,
+      "team": "Washington St.",
+      "conference": "P12",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "4-12",
+      "sourcePage": 6
+    },
+    {
+      "rank": 170,
+      "team": "Portland",
+      "conference": "WCC",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 6
+    },
+    {
+      "rank": 171,
+      "team": "Loyola Chicago",
+      "conference": "A10",
+      "projectedWins": 12,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 6
+    },
+    {
+      "rank": 172,
+      "team": "Central Arkansas",
+      "conference": "UAC",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 6
+    },
+    {
+      "rank": 173,
+      "team": "Bowling Green",
+      "conference": "MAC",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 174,
+      "team": "Bethune Cookman",
+      "conference": "SWAC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "14-4",
+      "sourcePage": 6
+    },
+    {
+      "rank": 175,
+      "team": "Cal Poly",
+      "conference": "BW",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "11-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 176,
+      "team": "East Tennessee St.",
+      "conference": "SC",
+      "projectedWins": 20,
+      "projectedLosses": 11,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 6
+    },
+    {
+      "rank": 177,
+      "team": "Western Carolina",
+      "conference": "SC",
+      "projectedWins": 19,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 6
+    },
+    {
+      "rank": 178,
+      "team": "San Jose St.",
+      "conference": "MWC",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 179,
+      "team": "Austin Peay",
+      "conference": "UAC",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 6
+    },
+    {
+      "rank": 180,
+      "team": "Robert Morris",
+      "conference": "Horz",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 6
+    },
+    {
+      "rank": 181,
+      "team": "East Carolina",
+      "conference": "Amer",
+      "projectedWins": 16,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 6
+    },
+    {
+      "rank": 182,
+      "team": "Sam Houston St.",
+      "conference": "CUSA",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 6
+    },
+    {
+      "rank": 183,
+      "team": "Tennessee St.",
+      "conference": "OVC",
+      "projectedWins": 18,
+      "projectedLosses": 9,
+      "projectedConferenceRecord": "12-4",
+      "sourcePage": 6
+    },
+    {
+      "rank": 184,
+      "team": "San Francisco",
+      "conference": "WCC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 6
+    },
+    {
+      "rank": 185,
+      "team": "Towson",
+      "conference": "CAA",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 6
+    },
+    {
+      "rank": 186,
+      "team": "Cal Baptist",
+      "conference": "BW",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "11-11",
+      "sourcePage": 7
+    },
+    {
+      "rank": 187,
+      "team": "Vermont",
+      "conference": "AE",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "12-4",
+      "sourcePage": 7
+    },
+    {
+      "rank": 188,
+      "team": "Bradley",
+      "conference": "MVC",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 189,
+      "team": "Southern Illinois",
+      "conference": "MVC",
+      "projectedWins": 14,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 190,
+      "team": "Eastern Washington",
+      "conference": "BSky",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 7
+    },
+    {
+      "rank": 191,
+      "team": "Hampton",
+      "conference": "CAA",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 7
+    },
+    {
+      "rank": 192,
+      "team": "Queens",
+      "conference": "ASun",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-4",
+      "sourcePage": 7
+    },
+    {
+      "rank": 193,
+      "team": "American",
+      "conference": "Pat",
+      "projectedWins": 20,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "13-5",
+      "sourcePage": 7
+    },
+    {
+      "rank": 194,
+      "team": "Buffalo",
+      "conference": "MAC",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "10-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 195,
+      "team": "Massachusetts",
+      "conference": "MAC",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 196,
+      "team": "Cal St. Fullerton",
+      "conference": "BW",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "10-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 197,
+      "team": "UC Davis",
+      "conference": "MWC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 198,
+      "team": "Arkansas St.",
+      "conference": "SB",
+      "projectedWins": 19,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 7
+    },
+    {
+      "rank": 199,
+      "team": "Columbia",
+      "conference": "Ivy",
+      "projectedWins": 17,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 7
+    },
+    {
+      "rank": 200,
+      "team": "William & Mary",
+      "conference": "CAA",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 7
+    },
+    {
+      "rank": 201,
+      "team": "Yale",
+      "conference": "Ivy",
+      "projectedWins": 15,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 7
+    },
+    {
+      "rank": 202,
+      "team": "Northern Colorado",
+      "conference": "BSky",
+      "projectedWins": 18,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 7
+    },
+    {
+      "rank": 203,
+      "team": "Texas A&M Corpus Chris",
+      "conference": "Slnd",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 7
+    },
+    {
+      "rank": 204,
+      "team": "Cal St. Northridge",
+      "conference": "BW",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "10-12",
+      "sourcePage": 7
+    },
+    {
+      "rank": 205,
+      "team": "Ohio",
+      "conference": "MAC",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-13",
+      "sourcePage": 7
+    },
+    {
+      "rank": 206,
+      "team": "Montana",
+      "conference": "BSky",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 7
+    },
+    {
+      "rank": 207,
+      "team": "New Orleans",
+      "conference": "Slnd",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 7
+    },
+    {
+      "rank": 208,
+      "team": "Lamar",
+      "conference": "Slnd",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 7
+    },
+    {
+      "rank": 209,
+      "team": "Portland St.",
+      "conference": "BSky",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 7
+    },
+    {
+      "rank": 210,
+      "team": "UT Arlington",
+      "conference": "UAC",
+      "projectedWins": 19,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 7
+    },
+    {
+      "rank": 211,
+      "team": "UT Rio Grande Valley",
+      "conference": "Slnd",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "12-10",
+      "sourcePage": 7
+    },
+    {
+      "rank": 212,
+      "team": "Marist",
+      "conference": "Metro",
+      "projectedWins": 19,
+      "projectedLosses": 12,
+      "projectedConferenceRecord": "13-7",
+      "sourcePage": 7
+    },
+    {
+      "rank": 213,
+      "team": "Idaho",
+      "conference": "BSky",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 7
+    },
+    {
+      "rank": 214,
+      "team": "Jacksonville St.",
+      "conference": "CUSA",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 7
+    },
+    {
+      "rank": 215,
+      "team": "Georgia St.",
+      "conference": "SB",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 7
+    },
+    {
+      "rank": 216,
+      "team": "Central Michigan",
+      "conference": "MAC",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "9-13",
+      "sourcePage": 7
+    },
+    {
+      "rank": 217,
+      "team": "Colgate",
+      "conference": "Pat",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 7
+    },
+    {
+      "rank": 218,
+      "team": "Southern Miss",
+      "conference": "SB",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 219,
+      "team": "Campbell",
+      "conference": "CAA",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 220,
+      "team": "Louisiana",
+      "conference": "SB",
+      "projectedWins": 15,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 221,
+      "team": "Stony Brook",
+      "conference": "CAA",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 8
+    },
+    {
+      "rank": 222,
+      "team": "Monmouth",
+      "conference": "CAA",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 223,
+      "team": "Northern Kentucky",
+      "conference": "Horz",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 224,
+      "team": "Longwood",
+      "conference": "BSth",
+      "projectedWins": 19,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 8
+    },
+    {
+      "rank": 225,
+      "team": "Oakland",
+      "conference": "Horz",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 226,
+      "team": "Coastal Carolina",
+      "conference": "SB",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 227,
+      "team": "Jacksonville",
+      "conference": "ASun",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-5",
+      "sourcePage": 8
+    },
+    {
+      "rank": 228,
+      "team": "Tennessee Tech",
+      "conference": "SC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 8
+    },
+    {
+      "rank": 229,
+      "team": "Lipscomb",
+      "conference": "ASun",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-5",
+      "sourcePage": 8
+    },
+    {
+      "rank": 230,
+      "team": "Cornell",
+      "conference": "Ivy",
+      "projectedWins": 13,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 231,
+      "team": "Winthrop",
+      "conference": "BSth",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 8
+    },
+    {
+      "rank": 232,
+      "team": "Samford",
+      "conference": "SC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 8
+    },
+    {
+      "rank": 233,
+      "team": "Presbyterian",
+      "conference": "BSth",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 8
+    },
+    {
+      "rank": 234,
+      "team": "Fairfield",
+      "conference": "Metro",
+      "projectedWins": 18,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 235,
+      "team": "Brown",
+      "conference": "Ivy",
+      "projectedWins": 15,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 236,
+      "team": "Iona",
+      "conference": "Metro",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 237,
+      "team": "UTSA",
+      "conference": "Amer",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 8
+    },
+    {
+      "rank": 238,
+      "team": "Siena",
+      "conference": "Metro",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "11-9",
+      "sourcePage": 8
+    },
+    {
+      "rank": 239,
+      "team": "Elon",
+      "conference": "CAA",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 240,
+      "team": "Southern Utah",
+      "conference": "BSky",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 241,
+      "team": "Quinnipiac",
+      "conference": "Metro",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "12-8",
+      "sourcePage": 8
+    },
+    {
+      "rank": 242,
+      "team": "Rice",
+      "conference": "Amer",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 8
+    },
+    {
+      "rank": 243,
+      "team": "Indiana St.",
+      "conference": "MVC",
+      "projectedWins": 12,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-14",
+      "sourcePage": 8
+    },
+    {
+      "rank": 244,
+      "team": "Detroit Mercy",
+      "conference": "Horz",
+      "projectedWins": 13,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 245,
+      "team": "Old Dominion",
+      "conference": "SB",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 8
+    },
+    {
+      "rank": 246,
+      "team": "Missouri St.",
+      "conference": "CUSA",
+      "projectedWins": 13,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 8
+    },
+    {
+      "rank": 247,
+      "team": "Northern Illinois",
+      "conference": "Horz",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 8
+    },
+    {
+      "rank": 248,
+      "team": "Northeastern",
+      "conference": "CAA",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 8
+    },
+    {
+      "rank": 249,
+      "team": "Oral Roberts",
+      "conference": "Sum",
+      "projectedWins": 14,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 8
+    },
+    {
+      "rank": 250,
+      "team": "Milwaukee",
+      "conference": "Horz",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 9
+    },
+    {
+      "rank": 251,
+      "team": "Southeast Missouri St.",
+      "conference": "OVC",
+      "projectedWins": 18,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 9
+    },
+    {
+      "rank": 252,
+      "team": "IU Indy",
+      "conference": "Horz",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 9
+    },
+    {
+      "rank": 253,
+      "team": "Little Rock",
+      "conference": "UAC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 9
+    },
+    {
+      "rank": 254,
+      "team": "Alabama St.",
+      "conference": "SWAC",
+      "projectedWins": 18,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 9
+    },
+    {
+      "rank": 255,
+      "team": "Southeastern Louisiana",
+      "conference": "Slnd",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "10-12",
+      "sourcePage": 9
+    },
+    {
+      "rank": 256,
+      "team": "Drexel",
+      "conference": "CAA",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 9
+    },
+    {
+      "rank": 257,
+      "team": "Mercer",
+      "conference": "SC",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 9
+    },
+    {
+      "rank": 258,
+      "team": "SIU Edwardsville",
+      "conference": "OVC",
+      "projectedWins": 18,
+      "projectedLosses": 13,
+      "projectedConferenceRecord": "10-6",
+      "sourcePage": 9
+    },
+    {
+      "rank": 259,
+      "team": "Denver",
+      "conference": "WCC",
+      "projectedWins": 10,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "4-12",
+      "sourcePage": 9
+    },
+    {
+      "rank": 260,
+      "team": "Delaware",
+      "conference": "CUSA",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 9
+    },
+    {
+      "rank": 261,
+      "team": "Lehigh",
+      "conference": "Pat",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 9
+    },
+    {
+      "rank": 262,
+      "team": "Stetson",
+      "conference": "ASun",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-6",
+      "sourcePage": 9
+    },
+    {
+      "rank": 263,
+      "team": "South Dakota St.",
+      "conference": "Sum",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 9
+    },
+    {
+      "rank": 264,
+      "team": "UC Riverside",
+      "conference": "BW",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "7-15",
+      "sourcePage": 9
+    },
+    {
+      "rank": 265,
+      "team": "Long Beach St.",
+      "conference": "BW",
+      "projectedWins": 10,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "7-15",
+      "sourcePage": 9
+    },
+    {
+      "rank": 266,
+      "team": "South Alabama",
+      "conference": "SB",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 9
+    },
+    {
+      "rank": 267,
+      "team": "Appalachian St.",
+      "conference": "SB",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 9
+    },
+    {
+      "rank": 268,
+      "team": "North Carolina A&T",
+      "conference": "CAA",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 9
+    },
+    {
+      "rank": 269,
+      "team": "Prairie View A&M",
+      "conference": "SWAC",
+      "projectedWins": 17,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "12-6",
+      "sourcePage": 9
+    },
+    {
+      "rank": 270,
+      "team": "UMBC",
+      "conference": "AE",
+      "projectedWins": 17,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 9
+    },
+    {
+      "rank": 271,
+      "team": "Abilene Christian",
+      "conference": "UAC",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 9
+    },
+    {
+      "rank": 272,
+      "team": "Florida Gulf Coast",
+      "conference": "ASun",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 9
+    },
+    {
+      "rank": 273,
+      "team": "Air Force",
+      "conference": "MWC",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "4-14",
+      "sourcePage": 9
+    },
+    {
+      "rank": 274,
+      "team": "Houston Christian",
+      "conference": "Slnd",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "9-13",
+      "sourcePage": 9
+    },
+    {
+      "rank": 275,
+      "team": "Wofford",
+      "conference": "SC",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 9
+    },
+    {
+      "rank": 276,
+      "team": "LIU",
+      "conference": "NEC",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "11-5",
+      "sourcePage": 9
+    },
+    {
+      "rank": 277,
+      "team": "UNC Asheville",
+      "conference": "BSth",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 9
+    },
+    {
+      "rank": 278,
+      "team": "Louisiana Tech",
+      "conference": "SB",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 9
+    },
+    {
+      "rank": 279,
+      "team": "Ball St.",
+      "conference": "MAC",
+      "projectedWins": 11,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-16",
+      "sourcePage": 9
+    },
+    {
+      "rank": 280,
+      "team": "Radford",
+      "conference": "BSth",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 9
+    },
+    {
+      "rank": 281,
+      "team": "Evansville",
+      "conference": "MVC",
+      "projectedWins": 10,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "5-15",
+      "sourcePage": 9
+    },
+    {
+      "rank": 282,
+      "team": "Purdue Fort Wayne",
+      "conference": "Horz",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 10
+    },
+    {
+      "rank": 283,
+      "team": "Chattanooga",
+      "conference": "SC",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 10
+    },
+    {
+      "rank": 284,
+      "team": "Cleveland St.",
+      "conference": "Horz",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 10
+    },
+    {
+      "rank": 285,
+      "team": "Saint Peter's",
+      "conference": "Metro",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 286,
+      "team": "Youngstown St.",
+      "conference": "Horz",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 10
+    },
+    {
+      "rank": 287,
+      "team": "Marshall",
+      "conference": "SB",
+      "projectedWins": 13,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 288,
+      "team": "Northwestern St.",
+      "conference": "Slnd",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "9-13",
+      "sourcePage": 10
+    },
+    {
+      "rank": 289,
+      "team": "Albany",
+      "conference": "AE",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 10
+    },
+    {
+      "rank": 290,
+      "team": "South Dakota",
+      "conference": "Sum",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 291,
+      "team": "Alabama A&M",
+      "conference": "SWAC",
+      "projectedWins": 18,
+      "projectedLosses": 14,
+      "projectedConferenceRecord": "11-7",
+      "sourcePage": 10
+    },
+    {
+      "rank": 292,
+      "team": "Nicholls St.",
+      "conference": "Slnd",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "9-13",
+      "sourcePage": 10
+    },
+    {
+      "rank": 293,
+      "team": "Eastern Kentucky",
+      "conference": "UAC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 294,
+      "team": "Lindenwood",
+      "conference": "OVC",
+      "projectedWins": 16,
+      "projectedLosses": 15,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 10
+    },
+    {
+      "rank": 295,
+      "team": "Nebraska Omaha",
+      "conference": "Sum",
+      "projectedWins": 13,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 296,
+      "team": "Boston University",
+      "conference": "Pat",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 297,
+      "team": "Florida A&M",
+      "conference": "SWAC",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "10-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 298,
+      "team": "Southern",
+      "conference": "SWAC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 10
+    },
+    {
+      "rank": 299,
+      "team": "Mount St. Mary's",
+      "conference": "Metro",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "10-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 300,
+      "team": "UMKC",
+      "conference": "Sum",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 301,
+      "team": "West Georgia",
+      "conference": "UAC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 302,
+      "team": "New Hampshire",
+      "conference": "AE",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 303,
+      "team": "Sacred Heart",
+      "conference": "Metro",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "9-11",
+      "sourcePage": 10
+    },
+    {
+      "rank": 304,
+      "team": "Weber St.",
+      "conference": "BSky",
+      "projectedWins": 10,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 10
+    },
+    {
+      "rank": 305,
+      "team": "Bellarmine",
+      "conference": "ASun",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 306,
+      "team": "North Alabama",
+      "conference": "UAC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 307,
+      "team": "Mercyhurst",
+      "conference": "NEC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "9-7",
+      "sourcePage": 10
+    },
+    {
+      "rank": 308,
+      "team": "Navy",
+      "conference": "Pat",
+      "projectedWins": 16,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 10
+    },
+    {
+      "rank": 309,
+      "team": "NJIT",
+      "conference": "AE",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 310,
+      "team": "Dartmouth",
+      "conference": "Ivy",
+      "projectedWins": 11,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "4-10",
+      "sourcePage": 10
+    },
+    {
+      "rank": 311,
+      "team": "Morehead St.",
+      "conference": "OVC",
+      "projectedWins": 15,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 10
+    },
+    {
+      "rank": 312,
+      "team": "Incarnate Word",
+      "conference": "Slnd",
+      "projectedWins": 10,
+      "projectedLosses": 23,
+      "projectedConferenceRecord": "7-15",
+      "sourcePage": 10
+    },
+    {
+      "rank": 313,
+      "team": "Utah Tech",
+      "conference": "BSky",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 10
+    },
+    {
+      "rank": 314,
+      "team": "Niagara",
+      "conference": "Metro",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 11
+    },
+    {
+      "rank": 315,
+      "team": "Northern Arizona",
+      "conference": "BSky",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 11
+    },
+    {
+      "rank": 316,
+      "team": "North Dakota",
+      "conference": "Sum",
+      "projectedWins": 10,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "5-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 317,
+      "team": "Jackson St.",
+      "conference": "SWAC",
+      "projectedWins": 10,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 318,
+      "team": "Idaho St.",
+      "conference": "BSky",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 11
+    },
+    {
+      "rank": 319,
+      "team": "Cal St. Bakersfield",
+      "conference": "BW",
+      "projectedWins": 9,
+      "projectedLosses": 23,
+      "projectedConferenceRecord": "5-17",
+      "sourcePage": 11
+    },
+    {
+      "rank": 320,
+      "team": "Canisius",
+      "conference": "Metro",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "8-12",
+      "sourcePage": 11
+    },
+    {
+      "rank": 321,
+      "team": "Le Moyne",
+      "conference": "NEC",
+      "projectedWins": 15,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 11
+    },
+    {
+      "rank": 322,
+      "team": "UMass Lowell",
+      "conference": "AE",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 323,
+      "team": "North Florida",
+      "conference": "ASun",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "5-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 324,
+      "team": "Charleston Southern",
+      "conference": "BSth",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 325,
+      "team": "Southern Indiana",
+      "conference": "OVC",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 326,
+      "team": "UNC Greensboro",
+      "conference": "SC",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 11
+    },
+    {
+      "rank": 327,
+      "team": "Bryant",
+      "conference": "AE",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 328,
+      "team": "Maine",
+      "conference": "AE",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 329,
+      "team": "Texas Southern",
+      "conference": "SWAC",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "9-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 330,
+      "team": "Norfolk St.",
+      "conference": "MEAC",
+      "projectedWins": 14,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "8-6",
+      "sourcePage": 11
+    },
+    {
+      "rank": 331,
+      "team": "Lafayette",
+      "conference": "Pat",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 332,
+      "team": "Louisiana Monroe",
+      "conference": "SB",
+      "projectedWins": 8,
+      "projectedLosses": 23,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 11
+    },
+    {
+      "rank": 333,
+      "team": "Binghamton",
+      "conference": "AE",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 334,
+      "team": "Holy Cross",
+      "conference": "Pat",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "8-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 335,
+      "team": "VMI",
+      "conference": "SC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-14",
+      "sourcePage": 11
+    },
+    {
+      "rank": 336,
+      "team": "Georgia Southern",
+      "conference": "SB",
+      "projectedWins": 9,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "5-13",
+      "sourcePage": 11
+    },
+    {
+      "rank": 337,
+      "team": "Tennessee Martin",
+      "conference": "OVC",
+      "projectedWins": 12,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 338,
+      "team": "New Haven",
+      "conference": "NEC",
+      "projectedWins": 14,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "8-8",
+      "sourcePage": 11
+    },
+    {
+      "rank": 339,
+      "team": "Eastern Illinois",
+      "conference": "OVC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-10",
+      "sourcePage": 11
+    },
+    {
+      "rank": 340,
+      "team": "Morgan St.",
+      "conference": "MEAC",
+      "projectedWins": 12,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 11
+    },
+    {
+      "rank": 341,
+      "team": "Loyola MD",
+      "conference": "Pat",
+      "projectedWins": 12,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 11
+    },
+    {
+      "rank": 342,
+      "team": "Central Connecticut",
+      "conference": "NEC",
+      "projectedWins": 13,
+      "projectedLosses": 17,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 343,
+      "team": "USC Upstate",
+      "conference": "BSth",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "5-11",
+      "sourcePage": 11
+    },
+    {
+      "rank": 344,
+      "team": "Wagner",
+      "conference": "NEC",
+      "projectedWins": 11,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 11
+    },
+    {
+      "rank": 345,
+      "team": "East Texas A&M",
+      "conference": "Slnd",
+      "projectedWins": 8,
+      "projectedLosses": 24,
+      "projectedConferenceRecord": "6-16",
+      "sourcePage": 11
+    },
+    {
+      "rank": 346,
+      "team": "Fairleigh Dickinson",
+      "conference": "NEC",
+      "projectedWins": 13,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 12
+    },
+    {
+      "rank": 347,
+      "team": "Stonehill",
+      "conference": "NEC",
+      "projectedWins": 13,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 12
+    },
+    {
+      "rank": 348,
+      "team": "The Citadel",
+      "conference": "SC",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "6-14",
+      "sourcePage": 12
+    },
+    {
+      "rank": 349,
+      "team": "Chicago St.",
+      "conference": "NEC",
+      "projectedWins": 9,
+      "projectedLosses": 23,
+      "projectedConferenceRecord": "7-9",
+      "sourcePage": 12
+    },
+    {
+      "rank": 350,
+      "team": "Manhattan",
+      "conference": "Metro",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "7-13",
+      "sourcePage": 12
+    },
+    {
+      "rank": 351,
+      "team": "Grambling St.",
+      "conference": "SWAC",
+      "projectedWins": 12,
+      "projectedLosses": 20,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 12
+    },
+    {
+      "rank": 352,
+      "team": "Delaware St.",
+      "conference": "MEAC",
+      "projectedWins": 13,
+      "projectedLosses": 16,
+      "projectedConferenceRecord": "7-7",
+      "sourcePage": 12
+    },
+    {
+      "rank": 353,
+      "team": "Bucknell",
+      "conference": "Pat",
+      "projectedWins": 10,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 12
+    },
+    {
+      "rank": 354,
+      "team": "Gardner Webb",
+      "conference": "BSth",
+      "projectedWins": 10,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "4-12",
+      "sourcePage": 12
+    },
+    {
+      "rank": 355,
+      "team": "North Carolina Central",
+      "conference": "MEAC",
+      "projectedWins": 12,
+      "projectedLosses": 18,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 12
+    },
+    {
+      "rank": 356,
+      "team": "Alcorn St.",
+      "conference": "SWAC",
+      "projectedWins": 8,
+      "projectedLosses": 24,
+      "projectedConferenceRecord": "7-11",
+      "sourcePage": 12
+    },
+    {
+      "rank": 357,
+      "team": "South Carolina St.",
+      "conference": "MEAC",
+      "projectedWins": 12,
+      "projectedLosses": 19,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 12
+    },
+    {
+      "rank": 358,
+      "team": "Coppin St.",
+      "conference": "MEAC",
+      "projectedWins": 11,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "6-8",
+      "sourcePage": 12
+    },
+    {
+      "rank": 359,
+      "team": "Army",
+      "conference": "Pat",
+      "projectedWins": 10,
+      "projectedLosses": 22,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 12
+    },
+    {
+      "rank": 360,
+      "team": "Western Illinois",
+      "conference": "OVC",
+      "projectedWins": 10,
+      "projectedLosses": 21,
+      "projectedConferenceRecord": "5-11",
+      "sourcePage": 12
+    },
+    {
+      "rank": 361,
+      "team": "Arkansas Pine Bluff",
+      "conference": "SWAC",
+      "projectedWins": 8,
+      "projectedLosses": 24,
+      "projectedConferenceRecord": "6-12",
+      "sourcePage": 12
+    },
+    {
+      "rank": 362,
+      "team": "Rider",
+      "conference": "Metro",
+      "projectedWins": 7,
+      "projectedLosses": 24,
+      "projectedConferenceRecord": "4-16",
+      "sourcePage": 12
+    },
+    {
+      "rank": 363,
+      "team": "West Florida",
+      "conference": "ASun",
+      "projectedWins": 7,
+      "projectedLosses": 25,
+      "projectedConferenceRecord": "2-12",
+      "sourcePage": 12
+    },
+    {
+      "rank": 364,
+      "team": "Mississippi Valley St.",
+      "conference": "SWAC",
+      "projectedWins": 4,
+      "projectedLosses": 28,
+      "projectedConferenceRecord": "4-14",
+      "sourcePage": 12
+    },
+    {
+      "rank": 365,
+      "team": "Maryland Eastern Shore",
+      "conference": "MEAC",
+      "projectedWins": 7,
+      "projectedLosses": 25,
+      "projectedConferenceRecord": "3-11",
+      "sourcePage": 12
+    }
+  ]
+}

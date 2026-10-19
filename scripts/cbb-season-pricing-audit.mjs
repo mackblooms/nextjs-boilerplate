@@ -1,12 +1,15 @@
 // Planning only: exhaustively enumerate band counts, not individual team selections.
 // No invented team projections or claims of competitive balance.
-const candidates = [
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export const candidates = [
   { name: 'Original draft', prices: [12, 8, 5, 4], min: [0, 0, 4, 3], max: [3, 5, 20, 25] },
   { name: 'Original prices with tighter band limits', prices: [12, 8, 5, 4], min: [0, 0, 4, 3], max: [2, 5, 8, 6] },
   { name: 'Even prices candidate', prices: [10, 8, 6, 4], min: [0, 0, 4, 3], max: [2, 5, 8, 6] },
 ];
 
-function enumerate(candidate, counts = [], spent = 0) {
+export function enumerate(candidate, counts = [], spent = 0) {
   const band = counts.length;
   if (band === candidate.prices.length) {
     return spent === 100 ? [{ counts, size: counts.reduce((sum, n) => sum + n, 0) }] : [];
@@ -20,7 +23,8 @@ function enumerate(candidate, counts = [], spent = 0) {
   return result;
 }
 
-for (const candidate of candidates) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+ for (const candidate of candidates) {
   const shapes = enumerate(candidate);
   if (!shapes.length) throw new Error(`No legal squads: ${candidate.name}`);
   const histogram = {};
@@ -35,4 +39,5 @@ for (const candidate of candidates) {
     combinationsBySize: histogram,
     ...(process.argv.includes('--details') ? { shapes } : {}),
   }, null, 2));
+ }
 }

@@ -2,6 +2,32 @@
 
 Status: planning candidates only. No live prices, database, scoring, or UI changed.
 
+## Torvik source and first team-level review
+
+The user selected Bart Torvik's projected records and supplied a 12-page PDF labeled
+2027 T-Rank College Basketball Projections. Its 365 rows are transcribed in
+`data/cbb-season/torvik-2027-projections.json`, including original rank, overall
+record, separate conference record, PDF page, and a SHA-256 of the source document.
+The capture date is unknown. These are displayed integer projections; fractional
+expected wins, complete schedule coverage, and non-D-I coverage are not established.
+
+Run `node scripts/cbb-season-torvik-pricing.mjs` to regenerate:
+
+- `docs/cbb-season-pricing-board.csv`: all 365 provisional named-team prices.
+- `docs/cbb-season-torvik-pricing-review.md`: cutoff comparison and optimized squad results.
+- `data/cbb-season/torvik-2027-pricing-audit.json`: every tested squad shape and selected teams.
+
+The original .800 / .650 / .500 boundaries yield only three Elite teams. A broader
+.750 / .625 / .500 hypothesis yields 15 Elite, 77 Contender, 132 Value, and 141
+Long-shot teams. The CSV uses those broader boundaries with 10 / 8 / 6 / 4 prices
+for review only; neither the boundaries nor those prices are final.
+
+Under that candidate, the strongest displayed-record ratio is 65.15% for 15 teams,
+62.73% for 16, and 60.38% for 17. This flags an incentive toward smaller squads;
+it is not a simulated outcome, historical backtest, or proof of competitive balance.
+
+No source selection or pricing artifact creates a new site section.
+
 ## Agreed contest foundation
 
 - Everyone spends exactly 100 points before the first official game of the season.
