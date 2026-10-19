@@ -10,7 +10,8 @@ existing Bracketball deployment workflow; it does not create a separate hosted S
 - Proposed prices 12 / 8 / 7 / 3 and limits E 0-3, C 0-6, V 4-10, L 5-8.
 - Search, conference and band filtering, sort, selected-only view, progressive loading.
 - Add/remove picks, pooled projected record, budget and band requirement feedback.
-- Exact-budget completion checks: a pick is blocked if no legal full squad can extend it.
+- Picks are blocked only by the available budget and band caps. A warning explains
+  when the mix needs a later swap to finish at exactly 100 with all band minimums.
 - Explicit local draft save, restore, storage-error feedback and clear confirmation.
 - Mobile squad links, shared controls, loading/error/empty states, keyboard labels and focus states.
 
@@ -21,6 +22,8 @@ configuration against the reviewed balance-audit artifact to catch unintended dr
 Drafts use `bb:cbb-season:preview-draft` in browser local storage. One draft is supported
 per browser profile/origin, not per account. Saving a new draft replaces the previous
 preview draft; draft incompatibilities and browser storage failures are surfaced.
+Incomplete drafts that need a swap can be saved and restored. They are never marked
+ready until they spend exactly 100 and meet all band minimums and caps.
 The version guards against restoring picks with a different pricing model. There is
 no server write, account synchronization, public squad URL, entry submission or reveal.
 Preview picks remain editable because a contest and official lock time have not launched.

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { UiButton, UiCard, UiEmptyState, UiInput, UiLoadingState, UiSelect, UiStatus } from "../components/ui/primitives";
-import { SEASON_DRAFT_STORAGE_KEY, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary, type SeasonTeam } from "@/lib/cbbSeason";
+import { SEASON_DRAFT_STORAGE_KEY, canCompleteSeasonSquad, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary, type SeasonTeam } from "@/lib/cbbSeason";
 import styles from "./season.module.css";
 
 const percentage = (value: number | null) => value === null ? "—" : `${(value * 100).toFixed(2)}%`;
@@ -26,6 +26,7 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
 
   const selected = useMemo(() => selectedIds.map(id => teams.find(t => t.id === id)!).filter(Boolean), [selectedIds, teams]);
   const summary = seasonSquadSummary(selected);
+  const needsRebalance = !canCompleteSeasonSquad(selected, teams);
   const conferences = useMemo(() => [...new Set(teams.map(t => t.conference))].sort(), [teams]);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
 
   function toggle(team: SeasonTeam) {
     const removing = selectedIds.includes(team.id);
-    const reason = removing ? null : seasonPickBlockReason(team, selected, teams);
+    const reason = removing ? null : seasonPickBlockReason(team, selected);
     if (reason) { setMessage({ tone: "error", text: reason }); return; }
     setSelectedIds(ids => removing ? ids.filter(id => id !== team.id) : [...ids, team.id]);
     setDirty(true);
@@ -81,7 +82,7 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
       setDirty(false);
       setHasSaved(true);
       setStorageIssue(false);
-      setMessage({ tone: "success", text: summary.complete ? "Your complete preview squad is saved on this device. No contest entry has been submitted." : "Draft saved on this device. You can finish your squad later." });
+      setMessage({ tone: "success", text: summary.complete ? "Your complete preview squad is saved on this device. No contest entry has been submitted." : needsRebalance ? "Draft saved on this device. This mix needs a swap before it can meet all squad requirements." : "Draft saved on this device. You can finish your squad later." });
     } catch {
       setMessage({ tone: "error", text: "This browser couldn’t save your draft. Your picks are still here; keep this page open and try again." });
     }
@@ -120,7 +121,7 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
           <div className={styles.teamGrid}>{filtered.slice(0, visible).map(team => {
             const owned = selectedIds.includes(team.id);
             const b = seasonPricing.bands[team.bandIndex];
-            const reason = owned ? null : seasonPickBlockReason(team, selected, teams);
+            const reason = owned ? null : seasonPickBlockReason(team, selected);
             return <UiCard as="article" key={team.id} className={styles.teamCard} data-selected={owned} data-band={b.id}>
               <div className={styles.teamTopline}><span className={styles.bandTag}>{b.label}</span><strong className={styles.price}>{team.cost}<small> pts</small></strong></div>
               <div className={styles.teamIdentity}><span className={styles.teamMonogram} aria-hidden="true">{team.name.split(" ").map(w => w[0]).slice(0, 2).join("")}</span><div><h3>{team.name}</h3><span>{team.conference}</span></div></div>
@@ -139,7 +140,8 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
           <label className={styles.nameLabel}><span>Squad name</span><UiInput value={name} maxLength={60} disabled={!loaded} onChange={e => { setName(e.target.value); setDirty(true); }} /></label>
           <div className={styles.squadProjection}><span>PROJECTED COMBINED RECORD</span><strong>{selected.length ? `${summary.wins}–${summary.losses}` : "—"}</strong><span>{percentage(summary.percentage)} projected win percentage</span></div>
           <div className={styles.requirements} aria-label="Squad requirements">{seasonPricing.bands.map((b, i) => <div key={b.id} data-met={summary.counts[i] >= b.min && summary.counts[i] <= b.max}><span>{b.label} <small>{b.min ? `${b.min}–${b.max} required` : `up to ${b.max}`}</small></span><strong>{summary.counts[i]} / {b.max}</strong></div>)}</div>
-          <div className={styles.completion} data-complete={summary.complete}>{summary.complete ? "✓ Squad ready · all 100 points spent" : `Spend ${summary.remaining} more points and meet the band requirements.`}</div>
+          {needsRebalance ? <UiStatus tone="warning"><strong>Your mix needs a swap.</strong> You can keep choosing teams within your budget and tier caps, but you’ll need to remove or swap some picks to spend exactly 100 points with at least 4 Value and 5 Long-shot teams.</UiStatus> : null}
+          <div className={styles.completion} data-complete={summary.complete}>{summary.complete ? "✓ Squad ready · all 100 points spent" : needsRebalance ? "Draft in progress · adjust your mix before completing your squad." : `Spend ${summary.remaining} more points and meet the band requirements.`}</div>
           <UiButton variant="primary" fullWidth disabled={!loaded || !dirty} onClick={save}>{!loaded ? "Loading draft…" : dirty ? "Save draft on this device" : hasSaved ? "Draft saved on this device" : "Choose teams to start"}</UiButton>
           <p className={styles.saveNote}>Private to this browser. No account sync or contest submission. You can keep editing during this preview.</p>
           {message ? <div role={message.tone === "error" ? "alert" : "status"} aria-live="polite"><UiStatus tone={message.tone}>{message.text}</UiStatus></div> : null}

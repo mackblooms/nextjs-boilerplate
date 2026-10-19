@@ -54,12 +54,11 @@ export function canCompleteSeasonSquad(selected: SeasonTeam[], allTeams: SeasonT
   return compositions.some(target => target.every((count, index) => count >= counts[index] && count <= available[index]));
 }
 
-export function seasonPickBlockReason(team: SeasonTeam, selected: SeasonTeam[], allTeams: SeasonTeam[]) {
+export function seasonPickBlockReason(team: SeasonTeam, selected: SeasonTeam[]) {
   if (selected.some(t => t.id === team.id)) return null;
   const { remaining, counts } = seasonSquadSummary(selected);
   if (team.cost > remaining) return "Not enough points remaining.";
   if (counts[team.bandIndex] >= pricing.bands[team.bandIndex].max) return `${pricing.bands[team.bandIndex].label} limit reached.`;
-  if (!canCompleteSeasonSquad([...selected, team], allTeams)) return "This pick would prevent a legal 100-point squad. Remove a team to change your approach.";
   return null;
 }
 
@@ -71,6 +70,9 @@ export function parseSeasonDraft(raw: string, teams: SeasonTeam[]): SeasonDraft 
     || !Array.isArray(draft.teamIds) || draft.teamIds.some(id => typeof id !== "string" || !ids.has(id))
     || new Set(draft.teamIds).size !== draft.teamIds.length) throw new Error("Saved draft is incompatible with this pricing preview.");
   const selected = draft.teamIds.map(id => teams.find(t => t.id === id)!);
-  if (!canCompleteSeasonSquad(selected, teams)) throw new Error("Saved draft cannot be completed under the current rules.");
+  const summary = seasonSquadSummary(selected);
+  if (summary.remaining < 0 || summary.counts.some((n, i) => n > pricing.bands[i].max)) {
+    throw new Error("Saved draft exceeds the budget or a price-band limit.");
+  }
   return draft as SeasonDraft;
 }
