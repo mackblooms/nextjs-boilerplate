@@ -7,11 +7,13 @@ existing Bracketball deployment workflow; it does not create a separate hosted S
 ## Included behavior
 
 - All 365 team rows from the supplied 2027 Torvik PDF, with projected overall records.
-- Proposed prices 12 / 8 / 7 / 3 and limits E 0-3, C 0-6, V 4-10, L 5-8.
+- Exactly 15 teams and exactly 100 points to complete a squad.
+- Proposed prices 12 / 10 / 6 / 4 and limits E 0-3, C 0-6, V 4-10, L 5-8.
 - Search, conference and band filtering, sort, selected-only view, progressive loading.
 - Add/remove picks, pooled projected record, budget and band requirement feedback.
-- Picks are blocked only by the available budget and band caps. A warning explains
-  when the mix needs a later swap to finish at exactly 100 with all band minimums.
+- Picks are blocked by the available budget, 15-team cap and band caps. A warning
+  explains when the mix needs a swap to finish at exactly 15 teams and 100 points
+  with all band minimums. Completion feasibility remains advisory while building.
 - Explicit local draft save, restore, storage-error feedback and clear confirmation.
 - Mobile squad links, shared controls, loading/error/empty states, keyboard labels and focus states.
 
@@ -22,9 +24,12 @@ configuration against the reviewed balance-audit artifact to catch unintended dr
 Drafts use `bb:cbb-season:preview-draft` in browser local storage. One draft is supported
 per browser profile/origin, not per account. Saving a new draft replaces the previous
 preview draft; draft incompatibilities and browser storage failures are surfaced.
-Incomplete drafts that need a swap can be saved and restored. They are never marked
-ready until they spend exactly 100 and meet all band minimums and caps.
-The version guards against restoring picks with a different pricing model. There is
+Incomplete drafts that need a swap can be saved and restored within the team and
+budget caps. They are never marked ready until they have exactly 15 teams, spend
+exactly 100 and meet all band minimums and caps. Valid v1 drafts are migrated to the
+new prices in memory without trimming any picks or overwriting the original save.
+If an old draft is over 15 teams or over budget, remove picks before saving as v2.
+Other unknown versions are rejected. There is
 no server write, account synchronization, public squad URL, entry submission or reveal.
 Preview picks remain editable because a contest and official lock time have not launched.
 
@@ -35,9 +40,13 @@ profile completion and the tournament onboarding guide.
 
 ## Validation and next work
 
-Run `npm run lint`, `npm test`, and `npm run build`. Unit checks cover all 11 legal
+Run `npm run lint`, `npm test`, and `npm run build`. Unit checks cover all four legal
 band-count compositions, every prefix of those compositions, budget dead ends,
-availability, duplicate picks, threshold boundaries, pooled records and local save validation.
+availability, duplicate picks, threshold boundaries, pooled records, the sixteenth
+pick, incorrect squad sizes at 100 points and preservation of old saved picks.
+
+Run `node scripts/cbb-season-fixed15-audit.mjs` to reproduce the current pricing
+review and spreadsheet. Earlier variable-size audit files are historical comparisons.
 
 Before an actual contest, finalize pricing, verify source freshness and schedule
 coverage, then implement account-owned persistence, league membership, a server-enforced

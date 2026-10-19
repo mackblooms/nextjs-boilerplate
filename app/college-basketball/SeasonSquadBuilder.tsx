@@ -27,6 +27,7 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
   const selected = useMemo(() => selectedIds.map(id => teams.find(t => t.id === id)!).filter(Boolean), [selectedIds, teams]);
   const summary = seasonSquadSummary(selected);
   const needsRebalance = !canCompleteSeasonSquad(selected, teams);
+  const canSave = summary.remaining >= 0 && summary.slotsRemaining >= 0;
   const conferences = useMemo(() => [...new Set(teams.map(t => t.conference))].sort(), [teams]);
 
   useEffect(() => {
@@ -39,7 +40,9 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
           setSelectedIds(draft.teamIds);
           setName(draft.name);
           setHasSaved(true);
-          setMessage({ tone: "info", text: "Your saved draft is restored from this device." });
+          const repriced = JSON.parse(raw).version !== seasonPricing.version;
+          setDirty(repriced);
+          setMessage({ tone: "info", text: repriced ? "Your saved picks are restored with the new 15-team prices. Review the updated budget and team count before saving. Your original draft has not been overwritten." : "Your saved draft is restored from this device." });
         }
       } catch {
         setStorageIssue(true);
@@ -76,6 +79,10 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
   }
 
   function save() {
+    if (!canSave) {
+      setMessage({ tone: "error", text: "Remove picks until you have no more than 15 teams and are within 100 points before saving this updated draft." });
+      return;
+    }
     try {
       window.localStorage.setItem(SEASON_DRAFT_STORAGE_KEY, JSON.stringify({ version: seasonPricing.version, name: name.trim() || "My season squad", teamIds: selectedIds }));
       setName(name.trim() || "My season squad");
@@ -96,13 +103,13 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
   function clearFilters() { setQuery(""); setBand(-1); setConference(""); setOnlySelected(false); setVisible(36); }
 
   return <>
-    <UiStatus tone="info"><strong>Season preview</strong> · Try the proposed prices and build rules. Drafts save only in this browser; prices and rules are still under review. This is not a live contest entry.</UiStatus>
+    <UiStatus tone="info"><strong>Season preview</strong> · Build a {seasonPricing.squadSize}-team squad with exactly 100 points. Drafts save only in this browser; prices and rules are still under review. This is not a live contest entry.</UiStatus>
     <div className={styles.budgetBar} aria-label="Squad budget">
-      <div><small>POINTS LEFT</small><strong>{summary.remaining}<span> / 100</span></strong></div>
-      <div><small>YOUR TEAMS</small><strong>{selected.length}<span> selected</span></strong></div>
+      <div><small>{summary.remaining < 0 ? "POINTS OVER BUDGET" : "POINTS LEFT"}</small><strong>{Math.abs(summary.remaining)}<span> / 100</span></strong></div>
+      <div><small>YOUR TEAMS</small><strong>{selected.length}<span> / {seasonPricing.squadSize}</span></strong></div>
       <div className={styles.budgetProjection}><small>PROJECTED WIN %</small><strong>{percentage(summary.percentage)}</strong></div>
       <a className={styles.squadJump} href="#season-squad">View squad ↓</a>
-      <progress className={styles.budgetProgress} max={100} value={summary.spent} aria-label={`${summary.spent} of 100 points spent`} />
+      <progress className={styles.budgetProgress} max={100} value={Math.min(summary.spent, 100)} aria-label={`${summary.spent} of 100 points spent`} />
     </div>
     <div className={styles.builder}>
       <section className={styles.board} aria-labelledby="team-board-title" id="season-teams">
@@ -140,9 +147,9 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
           <label className={styles.nameLabel}><span>Squad name</span><UiInput value={name} maxLength={60} disabled={!loaded} onChange={e => { setName(e.target.value); setDirty(true); }} /></label>
           <div className={styles.squadProjection}><span>PROJECTED COMBINED RECORD</span><strong>{selected.length ? `${summary.wins}–${summary.losses}` : "—"}</strong><span>{percentage(summary.percentage)} projected win percentage</span></div>
           <div className={styles.requirements} aria-label="Squad requirements">{seasonPricing.bands.map((b, i) => <div key={b.id} data-met={summary.counts[i] >= b.min && summary.counts[i] <= b.max}><span>{b.label} <small>{b.min ? `${b.min}–${b.max} required` : `up to ${b.max}`}</small></span><strong>{summary.counts[i]} / {b.max}</strong></div>)}</div>
-          {needsRebalance ? <UiStatus tone="warning"><strong>Your mix needs a swap.</strong> You can keep choosing teams within your budget and tier caps, but you’ll need to remove or swap some picks to spend exactly 100 points with at least 4 Value and 5 Long-shot teams.</UiStatus> : null}
-          <div className={styles.completion} data-complete={summary.complete}>{summary.complete ? "✓ Squad ready · all 100 points spent" : needsRebalance ? "Draft in progress · adjust your mix before completing your squad." : `Spend ${summary.remaining} more points and meet the band requirements.`}</div>
-          <UiButton variant="primary" fullWidth disabled={!loaded || !dirty} onClick={save}>{!loaded ? "Loading draft…" : dirty ? "Save draft on this device" : hasSaved ? "Draft saved on this device" : "Choose teams to start"}</UiButton>
+          {needsRebalance ? <UiStatus tone="warning"><strong>Your mix needs a swap.</strong> Finish with exactly {seasonPricing.squadSize} teams and 100 points, including at least 4 Value and 5 Long-shot teams. Remove or swap picks to meet all three requirements.</UiStatus> : null}
+          <div className={styles.completion} data-complete={summary.complete}>{summary.complete ? `✓ Squad ready · ${seasonPricing.squadSize} teams · all 100 points spent` : needsRebalance ? "Draft in progress · adjust your mix before completing your squad." : `Choose ${summary.slotsRemaining} more ${summary.slotsRemaining === 1 ? "team" : "teams"} with your remaining ${summary.remaining} points and meet the band requirements.`}</div>
+          <UiButton variant="primary" fullWidth disabled={!loaded || !dirty || !canSave} onClick={save}>{!loaded ? "Loading draft…" : !canSave ? "Adjust squad to save" : dirty ? "Save draft on this device" : hasSaved ? "Draft saved on this device" : "Choose teams to start"}</UiButton>
           <p className={styles.saveNote}>Private to this browser. No account sync or contest submission. You can keep editing during this preview.</p>
           {message ? <div role={message.tone === "error" ? "alert" : "status"} aria-live="polite"><UiStatus tone={message.tone}>{message.text}</UiStatus></div> : null}
           {storageIssue ? <p className={styles.saveNote}>Saving a new draft will replace any previous draft stored by this preview.</p> : null}
@@ -155,6 +162,6 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
         </UiCard>
       </aside>
     </div>
-    <UiCard className={styles.rules} id="season-rules"><span className={styles.eyebrow}>THE SEASON FORMAT</span><h2>Pick once. Follow all season.</h2><div className={styles.ruleGrid}><div><strong>Build with 100 points</strong><p>Prices reflect projected winning percentage. Purchase limits keep favorites and underdogs in the mix.</p></div><div><strong>Every official game matters</strong><p>The planned contest pools all wins and losses, including non-Division I games, through conference tournaments.</p></div><div><strong>One squad. No upkeep.</strong><p>The planned contest locks squads before opening tipoff and reveals them together. No transfers or weekly lineups.</p></div></div><p className={styles.sourceNote}>This builder is a preview. Contest registration, a confirmed lock time, shared reveals, live scores, and league standings are not open yet.</p></UiCard>
+    <UiCard className={styles.rules} id="season-rules"><span className={styles.eyebrow}>THE SEASON FORMAT</span><h2>Pick once. Follow all season.</h2><div className={styles.ruleGrid}><div><strong>{seasonPricing.squadSize} teams. Exactly 100 points.</strong><p>Everyone builds the same-sized squad. Prices reflect projected winning percentage, with purchase limits keeping favorites and underdogs in the mix.</p></div><div><strong>Every official game matters</strong><p>The planned contest pools all wins and losses, including non-Division I games, through conference tournaments.</p></div><div><strong>One squad. No upkeep.</strong><p>The planned contest locks squads before opening tipoff and reveals them together. No transfers or weekly lineups.</p></div></div><p className={styles.sourceNote}>This builder is a preview. Contest registration, a confirmed lock time, shared reveals, live scores, and league standings are not open yet.</p></UiCard>
   </>;
 }

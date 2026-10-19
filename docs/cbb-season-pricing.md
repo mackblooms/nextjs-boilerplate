@@ -1,6 +1,15 @@
 # College basketball season pricing worksheet
 
-Status: planning candidates only. No live prices, database, scoring, or UI changed.
+Status: preview pricing. The local builder uses the fixed 15-team proposal below;
+production deployment and the contest database are unchanged.
+
+## Current preview: exactly 15 teams
+
+The user replaced the variable-size target with a fixed 15-team requirement.
+The builder now uses 12 / 10 / 6 / 4 prices, a 100-point budget, and the existing
+tier caps and minimums. See `docs/cbb-season-fixed15-pricing.md` and
+`docs/cbb-season-fixed15-pricing-board.csv` for the current review.
+The variable-size discussions and audits below are retained as historical work.
 
 ## Rebalance candidate: review before finalizing
 

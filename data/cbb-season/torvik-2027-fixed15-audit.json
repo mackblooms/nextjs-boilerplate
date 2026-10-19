@@ -1,0 +1,185 @@
+{
+  "version": "2027-fixed15-preview-v2",
+  "sourceSha256": "991c60428f5d814b1d31677850df75841d94f12f67640905113c9ad561176bfe",
+  "squadSize": 15,
+  "budget": 100,
+  "prices": [
+    12,
+    10,
+    6,
+    4
+  ],
+  "min": [
+    0,
+    0,
+    4,
+    5
+  ],
+  "max": [
+    3,
+    6,
+    10,
+    8
+  ],
+  "cutoffs": [
+    0.75,
+    0.625,
+    0.5,
+    0
+  ],
+  "shapes": [
+    {
+      "counts": [
+        0,
+        5,
+        5,
+        5
+      ],
+      "size": 15,
+      "wins": 280,
+      "losses": 179,
+      "winPercentage": 0.6100217864923747,
+      "teams": [
+        "Saint Mary's",
+        "Akron",
+        "Kansas",
+        "Stephen F. Austin",
+        "Nebraska",
+        "Boise St.",
+        "Western Carolina",
+        "Arkansas St.",
+        "Marist",
+        "Oregon",
+        "Washington",
+        "UTEP",
+        "Colorado",
+        "Penn St.",
+        "Memphis"
+      ]
+    },
+    {
+      "counts": [
+        1,
+        4,
+        4,
+        6
+      ],
+      "size": 15,
+      "wins": 282,
+      "losses": 178,
+      "winPercentage": 0.6130434782608696,
+      "teams": [
+        "High Point",
+        "Saint Mary's",
+        "Akron",
+        "Kansas",
+        "Stephen F. Austin",
+        "Boise St.",
+        "Western Carolina",
+        "Arkansas St.",
+        "Marist",
+        "Washington",
+        "UTEP",
+        "Colorado",
+        "Penn St.",
+        "Memphis",
+        "Fresno St."
+      ]
+    },
+    {
+      "counts": [
+        2,
+        2,
+        6,
+        5
+      ],
+      "size": 15,
+      "wins": 285,
+      "losses": 176,
+      "winPercentage": 0.6182212581344902,
+      "teams": [
+        "High Point",
+        "Duke",
+        "Saint Mary's",
+        "Akron",
+        "Boise St.",
+        "Western Carolina",
+        "Arkansas St.",
+        "Marist",
+        "Oregon",
+        "Maryland",
+        "Washington",
+        "UTEP",
+        "Colorado",
+        "Penn St.",
+        "Memphis"
+      ]
+    },
+    {
+      "counts": [
+        3,
+        1,
+        5,
+        6
+      ],
+      "size": 15,
+      "wins": 284,
+      "losses": 178,
+      "winPercentage": 0.6147186147186147,
+      "teams": [
+        "High Point",
+        "Duke",
+        "Grand Canyon",
+        "Saint Mary's",
+        "Boise St.",
+        "Western Carolina",
+        "Arkansas St.",
+        "Marist",
+        "Oregon",
+        "Washington",
+        "UTEP",
+        "Colorado",
+        "Penn St.",
+        "Memphis",
+        "Fresno St."
+      ]
+    }
+  ],
+  "spread": 0.008199471642115541,
+  "previousPricesAt15": [
+    {
+      "counts": [
+        3,
+        0,
+        7,
+        5
+      ],
+      "size": 15,
+      "wins": 282,
+      "losses": 178,
+      "winPercentage": 0.6130434782608696,
+      "teams": [
+        "High Point",
+        "Duke",
+        "Grand Canyon",
+        "Boise St.",
+        "Western Carolina",
+        "Arkansas St.",
+        "Marist",
+        "Oregon",
+        "Maryland",
+        "Auburn",
+        "Washington",
+        "UTEP",
+        "Colorado",
+        "Penn St.",
+        "Memphis"
+      ]
+    }
+  ],
+  "caveats": [
+    "Displayed Torvik integer record ratios, not season simulations",
+    "Same-snapshot comparison, not independent forecast validation",
+    "Current source capture date and full schedule coverage remain unverified"
+  ]
+}

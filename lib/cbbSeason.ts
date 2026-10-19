@@ -2,6 +2,7 @@ import pricing from "@/data/cbb-season/pricing-preview.json";
 
 export const seasonPricing = pricing;
 export const SEASON_DRAFT_STORAGE_KEY = "bb:cbb-season:preview-draft";
+export const LEGACY_SEASON_PRICING_VERSION = "2027-balance-preview-v1";
 export type SeasonTeam = {
   id: string;
   name: string;
@@ -22,9 +23,9 @@ export function seasonSquadSummary(teams: SeasonTeam[]) {
   const spent = teams.reduce((sum, t) => sum + t.cost, 0);
   const wins = teams.reduce((sum, t) => sum + t.projectedWins, 0);
   const losses = teams.reduce((sum, t) => sum + t.projectedLosses, 0);
-  return { counts, spent, remaining: pricing.budget - spent, wins, losses,
+  return { counts, spent, remaining: pricing.budget - spent, slotsRemaining: pricing.squadSize - teams.length, wins, losses,
     percentage: wins + losses ? wins / (wins + losses) : null,
-    complete: spent === pricing.budget && counts.every((n, i) => n >= pricing.bands[i].min && n <= pricing.bands[i].max) };
+    complete: teams.length === pricing.squadSize && spent === pricing.budget && counts.every((n, i) => n >= pricing.bands[i].min && n <= pricing.bands[i].max) };
 }
 
 export function legalSeasonCompositions() {
@@ -32,7 +33,7 @@ export function legalSeasonCompositions() {
   function visit(counts: number[], spent: number) {
     const band = pricing.bands[counts.length];
     if (!band) {
-      if (spent === pricing.budget) result.push(counts);
+      if (spent === pricing.budget && counts.reduce((sum, n) => sum + n, 0) === pricing.squadSize) result.push(counts);
       return;
     }
     for (let count = band.min; count <= band.max; count++) {
@@ -49,13 +50,14 @@ const compositions = legalSeasonCompositions();
 
 export function canCompleteSeasonSquad(selected: SeasonTeam[], allTeams: SeasonTeam[]) {
   const { counts, remaining } = seasonSquadSummary(selected);
-  if (remaining < 0 || new Set(selected.map(t => t.id)).size !== selected.length) return false;
+  if (remaining < 0 || selected.length > pricing.squadSize || new Set(selected.map(t => t.id)).size !== selected.length) return false;
   const available = pricing.bands.map((_, index) => allTeams.filter(t => t.bandIndex === index).length);
   return compositions.some(target => target.every((count, index) => count >= counts[index] && count <= available[index]));
 }
 
 export function seasonPickBlockReason(team: SeasonTeam, selected: SeasonTeam[]) {
   if (selected.some(t => t.id === team.id)) return null;
+  if (selected.length >= pricing.squadSize) return `Your ${pricing.squadSize}-team squad is full. Remove a team before adding another.`;
   const { remaining, counts } = seasonSquadSummary(selected);
   if (team.cost > remaining) return "Not enough points remaining.";
   if (counts[team.bandIndex] >= pricing.bands[team.bandIndex].max) return `${pricing.bands[team.bandIndex].label} limit reached.`;
@@ -66,13 +68,19 @@ export function seasonPickBlockReason(team: SeasonTeam, selected: SeasonTeam[]) 
 export function parseSeasonDraft(raw: string, teams: SeasonTeam[]): SeasonDraft {
   const draft = JSON.parse(raw) as Partial<SeasonDraft> | null;
   const ids = new Set(teams.map(t => t.id));
-  if (!draft || draft.version !== pricing.version || typeof draft.name !== "string" || draft.name.length > 60
+  const isLegacy = draft?.version === LEGACY_SEASON_PRICING_VERSION;
+  if (!draft || (!isLegacy && draft.version !== pricing.version) || typeof draft.name !== "string" || draft.name.length > 60
     || !Array.isArray(draft.teamIds) || draft.teamIds.some(id => typeof id !== "string" || !ids.has(id))
     || new Set(draft.teamIds).size !== draft.teamIds.length) throw new Error("Saved draft is incompatible with this pricing preview.");
   const selected = draft.teamIds.map(id => teams.find(t => t.id === id)!);
   const summary = seasonSquadSummary(selected);
-  if (summary.remaining < 0 || summary.counts.some((n, i) => n > pricing.bands[i].max)) {
-    throw new Error("Saved draft exceeds the budget or a price-band limit.");
+  const legacyCosts = [12, 8, 7, 3];
+  const spentAtSavedPrices = isLegacy ? selected.reduce((sum, t) => sum + legacyCosts[t.bandIndex], 0) : summary.spent;
+  if (spentAtSavedPrices > pricing.budget || (!isLegacy && selected.length > pricing.squadSize)
+    || summary.counts.some((n, i) => n > pricing.bands[i].max)) {
+    throw new Error("Saved draft exceeds its budget, squad size or a price-band limit.");
   }
-  return draft as SeasonDraft;
+  // Preserve legacy picks even if repricing puts them over budget or over 15 teams.
+  // The builder requires adjustments before saving them under the new version.
+  return { version: pricing.version, name: draft.name, teamIds: draft.teamIds };
 }

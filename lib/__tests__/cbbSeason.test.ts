@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { canCompleteSeasonSquad, getSeasonBand, legalSeasonCompositions, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary } from "../cbbSeason";
+import { LEGACY_SEASON_PRICING_VERSION, canCompleteSeasonSquad, getSeasonBand, legalSeasonCompositions, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary } from "../cbbSeason";
 import { seasonTeams } from "../cbbSeasonTeams";
-import audit from "@/data/cbb-season/torvik-2027-balance-audit.json";
+import audit from "@/data/cbb-season/torvik-2027-fixed15-audit.json";
 
 const groups = seasonPricing.bands.map((_, i) => seasonTeams.filter(t => t.bandIndex === i));
 const picks = (counts: number[]) => counts.flatMap((n, i) => groups[i].slice(0, n));
 
 describe("college basketball season preview", () => {
   it("uses the reviewed rebalance model and all 365 source teams", () => {
-    expect(seasonPricing.bands.map(b => b.cost)).toEqual(audit.recommended.prices);
-    expect(seasonPricing.bands.map(b => b.min)).toEqual(audit.recommended.min);
-    expect(seasonPricing.bands.map(b => b.max)).toEqual(audit.recommended.max);
+    expect(seasonPricing.squadSize).toBe(15);
+    expect(seasonPricing.bands.map(b => b.cost)).toEqual(audit.prices);
+    expect(seasonPricing.bands.map(b => b.min)).toEqual(audit.min);
+    expect(seasonPricing.bands.map(b => b.max)).toEqual(audit.max);
     expect(seasonPricing.bands.map(b => b.minimumPercentage)).toEqual(audit.cutoffs);
     expect(seasonTeams).toHaveLength(365);
     expect(new Set(seasonTeams.map(t => t.id)).size).toBe(365);
@@ -23,12 +24,11 @@ describe("college basketball season preview", () => {
 
   it("allows every prefix of every reviewed 100-point composition", () => {
     const compositions = legalSeasonCompositions();
-    expect(compositions).toHaveLength(11);
-    expect(compositions).toEqual(expect.arrayContaining(audit.recommended.shapes.map(s => s.counts)));
+    expect(compositions).toHaveLength(4);
+    expect(compositions).toEqual(expect.arrayContaining(audit.shapes.map(s => s.counts)));
     for (const counts of compositions) {
       const squad = picks(counts);
-      expect(squad.length).toBeGreaterThanOrEqual(15);
-      expect(squad.length).toBeLessThanOrEqual(18);
+      expect(squad).toHaveLength(15);
       for (let i = 0; i < squad.length; i++) {
         expect(canCompleteSeasonSquad(squad.slice(0, i), seasonTeams)).toBe(true);
         expect(seasonPickBlockReason(squad[i], squad.slice(0, i))).toBeNull();
@@ -39,30 +39,50 @@ describe("college basketball season preview", () => {
   });
 
   it("allows affordable picks that need a later swap, while detecting the unfinished mix", () => {
-    // Two Elite and four Contenders cost 56; the required Value/Long shots cost
-    // at least 43, but no legal purchase can use the leftover single point.
-    const selected = picks([2, 3, 0, 0]);
+    const selected = picks([1, 4, 0, 0]);
     expect(canCompleteSeasonSquad(selected, seasonTeams)).toBe(true);
-    expect(seasonPickBlockReason(groups[1][3], selected)).toBeNull();
-    expect(canCompleteSeasonSquad([...selected, groups[1][3]], seasonTeams)).toBe(false);
-    expect(seasonSquadSummary([...selected, groups[1][3]]).complete).toBe(false);
+    expect(seasonPickBlockReason(groups[1][4], selected)).toBeNull();
+    expect(canCompleteSeasonSquad([...selected, groups[1][4]], seasonTeams)).toBe(false);
+    expect(seasonSquadSummary([...selected, groups[1][4]]).complete).toBe(false);
   });
 
   it("allows a second Contender alongside three Elite picks with points left", () => {
     const selected = picks([3, 1, 0, 0]);
-    expect(seasonSquadSummary(selected).remaining).toBe(56);
+    expect(seasonSquadSummary(selected).remaining).toBe(54);
     expect(seasonPickBlockReason(groups[1][1], selected)).toBeNull();
     const updated = [...selected, groups[1][1]];
-    expect(seasonSquadSummary(updated).remaining).toBe(48);
+    expect(seasonSquadSummary(updated).remaining).toBe(44);
     expect(canCompleteSeasonSquad(updated, seasonTeams)).toBe(false);
     expect(seasonSquadSummary(updated).complete).toBe(false);
   });
 
   it("checks cap, budget, and available distinct teams", () => {
     expect(seasonPickBlockReason(groups[0][3], picks([3, 0, 0, 0]))).toContain("limit reached");
-    expect(seasonPickBlockReason(groups[1][0], picks([3, 0, 7, 5]))).toContain("Not enough points");
+    expect(seasonPickBlockReason(groups[1][2], picks([3, 2, 4, 5]))).toContain("Not enough points");
     expect(canCompleteSeasonSquad([], seasonTeams.filter(t => t.bandIndex !== 3))).toBe(false);
     expect(canCompleteSeasonSquad([groups[0][0], groups[0][0]], seasonTeams)).toBe(false);
+  });
+
+  it("requires exactly 15 teams and blocks the sixteenth without blocking removal", () => {
+    const full = picks([0, 5, 5, 5]);
+    expect(seasonSquadSummary(full).complete).toBe(true);
+    expect(seasonPickBlockReason(groups[0][0], full)).toContain("15-team squad is full");
+    expect(seasonPickBlockReason(full[0], full)).toBeNull();
+    expect(seasonSquadSummary(full.slice(0, 14)).complete).toBe(false);
+    expect(seasonSquadSummary(picks([3, 2, 4, 5])).spent).toBe(100);
+    expect(seasonSquadSummary(picks([3, 2, 4, 5])).complete).toBe(false);
+    expect(seasonSquadSummary(picks([1, 3, 5, 7])).spent).toBe(100);
+    expect(seasonSquadSummary(picks([1, 3, 5, 7])).complete).toBe(false);
+  });
+
+  it("preserves valid old 18-team picks for adjustment after repricing", () => {
+    const old = { version: LEGACY_SEASON_PRICING_VERSION, name: "Existing squad", teamIds: picks([0, 6, 4, 8]).map(t => t.id) };
+    const migrated = parseSeasonDraft(JSON.stringify(old), seasonTeams);
+    expect(migrated.teamIds).toEqual(old.teamIds);
+    expect(migrated.version).toBe(seasonPricing.version);
+    expect(seasonSquadSummary(picks([0, 6, 4, 8])).remaining).toBe(-16);
+    expect(seasonSquadSummary(picks([0, 6, 4, 8])).complete).toBe(false);
+    expect(() => parseSeasonDraft(JSON.stringify({ ...migrated }), seasonTeams)).toThrow();
   });
 
   it("pools records instead of averaging team percentages", () => {
@@ -82,6 +102,7 @@ describe("college basketball season preview", () => {
       { ...draft, teamIds: [draft.teamIds[0], draft.teamIds[0]] },
       { ...draft, teamIds: picks([3, 6, 4, 5]).map(t => t.id) },
       { ...draft, teamIds: picks([4, 0, 0, 0]).map(t => t.id) }, null,
+      { ...draft, teamIds: picks([1, 3, 5, 7]).map(t => t.id) },
     ]) expect(() => parseSeasonDraft(JSON.stringify(invalid), seasonTeams)).toThrow();
     expect(() => parseSeasonDraft("not json", seasonTeams)).toThrow();
   });

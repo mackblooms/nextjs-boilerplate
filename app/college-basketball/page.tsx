@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import CompetitionSwitcher from "../components/CompetitionSwitcher";
 import { seasonTeams } from "@/lib/cbbSeasonTeams";
+import { seasonPricing } from "@/lib/cbbSeason";
 import SeasonSquadBuilder from "./SeasonSquadBuilder";
 import styles from "./season.module.css";
 
@@ -15,9 +16,9 @@ export default function CollegeBasketballPage() {
     <section className={styles.hero}>
       <div><span className={styles.eyebrow}>2026–27 · season squad builder</span>
         <h1>A whole season.<br /><span>Your squad.</span></h1>
-        <p>Find your favorites. Back the overlooked. Build a squad with 100 points and follow every win and loss through conference tournaments.</p>
+        <p>Find your favorites. Back the overlooked. Pick {seasonPricing.squadSize} teams with 100 points and follow every win and loss through conference tournaments.</p>
       </div>
-      <div className={styles.heroStat}><strong>100</strong><span>points to build with</span><small>15–18 teams · one combined record</small></div>
+      <div className={styles.heroStat}><strong>100</strong><span>points to build with</span><small>Exactly {seasonPricing.squadSize} teams · one combined record</small></div>
     </section>
     <SeasonSquadBuilder teams={seasonTeams} />
   </div>;
