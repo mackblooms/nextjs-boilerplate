@@ -1,0 +1,11 @@
+{
+  "version": "2027-balance-preview-v1",
+  "season": "2026-27",
+  "budget": 100,
+  "bands": [
+    { "id": "elite", "label": "Elite", "cost": 12, "minimumPercentage": 0.75, "min": 0, "max": 3 },
+    { "id": "contender", "label": "Contender", "cost": 8, "minimumPercentage": 0.625, "min": 0, "max": 6 },
+    { "id": "value", "label": "Value", "cost": 7, "minimumPercentage": 0.5, "min": 4, "max": 10 },
+    { "id": "longshot", "label": "Long shot", "cost": 3, "minimumPercentage": 0, "min": 5, "max": 8 }
+  ]
+}

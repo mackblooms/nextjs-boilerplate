@@ -37,6 +37,19 @@ export const competitions: Competition[] = [
   },
 ];
 
+// Preview navigation only: keep unfinished season drafts out of tournament APIs.
+export const seasonPreview = {
+  slug: "college-basketball",
+  sport: "NCAAB · season",
+  shortName: "college basketball season",
+  description: "build a 100-point squad and explore season-long college basketball.",
+  href: "/college-basketball",
+  status: "preview",
+  statusLabel: "preview",
+} as const;
+
+export const competitionChoices = [...competitions, seasonPreview];
+
 export function getCompetition(slug: CompetitionSlug) {
   return competitions.find((competition) => competition.slug === slug)!;
 }

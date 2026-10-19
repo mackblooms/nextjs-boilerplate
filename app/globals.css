@@ -1898,7 +1898,7 @@ textarea::placeholder {
 
 .competition-switcher-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -5595,7 +5595,7 @@ body:not(.is-native-app-shell) .match-search-input {
 .web-sport-rail {
   min-width: min(420px, 100%);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
   justify-content: center;
   gap: 6px;

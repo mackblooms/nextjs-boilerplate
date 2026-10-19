@@ -67,7 +67,8 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
     pathname.startsWith("/login/reset-password");
   const isAdminWorkspaceRoute = pathname.startsWith("/cbb/player-projections");
   const isPublicPlayerRoute = pathname === "/cbb/players" || pathname.startsWith("/cbb/players/");
-  const skipProfileGate = isAdminWorkspaceRoute || isPublicPlayerRoute;
+  const isSeasonPreviewRoute = pathname === "/college-basketball";
+  const skipProfileGate = isAdminWorkspaceRoute || isPublicPlayerRoute || isSeasonPreviewRoute;
   const queryString = searchParams.toString();
   const redirectTarget = useMemo(
     () => getProfileRedirect(pathname, queryString),

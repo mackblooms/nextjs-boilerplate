@@ -20,7 +20,8 @@ import {
 import { getStoredActiveCompetition, setStoredActiveCompetition } from "../../lib/activeCompetition";
 import { withAvatarFallback } from "../../lib/avatar";
 import {
-  competitions,
+  competitionChoices,
+  seasonPreview,
   competitionPath,
   getCompetition,
   normalizeCompetitionSlug,
@@ -248,13 +249,14 @@ export default function AppTopNav() {
   }, [pathname]);
 
   const explicitCompetition = searchParams.get("competition");
+  const isSeasonPreview = pathname === seasonPreview.href;
   const competitionSlug =
     pathname === "/world-cup"
       ? "world-cup"
       : explicitCompetition
         ? normalizeCompetitionSlug(explicitCompetition)
         : storedCompetitionSlug;
-  const isHomeRoute = pathname === "/" || pathname === "/world-cup";
+  const isHomeRoute = pathname === "/" || pathname === "/world-cup" || isSeasonPreview;
 
   useEffect(() => {
     setIsNativeApp(Capacitor.isNativePlatform());
@@ -267,17 +269,17 @@ export default function AppTopNav() {
 
   useEffect(() => {
     if (!isNativeApp) return;
-    if (pathname !== "/" && pathname !== "/world-cup") return;
+    if (!isHomeRoute) return;
 
     const activeSport = sportRailRef.current?.querySelector<HTMLElement>(
-      `[data-sport-slug="${competitionSlug}"]`
+      `[data-sport-slug="${isSeasonPreview ? seasonPreview.slug : competitionSlug}"]`
     );
     activeSport?.scrollIntoView({
       behavior: "smooth",
       inline: "center",
       block: "nearest",
     });
-  }, [competitionSlug, isNativeApp, pathname]);
+  }, [competitionSlug, isNativeApp, isHomeRoute, isSeasonPreview]);
 
   useEffect(() => {
     let canceled = false;
@@ -663,6 +665,10 @@ export default function AppTopNav() {
   function openHowItWorksModal() {
     setDrawerOpen(false);
     setHelpOpen(false);
+    if (isSeasonPreview) {
+      router.push(`${seasonPreview.href}#season-rules`);
+      return;
+    }
     window.dispatchEvent(new CustomEvent("bb:open-how-it-works"));
   }
 
@@ -670,13 +676,14 @@ export default function AppTopNav() {
 
   const resolvedAvatarUrl = withAvatarFallback(userId, profileAvatarUrl);
   const competition = getCompetition(competitionSlug);
+  const homeHref = isSeasonPreview ? seasonPreview.href : competition.href;
   const activePoolPathId = poolIdFromPath ?? activePoolId;
   const activePoolBasePath =
     activePoolPathId && (!activePool || normalizeCompetitionSlug(activePool.competition_slug) === competitionSlug)
       ? `/pool/${activePoolPathId}`
       : null;
 
-  const isHomeActive = pathname === "/" || pathname === competition.href;
+  const isHomeActive = isSeasonPreview || pathname === "/" || pathname === competition.href;
   const isDraftsActive = pathname === "/drafts" || pathname.startsWith("/drafts/");
   const isPoolsActive = pathname === "/pools" || pathname.startsWith("/pools/");
   const isSportsActive = pathname === "/sports";
@@ -697,7 +704,7 @@ export default function AppTopNav() {
       !isAdminActive
     : false;
 
-  const dockItems = [
+  const tournamentDockItems = [
     { key: "home", label: "Home", href: competition.href, isActive: isHomeActive, Icon: HomeIcon },
     {
       key: "drafts",
@@ -722,7 +729,14 @@ export default function AppTopNav() {
       Icon: PodiumIcon,
     },
   ];
-  const primaryMenuItems = [
+  const dockItems = isSeasonPreview ? [
+    { key: "home", label: "Season", href: homeHref, isActive: true, Icon: HomeIcon },
+    { key: "teams", label: "Teams", href: `${homeHref}#season-teams`, isActive: false, Icon: ChecklistIcon },
+    { key: "squad", label: "My squad", href: `${homeHref}#season-squad`, isActive: false, Icon: GroupIcon },
+    { key: "rules", label: "Rules", href: `${homeHref}#season-rules`, isActive: false, Icon: BracketIcon },
+    { key: "sports", label: "Sports", href: "/sports", isActive: false, Icon: PodiumIcon },
+  ] : tournamentDockItems;
+  const tournamentMenuItems = [
     { label: "Home", href: competition.href, isActive: isHomeActive },
     { label: "Sports", href: "/sports", isActive: isSportsActive },
     { label: "Drafts", href: competitionPath("/drafts", competitionSlug), isActive: isDraftsActive },
@@ -738,6 +752,10 @@ export default function AppTopNav() {
       isActive: isLeaderboardActive,
     },
   ];
+
+  const primaryMenuItems = isSeasonPreview
+    ? dockItems.map(item => ({ label: item.label, href: item.href, isActive: item.isActive }))
+    : tournamentMenuItems;
 
   const settledActiveIndex = Math.max(0, dockItems.findIndex((item) => item.isActive));
   const emphasizedIndex = scrubActive && scrubIndex !== null ? scrubIndex : settledActiveIndex;
@@ -883,7 +901,7 @@ export default function AppTopNav() {
           </UiTooltip>
 
           <Link
-            href={competition.href}
+            href={homeHref}
             aria-label="Go to bracketball home"
             className={`${isNativeApp ? "app-glass-header-logo" : ""} app-shell-brand`}
             style={{
@@ -905,7 +923,7 @@ export default function AppTopNav() {
             <span className="app-shell-brand-copy" aria-hidden="true">
               <strong>bracketball</strong>
               <span>
-                {activePool ? `${competition.shortName} / ${activePool.name}` : `${competition.shortName} / dashboard`}
+                {isSeasonPreview ? "college basketball / season preview" : activePool ? `${competition.shortName} / ${activePool.name}` : `${competition.shortName} / dashboard`}
               </span>
             </span>
           </Link>
@@ -956,8 +974,8 @@ export default function AppTopNav() {
             aria-label="Sports"
           >
             <div className={isNativeApp ? "app-sport-rail" : "web-sport-rail"}>
-              {competitions.map((sportCompetition) => {
-                const isSelected = sportCompetition.slug === competitionSlug;
+              {competitionChoices.map((sportCompetition) => {
+                const isSelected = isSeasonPreview ? sportCompetition.slug === seasonPreview.slug : sportCompetition.slug === competitionSlug;
                 const sportHref =
                   sportCompetition.slug === "march-madness"
                     ? "/?competition=march-madness"
@@ -972,12 +990,14 @@ export default function AppTopNav() {
                     aria-current={isSelected ? "page" : undefined}
                     className={isNativeApp ? "app-sport-rail-link" : "web-sport-rail-link"}
                     onClick={() => {
-                      setStoredCompetitionSlug(sportCompetition.slug);
-                      setStoredActiveCompetition(sportCompetition.slug);
+                      if (sportCompetition.slug !== "college-basketball") {
+                        setStoredCompetitionSlug(sportCompetition.slug);
+                        setStoredActiveCompetition(sportCompetition.slug);
+                      }
                     }}
                   >
                     <span>{sportCompetition.sport}</span>
-                    <strong>{sportCompetition.shortName}</strong>
+                    <strong>{sportCompetition.slug === "college-basketball" ? "college season" : sportCompetition.shortName}</strong>
                   </Link>
                 );
               })}

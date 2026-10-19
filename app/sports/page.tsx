@@ -8,7 +8,7 @@ export default function SportsPage() {
         <span className="competition-switcher-eyebrow">bracketball</span>
         <h1 className="page-title">choose your sport.</h1>
         <p className="page-subtitle">
-          each tournament has its own drafts, pools, scoring, and live competition.
+          choose a tournament, or build a squad for the whole college basketball season.
         </p>
       </section>
       <CompetitionSwitcher />
