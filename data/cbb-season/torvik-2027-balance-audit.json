@@ -1,0 +1,3881 @@
+{
+  "sourceSha256": "991c60428f5d814b1d31677850df75841d94f12f67640905113c9ad561176bfe",
+  "cutoffs": [
+    0.75,
+    0.625,
+    0.5,
+    0
+  ],
+  "search": {
+    "tested": 78720,
+    "eligible": 5243,
+    "bounds": "Elite price 8-12, Contender 6-10, Value 4-7, Long shot 2-4; strictly descending prices; min Value 3-6, Long shot 2-6; max Elite 2/3, Contender 4/5/6, Value 8/10, Long shot 6/8",
+    "eligibility": "At least 5 band-count combinations; all squads 15-18 via band limits; sizes 15,16,17 all available",
+    "selection": "Lowest nominal frontier spread among searched candidates with at least 10 band-count combinations and size 18 available"
+  },
+  "baseline": {
+    "name": "Previous candidate",
+    "prices": [
+      10,
+      8,
+      6,
+      4
+    ],
+    "min": [
+      0,
+      0,
+      4,
+      3
+    ],
+    "max": [
+      2,
+      5,
+      8,
+      6
+    ],
+    "legalBandCombinations": 12,
+    "frontier": [
+      {
+        "counts": [
+          2,
+          5,
+          4,
+          4
+        ],
+        "size": 15,
+        "wins": 301,
+        "losses": 161,
+        "winPercentage": 0.6515151515151515,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          5,
+          5,
+          5
+        ],
+        "size": 16,
+        "wins": 308,
+        "losses": 183,
+        "winPercentage": 0.6272912423625254,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          6
+        ],
+        "size": 17,
+        "wins": 314,
+        "losses": 206,
+        "winPercentage": 0.6038461538461538,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      }
+    ],
+    "spread": 0.04766899766899768,
+    "shapes": [
+      {
+        "counts": [
+          0,
+          4,
+          8,
+          5
+        ],
+        "size": 17,
+        "wins": 311,
+        "losses": 206,
+        "winPercentage": 0.6015473887814313,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          0,
+          5,
+          6,
+          6
+        ],
+        "size": 17,
+        "wins": 313,
+        "losses": 207,
+        "winPercentage": 0.6019230769230769,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          0,
+          5,
+          8,
+          3
+        ],
+        "size": 16,
+        "wins": 304,
+        "losses": 183,
+        "winPercentage": 0.6242299794661191,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "Washington",
+          "UTEP",
+          "Colorado"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          6
+        ],
+        "size": 17,
+        "wins": 314,
+        "losses": 206,
+        "winPercentage": 0.6038461538461538,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          4,
+          7,
+          4
+        ],
+        "size": 16,
+        "wins": 306,
+        "losses": 182,
+        "winPercentage": 0.6270491803278688,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          5,
+          5,
+          5
+        ],
+        "size": 16,
+        "wins": 308,
+        "losses": 183,
+        "winPercentage": 0.6272912423625254,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          2,
+          1,
+          8,
+          6
+        ],
+        "size": 17,
+        "wins": 313,
+        "losses": 208,
+        "winPercentage": 0.6007677543186181,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          2,
+          2,
+          8,
+          4
+        ],
+        "size": 16,
+        "wins": 306,
+        "losses": 184,
+        "winPercentage": 0.6244897959183674,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St."
+        ]
+      },
+      {
+        "counts": [
+          2,
+          3,
+          6,
+          5
+        ],
+        "size": 16,
+        "wins": 307,
+        "losses": 184,
+        "winPercentage": 0.6252545824847251,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          2,
+          4,
+          4,
+          6
+        ],
+        "size": 16,
+        "wins": 308,
+        "losses": 184,
+        "winPercentage": 0.6260162601626016,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          2,
+          4,
+          6,
+          3
+        ],
+        "size": 15,
+        "wins": 299,
+        "losses": 160,
+        "winPercentage": 0.6514161220043573,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado"
+        ]
+      },
+      {
+        "counts": [
+          2,
+          5,
+          4,
+          4
+        ],
+        "size": 15,
+        "wins": 301,
+        "losses": 161,
+        "winPercentage": 0.6515151515151515,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St."
+        ]
+      }
+    ]
+  },
+  "recommended": {
+    "prices": [
+      12,
+      8,
+      7,
+      3
+    ],
+    "min": [
+      0,
+      0,
+      4,
+      5
+    ],
+    "max": [
+      3,
+      6,
+      10,
+      8
+    ],
+    "legalBandCombinations": 11,
+    "frontier": [
+      {
+        "counts": [
+          3,
+          0,
+          7,
+          5
+        ],
+        "size": 15,
+        "wins": 282,
+        "losses": 178,
+        "winPercentage": 0.6130434782608696,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Grand Canyon",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          5
+        ],
+        "size": 16,
+        "wins": 299,
+        "losses": 190,
+        "winPercentage": 0.6114519427402862,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          4,
+          5,
+          7
+        ],
+        "size": 17,
+        "wins": 315,
+        "losses": 206,
+        "winPercentage": 0.6046065259117083,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle"
+        ]
+      },
+      {
+        "counts": [
+          0,
+          6,
+          4,
+          8
+        ],
+        "size": 18,
+        "wins": 330,
+        "losses": 224,
+        "winPercentage": 0.5956678700361011,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "New Mexico",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle",
+          "Cal Poly"
+        ]
+      }
+    ],
+    "spread": 0.01737560822476847,
+    "shapes": [
+      {
+        "counts": [
+          0,
+          2,
+          9,
+          7
+        ],
+        "size": 18,
+        "wins": 315,
+        "losses": 234,
+        "winPercentage": 0.5737704918032787,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "West Virginia",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle"
+        ]
+      },
+      {
+        "counts": [
+          0,
+          5,
+          6,
+          6
+        ],
+        "size": 17,
+        "wins": 313,
+        "losses": 207,
+        "winPercentage": 0.6019230769230769,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          0,
+          6,
+          4,
+          8
+        ],
+        "size": 18,
+        "wins": 330,
+        "losses": 224,
+        "winPercentage": 0.5956678700361011,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "New Mexico",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle",
+          "Cal Poly"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          0,
+          10,
+          6
+        ],
+        "size": 17,
+        "wins": 300,
+        "losses": 218,
+        "winPercentage": 0.5791505791505791,
+        "teams": [
+          "High Point",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "West Virginia",
+          "TCU",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          1,
+          8,
+          8
+        ],
+        "size": 18,
+        "wins": 317,
+        "losses": 234,
+        "winPercentage": 0.5753176043557169,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle",
+          "Cal Poly"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          5
+        ],
+        "size": 16,
+        "wins": 299,
+        "losses": 190,
+        "winPercentage": 0.6114519427402862,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          4,
+          5,
+          7
+        ],
+        "size": 17,
+        "wins": 315,
+        "losses": 206,
+        "winPercentage": 0.6046065259117083,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle"
+        ]
+      },
+      {
+        "counts": [
+          2,
+          2,
+          6,
+          6
+        ],
+        "size": 16,
+        "wins": 300,
+        "losses": 192,
+        "winPercentage": 0.6097560975609756,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          2,
+          3,
+          4,
+          8
+        ],
+        "size": 17,
+        "wins": 316,
+        "losses": 208,
+        "winPercentage": 0.6030534351145038,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle",
+          "Cal Poly"
+        ]
+      },
+      {
+        "counts": [
+          3,
+          0,
+          7,
+          5
+        ],
+        "size": 15,
+        "wins": 282,
+        "losses": 178,
+        "winPercentage": 0.6130434782608696,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Grand Canyon",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          3,
+          1,
+          5,
+          7
+        ],
+        "size": 16,
+        "wins": 299,
+        "losses": 194,
+        "winPercentage": 0.6064908722109533,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Grand Canyon",
+          "Saint Mary's",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St.",
+          "La Salle"
+        ]
+      }
+    ],
+    "name": "Broader-choice rebalance candidate"
+  },
+  "narrowest": {
+    "prices": [
+      12,
+      8,
+      7,
+      3
+    ],
+    "min": [
+      0,
+      0,
+      4,
+      5
+    ],
+    "max": [
+      3,
+      5,
+      10,
+      6
+    ],
+    "legalBandCombinations": 5,
+    "frontier": [
+      {
+        "counts": [
+          3,
+          0,
+          7,
+          5
+        ],
+        "size": 15,
+        "wins": 282,
+        "losses": 178,
+        "winPercentage": 0.6130434782608696,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Grand Canyon",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          5
+        ],
+        "size": 16,
+        "wins": 299,
+        "losses": 190,
+        "winPercentage": 0.6114519427402862,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          0,
+          5,
+          6,
+          6
+        ],
+        "size": 17,
+        "wins": 313,
+        "losses": 207,
+        "winPercentage": 0.6019230769230769,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      }
+    ],
+    "spread": 0.011120401337792685,
+    "shapes": [
+      {
+        "counts": [
+          0,
+          5,
+          6,
+          6
+        ],
+        "size": 17,
+        "wins": 313,
+        "losses": 207,
+        "winPercentage": 0.6019230769230769,
+        "teams": [
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Stephen F. Austin",
+          "Nebraska",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          0,
+          10,
+          6
+        ],
+        "size": 17,
+        "wins": 300,
+        "losses": 218,
+        "winPercentage": 0.5791505791505791,
+        "teams": [
+          "High Point",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Baylor",
+          "West Virginia",
+          "TCU",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          1,
+          3,
+          7,
+          5
+        ],
+        "size": 16,
+        "wins": 299,
+        "losses": 190,
+        "winPercentage": 0.6114519427402862,
+        "teams": [
+          "High Point",
+          "Saint Mary's",
+          "Akron",
+          "Kansas",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      },
+      {
+        "counts": [
+          2,
+          2,
+          6,
+          6
+        ],
+        "size": 16,
+        "wins": 300,
+        "losses": 192,
+        "winPercentage": 0.6097560975609756,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Saint Mary's",
+          "Akron",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis",
+          "Fresno St."
+        ]
+      },
+      {
+        "counts": [
+          3,
+          0,
+          7,
+          5
+        ],
+        "size": 15,
+        "wins": 282,
+        "losses": 178,
+        "winPercentage": 0.6130434782608696,
+        "teams": [
+          "High Point",
+          "Duke",
+          "Grand Canyon",
+          "Boise St.",
+          "Western Carolina",
+          "Arkansas St.",
+          "Marist",
+          "Oregon",
+          "Maryland",
+          "Auburn",
+          "Washington",
+          "UTEP",
+          "Colorado",
+          "Penn St.",
+          "Memphis"
+        ]
+      }
+    ]
+  },
+  "top20": [
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        5
+      ],
+      "max": [
+        3,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        5
+      ],
+      "max": [
+        3,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        5
+      ],
+      "max": [
+        3,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        5
+      ],
+      "max": [
+        3,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        5
+      ],
+      "max": [
+        3,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        5
+      ],
+      "max": [
+        3,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            3,
+            0,
+            7,
+            5
+          ],
+          "size": 15,
+          "wins": 282,
+          "losses": 178,
+          "winPercentage": 0.6130434782608696,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Grand Canyon",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.011120401337792685
+    },
+    {
+      "prices": [
+        11,
+        10,
+        5,
+        4
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        3
+      ],
+      "max": [
+        2,
+        6,
+        8,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            0,
+            6,
+            4,
+            5
+          ],
+          "size": 15,
+          "wins": 285,
+          "losses": 176,
+          "winPercentage": 0.6182212581344902,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "New Mexico",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "size": 16,
+          "wins": 300,
+          "losses": 190,
+          "winPercentage": 0.6122448979591837,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            6
+          ],
+          "size": 17,
+          "wins": 314,
+          "losses": 206,
+          "winPercentage": 0.6038461538461538,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.014375104288336438
+    },
+    {
+      "prices": [
+        11,
+        10,
+        5,
+        4
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        4
+      ],
+      "max": [
+        2,
+        6,
+        8,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            0,
+            6,
+            4,
+            5
+          ],
+          "size": 15,
+          "wins": 285,
+          "losses": 176,
+          "winPercentage": 0.6182212581344902,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "New Mexico",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "size": 16,
+          "wins": 300,
+          "losses": 190,
+          "winPercentage": 0.6122448979591837,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            6
+          ],
+          "size": 17,
+          "wins": 314,
+          "losses": 206,
+          "winPercentage": 0.6038461538461538,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.014375104288336438
+    },
+    {
+      "prices": [
+        11,
+        10,
+        5,
+        4
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        5
+      ],
+      "max": [
+        2,
+        6,
+        8,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            0,
+            6,
+            4,
+            5
+          ],
+          "size": 15,
+          "wins": 285,
+          "losses": 176,
+          "winPercentage": 0.6182212581344902,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "New Mexico",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "size": 16,
+          "wins": 300,
+          "losses": 190,
+          "winPercentage": 0.6122448979591837,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            6
+          ],
+          "size": 17,
+          "wins": 314,
+          "losses": 206,
+          "winPercentage": 0.6038461538461538,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.014375104288336438
+    },
+    {
+      "prices": [
+        11,
+        10,
+        5,
+        4
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        4
+      ],
+      "max": [
+        3,
+        6,
+        8,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            0,
+            6,
+            4,
+            5
+          ],
+          "size": 15,
+          "wins": 285,
+          "losses": 176,
+          "winPercentage": 0.6182212581344902,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "New Mexico",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "size": 16,
+          "wins": 300,
+          "losses": 190,
+          "winPercentage": 0.6122448979591837,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            6
+          ],
+          "size": 17,
+          "wins": 314,
+          "losses": 206,
+          "winPercentage": 0.6038461538461538,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.014375104288336438
+    },
+    {
+      "prices": [
+        11,
+        10,
+        5,
+        4
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        5
+      ],
+      "max": [
+        3,
+        6,
+        8,
+        6
+      ],
+      "legalBandCombinations": 5,
+      "frontier": [
+        {
+          "counts": [
+            0,
+            6,
+            4,
+            5
+          ],
+          "size": 15,
+          "wins": 285,
+          "losses": 176,
+          "winPercentage": 0.6182212581344902,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "New Mexico",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            1,
+            4,
+            5,
+            6
+          ],
+          "size": 16,
+          "wins": 300,
+          "losses": 190,
+          "winPercentage": 0.6122448979591837,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            6
+          ],
+          "size": 17,
+          "wins": 314,
+          "losses": 206,
+          "winPercentage": 0.6038461538461538,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.014375104288336438
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        4
+      ],
+      "max": [
+        3,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 7,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        4
+      ],
+      "max": [
+        3,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 7,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        4
+      ],
+      "max": [
+        3,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 7,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        4
+      ],
+      "max": [
+        3,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 7,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        4,
+        4
+      ],
+      "max": [
+        2,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 6,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        4
+      ],
+      "max": [
+        2,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 6,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        4
+      ],
+      "max": [
+        2,
+        5,
+        10,
+        6
+      ],
+      "legalBandCombinations": 6,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        5,
+        4
+      ],
+      "max": [
+        2,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 6,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    },
+    {
+      "prices": [
+        12,
+        8,
+        7,
+        3
+      ],
+      "min": [
+        0,
+        0,
+        6,
+        4
+      ],
+      "max": [
+        2,
+        6,
+        10,
+        6
+      ],
+      "legalBandCombinations": 6,
+      "frontier": [
+        {
+          "counts": [
+            2,
+            1,
+            8,
+            4
+          ],
+          "size": 15,
+          "wins": 283,
+          "losses": 176,
+          "winPercentage": 0.616557734204793,
+          "teams": [
+            "High Point",
+            "Duke",
+            "Saint Mary's",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Baylor",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St."
+          ]
+        },
+        {
+          "counts": [
+            1,
+            3,
+            7,
+            5
+          ],
+          "size": 16,
+          "wins": 299,
+          "losses": 190,
+          "winPercentage": 0.6114519427402862,
+          "teams": [
+            "High Point",
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Auburn",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis"
+          ]
+        },
+        {
+          "counts": [
+            0,
+            5,
+            6,
+            6
+          ],
+          "size": 17,
+          "wins": 313,
+          "losses": 207,
+          "winPercentage": 0.6019230769230769,
+          "teams": [
+            "Saint Mary's",
+            "Akron",
+            "Kansas",
+            "Stephen F. Austin",
+            "Nebraska",
+            "Boise St.",
+            "Western Carolina",
+            "Arkansas St.",
+            "Marist",
+            "Oregon",
+            "Maryland",
+            "Washington",
+            "UTEP",
+            "Colorado",
+            "Penn St.",
+            "Memphis",
+            "Fresno St."
+          ]
+        }
+      ],
+      "spread": 0.01463465728171609
+    }
+  ],
+  "probes": {
+    "baseline": [
+      {
+        "band": 0,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6471861471861472
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6252545824847251
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6019230769230769
+          }
+        ],
+        "spread": 0.045263070263070304
+      },
+      {
+        "band": 0,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6558441558441559
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6300813008130082
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6057692307692307
+          }
+        ],
+        "spread": 0.05007492507492517
+      },
+      {
+        "band": 1,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6427015250544662
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6204081632653061
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5988483685220729
+          }
+        ],
+        "spread": 0.0438531565323933
+      },
+      {
+        "band": 1,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6623376623376623
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6374745417515275
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6115384615384616
+          }
+        ],
+        "spread": 0.05079920079920075
+      },
+      {
+        "band": 2,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6428571428571429
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6178861788617886
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5903846153846154
+          }
+        ],
+        "spread": 0.05247252747252751
+      },
+      {
+        "band": 2,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.664488017429194
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6413934426229508
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6173076923076923
+          }
+        ],
+        "spread": 0.04718032512150161
+      },
+      {
+        "band": 3,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.644880174291939
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6188524590163934
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5923076923076923
+          }
+        ],
+        "spread": 0.05257248198424669
+      },
+      {
+        "band": 3,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6601731601731602
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6382113821138211
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6153846153846154
+          }
+        ],
+        "spread": 0.04478854478854477
+      }
+    ],
+    "recommended": [
+      {
+        "band": 0,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6065217391304348
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6094069529652352
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6026871401151631
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.5956678700361011
+          }
+        ],
+        "spread": 0.013739082929134061
+      },
+      {
+        "band": 0,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6195652173913043
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6138211382113821
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6068702290076335
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.5956678700361011
+          }
+        ],
+        "spread": 0.023897347355203213
+      },
+      {
+        "band": 1,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6130434782608696
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6056910569105691
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5973282442748091
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.5848375451263538
+          }
+        ],
+        "spread": 0.028205933134515804
+      },
+      {
+        "band": 1,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6130434782608696
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6175869120654397
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6122840690978887
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.6064981949458483
+          }
+        ],
+        "spread": 0.011088717119591363
+      },
+      {
+        "band": 2,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.5978260869565217
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.5975609756097561
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5954198473282443
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.5884476534296029
+          }
+        ],
+        "spread": 0.009378433526918806
+      },
+      {
+        "band": 2,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6282608695652174
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6257668711656442
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6142034548944337
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.6028880866425993
+          }
+        ],
+        "spread": 0.02537278292261813
+      },
+      {
+        "band": 3,
+        "delta": -1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6021739130434782
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6012269938650306
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.5911708253358925
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.5812274368231047
+          }
+        ],
+        "spread": 0.02094647622037349
+      },
+      {
+        "band": 3,
+        "delta": 1,
+        "frontier": [
+          {
+            "size": 15,
+            "winPercentage": 0.6239130434782608
+          },
+          {
+            "size": 16,
+            "winPercentage": 0.6219512195121951
+          },
+          {
+            "size": 17,
+            "winPercentage": 0.6183206106870229
+          },
+          {
+            "size": 18,
+            "winPercentage": 0.6101083032490975
+          }
+        ],
+        "spread": 0.013804740229163337
+      }
+    ]
+  },
+  "caveats": [
+    "Selected on one projection snapshot; not out-of-sample validation",
+    "Integer projected record ratios, not outcome simulations",
+    "Stress probes are hypothetical band-wide forecast shifts, not likelihood estimates",
+    "No live pricing or rule changes",
+    "Not an exhaustive search over all possible pricing systems"
+  ]
+}

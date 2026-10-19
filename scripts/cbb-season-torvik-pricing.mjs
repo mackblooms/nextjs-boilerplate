@@ -1,6 +1,7 @@
 // Offline planning artifacts only. Reads the reviewed PDF transcription, never live data.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { candidates, enumerate } from './cbb-season-pricing-audit.mjs';
+import { assignBands, strongestSquad } from './cbb-season-pricing-model.mjs';
 
 const source = JSON.parse(readFileSync(new URL('../data/cbb-season/torvik-2027-projections.json', import.meta.url)));
 const names = ['Elite', 'Contender', 'Value', 'Long shot'];
@@ -27,32 +28,7 @@ for (const [index, team] of source.teams.entries()) {
 }
 
 function assign(minimums) {
-  return source.teams.map(t => {
-    const games = t.projectedWins + t.projectedLosses;
-    const winPercentage = t.projectedWins / games;
-    return { ...t, games, winPercentage, bandIndex: minimums.findIndex(min => winPercentage >= min) };
-  });
-}
-
-// Fractional programming: for each fixed band-count shape, maximize W - ratio*G,
-// then update ratio to W/G. Sorting within each band solves that subproblem exactly.
-// This optimizes the displayed-record proxy; it does not simulate a season.
-function strongestSquad(teams, shape) {
-  let ratio = 0;
-  for (let iteration = 0; iteration < 100; iteration++) {
-    const picks = names.flatMap((_, band) => teams.filter(t => t.bandIndex === band)
-      .sort((a, b) => (b.projectedWins - ratio * b.games) - (a.projectedWins - ratio * a.games) || a.rank - b.rank)
-      .slice(0, shape.counts[band]));
-    if (picks.length !== shape.size) throw new Error('Insufficient teams for shape');
-    const wins = picks.reduce((sum, t) => sum + t.projectedWins, 0);
-    const losses = picks.reduce((sum, t) => sum + t.projectedLosses, 0);
-    const next = wins / (wins + losses);
-    if (Math.abs(next - ratio) < 1e-12) {
-      return { counts: shape.counts, size: shape.size, wins, losses, winPercentage: next, teams: picks.map(t => t.team) };
-    }
-    ratio = next;
-  }
-  throw new Error('Ratio optimization failed to converge');
+  return assignBands(source.teams, minimums);
 }
 
 const analysis = boundaries.map(boundary => {
