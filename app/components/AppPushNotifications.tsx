@@ -74,6 +74,7 @@ export default function AppPushNotifications() {
     if (!Capacitor.isNativePlatform()) return;
 
     let isMounted = true;
+    let authRegistrationTimer: ReturnType<typeof setTimeout> | undefined;
     let registrationHandle: { remove: () => Promise<void> } | null = null;
     let registrationErrorHandle: { remove: () => Promise<void> } | null = null;
     let actionHandle: { remove: () => Promise<void> } | null = null;
@@ -111,12 +112,18 @@ export default function AppPushNotifications() {
     void setup();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) return;
-      void bootstrapPushRegistration().catch(() => {});
+      clearTimeout(authRegistrationTimer);
+      if (!session || !isMounted) return;
+      // getSession inside the callback can deadlock the shared auth client on
+      // native startup. Wait until the auth notification has released its lock.
+      authRegistrationTimer = setTimeout(() => {
+        if (isMounted) void bootstrapPushRegistration().catch(() => {});
+      }, 0);
     });
 
     return () => {
       isMounted = false;
+      clearTimeout(authRegistrationTimer);
       subscription.subscription.unsubscribe();
       void registrationHandle?.remove();
       void registrationErrorHandle?.remove();

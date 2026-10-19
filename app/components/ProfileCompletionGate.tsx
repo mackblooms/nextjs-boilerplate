@@ -83,6 +83,7 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
 
   useEffect(() => {
     let canceled = false;
+    let authCheckTimer: ReturnType<typeof setTimeout> | undefined;
 
     async function checkProfile(showChecking = false) {
       if (showChecking && !hasCheckedRef.current) {
@@ -150,7 +151,11 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
     void checkProfile(true);
 
     const { data: authSubscription } = supabase.auth.onAuthStateChange(() => {
-      void checkProfile();
+      // Supabase auth requests must run after the auth callback releases its lock.
+      clearTimeout(authCheckTimer);
+      authCheckTimer = setTimeout(() => {
+        if (!canceled) void checkProfile();
+      }, 0);
     });
 
     const onProfileCompleted = () => {
@@ -161,6 +166,7 @@ export default function ProfileCompletionGate({ children }: { children: ReactNod
 
     return () => {
       canceled = true;
+      clearTimeout(authCheckTimer);
       authSubscription.subscription.unsubscribe();
       window.removeEventListener(PROFILE_COMPLETED_EVENT, onProfileCompleted);
     };

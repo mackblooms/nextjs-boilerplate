@@ -23,6 +23,8 @@ import { normalizeWorldCupTeamKey } from "@/lib/worldCupTeamAliases";
 import WorldCupTeamLabel from "@/app/components/WorldCupTeamLabel";
 import {
   UiEmptyState,
+  UiErrorState,
+  UiButton,
   UiLoadingState,
   UiStatus,
   UiTooltip,
@@ -838,6 +840,7 @@ export function HomeContent({
   const [scoresError, setScoresError] = useState<string | null>(null);
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [homeStartupError, setHomeStartupError] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [memberPools, setMemberPools] = useState<PoolOption[]>([]);
   const [selectedPoolId, setSelectedPoolId] = useState("");
@@ -908,6 +911,11 @@ export function HomeContent({
 
   useEffect(() => {
     let canceled = false;
+
+    const startupTimer = window.setTimeout(() => {
+      if (!canceled) setHomeStartupError(true);
+    }, 15000);
+    let authRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 
     const resetAuthedHomeState = () => {
       if (canceled) return;
@@ -1025,7 +1033,14 @@ export function HomeContent({
       }
     };
 
-    void loadUserPools();
+    const refreshUserPools = () => {
+      if (canceled) return;
+      void loadUserPools().catch(() => {
+        if (!canceled) setHomeStartupError(true);
+      });
+    };
+
+    refreshUserPools();
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session?.user) {
@@ -1037,12 +1052,17 @@ export function HomeContent({
       setIsAuthenticated(true);
       setUserId(session.user.id);
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-        void loadUserPools();
+        // Auth callbacks run under the session lock. Start auth queries only
+        // after the callback returns, including when a mobile session resumes.
+        window.clearTimeout(authRefreshTimer);
+        authRefreshTimer = setTimeout(refreshUserPools, 0);
       }
     });
 
     return () => {
       canceled = true;
+      window.clearTimeout(startupTimer);
+      window.clearTimeout(authRefreshTimer);
       sub.subscription.unsubscribe();
     };
   }, [activeCompetitionSlug, competitionParam, forcedCompetitionSlug]);
@@ -2025,6 +2045,17 @@ export function HomeContent({
   };
 
   if (isAuthenticated === null) {
+    if (homeStartupError) {
+      return (
+        <div className="page-shell page-card">
+          <UiErrorState
+            title="home couldn't connect"
+            description="Your session is taking longer than expected. Check your connection and try again."
+            actions={<UiButton onClick={() => window.location.reload()}>Retry loading home</UiButton>}
+          />
+        </div>
+      );
+    }
     return <HomeLoading />;
   }
 
