@@ -231,7 +231,7 @@ export default function InstructionsModal() {
   const shouldSuppressModal = useMemo(() => {
     if (!pathname) return false;
     if (pathname.startsWith("/cbb/player-projections")) return true;
-    if (pathname === "/college-basketball") return true;
+    if (pathname === "/college-basketball" || pathname.startsWith("/college-basketball/")) return true;
     if (pathname.startsWith("/auth/callback")) return true;
     if (pathname.startsWith("/login/reset-password")) return true;
     if (pathname === "/reset-password") return true;

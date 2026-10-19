@@ -249,7 +249,8 @@ export default function AppTopNav() {
   }, [pathname]);
 
   const explicitCompetition = searchParams.get("competition");
-  const isSeasonPreview = pathname === seasonPreview.href;
+  const isSeasonPreview = pathname === seasonPreview.href || pathname.startsWith(`${seasonPreview.href}/`);
+  const isSeasonStandings = pathname.startsWith(`${seasonPreview.href}/standings`);
   const competitionSlug =
     pathname === "/world-cup"
       ? "world-cup"
@@ -730,10 +731,10 @@ export default function AppTopNav() {
     },
   ];
   const dockItems = isSeasonPreview ? [
-    { key: "home", label: "Season", href: homeHref, isActive: true, Icon: HomeIcon },
+    { key: "home", label: "Season", href: homeHref, isActive: !isSeasonStandings, Icon: HomeIcon },
     { key: "teams", label: "Teams", href: `${homeHref}#season-teams`, isActive: false, Icon: ChecklistIcon },
     { key: "squad", label: "My squad", href: `${homeHref}#season-squad`, isActive: false, Icon: GroupIcon },
-    { key: "rules", label: "Rules", href: `${homeHref}#season-rules`, isActive: false, Icon: BracketIcon },
+    { key: "standings", label: "Standings", href: `${homeHref}/standings`, isActive: isSeasonStandings, Icon: PodiumIcon },
     { key: "sports", label: "Sports", href: "/sports", isActive: false, Icon: PodiumIcon },
   ] : tournamentDockItems;
   const tournamentMenuItems = [

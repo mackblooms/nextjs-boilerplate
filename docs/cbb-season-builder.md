@@ -4,6 +4,10 @@ Route: `/college-basketball`. Reach it through the Sports page, competition card
 or the home sport rail. This is a local implementation until deployed through the
 existing Bracketball deployment workflow; it does not create a separate hosted Site.
 
+The companion `/college-basketball/standings` route is a playable, clearly labeled
+sample-league preview. See `docs/cbb-season-standings-preview.md`. It can compare a
+complete saved draft privately against fictional scores; it does not publish picks.
+
 ## Included behavior
 
 - All 365 team rows from the supplied 2027 Torvik PDF, with projected overall records.

@@ -1,4 +1,9 @@
 .page { max-width: 1320px; margin-block: 28px; }
+.seasonNav { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+.seasonNav a { padding: 10px 14px; border-radius: var(--radius-md); color: var(--muted-foreground); text-decoration: none; font-weight: 750; font-size: 13px; }
+.seasonNav a:hover { color: var(--foreground); background: var(--surface); }
+.seasonNav a[aria-current="page"] { color: var(--primary); background: var(--highlight); }
+.seasonNav a span { margin-left: 6px; font-size: 9px; border: 1px solid var(--border-color); padding: 2px 5px; border-radius: 99px; }
 .page :global(.competition-switcher) { width: 100%; }
 .page :global(.competition-switcher--compact .competition-switcher-grid) { display: flex; overflow-x: auto; max-width: none; padding-bottom: 4px; scrollbar-width: thin; }
 .page :global(.competition-choice) { flex: 0 0 175px; }
