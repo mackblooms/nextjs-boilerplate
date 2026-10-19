@@ -48,11 +48,38 @@ export function legalSeasonCompositions() {
 
 const compositions = legalSeasonCompositions();
 
-export function canCompleteSeasonSquad(selected: SeasonTeam[], allTeams: SeasonTeam[]) {
+export function seasonFinishOptions(selected: SeasonTeam[], allTeams: SeasonTeam[]) {
   const { counts, remaining } = seasonSquadSummary(selected);
-  if (remaining < 0 || selected.length > pricing.squadSize || new Set(selected.map(t => t.id)).size !== selected.length) return false;
+  if (remaining < 0 || selected.length > pricing.squadSize || new Set(selected.map(t => t.id)).size !== selected.length) return [];
   const available = pricing.bands.map((_, index) => allTeams.filter(t => t.bandIndex === index).length);
-  return compositions.some(target => target.every((count, index) => count >= counts[index] && count <= available[index]));
+  return compositions.filter(target => target.every((count, index) => count >= counts[index] && count <= available[index]));
+}
+
+export function canCompleteSeasonSquad(selected: SeasonTeam[], allTeams: SeasonTeam[]) {
+  return seasonFinishOptions(selected, allTeams).length > 0;
+}
+
+export function seasonSquadProgress(selected: SeasonTeam[], allTeams: SeasonTeam[]) {
+  const { counts } = seasonSquadSummary(selected);
+  const options = seasonFinishOptions(selected, allTeams);
+  const available = pricing.bands.map((_, i) => allTeams.filter(t => t.bandIndex === i).length);
+  // If the mix needs a swap, show one closest legal target, never impossible ranges.
+  const suggested = options.length ? null : compositions
+    .filter(target => target.every((n, i) => n <= available[i]))
+    .map(target => ({ target, removals: target.reduce((sum, n, i) => sum + Math.max(0, counts[i] - n), 0) }))
+    .sort((a, b) => a.removals - b.removals)[0]?.target ?? null;
+  const targets = options.length ? options : suggested ? [suggested] : [];
+  return {
+    options, suggested,
+    bands: pricing.bands.map((_, i) => {
+      const finishMin = targets.length ? Math.min(...targets.map(t => t[i])) : null;
+      const finishMax = targets.length ? Math.max(...targets.map(t => t[i])) : null;
+      return { picked: counts[i], finishMin, finishMax,
+        addMin: finishMin === null ? null : Math.max(0, finishMin - counts[i]),
+        addMax: finishMax === null ? null : Math.max(0, finishMax - counts[i]),
+        remove: finishMax === null ? 0 : Math.max(0, counts[i] - finishMax) };
+    }),
+  };
 }
 
 export function seasonPickBlockReason(team: SeasonTeam, selected: SeasonTeam[]) {

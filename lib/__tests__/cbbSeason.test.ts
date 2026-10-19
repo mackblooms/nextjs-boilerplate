@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LEGACY_SEASON_PRICING_VERSION, canCompleteSeasonSquad, getSeasonBand, legalSeasonCompositions, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary } from "../cbbSeason";
+import { LEGACY_SEASON_PRICING_VERSION, canCompleteSeasonSquad, getSeasonBand, legalSeasonCompositions, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadProgress, seasonSquadSummary } from "../cbbSeason";
 import { seasonTeams } from "../cbbSeasonTeams";
 import audit from "@/data/cbb-season/torvik-2027-fixed15-audit.json";
 
@@ -7,6 +7,31 @@ const groups = seasonPricing.bands.map((_, i) => seasonTeams.filter(t => t.bandI
 const picks = (counts: number[]) => counts.flatMap((n, i) => groups[i].slice(0, n));
 
 describe("college basketball season preview", () => {
+  it("tracks actual finish ranges instead of the general band caps", () => {
+    const progress = seasonSquadProgress([], seasonTeams);
+    expect(progress.options).toHaveLength(4);
+    expect(progress.bands.map(b => [b.finishMin, b.finishMax])).toEqual([[0, 3], [1, 5], [4, 6], [5, 6]]);
+    expect(progress.options.every(counts => counts.reduce((sum, n) => sum + n, 0) === 15)).toBe(true);
+  });
+
+  it("shows exact teams still needed once picks determine a single 15-team mix", () => {
+    const progress = seasonSquadProgress(picks([3, 1, 2, 2]), seasonTeams);
+    expect(progress.options).toEqual([[3, 1, 5, 6]]);
+    expect(progress.bands.map(b => [b.addMin, b.addMax, b.remove])).toEqual([[0, 0, 0], [0, 0, 0], [3, 3, 0], [4, 4, 0]]);
+    expect(progress.bands.reduce((sum, b) => sum + b.addMin!, 0)).toBe(7);
+    const complete = seasonSquadProgress(picks([3, 1, 5, 6]), seasonTeams);
+    expect(complete.bands.every(b => b.addMax === 0 && b.remove === 0)).toBe(true);
+  });
+
+  it("suggests a complete legal mix with removals when the current mix needs repair", () => {
+    const selected = picks([3, 2, 0, 0]);
+    const progress = seasonSquadProgress(selected, seasonTeams);
+    expect(progress.options).toEqual([]);
+    expect(legalSeasonCompositions()).toContainEqual(progress.suggested);
+    expect(progress.bands.reduce((sum, b) => sum + b.remove, 0)).toBe(1);
+    expect(selected.length + progress.bands.reduce((sum, b) => sum + b.addMin! - b.remove, 0)).toBe(15);
+  });
+
   it("uses the reviewed rebalance model and all 365 source teams", () => {
     expect(seasonPricing.squadSize).toBe(15);
     expect(seasonPricing.bands.map(b => b.cost)).toEqual(audit.prices);

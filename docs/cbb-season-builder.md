@@ -11,6 +11,11 @@ existing Bracketball deployment workflow; it does not create a separate hosted S
 - Proposed prices 12 / 10 / 6 / 4 and limits E 0-3, C 0-6, V 4-10, L 5-8.
 - Search, conference and band filtering, sort, selected-only view, progressive loading.
 - Add/remove picks, pooled projected record, budget and band requirement feedback.
+- A 15-spot tracker shows picks, actual final tier counts, and teams still needed
+  in each tier. Ranges cover only the full 15-team/100-point mixes compatible with
+  current picks; the expandable mix table makes their relationship explicit.
+  Once one mix remains, counts become exact. Invalid mixes get a suggested legal
+  target with explicit additions and removals instead of misleading minimums.
 - Picks are blocked by the available budget, 15-team cap and band caps. A warning
   explains when the mix needs a swap to finish at exactly 15 teams and 100 points
   with all band minimums. Completion feasibility remains advisory while building.

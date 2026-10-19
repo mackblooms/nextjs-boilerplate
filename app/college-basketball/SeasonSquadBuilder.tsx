@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { UiButton, UiCard, UiEmptyState, UiInput, UiLoadingState, UiSelect, UiStatus } from "../components/ui/primitives";
-import { SEASON_DRAFT_STORAGE_KEY, canCompleteSeasonSquad, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadSummary, type SeasonTeam } from "@/lib/cbbSeason";
+import { SEASON_DRAFT_STORAGE_KEY, parseSeasonDraft, seasonPickBlockReason, seasonPricing, seasonSquadProgress, seasonSquadSummary, type SeasonTeam } from "@/lib/cbbSeason";
 import styles from "./season.module.css";
 
 const percentage = (value: number | null) => value === null ? "—" : `${(value * 100).toFixed(2)}%`;
+const range = (min: number, max: number) => min === max ? String(min) : `${min}–${max}`;
 const normalize = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
@@ -26,7 +27,8 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
 
   const selected = useMemo(() => selectedIds.map(id => teams.find(t => t.id === id)!).filter(Boolean), [selectedIds, teams]);
   const summary = seasonSquadSummary(selected);
-  const needsRebalance = !canCompleteSeasonSquad(selected, teams);
+  const progress = seasonSquadProgress(selected, teams);
+  const needsRebalance = progress.options.length === 0;
   const canSave = summary.remaining >= 0 && summary.slotsRemaining >= 0;
   const conferences = useMemo(() => [...new Set(teams.map(t => t.conference))].sort(), [teams]);
 
@@ -145,8 +147,22 @@ export default function SeasonSquadBuilder({ teams }: { teams: SeasonTeam[] }) {
         <UiCard className={styles.squadCard}>
           <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>YOUR SEASON STARTS HERE</span><h2 id="season-squad-title">Your squad</h2></div><span className={styles.privateBadge}>Device only</span></div>
           <label className={styles.nameLabel}><span>Squad name</span><UiInput value={name} maxLength={60} disabled={!loaded} onChange={e => { setName(e.target.value); setDirty(true); }} /></label>
+          <section className={styles.draftTracker} aria-labelledby="draft-tracker-title">
+            <div className={styles.trackerHeading}><h3 id="draft-tracker-title">Your path to {seasonPricing.squadSize}</h3><strong>{selected.length} / {seasonPricing.squadSize}</strong></div>
+            <progress max={seasonPricing.squadSize} value={Math.min(selected.length, seasonPricing.squadSize)} aria-label={`${selected.length} of ${seasonPricing.squadSize} teams drafted`} />
+            <p>{summary.slotsRemaining < 0 ? `Remove ${Math.abs(summary.slotsRemaining)} teams to get back to ${seasonPricing.squadSize}.` : summary.slotsRemaining === 0 ? "All 15 spots filled." : `${summary.slotsRemaining} ${summary.slotsRemaining === 1 ? "spot" : "spots"} left to draft.`}</p>
+            <div className={styles.requirements} aria-label="Teams still needed by tier">{seasonPricing.bands.map((b, i) => {
+              const row = progress.bands[i];
+              const done = row.addMax === 0 && row.remove === 0;
+              return <div key={b.id} data-met={done} data-remove={row.remove > 0}>
+                <span>{b.label}<small>{row.picked} picked{row.finishMin !== null && row.finishMax !== null ? ` · finish with ${range(row.finishMin, row.finishMax)}` : ""}</small></span>
+                <strong>{row.remove ? `Remove ${row.remove}` : row.addMin === null || row.addMax === null ? "Unavailable" : done ? "Filled" : `${range(row.addMin, row.addMax)} more`}</strong>
+              </div>;
+            })}</div>
+            <p className={styles.trackerNote}>{needsRebalance ? "Suggested mix: swap the picks shown above to return to a 15-team, 100-point squad." : progress.options.length === 1 ? "Your remaining tier counts are exact. This mix finishes at 15 teams and 100 points." : "Ranges narrow as you pick. Tier counts are linked: each full mix below totals 15 teams and 100 points."}</p>
+            {progress.options.length > 1 ? <details className={styles.finishOptions}><summary>{progress.options.length} ways to finish your squad</summary><div className={styles.finishTable}><table><caption>Final team counts for each possible mix</caption><thead><tr>{seasonPricing.bands.map(b => <th scope="col" key={b.id}>{b.label}</th>)}<th scope="col">Total</th></tr></thead><tbody>{progress.options.map(counts => <tr key={counts.join("-")}>{counts.map((n, i) => <td key={i}>{n}</td>)}<td>{seasonPricing.squadSize}</td></tr>)}</tbody></table></div></details> : null}
+          </section>
           <div className={styles.squadProjection}><span>PROJECTED COMBINED RECORD</span><strong>{selected.length ? `${summary.wins}–${summary.losses}` : "—"}</strong><span>{percentage(summary.percentage)} projected win percentage</span></div>
-          <div className={styles.requirements} aria-label="Squad requirements">{seasonPricing.bands.map((b, i) => <div key={b.id} data-met={summary.counts[i] >= b.min && summary.counts[i] <= b.max}><span>{b.label} <small>{b.min ? `${b.min}–${b.max} required` : `up to ${b.max}`}</small></span><strong>{summary.counts[i]} / {b.max}</strong></div>)}</div>
           {needsRebalance ? <UiStatus tone="warning"><strong>Your mix needs a swap.</strong> Finish with exactly {seasonPricing.squadSize} teams and 100 points, including at least 4 Value and 5 Long-shot teams. Remove or swap picks to meet all three requirements.</UiStatus> : null}
           <div className={styles.completion} data-complete={summary.complete}>{summary.complete ? `✓ Squad ready · ${seasonPricing.squadSize} teams · all 100 points spent` : needsRebalance ? "Draft in progress · adjust your mix before completing your squad." : `Choose ${summary.slotsRemaining} more ${summary.slotsRemaining === 1 ? "team" : "teams"} with your remaining ${summary.remaining} points and meet the band requirements.`}</div>
           <UiButton variant="primary" fullWidth disabled={!loaded || !dirty || !canSave} onClick={save}>{!loaded ? "Loading draft…" : !canSave ? "Adjust squad to save" : dirty ? "Save draft on this device" : hasSaved ? "Draft saved on this device" : "Choose teams to start"}</UiButton>
